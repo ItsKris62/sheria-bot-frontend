@@ -17,14 +17,15 @@ import {
   Sparkles,
   Clock,
   ChevronRight,
-  FileText,
   Scale,
-  ExternalLink,
   Copy,
   ThumbsUp,
   ThumbsDown,
   Bookmark,
+  AlertCircle,
 } from "lucide-react"
+import { useComplianceQuery, useComplianceHistory } from "@/hooks/use-compliance"
+import { formatDistanceToNow } from "date-fns"
 
 const suggestedQueries = [
   "What are the KYC requirements for digital lenders in Kenya?",
@@ -34,108 +35,91 @@ const suggestedQueries = [
   "AML compliance requirements for cryptocurrency exchanges",
 ]
 
-const queryHistory = [
-  {
-    id: 1,
-    query: "What are the KYC requirements for digital lending?",
-    date: "2 hours ago",
-  },
-  {
-    id: 2,
-    query: "Consumer data protection obligations",
-    date: "Yesterday",
-  },
-  {
-    id: 3,
-    query: "CBK reporting requirements for payment providers",
-    date: "3 days ago",
-  },
-]
-
 interface Message {
-  id: number
+  id: string
   type: "user" | "assistant"
   content: string
   citations?: {
-    act: string
+    text: string
+    source: string
     section: string
-    confidence: number
   }[]
+  confidence?: number
+  queryId?: string
   timestamp: Date
 }
 
 export default function ComplianceQueryPage() {
   const [query, setQuery] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
+  const { submitQuery, isQuerying, queryError, submitFollowUp, isFollowingUp } = useComplianceQuery()
+  const { data: historyData } = useComplianceHistory(1, 5)
+
+  const isLoading = isQuerying || isFollowingUp
+  const lastQueryId = messages.filter((m) => m.queryId).at(-1)?.queryId
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!query.trim()) return
+    if (!query.trim() || isLoading) return
 
     const userMessage: Message = {
-      id: Date.now(),
+      id: `user-${Date.now()}`,
       type: "user",
       content: query,
       timestamp: new Date(),
     }
 
     setMessages((prev) => [...prev, userMessage])
+    const currentQuery = query
     setQuery("")
-    setIsLoading(true)
 
-    // Simulate AI response
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      let result;
+      if (lastQueryId) {
+        // Follow-up question
+        result = await submitFollowUp({
+          originalQueryId: lastQueryId,
+          question: currentQuery,
+        })
+      } else {
+        // New query
+        result = await submitQuery({
+          question: currentQuery,
+        })
+      }
 
-    const assistantMessage: Message = {
-      id: Date.now() + 1,
-      type: "assistant",
-      content: `Based on Kenya's regulatory framework, here are the key requirements for your query:
+      const assistantMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        type: "assistant",
+        content: result.answer,
+        citations: result.citations?.map((c) => ({
+          text: c.text,
+          source: c.source,
+          section: c.section,
+        })),
+        confidence: "confidence" in result ? (result as { confidence?: number }).confidence : undefined,
+        queryId: result.queryId,
+        timestamp: new Date(),
+      }
 
-**Key Requirements:**
-
-1. **Customer Identification**: All digital lenders must verify customer identity using government-issued ID documents (National ID, Passport, or Alien ID).
-
-2. **Risk Assessment**: Implement a risk-based approach to customer due diligence, with enhanced measures for high-risk customers.
-
-3. **Record Keeping**: Maintain customer identification records for at least 7 years after the business relationship ends.
-
-4. **Transaction Monitoring**: Implement systems to monitor transactions and flag suspicious activities.
-
-5. **Reporting Obligations**: File Suspicious Transaction Reports (STRs) with the Financial Reporting Centre within 24 hours.
-
-**Implementation Recommendations:**
-
-- Integrate with IPRS (Integrated Population Registration System) for ID verification
-- Implement automated screening against sanctions lists
-- Deploy transaction monitoring systems with configurable thresholds
-- Train staff on KYC/AML procedures quarterly`,
-      citations: [
-        {
-          act: "Proceeds of Crime and Anti-Money Laundering Act",
-          section: "Section 45",
-          confidence: 95,
-        },
-        {
-          act: "CBK Prudential Guidelines",
-          section: "Guideline CBK/PG/08",
-          confidence: 92,
-        },
-        {
-          act: "Central Bank of Kenya (Digital Credit Providers) Regulations, 2022",
-          section: "Regulation 7",
-          confidence: 88,
-        },
-      ],
-      timestamp: new Date(),
+      setMessages((prev) => [...prev, assistantMessage])
+    } catch {
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        type: "assistant",
+        content: queryError || "Failed to process your query. Please try again.",
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
     }
-
-    setMessages((prev) => [...prev, assistantMessage])
-    setIsLoading(false)
   }
 
   const handleSuggestedQuery = (suggested: string) => {
     setQuery(suggested)
+  }
+
+  const handleCopy = (content: string) => {
+    navigator.clipboard.writeText(content)
   }
 
   return (
@@ -163,7 +147,7 @@ export default function ComplianceQueryPage() {
                     Ask a Compliance Question
                   </h2>
                   <p className="mt-2 max-w-md text-muted-foreground">
-                    Get instant answers about Kenya&apos;s fintech regulations, CBK guidelines, 
+                    Get instant answers about Kenya&apos;s fintech regulations, CBK guidelines,
                     data protection requirements, and more.
                   </p>
                   <div className="mt-8 w-full max-w-md">
@@ -203,6 +187,11 @@ export default function ComplianceQueryPage() {
                               <Sparkles className="h-3 w-3 text-primary" />
                             </div>
                             <span className="text-sm font-medium text-foreground">SheriaBot</span>
+                            {message.confidence && (
+                              <Badge variant="outline" className="text-xs ml-auto">
+                                {Math.round(message.confidence * 100)}% confidence
+                              </Badge>
+                            )}
                           </div>
                         )}
                         <div className={`prose prose-sm max-w-none ${message.type === "user" ? "prose-invert" : ""}`}>
@@ -211,24 +200,24 @@ export default function ComplianceQueryPage() {
                         {message.citations && message.citations.length > 0 && (
                           <div className="mt-4 border-t border-border/50 pt-4">
                             <p className="mb-2 text-xs font-medium text-muted-foreground">
-                              Legal Citations:
+                              Legal Citations ({message.citations.length}):
                             </p>
                             <div className="space-y-2">
                               {message.citations.map((citation, index) => (
                                 <div
                                   key={index}
-                                  className="flex items-center justify-between rounded-lg bg-background/50 p-2"
+                                  className="flex items-start gap-2 rounded-lg bg-background/50 p-2"
                                 >
-                                  <div className="flex items-center gap-2">
-                                    <Scale className="h-4 w-4 text-primary" />
-                                    <div>
-                                      <p className="text-xs font-medium text-foreground">{citation.act}</p>
+                                  <Scale className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-medium text-foreground">{citation.source}</p>
+                                    {citation.section && (
                                       <p className="text-xs text-muted-foreground">{citation.section}</p>
-                                    </div>
+                                    )}
+                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                      {citation.text}
+                                    </p>
                                   </div>
-                                  <Badge variant="outline" className="text-xs">
-                                    {citation.confidence}%
-                                  </Badge>
                                 </div>
                               ))}
                             </div>
@@ -236,7 +225,12 @@ export default function ComplianceQueryPage() {
                         )}
                         {message.type === "assistant" && (
                           <div className="mt-4 flex items-center gap-2">
-                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2"
+                              onClick={() => handleCopy(message.content)}
+                            >
                               <Copy className="mr-1 h-3 w-3" />
                               Copy
                             </Button>
@@ -270,6 +264,14 @@ export default function ComplianceQueryPage() {
               )}
             </ScrollArea>
 
+            {/* Error display */}
+            {queryError && (
+              <div className="mx-4 mb-2 flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
+                <AlertCircle className="h-3 w-3 shrink-0" />
+                {queryError}
+              </div>
+            )}
+
             {/* Input Area */}
             <div className="border-t border-border p-4">
               <form onSubmit={handleSubmit} className="flex gap-2">
@@ -280,8 +282,8 @@ export default function ComplianceQueryPage() {
                   className="flex-1 bg-background"
                   disabled={isLoading}
                 />
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={!query.trim() || isLoading}
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
@@ -323,7 +325,7 @@ export default function ComplianceQueryPage() {
             </CardContent>
           </Card>
 
-          {/* Query History */}
+          {/* Query History - from API */}
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-foreground">Recent Queries</CardTitle>
@@ -331,20 +333,28 @@ export default function ComplianceQueryPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {queryHistory.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={`/startup/compliance-query/${item.id}`}
-                    className="flex items-center gap-3 rounded-lg border border-border/50 p-3 transition-colors hover:bg-muted/50"
-                  >
-                    <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{item.query}</p>
-                      <p className="text-xs text-muted-foreground">{item.date}</p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </Link>
-                ))}
+                {historyData?.queries && historyData.queries.length > 0 ? (
+                  historyData.queries.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={`/startup/compliance-query/${item.id}`}
+                      className="flex items-center gap-3 rounded-lg border border-border/50 p-3 transition-colors hover:bg-muted/50"
+                    >
+                      <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{item.question}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    </Link>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No queries yet. Ask your first question!
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -362,7 +372,7 @@ export default function ComplianceQueryPage() {
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
-                Our AI is trained on CBK guidelines, Data Protection Act, National Payment System Act, 
+                Our AI is trained on CBK guidelines, Data Protection Act, National Payment System Act,
                 and other relevant Kenyan legislation.
               </p>
             </CardContent>

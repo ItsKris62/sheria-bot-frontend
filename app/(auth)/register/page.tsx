@@ -10,23 +10,30 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { Loader2, Eye, EyeOff, Building2, Rocket, Scale } from "lucide-react"
+import { Loader2, Eye, EyeOff, Building2, Rocket, Scale, AlertCircle, CheckCircle2 } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+
+const ROLE_MAP = {
+  startup: "STARTUP",
+  enterprise: "ENTERPRISE",
+  regulator: "REGULATOR",
+} as const
 
 const organizationTypes = [
-  { id: "startup", label: "Fintech Startup", description: "Digital lender, payment provider, etc.", icon: Rocket },
-  { id: "enterprise", label: "Financial Institution", description: "Bank, SACCO, microfinance", icon: Building2 },
-  { id: "regulator", label: "Regulator", description: "CBK, CMA, or government agency", icon: Scale },
+  { id: "startup" as const, label: "Fintech Startup", description: "Digital lender, payment provider, etc.", icon: Rocket },
+  { id: "enterprise" as const, label: "Financial Institution", description: "Bank, SACCO, microfinance", icon: Building2 },
+  { id: "regulator" as const, label: "Regulator", description: "CBK, CMA, or government agency", icon: Scale },
 ]
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { register, isRegisterLoading, registerError } = useAuth()
   const [step, setStep] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [formData, setFormData] = useState({
-    organizationType: "",
+    organizationType: "" as "" | "startup" | "enterprise" | "regulator",
     companyName: "",
     firstName: "",
     lastName: "",
@@ -37,25 +44,57 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    setError(null)
+
     if (step === 1) {
       setStep(2)
       return
     }
 
-    setIsLoading(true)
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    
-    // Redirect based on organization type
-    if (formData.organizationType === "regulator") {
-      router.push("/regulator")
-    } else {
-      router.push("/startup")
+    if (!formData.organizationType) return
+
+    try {
+      await register({
+        email: formData.email,
+        password: formData.password,
+        name: `${formData.firstName} ${formData.lastName}`,
+        role: ROLE_MAP[formData.organizationType],
+      })
+      setSuccess(true)
+    } catch {
+      setError(registerError || "Registration failed. Please try again.")
     }
-    setIsLoading(false)
   }
+
+  if (success) {
+    return (
+      <Card className="w-full max-w-md border-border/50 bg-card/50 backdrop-blur">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <CheckCircle2 className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-foreground">Check your email</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            We&apos;ve sent a verification link to <strong className="text-foreground">{formData.email}</strong>.
+            Please verify your email to activate your account.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <Button
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => router.push("/login")}
+          >
+            Go to Sign In
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            Didn&apos;t receive the email? Check your spam folder or contact support.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const displayError = error || registerError
 
   return (
     <Card className="w-full max-w-md border-border/50 bg-card/50 backdrop-blur">
@@ -73,6 +112,13 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {displayError && (
+            <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <p>{displayError}</p>
+            </div>
+          )}
+
           {step === 1 ? (
             <>
               <div className="space-y-3">
@@ -90,7 +136,7 @@ export default function RegisterPage() {
                       name="organizationType"
                       value={type.id}
                       checked={formData.organizationType === type.id}
-                      onChange={(e) => setFormData({ ...formData, organizationType: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, organizationType: e.target.value as typeof formData.organizationType })}
                       className="sr-only"
                     />
                     <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
@@ -115,8 +161,8 @@ export default function RegisterPage() {
                 ))}
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 disabled={!formData.organizationType}
               >
@@ -185,6 +231,7 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
+                    minLength={8}
                     className="bg-background pr-10"
                   />
                   <button
@@ -196,7 +243,7 @@ export default function RegisterPage() {
                   </button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Minimum 8 characters with at least one number
+                  Min 8 characters, with uppercase, lowercase, number, and special character
                 </p>
               </div>
 
@@ -224,12 +271,12 @@ export default function RegisterPage() {
                 >
                   Back
                 </Button>
-                <Button 
-                  type="submit" 
-                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" 
-                  disabled={isLoading || !formData.agreeTerms}
+                <Button
+                  type="submit"
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                  disabled={isRegisterLoading || !formData.agreeTerms}
                 >
-                  {isLoading ? (
+                  {isRegisterLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Creating...

@@ -3,7 +3,6 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
@@ -30,12 +29,12 @@ import {
   HelpCircle,
   Building2,
   ChevronDown,
-  Menu,
-  Scale,
   FileText,
   AlertCircle,
   CheckCircle2,
 } from "lucide-react"
+import { useAuthStore } from "@/lib/auth-store"
+import { useAuth } from "@/hooks/use-auth"
 
 const notifications = [
   {
@@ -71,12 +70,14 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ userType }: DashboardHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const authUser = useAuthStore((s) => s.user)
+  const { logout } = useAuth()
 
   const user = {
-    name: userType === "regulator" ? "Dr. Grace Mutua" : "James Ochieng",
-    email: userType === "regulator" ? "g.mutua@cbk.go.ke" : "james@finpay.co.ke",
-    organization: userType === "regulator" ? "Central Bank of Kenya" : "FinPay Kenya",
-    role: userType === "regulator" ? "Senior Policy Analyst" : "Chief Compliance Officer",
+    name: authUser?.name || (userType === "regulator" ? "Regulator" : "User"),
+    email: authUser?.email || "",
+    organization: userType === "regulator" ? "Regulator" : "Startup",
+    role: authUser?.role || userType.toUpperCase(),
   }
 
   const unreadCount = notifications.filter((n) => !n.read).length
@@ -217,11 +218,12 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild className="text-destructive focus:text-destructive">
-              <Link href="/login" className="cursor-pointer">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign out
-              </Link>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive cursor-pointer"
+              onClick={() => logout()}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

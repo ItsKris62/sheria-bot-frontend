@@ -1,12 +1,18 @@
+"use client"
+
 import React from "react"
+import { AuthGuard } from "@/components/auth-guard"
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-background">
-      {children}
-    </div>
+    <AuthGuard>
+      <div className="min-h-screen bg-background">
+        {children}
+      </div>
+    </AuthGuard>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -33,7 +34,9 @@ import {
   Scale,
   CheckCircle2,
   ExternalLink,
+  AlertCircle,
 } from "lucide-react"
+import { usePolicyActions, usePolicies } from "@/hooks/use-policies"
 
 const regulatoryAreas = [
   { value: "digital-lending", label: "Digital Lending" },
@@ -92,22 +95,37 @@ const sampleCitations = [
 ]
 
 export default function PolicyGeneratorPage() {
-  const [isGenerating, setIsGenerating] = useState(false)
+  const router = useRouter()
   const [showResult, setShowResult] = useState(false)
+  const [generatedPolicyId, setGeneratedPolicyId] = useState<string | null>(null)
+  const [generateError, setGenerateError] = useState<string | null>(null)
   const [query, setQuery] = useState("")
   const [area, setArea] = useState("")
   const [scenario, setScenario] = useState("")
 
+  const { generate, isGenerating, generateError: apiError } = usePolicyActions()
+  const { data: recentPolicies } = usePolicies({ page: 1, limit: 3 })
+
   const handleGenerate = async () => {
-    setIsGenerating(true)
-    // Simulate AI processing
-    await new Promise((resolve) => setTimeout(resolve, 3000))
-    setIsGenerating(false)
-    setShowResult(true)
+    setGenerateError(null)
+    try {
+      const result = await generate({
+        title: query || `${area} Policy`,
+        scenario: scenario || query,
+        organizationType: "FINTECH",
+        regulatoryAreas: area ? [area] : ["aml-kyc"],
+      })
+      setGeneratedPolicyId(result.policyId)
+      setShowResult(true)
+    } catch {
+      setGenerateError(apiError || "Failed to generate policy. Please try again.")
+    }
   }
 
   const resetForm = () => {
     setShowResult(false)
+    setGeneratedPolicyId(null)
+    setGenerateError(null)
     setQuery("")
     setArea("")
     setScenario("")

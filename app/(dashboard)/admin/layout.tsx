@@ -1,11 +1,12 @@
-import React from "react"
-import type { Metadata } from "next"
+"use client"
 
-export const metadata: Metadata = {
-  title: "Admin Dashboard - SheriaBot",
-  description: "System administration and platform management",
-}
+import React from "react"
+import { AuthGuard } from "@/components/auth-guard"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return (
+    <AuthGuard allowedRoles={["ADMIN"]}>
+      {children}
+    </AuthGuard>
+  )
 }
