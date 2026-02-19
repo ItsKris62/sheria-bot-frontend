@@ -181,12 +181,7 @@ export default function LandingPage() {
         
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <div className="animate-fade-up opacity-0" style={{ animationDelay: "0.1s", animationFillMode: "forwards" }}>
-              <Badge variant="outline" className="mb-6 border-primary/50 text-primary px-4 py-1.5 text-sm font-medium backdrop-blur-sm bg-primary/5">
-                <Sparkles className="mr-2 h-3.5 w-3.5" />
-                AI-Powered Regulatory Intelligence
-              </Badge>
-            </div>
+
             
             <h1 
               className="animate-fade-up opacity-0 text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-7xl"
