@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   title: 'SheriaBot - AI-Powered Regulatory Intelligence for Kenya Fintech',
   description: 'Navigate Kenya\'s fintech regulatory landscape with AI-powered compliance intelligence. Generate policies, track regulations, and ensure compliance with CBK, Data Protection Act, and more.',
   keywords: ['Kenya fintech', 'regulatory compliance', 'CBK guidelines', 'AML/KYC', 'Data Protection Act', 'fintech regulations'],
+  icons: {
+    icon: '/transparent-logo.svg',
+  },
 }
 
 export const viewport: Viewport = {
