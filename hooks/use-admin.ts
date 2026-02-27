@@ -17,7 +17,7 @@ export function useAdminUsers(options?: {
   return trpc.admin.listUsers.useQuery({
     page: options?.page ?? 1,
     limit: options?.limit ?? 20,
-    role: options?.role,
+    role: options?.role as "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined,
     search: options?.search,
   });
 }
@@ -26,14 +26,14 @@ export function useAdminUsers(options?: {
 export function useAdminActions() {
   const utils = trpc.useUtils();
 
-  const disableUserMutation = trpc.admin.disableUser.useMutation({
+  const disableUserMutation = trpc.admin.suspendUser.useMutation({
     onSuccess: () => {
       utils.admin.listUsers.invalidate();
       utils.admin.getStats.invalidate();
     },
   });
 
-  const enableUserMutation = trpc.admin.enableUser.useMutation({
+  const enableUserMutation = trpc.admin.reactivateUser.useMutation({
     onSuccess: () => {
       utils.admin.listUsers.invalidate();
     },
@@ -50,7 +50,7 @@ export function useAdminActions() {
 
 /** Hook for audit logs */
 export function useAuditLogs(options?: { page?: number; limit?: number }) {
-  return trpc.admin.getAuditLogs.useQuery({
+  return trpc.admin.getLogs.useQuery({
     page: options?.page ?? 1,
     limit: options?.limit ?? 20,
   });

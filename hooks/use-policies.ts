@@ -12,7 +12,7 @@ export function usePolicies(options?: {
   return trpc.policy.list.useQuery({
     page: options?.page ?? 1,
     limit: options?.limit ?? 10,
-    status: options?.status,
+    status: options?.status as "COMPLETED" | "FAILED" | "DRAFT" | "GENERATING" | undefined,
     search: options?.search,
   });
 }

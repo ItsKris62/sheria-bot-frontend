@@ -32,36 +32,30 @@ import {
   FileText,
   AlertCircle,
   CheckCircle2,
+  Loader2,
 } from "lucide-react"
 import { useAuthStore } from "@/lib/auth-store"
 import { useAuth } from "@/hooks/use-auth"
+import { useUnreadCount, useNotifications, useNotificationActions } from "@/hooks/use-notifications"
 
-const notifications = [
-  {
-    id: 1,
-    type: "alert",
-    title: "CBK Guideline Update",
-    description: "New Digital Credit Providers Regulations published",
-    time: "5 minutes ago",
-    read: false,
-  },
-  {
-    id: 2,
-    type: "success",
-    title: "Policy Generated",
-    description: "Your AML policy document is ready for review",
-    time: "1 hour ago",
-    read: false,
-  },
-  {
-    id: 3,
-    type: "info",
-    title: "Compliance Reminder",
-    description: "Monthly KYC audit report due in 5 days",
-    time: "3 hours ago",
-    read: true,
-  },
-]
+/** Format a date as a relative time string (e.g. "5 minutes ago") */
+function relativeTime(dateStr: string | Date): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const minutes = Math.floor(diff / 60_000)
+  if (minutes < 1) return "just now"
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`
+  const days = Math.floor(hours / 24)
+  return `${days} day${days === 1 ? "" : "s"} ago`
+}
+
+/** Map backend notification types to UI icon variants */
+function notificationVariant(type: string): "alert" | "success" | "info" {
+  if (type === "COMPLIANCE_ALERT" || type === "DEADLINE_ALERT") return "alert"
+  if (type === "POLICY_READY" || type === "DOCUMENT_READY") return "success"
+  return "info"
+}
 
 interface DashboardHeaderProps {
   userType: "regulator" | "startup"
@@ -80,7 +74,13 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
     role: authUser?.role || userType.toUpperCase(),
   }
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  // Real notification data from the backend
+  const { data: unreadData } = useUnreadCount()
+  const { data: notifData, isLoading: isLoadingNotifs } = useNotifications({ limit: 10 })
+  const { markAllAsRead, isMarkingAllAsRead } = useNotificationActions()
+
+  const unreadCount = unreadData?.count ?? 0
+  const notificationList = notifData?.notifications ?? []
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-xl">
@@ -117,7 +117,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-                  {unreadCount}
+                  {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
               <span className="sr-only">Notifications</span>
@@ -127,43 +127,84 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
             <SheetHeader>
               <SheetTitle className="flex items-center justify-between">
                 Notifications
-                <Badge variant="secondary">{unreadCount} new</Badge>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <Badge variant="secondary">{unreadCount} new</Badge>
+                  )}
+                  {unreadCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-muted-foreground"
+                      onClick={() => markAllAsRead()}
+                      disabled={isMarkingAllAsRead}
+                    >
+                      {isMarkingAllAsRead ? (
+                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                      ) : null}
+                      Mark all read
+                    </Button>
+                  )}
+                </div>
               </SheetTitle>
             </SheetHeader>
             <ScrollArea className="mt-6 h-[calc(100vh-8rem)]">
               <div className="flex flex-col gap-2">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`flex gap-3 rounded-lg p-3 transition-colors ${
-                      notification.read ? "bg-transparent" : "bg-muted/50"
-                    }`}
-                  >
-                    <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                      notification.type === "alert"
-                        ? "bg-destructive/10 text-destructive"
-                        : notification.type === "success"
-                        ? "bg-secondary/10 text-secondary"
-                        : "bg-primary/10 text-primary"
-                    }`}>
-                      {notification.type === "alert" ? (
-                        <AlertCircle className="h-4 w-4" />
-                      ) : notification.type === "success" ? (
-                        <CheckCircle2 className="h-4 w-4" />
-                      ) : (
-                        <FileText className="h-4 w-4" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-sm">{notification.title}</p>
-                      <p className="text-sm text-muted-foreground truncate">{notification.description}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{notification.time}</p>
-                    </div>
-                    {!notification.read && (
-                      <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-2" />
-                    )}
+                {isLoadingNotifs ? (
+                  <div className="flex items-center justify-center py-8 text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    Loading…
                   </div>
-                ))}
+                ) : notificationList.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">
+                    No notifications yet
+                  </p>
+                ) : (
+                  notificationList.map((notification: any) => {
+                    const variant = notificationVariant(notification.type ?? "")
+                    const isUnread = !notification.readAt
+                    return (
+                      <div
+                        key={notification.id}
+                        className={`flex gap-3 rounded-lg p-3 transition-colors ${
+                          isUnread ? "bg-muted/50" : "bg-transparent"
+                        }`}
+                      >
+                        <div
+                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                            variant === "alert"
+                              ? "bg-destructive/10 text-destructive"
+                              : variant === "success"
+                              ? "bg-secondary/10 text-secondary"
+                              : "bg-primary/10 text-primary"
+                          }`}
+                        >
+                          {variant === "alert" ? (
+                            <AlertCircle className="h-4 w-4" />
+                          ) : variant === "success" ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <FileText className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground text-sm">
+                            {notification.title}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {notification.message}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {relativeTime(notification.createdAt)}
+                          </p>
+                        </div>
+                        {isUnread && (
+                          <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-2" />
+                        )}
+                      </div>
+                    )
+                  })
+                )}
               </div>
             </ScrollArea>
           </SheetContent>

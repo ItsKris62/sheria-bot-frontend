@@ -18,8 +18,8 @@ function makeQueryClient() {
         retry: (failureCount, error) => {
           if (
             error &&
-            "data" in (error as Record<string, unknown>) &&
-            ((error as Record<string, unknown>).data as Record<string, unknown>)?.code === "UNAUTHORIZED"
+            "data" in (error as unknown as Record<string, unknown>) &&
+            ((error as unknown as Record<string, unknown>).data as Record<string, unknown>)?.code === "UNAUTHORIZED"
           ) {
             return false;
           }
@@ -47,7 +47,7 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
         if (!rt) return;
 
         try {
-          const result = await trpcClient.auth.refreshToken.fetch({ refreshToken: rt });
+          const result = await (trpcClient.auth.refreshToken as any).fetch({ refreshToken: rt });
           if (result.accessToken) {
             setAccessToken(result.accessToken);
             useAuthStore.getState().updateToken(result.accessToken);
@@ -73,10 +73,10 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const result = await trpcClient.auth.refreshToken.fetch({ refreshToken: rt });
+        const result = await (trpcClient.auth.refreshToken as any).fetch({ refreshToken: rt });
         if (result.accessToken) {
           setAccessToken(result.accessToken);
-          const user = await trpcClient.auth.me.fetch();
+          const user = await (trpcClient.auth.me as any).fetch();
           setAuth(
             {
               id: user.id,

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Users,
   FileText,
@@ -11,20 +11,15 @@ import {
   CreditCard,
   Activity,
   Settings,
-  TrendingUp,
   AlertTriangle,
   ArrowRight,
   Building2,
   Shield,
 } from "lucide-react"
+import { useAdminStats } from "@/hooks/use-admin"
+import { trpc } from "@/lib/trpc"
 
-const stats = [
-  { label: "Total Users", value: "1,247", change: "+12%", icon: Users },
-  { label: "Active Organizations", value: "89", change: "+8%", icon: Building2 },
-  { label: "AI Queries Today", value: "3,456", change: "+23%", icon: Bot },
-  { label: "Monthly Revenue", value: "KES 2.4M", change: "+15%", icon: CreditCard },
-]
-
+// static – no backend needed
 const quickActions = [
   { label: "User Management", href: "/admin/users", icon: Users, description: "Manage users and permissions" },
   { label: "Knowledge Base", href: "/admin/content/knowledge-base", icon: FileText, description: "Edit regulatory content" },
@@ -34,32 +29,28 @@ const quickActions = [
   { label: "System Settings", href: "/admin/system", icon: Settings, description: "Platform configuration" },
 ]
 
-const recentActivity = [
-  { user: "john@safaricom.co.ke", action: "Generated PSP License Checklist", time: "2 min ago" },
-  { user: "mary@mpesa.co.ke", action: "Queried KYC requirements", time: "5 min ago" },
-  { user: "admin@cbk.go.ke", action: "Published new regulation update", time: "15 min ago" },
-  { user: "peter@equity.co.ke", action: "Upgraded to Enterprise plan", time: "1 hour ago" },
-  { user: "jane@kcb.co.ke", action: "Completed compliance checklist", time: "2 hours ago" },
-]
-
-const systemAlerts = [
-  { type: "warning", message: "AI response latency increased by 15%", time: "10 min ago" },
-  { type: "info", message: "Database backup completed successfully", time: "1 hour ago" },
-  { type: "warning", message: "3 users reported incorrect AI responses", time: "3 hours ago" },
-]
-
 export default function AdminDashboard() {
+  const { data: stats, isLoading: statsLoading } = useAdminStats()
+  const { data: health } = trpc.admin.getDetailedHealth.useQuery()
+  const { data: logsData } = trpc.admin.getLogs.useQuery({ page: 1, limit: 5 })
+  const recentLogs = (logsData as any)?.logs ?? []
+
+  const statCards = [
+    { label: "Total Users", value: (stats as any)?.totalUsers?.toLocaleString(), icon: Users },
+    { label: "Active Organizations", value: (stats as any)?.totalOrganizations?.toLocaleString(), icon: Building2 },
+    { label: "AI Queries", value: (stats as any)?.totalQueries?.toLocaleString(), icon: Bot },
+    { label: "Total Policies", value: (stats as any)?.totalPolicies?.toLocaleString(), icon: FileText },
+  ]
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Platform overview and system management
-        </p>
+        <p className="text-muted-foreground mt-1">Platform overview and system management</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
+        {statCards.map((stat) => {
           const Icon = stat.icon
           return (
             <Card key={stat.label} className="border-border/50 bg-card/50 backdrop-blur">
@@ -67,17 +58,14 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                    {statsLoading
+                      ? <Skeleton className="h-8 w-20 mt-1" />
+                      : <p className="text-2xl font-bold text-foreground">{stat.value ?? "—"}</p>
+                    }
                   </div>
                   <div className="p-3 rounded-lg bg-primary/10">
                     <Icon className="h-5 w-5 text-primary" />
                   </div>
-                </div>
-                <div className="mt-2">
-                  <Badge className="bg-primary/10 text-primary text-xs">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    {stat.change} this month
-                  </Badge>
                 </div>
               </CardContent>
             </Card>
@@ -118,19 +106,28 @@ export default function AdminDashboard() {
           <Card className="border-border/50 bg-card/50 backdrop-blur">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest platform activity</CardDescription>
+              <CardDescription>Latest platform audit events</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{activity.action}</p>
-                      <p className="text-xs text-muted-foreground">{activity.user}</p>
+                {recentLogs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">No recent activity</p>
+                ) : (
+                  recentLogs.map((log: any) => (
+                    <div key={log.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{log.action}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {log.user?.email ?? log.userId ?? "System"}
+                          {log.entityType ? ` · ${log.entityType}` : ""}
+                        </p>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(log.createdAt).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" })}
+                      </span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{activity.time}</span>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -145,17 +142,18 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {systemAlerts.map((alert, index) => (
-                <div
-                  key={index}
-                  className={`p-3 rounded-lg ${
-                    alert.type === "warning" ? "bg-warning/10" : "bg-muted/50"
-                  }`}
-                >
-                  <p className="text-sm text-foreground">{alert.message}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{alert.time}</p>
-                </div>
-              ))}
+              {!(stats as any)?.recentActivity?.length ? (
+                <p className="text-sm text-muted-foreground">No active alerts</p>
+              ) : (
+                (stats as any).recentActivity.slice(0, 3).map((item: any, i: number) => (
+                  <div key={i} className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-sm text-foreground">{item.description ?? item.action}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(item.createdAt ?? Date.now()).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" })}
+                    </p>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
 
@@ -168,20 +166,28 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">API Uptime</span>
-                <Badge className="bg-primary/10 text-primary">99.9%</Badge>
+                <span className="text-sm text-muted-foreground">Uptime</span>
+                <Badge className="bg-primary/10 text-primary">
+                  {(health as any)?.uptime ? `${Math.floor((health as any).uptime / 3600)}h` : "—"}
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Database Status</span>
-                <Badge className="bg-primary/10 text-primary">Healthy</Badge>
+                <span className="text-sm text-muted-foreground">Database</span>
+                <Badge className={(health as any)?.database ? "bg-primary/10 text-primary" : "bg-warning/10 text-warning"}>
+                  {(health as any)?.database ? "Healthy" : "Checking…"}
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">AI Service</span>
-                <Badge className="bg-primary/10 text-primary">Operational</Badge>
+                <Badge className={(health as any)?.ai ? "bg-primary/10 text-primary" : "bg-warning/10 text-warning"}>
+                  {(health as any)?.ai ? "Operational" : "Checking…"}
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Storage</span>
-                <Badge className="bg-warning/10 text-warning">78% Used</Badge>
+                <span className="text-sm text-muted-foreground">Cache</span>
+                <Badge className={(health as any)?.cache ? "bg-primary/10 text-primary" : "bg-warning/10 text-warning"}>
+                  {(health as any)?.cache ? "Connected" : "Checking…"}
+                </Badge>
               </div>
             </CardContent>
           </Card>

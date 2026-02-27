@@ -92,7 +92,7 @@ export default function ComplianceQueryPage() {
         id: `assistant-${Date.now()}`,
         type: "assistant",
         content: result.answer,
-        citations: result.citations?.map((c) => ({
+        citations: result.citations?.map((c: any) => ({
           text: c.text,
           source: c.source,
           section: c.section,
@@ -334,7 +334,7 @@ export default function ComplianceQueryPage() {
             <CardContent>
               <div className="space-y-3">
                 {historyData?.queries && historyData.queries.length > 0 ? (
-                  historyData.queries.map((item) => (
+                  historyData.queries.map((item: any) => (
                     <Link
                       key={item.id}
                       href={`/startup/compliance-query/${item.id}`}
