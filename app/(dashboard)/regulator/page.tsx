@@ -1,5 +1,6 @@
 "use client"
 
+import { useAuthStore } from "@/lib/auth-store"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -122,12 +123,15 @@ const upcomingDeadlines = [
 ]
 
 export default function RegulatorDashboard() {
+  const user = useAuthStore((state) => state.user)
+  const displayName = user?.name?.split(" ")[0] ?? "there"
+
   return (
     <div className="flex flex-col gap-6">
       {/* Welcome Section */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome back, Dr. Mutua</h1>
+          <h1 className="text-2xl font-bold text-foreground">Welcome back, {displayName}</h1>
           <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your regulatory work</p>
         </div>
         <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
