@@ -17,6 +17,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { useAuthStore, type UserRole } from "@/lib/auth-store"
+
+function getDashboardPath(role: UserRole): string {
+  switch (role) {
+    case "REGULATOR":
+      return "/regulator"
+    case "ADMIN":
+      return "/admin"
+    case "ENTERPRISE":
+    case "STARTUP":
+    case "FINTECH_USER":
+    default:
+      return "/startup"
+  }
+}
 
 interface NavItem {
   name: string
@@ -45,6 +60,9 @@ export function Header() {
   const [activeSection, setActiveSection] = useState("")
   const pathname = usePathname()
   const isHome = pathname === "/"
+
+  const { user, isAuthenticated, isInitialized } = useAuthStore()
+  const showDashboard = isInitialized && isAuthenticated && user !== null
 
   const handleScroll = useCallback(() => {
     setScrolled(window.scrollY > 20)
@@ -215,26 +233,42 @@ export function Header() {
 
         {/* Desktop CTA */}
         <div className="hidden items-center gap-2 lg:flex">
-          <Button
-            variant="ghost"
-            asChild
-            className="text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-all duration-300 rounded-xl h-9"
-          >
-            <Link href="/login">Sign In</Link>
-          </Button>
-          <Button
-            asChild
-            className={cn(
-              "relative overflow-hidden bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 text-sm font-semibold transition-all duration-500",
-              scrolled
-                ? "shadow-[0_0_20px_rgba(34,197,94,0.25)]"
-                : "shadow-[0_0_12px_rgba(34,197,94,0.15)]"
-            )}
-          >
-            <Link href="/register" className="flex items-center gap-1.5">
-              Get Started
-            </Link>
-          </Button>
+          {showDashboard ? (
+            <Button
+              asChild
+              className={cn(
+                "relative overflow-hidden bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 text-sm font-semibold transition-all duration-500",
+                scrolled
+                  ? "shadow-[0_0_20px_rgba(34,197,94,0.25)]"
+                  : "shadow-[0_0_12px_rgba(34,197,94,0.15)]"
+              )}
+            >
+              <Link href={getDashboardPath(user.role)}>Dashboard</Link>
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                asChild
+                className="text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-all duration-300 rounded-xl h-9"
+              >
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button
+                asChild
+                className={cn(
+                  "relative overflow-hidden bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 text-sm font-semibold transition-all duration-500",
+                  scrolled
+                    ? "shadow-[0_0_20px_rgba(34,197,94,0.25)]"
+                    : "shadow-[0_0_12px_rgba(34,197,94,0.15)]"
+                )}
+              >
+                <Link href="/register" className="flex items-center gap-1.5">
+                  Get Started
+                </Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu */}
@@ -308,22 +342,35 @@ export function Header() {
 
               {/* Mobile CTA */}
               <div className="flex flex-col gap-3 pt-4 border-t border-border/30">
-                <Button
-                  variant="outline"
-                  asChild
-                  className="w-full rounded-xl bg-transparent border-border/30 hover:bg-foreground/5 hover:border-primary/20 h-11"
-                >
-                  <Link href="/login" onClick={() => setMobileOpen(false)}>Sign In</Link>
-                </Button>
-                <Button
-                  asChild
-                  className="w-full rounded-xl bg-primary text-primary-foreground shadow-[0_0_20px_rgba(34,197,94,0.25)] h-11"
-                >
-                  <Link href="/register" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Get Started
-                  </Link>
-                </Button>
+                {showDashboard ? (
+                  <Button
+                    asChild
+                    className="w-full rounded-xl bg-primary text-primary-foreground shadow-[0_0_20px_rgba(34,197,94,0.25)] h-11"
+                  >
+                    <Link href={getDashboardPath(user.role)} onClick={() => setMobileOpen(false)}>
+                      Dashboard
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      asChild
+                      className="w-full rounded-xl bg-transparent border-border/30 hover:bg-foreground/5 hover:border-primary/20 h-11"
+                    >
+                      <Link href="/login" onClick={() => setMobileOpen(false)}>Sign In</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      className="w-full rounded-xl bg-primary text-primary-foreground shadow-[0_0_20px_rgba(34,197,94,0.25)] h-11"
+                    >
+                      <Link href="/register" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Get Started
+                      </Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </SheetContent>
