@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Block authenticated/private areas from crawlers
+Disallow: /dashboard/
+Disallow: /startup/
+Disallow: /regulator/
+Disallow: /admin/
+Disallow: /settings/
+Disallow: /support/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://sheriabot.com/sitemap.xml

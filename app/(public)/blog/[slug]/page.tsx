@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+import { BlogPostJsonLd } from '@/components/seo/blog-post-json-ld'
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -93,8 +95,61 @@ const allPosts = [
   { slug: "mpesa-integration-compliance-checklist", title: "M-Pesa Integration Compliance Checklist", category: "Compliance Tips" },
 ]
 
+const BASE_URL = 'https://sheriabot.com'
+
 interface PageProps {
   params: Promise<{ slug: string }>
+}
+
+// ── Dynamic metadata for each blog post ───────────────────────────────────────
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const post = blogPosts[slug]
+
+  if (!post) {
+    return {
+      title: 'Article Not Found',
+      description: 'The article you are looking for does not exist.',
+    }
+  }
+
+  const url = `${BASE_URL}/blog/${slug}`
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      type: 'article',
+      url,
+      title: post.title,
+      description: post.excerpt,
+      publishedTime: new Date(post.date).toISOString(),
+      authors: [post.author],
+      tags: [post.category, 'Kenya fintech', 'compliance'],
+      images: [
+        {
+          url: '/og-image.png',
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt,
+      images: ['/og-image.png'],
+    },
+  }
+}
+
+// ── Static params for build-time pre-rendering ────────────────────────────────
+export function generateStaticParams() {
+  return Object.keys(blogPosts).map((slug) => ({ slug }))
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
@@ -122,6 +177,17 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col">
+      {/* Per-post structured data */}
+      <BlogPostJsonLd
+        slug={slug}
+        title={post.title}
+        excerpt={post.excerpt}
+        author={post.author}
+        authorRole={post.authorRole}
+        datePublished={post.date}
+        readTime={post.readTime}
+      />
+
       {/* Header */}
       <section className="border-b border-border py-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
