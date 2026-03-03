@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, Eye, EyeOff, Building2, Rocket, Scale, AlertCircle, CheckCircle2 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { LegalDocumentModal, type LegalDocumentType } from "@/components/legal/legal-document-modal"
 
 const ROLE_MAP = {
   startup: "STARTUP",
@@ -32,6 +33,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [openLegalDoc, setOpenLegalDoc] = useState<LegalDocumentType | null>(null)
   const [formData, setFormData] = useState({
     organizationType: "" as "" | "startup" | "enterprise" | "regulator",
     companyName: "",
@@ -256,9 +258,21 @@ export default function RegisterPage() {
                 />
                 <Label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer leading-relaxed">
                   I agree to the{" "}
-                  <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
+                  <button
+                    type="button"
+                    onClick={() => setOpenLegalDoc("terms")}
+                    className="font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded-sm"
+                  >
+                    Terms of Service
+                  </button>
                   {" "}and{" "}
-                  <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                  <button
+                    type="button"
+                    onClick={() => setOpenLegalDoc("privacy")}
+                    className="font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded-sm"
+                  >
+                    Privacy Policy
+                  </button>
                 </Label>
               </div>
 
@@ -297,6 +311,14 @@ export default function RegisterPage() {
           </Link>
         </p>
       </CardContent>
+
+      {/* Legal document overlays */}
+      <LegalDocumentModal
+        open={openLegalDoc !== null}
+        onOpenChange={(open) => !open && setOpenLegalDoc(null)}
+        type={openLegalDoc ?? "terms"}
+        onAccept={() => setFormData((prev) => ({ ...prev, agreeTerms: true }))}
+      />
     </Card>
   )
 }
