@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, Eye, EyeOff, Building2, Rocket, Scale, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Loader2, Eye, EyeOff, Building2, Rocket, Scale, AlertCircle, CheckCircle2, Info } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { LegalDocumentModal, type LegalDocumentType } from "@/components/legal/legal-document-modal"
 
@@ -25,6 +25,18 @@ const organizationTypes = [
   { id: "enterprise" as const, label: "Financial Institution", description: "Bank, SACCO, microfinance", icon: Building2 },
   { id: "regulator" as const, label: "Regulator", description: "CBK, CMA, or government agency", icon: Scale },
 ]
+
+// Domains that are not accepted for organizational accounts
+const FREE_EMAIL_DOMAINS = new Set([
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "aol.com",
+  "icloud.com", "mail.com", "protonmail.com", "zoho.com", "yandex.com",
+  "gmx.com", "live.com", "msn.com", "yahoo.co.ke", "yahoo.co.uk", "googlemail.com",
+])
+
+function isFreeEmailDomain(email: string): boolean {
+  const domain = email.split("@")[1]?.toLowerCase()
+  return domain ? FREE_EMAIL_DOMAINS.has(domain) : false
+}
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -41,8 +53,15 @@ export default function RegisterPage() {
     lastName: "",
     email: "",
     password: "",
+    cbkLicenseNumber: "",
     agreeTerms: false,
   })
+
+  // Client-side free email domain check (only for non-regulator)
+  const showFreeEmailWarning =
+    formData.organizationType !== "regulator" &&
+    formData.email.includes("@") &&
+    isFreeEmailDomain(formData.email)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,6 +73,12 @@ export default function RegisterPage() {
     }
 
     if (!formData.organizationType) return
+
+    // Block free email domains client-side (non-regulator only)
+    if (formData.organizationType !== "regulator" && isFreeEmailDomain(formData.email)) {
+      setError("Please use your business email address. Free email providers are not accepted for organizational accounts.")
+      return
+    }
 
     try {
       await register({
@@ -211,17 +236,49 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground">Work Email</Label>
+                <Label htmlFor="email" className="text-foreground">
+                  {formData.organizationType === "regulator" ? "Official Institutional Email" : "Work Email"}
+                </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="name@company.com"
+                  placeholder={formData.organizationType === "regulator" ? "name@cbk.go.ke" : "name@company.com"}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
-                  className="bg-background"
+                  className={`bg-background ${showFreeEmailWarning ? "border-yellow-500 focus-visible:ring-yellow-500" : ""}`}
                 />
+                {showFreeEmailWarning && (
+                  <div className="flex items-start gap-2 rounded-md border border-yellow-500/50 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-700 dark:text-yellow-400">
+                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>Please use your business email. Free email providers (Gmail, Yahoo, etc.) are not accepted for organizational accounts.</span>
+                  </div>
+                )}
+                {formData.organizationType === "regulator" && (
+                  <p className="text-xs text-muted-foreground">
+                    Regulator accounts require an official government email address (e.g., @cbk.go.ke, @cma.or.ke).
+                  </p>
+                )}
               </div>
+
+              {/* CBK License Number — only shown for regulators */}
+              {formData.organizationType === "regulator" && (
+                <div className="space-y-2">
+                  <Label htmlFor="cbkLicenseNumber" className="text-foreground">
+                    CBK License Number <span className="text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    id="cbkLicenseNumber"
+                    placeholder="e.g. CBK/MFC/001"
+                    value={formData.cbkLicenseNumber}
+                    onChange={(e) => setFormData({ ...formData, cbkLicenseNumber: e.target.value })}
+                    className="bg-background"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    If applicable, provide your CBK license or regulatory reference number.
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-foreground">Password</Label>
@@ -288,7 +345,7 @@ export default function RegisterPage() {
                 <Button
                   type="submit"
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={isRegisterLoading || !formData.agreeTerms}
+                  disabled={isRegisterLoading || !formData.agreeTerms || showFreeEmailWarning}
                 >
                   {isRegisterLoading ? (
                     <>

@@ -1,86 +1,103 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { Suspense, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Scale, Mail, CheckCircle2, Loader2, RefreshCw, ArrowRight } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Scale, Mail, CheckCircle2, Loader2, Clock, ArrowRight } from "lucide-react"
+import { trpc, getErrorMessage } from "@/lib/trpc"
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter()
-  const [isVerifying, setIsVerifying] = useState(true)
-  const [isVerified, setIsVerified] = useState(false)
-  const [isResending, setIsResending] = useState(false)
-  const [countdown, setCountdown] = useState(0)
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token")
 
-  // Simulate verification check
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVerifying(false)
-      // Simulate that email is not yet verified
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [])
+  const verifyMutation = trpc.auth.verifyEmail.useMutation()
 
-  // Countdown timer for resend
+  // Auto-verify when token is present in URL
   useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
-      return () => clearTimeout(timer)
+    if (token && !verifyMutation.isSuccess && !verifyMutation.isError && !verifyMutation.isPending) {
+      verifyMutation.mutate({ token })
     }
-  }, [countdown])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
 
-  const handleResend = async () => {
-    setIsResending(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsResending(false)
-    setCountdown(60)
+  // ── With token: verification flow ──
+
+  if (token) {
+    if (verifyMutation.isPending || (!verifyMutation.isSuccess && !verifyMutation.isError)) {
+      return (
+        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Verifying your email...</p>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    if (verifyMutation.isError) {
+      return (
+        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Verification Failed</CardTitle>
+            <CardDescription>
+              {getErrorMessage(verifyMutation.error)}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert variant="destructive">
+              <AlertDescription>
+                The verification link may have expired or already been used. Please request a new one by logging in and visiting your account settings.
+              </AlertDescription>
+            </Alert>
+            <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+              <Link href="/login">Back to Login</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    if (verifyMutation.isSuccess) {
+      const requiresApproval = verifyMutation.data.requiresApproval
+
+      return (
+        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <CardHeader className="text-center">
+            <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${requiresApproval ? "bg-yellow-500/10" : "bg-secondary/10"}`}>
+              {requiresApproval ? (
+                <Clock className="h-8 w-8 text-yellow-500" />
+              ) : (
+                <CheckCircle2 className="h-8 w-8 text-secondary" />
+              )}
+            </div>
+            <CardTitle className="mt-4 text-2xl">
+              {requiresApproval ? "Email Verified — Pending Approval" : "Email Verified!"}
+            </CardTitle>
+            <CardDescription>
+              {requiresApproval
+                ? "Your email has been verified. Your regulator account is pending admin approval. You will receive an email once approved."
+                : "Your email has been successfully verified. You can now access all features."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => router.push(requiresApproval ? "/login" : "/startup")}
+            >
+              {requiresApproval ? "Back to Login" : "Go to Dashboard"}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
+      )
+    }
   }
 
-  const handleSimulateVerify = async () => {
-    setIsVerifying(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsVerified(true)
-    setIsVerifying(false)
-  }
-
-  if (isVerifying) {
-    return (
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="mt-4 text-muted-foreground">Verifying your email...</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (isVerified) {
-    return (
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
-        <CardHeader className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary/10">
-            <CheckCircle2 className="h-8 w-8 text-secondary" />
-          </div>
-          <CardTitle className="mt-4 text-2xl">Email Verified!</CardTitle>
-          <CardDescription>
-            Your email has been successfully verified. You can now access all features.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button 
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={() => router.push("/startup")}
-          >
-            Go to Dashboard
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
+  // ── No token: "check your email" state ──
 
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur">
@@ -96,74 +113,48 @@ export default function VerifyEmailPage() {
         </div>
         <CardTitle className="mt-4 text-2xl">Verify Your Email</CardTitle>
         <CardDescription>
-          We&apos;ve sent a verification link to your email address. 
+          We&apos;ve sent a verification link to your email address.
           Please check your inbox and click the link to verify your account.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
           <p className="text-center text-sm text-muted-foreground">
-            Didn&apos;t receive the email? Check your spam folder or click below to resend.
+            Didn&apos;t receive the email? Check your spam folder. If you still need help,{" "}
+            <Link href="/support" className="text-primary hover:underline">contact support</Link>.
           </p>
         </div>
-
-        <Button 
-          variant="outline" 
-          className="w-full bg-transparent"
-          onClick={handleResend}
-          disabled={isResending || countdown > 0}
-        >
-          {isResending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
-            </>
-          ) : countdown > 0 ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Resend in {countdown}s
-            </>
-          ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Resend Verification Email
-            </>
-          )}
-        </Button>
-
-        {/* Demo button - in production this would be triggered by email link */}
-        <Button 
-          className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
-          onClick={handleSimulateVerify}
-        >
-          <CheckCircle2 className="mr-2 h-4 w-4" />
-          Simulate Email Verification
-        </Button>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">Need help?</span>
+            <span className="bg-card px-2 text-muted-foreground">or</span>
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 text-center text-sm">
-          <Link 
-            href="/support" 
-            className="text-primary hover:underline"
-          >
-            Contact Support
-          </Link>
-          <Link 
-            href="/login" 
-            className="text-muted-foreground hover:text-foreground"
-          >
-            Back to Login
-          </Link>
-        </div>
+        <Button variant="ghost" asChild className="w-full">
+          <Link href="/login">Back to Login</Link>
+        </Button>
       </CardContent>
     </Card>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Loading...</p>
+          </CardContent>
+        </Card>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
   )
 }

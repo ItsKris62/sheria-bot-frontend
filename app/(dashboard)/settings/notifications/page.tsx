@@ -4,13 +4,20 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Bell, Mail, MessageSquare, AlertTriangle, FileText, Calendar, Save, Loader2 } from "lucide-react"
+import { Bell, Mail, MessageSquare, AlertTriangle, FileText, Calendar, Save, Loader2, CreditCard, ClipboardCheck, BookOpen, Upload } from "lucide-react"
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/hooks/use-notifications"
+import { trpc } from "@/lib/trpc"
 import { toast } from "@/hooks/use-toast"
 
 export default function NotificationSettingsPage() {
   const { data: prefs, isLoading } = useNotificationPreferences()
   const updateMutation = useUpdateNotificationPreferences()
+
+  // Email-specific notification preferences (DB-backed)
+  const { data: emailPrefs, isLoading: emailPrefsLoading } = trpc.user.getNotificationPreferences.useQuery()
+  const updateEmailPrefsMutation = trpc.user.updateNotificationPreferences.useMutation({
+    onSuccess: () => toast({ title: "Email preferences saved" }),
+  })
 
   const p = prefs as any
 
@@ -19,6 +26,10 @@ export default function NotificationSettingsPage() {
       { [field]: value } as any,
       { onSuccess: () => toast({ title: "Preferences saved" }) }
     )
+  }
+
+  function toggleEmailPref(field: string, value: boolean) {
+    updateEmailPrefsMutation.mutate({ [field]: value } as any)
   }
 
   return (
@@ -64,6 +75,74 @@ export default function NotificationSettingsPage() {
                         checked={p?.emailEnabled ?? true}
                         disabled={updateMutation.isPending}
                         onCheckedChange={(v) => toggle(item.field, v)}
+                      />
+                    </div>
+                  )
+                })}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Specific Email Notifications (DB-backed toggles) */}
+        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5 text-primary" />Specific Email Alerts</CardTitle>
+            <CardDescription>Control which activity-triggered emails you receive</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {emailPrefsLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                  <Skeleton className="h-5 w-48" /><Skeleton className="h-6 w-10 rounded-full" />
+                </div>
+              ))
+            ) : (
+              <>
+                {[
+                  {
+                    icon: CreditCard,
+                    title: "Payment Due Reminders",
+                    desc: "Receive reminders before your subscription payment is due",
+                    field: "paymentDueReminder",
+                    value: emailPrefs?.paymentDueReminder ?? true,
+                  },
+                  {
+                    icon: ClipboardCheck,
+                    title: "Compliance Query Ready",
+                    desc: "Get notified when your compliance query results are available",
+                    field: "complianceQueryReady",
+                    value: emailPrefs?.complianceQueryReady ?? true,
+                  },
+                  {
+                    icon: BookOpen,
+                    title: "Policy Document Ready",
+                    desc: "Get notified when a generated policy document is ready",
+                    field: "policyDocumentReady",
+                    value: emailPrefs?.policyDocumentReady ?? true,
+                  },
+                  {
+                    icon: Upload,
+                    title: "Document Ingestion Complete",
+                    desc: "Get notified when a document you uploaded has been processed",
+                    field: "documentIngestionComplete",
+                    value: emailPrefs?.documentIngestionComplete ?? true,
+                  },
+                ].map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <div key={item.field} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Icon className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-medium text-foreground">{item.title}</p>
+                          <p className="text-sm text-muted-foreground">{item.desc}</p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={item.value}
+                        disabled={updateEmailPrefsMutation.isPending}
+                        onCheckedChange={(v) => toggleEmailPref(item.field, v)}
                       />
                     </div>
                   )

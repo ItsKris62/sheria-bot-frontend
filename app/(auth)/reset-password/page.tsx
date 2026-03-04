@@ -1,26 +1,28 @@
 "use client"
 
-import React from "react"
-
+import React, { Suspense } from "react"
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Scale, Eye, EyeOff, CheckCircle2, Loader2, ArrowRight } from "lucide-react"
+import { Scale, Eye, EyeOff, CheckCircle2, Loader2, ArrowRight, AlertCircle } from "lucide-react"
+import { trpc, getErrorMessage } from "@/lib/trpc"
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token") ?? ""
+
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isReset, setIsReset] = useState(false)
-  const [error, setError] = useState("")
+
+  const resetMutation = trpc.auth.resetPassword.useMutation()
 
   const passwordRequirements = [
     { met: password.length >= 8, text: "At least 8 characters" },
@@ -33,29 +35,29 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError("")
-
-    if (!allRequirementsMet) {
-      setError("Please meet all password requirements")
-      setIsLoading(false)
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
-      return
-    }
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    setIsReset(true)
-    setIsLoading(false)
+    if (!allRequirementsMet || password !== confirmPassword || !token) return
+    resetMutation.mutate({ token, newPassword: password })
   }
 
-  if (isReset) {
+  if (!token) {
+    return (
+      <Card className="border-border/50 bg-card/50 backdrop-blur">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Invalid Reset Link</CardTitle>
+          <CardDescription>
+            This password reset link is invalid or missing a token. Please request a new one.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+            <Link href="/forgot-password">Request New Link</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (resetMutation.isSuccess) {
     return (
       <Card className="border-border/50 bg-card/50 backdrop-blur">
         <CardHeader className="text-center">
@@ -68,7 +70,7 @@ export default function ResetPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
+          <Button
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => router.push("/login")}
           >
@@ -90,15 +92,14 @@ export default function ResetPasswordPage() {
           <span className="text-xl font-bold text-foreground">SheriaBot</span>
         </Link>
         <CardTitle className="text-2xl">Reset Password</CardTitle>
-        <CardDescription>
-          Enter your new password below.
-        </CardDescription>
+        <CardDescription>Enter your new password below.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
+          {resetMutation.isError && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{getErrorMessage(resetMutation.error)}</AlertDescription>
             </Alert>
           )}
 
@@ -124,7 +125,6 @@ export default function ResetPasswordPage() {
             </div>
           </div>
 
-          {/* Password Requirements */}
           <div className="space-y-2 rounded-lg border border-border/50 bg-muted/30 p-3">
             <p className="text-xs font-medium text-muted-foreground">Password Requirements</p>
             <div className="grid grid-cols-2 gap-2">
@@ -164,12 +164,12 @@ export default function ResetPasswordPage() {
             )}
           </div>
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            disabled={isLoading || !allRequirementsMet}
+            disabled={resetMutation.isPending || !allRequirementsMet || password !== confirmPassword}
           >
-            {isLoading ? (
+            {resetMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Resetting...
@@ -181,5 +181,22 @@ export default function ResetPasswordPage() {
         </form>
       </CardContent>
     </Card>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Loading...</p>
+          </CardContent>
+        </Card>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   )
 }

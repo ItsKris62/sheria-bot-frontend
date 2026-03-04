@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,32 +9,19 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Scale, ArrowLeft, Mail, CheckCircle2, Loader2 } from "lucide-react"
+import { trpc, getErrorMessage } from "@/lib/trpc"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [error, setError] = useState("")
+
+  const resetMutation = trpc.auth.requestPasswordReset.useMutation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError("")
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    if (!email.includes("@")) {
-      setError("Please enter a valid email address")
-      setIsLoading(false)
-      return
-    }
-
-    setIsSubmitted(true)
-    setIsLoading(false)
+    resetMutation.mutate({ email })
   }
 
-  if (isSubmitted) {
+  if (resetMutation.isSuccess) {
     return (
       <Card className="border-border/50 bg-card/50 backdrop-blur">
         <CardHeader className="text-center">
@@ -52,9 +38,9 @@ export default function ForgotPasswordPage() {
             Didn&apos;t receive the email? Check your spam folder or request a new link.
           </p>
           <div className="flex flex-col gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsSubmitted(false)}
+            <Button
+              variant="outline"
+              onClick={() => resetMutation.reset()}
               className="w-full bg-transparent"
             >
               <Mail className="mr-2 h-4 w-4" />
@@ -88,9 +74,9 @@ export default function ForgotPasswordPage() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
+          {resetMutation.isError && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{getErrorMessage(resetMutation.error)}</AlertDescription>
             </Alert>
           )}
 
@@ -107,12 +93,12 @@ export default function ForgotPasswordPage() {
             />
           </div>
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            disabled={isLoading}
+            disabled={resetMutation.isPending}
           >
-            {isLoading ? (
+            {resetMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Sending...
