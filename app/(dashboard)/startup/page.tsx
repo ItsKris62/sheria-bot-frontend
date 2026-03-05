@@ -1,11 +1,14 @@
 "use client"
 
 import { useAuthStore } from "@/lib/auth-store"
+import { trpc } from "@/lib/trpc"
+import { getComplianceScoreTheme } from "@/lib/utils/compliance"
+import type { ComplianceScoreIcon } from "@/lib/utils/compliance"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Search,
   ClipboardCheck,
@@ -13,24 +16,19 @@ import {
   Calendar,
   ArrowRight,
   CheckCircle2,
-  Clock,
   AlertCircle,
   TrendingUp,
+  TrendingDown,
+  Minus,
   FileText,
   Bell,
-  Shield,
+  ShieldCheck,
+  Info,
 } from "lucide-react"
 
-const complianceStatus = {
-  overall: 78,
-  categories: [
-    { name: "Data Protection", score: 92, status: "compliant" },
-    { name: "AML/KYC", score: 85, status: "compliant" },
-    { name: "Consumer Protection", score: 68, status: "attention" },
-    { name: "CBK Licensing", score: 100, status: "compliant" },
-    { name: "Cybersecurity", score: 45, status: "critical" },
-  ],
-}
+// -------------------------------------------------------------------------
+// Static fixtures (non-compliance sections — no backend change needed yet)
+// -------------------------------------------------------------------------
 
 const upcomingDeadlines = [
   {
@@ -101,35 +99,90 @@ const recentQueries = [
   },
 ]
 
+// -------------------------------------------------------------------------
+// Score icon helper
+// -------------------------------------------------------------------------
+
+function ScoreIcon({
+  icon,
+  color,
+  className = "h-5 w-5",
+}: {
+  icon: ComplianceScoreIcon
+  color: string
+  className?: string
+}) {
+  const props = { className, style: { color } }
+  switch (icon) {
+    case "shield-check":   return <ShieldCheck {...props} />
+    case "check-circle":   return <CheckCircle2 {...props} />
+    case "info":           return <Info {...props} />
+    case "alert-circle":   return <AlertCircle {...props} />
+    case "alert-triangle":
+    default:               return <AlertTriangle {...props} />
+  }
+}
+
+// -------------------------------------------------------------------------
+// Skeleton while compliance data loads
+// -------------------------------------------------------------------------
+
+function ComplianceScoreSkeleton() {
+  return (
+    <Card className="border-border/50 bg-card">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-56" />
+          </div>
+          <div className="space-y-2 text-right">
+            <Skeleton className="h-10 w-20 ml-auto" />
+            <Skeleton className="h-6 w-28 ml-auto" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="rounded-lg p-4 bg-muted/30">
+              <div className="flex items-center justify-between mb-2">
+                <Skeleton className="h-8 w-14" />
+                <Skeleton className="h-5 w-5 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-28 mb-2" />
+              <Skeleton className="h-1 w-full rounded-full" />
+              <Skeleton className="h-3 w-20 mt-1.5" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// -------------------------------------------------------------------------
+// Main dashboard component
+// -------------------------------------------------------------------------
+
 export default function StartupDashboard() {
   const user = useAuthStore((state) => state.user)
   const displayName = user?.name?.split(" ")[0] ?? "there"
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "compliant":
-        return "text-secondary"
-      case "attention":
-        return "text-warning"
-      case "critical":
-        return "text-destructive"
-      default:
-        return "text-muted-foreground"
-    }
-  }
+  const {
+    data: dashboardData,
+    isLoading: isDashboardLoading,
+    error: dashboardError,
+  } = trpc.compliance.getComplianceDashboard.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  })
 
-  const getStatusBg = (status: string) => {
-    switch (status) {
-      case "compliant":
-        return "bg-secondary/10"
-      case "attention":
-        return "bg-warning/10"
-      case "critical":
-        return "bg-destructive/10"
-      default:
-        return "bg-muted"
-    }
-  }
+  const overallTheme = dashboardData
+    ? getComplianceScoreTheme(dashboardData.overallScore)
+    : null
+
+  const trend = dashboardData?.trend ?? 0
 
   return (
     <div className="flex flex-col gap-6">
@@ -148,48 +201,100 @@ export default function StartupDashboard() {
       </div>
 
       {/* Compliance Overview */}
-      <Card className="border-border/50 bg-card">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-foreground">Compliance Score</CardTitle>
-              <CardDescription>Overall regulatory compliance status</CardDescription>
-            </div>
-            <div className="text-right">
-              <p className="text-4xl font-bold text-foreground">{complianceStatus.overall}%</p>
-              <Badge variant="outline" className="mt-1 border-secondary/50 text-secondary">
-                <TrendingUp className="mr-1 h-3 w-3" />
-                +5% this month
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {complianceStatus.categories.map((category) => (
-              <div
-                key={category.name}
-                className={`rounded-lg p-4 ${getStatusBg(category.status)}`}
-              >
-                <div className="flex items-center justify-between">
-                  <p className={`text-2xl font-bold ${getStatusColor(category.status)}`}>
-                    {category.score}%
-                  </p>
-                  {category.status === "compliant" ? (
-                    <CheckCircle2 className="h-5 w-5 text-secondary" />
-                  ) : category.status === "attention" ? (
-                    <AlertCircle className="h-5 w-5 text-warning" />
-                  ) : (
-                    <AlertTriangle className="h-5 w-5 text-destructive" />
-                  )}
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">{category.name}</p>
-                <Progress value={category.score} className="mt-2 h-1" />
+      {isDashboardLoading ? (
+        <ComplianceScoreSkeleton />
+      ) : dashboardError ? (
+        <Card className="border-destructive/50 bg-card">
+          <CardContent className="py-8 text-center">
+            <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-3" />
+            <p className="font-medium text-foreground">Failed to load compliance scores</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {dashboardError.message ?? "Please try refreshing the page."}
+            </p>
+          </CardContent>
+        </Card>
+      ) : dashboardData ? (
+        <Card className="border-border/50 bg-card">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-foreground">Compliance Score</CardTitle>
+                <CardDescription>Overall regulatory compliance status</CardDescription>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="text-right">
+                <p
+                  className="text-4xl font-bold"
+                  style={{ color: overallTheme?.color }}
+                >
+                  {dashboardData.overallScore}%
+                </p>
+                <Badge
+                  variant="outline"
+                  className={`mt-1 ${
+                    trend > 0
+                      ? "border-green-500/50 text-green-500"
+                      : trend < 0
+                      ? "border-red-500/50 text-red-500"
+                      : "border-muted-foreground/50 text-muted-foreground"
+                  }`}
+                >
+                  {trend > 0 ? (
+                    <TrendingUp className="mr-1 h-3 w-3" />
+                  ) : trend < 0 ? (
+                    <TrendingDown className="mr-1 h-3 w-3" />
+                  ) : (
+                    <Minus className="mr-1 h-3 w-3" />
+                  )}
+                  {trend > 0 ? `+${trend}%` : trend < 0 ? `${trend}%` : "No change"} this month
+                </Badge>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {dashboardData.categories.map((category: {
+                key: string;
+                label: string;
+                score: number;
+                completedItems: number;
+                totalItems: number;
+              }) => {
+                const theme = getComplianceScoreTheme(category.score)
+                return (
+                  <div
+                    key={category.key}
+                    className={`rounded-lg p-4 ${theme.tailwindBgMuted}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p
+                        className="text-2xl font-bold"
+                        style={{ color: theme.color }}
+                      >
+                        {category.score}%
+                      </p>
+                      <ScoreIcon icon={theme.icon} color={theme.color} />
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{category.label}</p>
+                    {/* Custom progress bar — color driven by score threshold */}
+                    <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-muted/40">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${category.score}%`,
+                          backgroundColor: theme.color,
+                        }}
+                      />
+                    </div>
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      {category.completedItems}/{category.totalItems} items
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -280,7 +385,7 @@ export default function StartupDashboard() {
                     <p className="mt-2 text-xs text-muted-foreground">{alert.date}</p>
                   </div>
                   <Badge variant={
-                    alert.impact === "high" ? "destructive" : 
+                    alert.impact === "high" ? "destructive" :
                     alert.impact === "medium" ? "secondary" : "outline"
                   }>
                     {alert.impact} impact
