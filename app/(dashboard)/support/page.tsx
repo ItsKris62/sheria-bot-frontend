@@ -4,6 +4,7 @@ import React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -116,6 +117,15 @@ export default function SupportPage() {
     <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="text-center">
+        <div className="flex justify-center mb-4">
+          <Image
+            src="/hero-logo.png"
+            alt="SheriaBot"
+            width={48}
+            height={48}
+            className="h-12 w-12 object-contain"
+          />
+        </div>
         <h1 className="text-3xl font-bold text-foreground">How can we help?</h1>
         <p className="mt-2 text-muted-foreground">
           Get support, browse resources, or contact our team

@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import Image from "next/image"
 import {
-  Scale,
   User,
   Building2,
   Shield,
@@ -45,11 +45,18 @@ export default function SettingsLayout({
               <span className="sr-only">Back to Dashboard</span>
             </Link>
           </Button>
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Scale className="h-4 w-4 text-primary-foreground" />
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image
+              src="/hero-logo.png"
+              alt="SheriaBot"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+            />
+            <div className="flex flex-col leading-none">
+              <span className="font-bold text-foreground tracking-tight">SheriaBot</span>
+              <span className="text-[9px] text-primary/80 font-semibold tracking-[0.15em] uppercase mt-0.5">Settings</span>
             </div>
-            <span className="font-bold text-foreground">Settings</span>
           </Link>
         </div>
       </header>
