@@ -59,7 +59,7 @@ export const metadata: Metadata = {
       "Navigate Kenya's fintech regulatory landscape with AI-powered compliance intelligence. Generate policies, track regulations, and ensure compliance.",
     images: [
       {
-        url: '/og-image.png',      // place a 1200×630px image at /public/og-image.png
+        url: '/open-graph-logo.png',
         width: 1200,
         height: 630,
         alt: 'SheriaBot — AI Compliance Intelligence for Kenya Fintech',
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     title: 'SheriaBot — AI-Powered Regulatory Intelligence for Kenya Fintech',
     description:
       "Navigate Kenya's fintech regulatory landscape with AI-powered compliance intelligence.",
-    images: ['/og-image.png'],
+    images: ['/twitter-header-logo.png'],
     // creator: '@sheriabot',   // uncomment when you have a Twitter handle
     // site: '@sheriabot',
   },
@@ -93,9 +93,13 @@ export const metadata: Metadata = {
 
   // ── Icons ─────────────────────────────────────────────────────────────────
   icons: {
-    icon: '/transparent-logo.svg',
-    shortcut: '/transparent-logo.svg',
-    apple: '/transparent-logo.png',
+    icon: [
+      { url: '/favicon-logo.png' },
+      { url: '/android-chrome-icon-logo.png', sizes: '192x192', type: 'image/png' },
+      { url: '/android-chrome-icon-logo.png', sizes: '512x512', type: 'image/png' },
+    ],
+    shortcut: '/favicon-logo.png',
+    apple: '/apple-touch-icon-logo.png',
   },
 }
 

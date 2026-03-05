@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Scale, Github, Twitter, Linkedin } from "lucide-react"
+import Image from "next/image"
+import { Github, Twitter, Linkedin } from "lucide-react"
 
 const footerLinks = {
   product: [
@@ -43,15 +44,14 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
           {/* Brand Column */}
           <div className="col-span-2 lg:col-span-1">
-            <Link href="/" className="group inline-flex items-center gap-3 transition-all duration-300 hover:scale-105">
-              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/30 transition-all duration-300 group-hover:shadow-primary/50">
-                <Scale className="h-5 w-5 text-primary-foreground" />
-                <div className="absolute inset-0 rounded-xl bg-primary/50 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-lg font-bold text-foreground tracking-tight">SheriaBot</span>
-                <span className="text-[10px] text-primary font-medium -mt-0.5 tracking-wider uppercase">Kenya Fintech</span>
-              </div>
+            <Link href="/" className="group inline-flex items-center transition-all duration-300 hover:scale-105 hover:opacity-90">
+              <Image
+                src="/footer-logo.png"
+                alt="SheriaBot"
+                width={160}
+                height={48}
+                className="h-12 w-auto object-contain"
+              />
             </Link>
             <p className="mt-6 text-sm text-muted-foreground leading-relaxed max-w-xs">
               AI-powered regulatory intelligence for Kenya&apos;s fintech sector. Navigate compliance with confidence.

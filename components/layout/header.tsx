@@ -9,7 +9,8 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { Scale, Menu, ChevronDown, Sparkles } from "lucide-react"
+import { Menu, ChevronDown, Sparkles } from "lucide-react"
+import Image from "next/image"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -143,14 +144,14 @@ export function Header() {
           href="/"
           className="group flex items-center gap-2.5 transition-all duration-300 hover:opacity-90"
         >
-          <div className={cn(
-            "relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-500",
-            scrolled
-              ? "bg-primary shadow-[0_0_20px_rgba(34,197,94,0.3)]"
-              : "bg-primary/80"
-          )}>
-            <Scale className="h-4.5 w-4.5 text-primary-foreground transition-transform duration-500 group-hover:rotate-[-8deg] group-hover:scale-110" />
-          </div>
+          <Image
+            src="/hero-logo.png"
+            alt="SheriaBot"
+            width={36}
+            height={36}
+            className="h-9 w-9 object-contain"
+            priority
+          />
           <div className="flex flex-col leading-none">
             <span className="text-base font-bold text-foreground tracking-tight">SheriaBot</span>
             <span className="text-[9px] text-primary/80 font-semibold tracking-[0.15em] uppercase mt-0.5">Kenya Fintech</span>
@@ -290,9 +291,13 @@ export function Header() {
             <div className="flex flex-col gap-8 pt-8">
               {/* Mobile Logo */}
               <Link href="/" className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-[0_0_20px_rgba(34,197,94,0.3)]">
-                  <Scale className="h-4.5 w-4.5 text-primary-foreground" />
-                </div>
+                <Image
+                  src="/hero-logo.png"
+                  alt="SheriaBot"
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 object-contain"
+                />
                 <span className="text-base font-bold text-foreground">SheriaBot</span>
               </Link>
 

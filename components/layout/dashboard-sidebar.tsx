@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import Image from "next/image"
 import {
-  Scale,
   LayoutDashboard,
   FileText,
   BookOpen,
@@ -111,11 +111,15 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
       {/* Logo */}
       <div className="flex h-16 items-center justify-between border-b border-border/50 px-4">
         {!collapsed && (
-          <Link href="/" className="group flex items-center gap-3 transition-all duration-300 hover:scale-105">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/30 transition-all duration-300 group-hover:shadow-primary/50">
-              <Scale className="h-4 w-4 text-primary-foreground" />
-              <div className="absolute inset-0 rounded-xl bg-primary/50 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </div>
+          <Link href="/" className="group flex items-center gap-3 transition-all duration-300 hover:scale-105 hover:opacity-90">
+            <Image
+              src="/hero-logo.png"
+              alt="SheriaBot"
+              width={36}
+              height={36}
+              className="h-9 w-9 object-contain"
+              priority
+            />
             <div className="flex flex-col">
               <span className="font-bold text-foreground tracking-tight">SheriaBot</span>
               <span className="text-[10px] text-primary font-medium -mt-0.5 tracking-wider uppercase">Dashboard</span>
@@ -124,9 +128,13 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
         )}
         {collapsed && (
           <Link href="/" className="group mx-auto">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/30 transition-all duration-300 group-hover:shadow-primary/50 group-hover:scale-110">
-              <Scale className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <Image
+              src="/hero-logo.png"
+              alt="SheriaBot"
+              width={36}
+              height={36}
+              className="h-9 w-9 object-contain transition-all duration-300 group-hover:scale-110 group-hover:opacity-90"
+            />
           </Link>
         )}
       </div>
