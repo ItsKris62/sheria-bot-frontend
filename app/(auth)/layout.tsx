@@ -2,7 +2,7 @@
 
 import React from "react"
 import Link from "next/link"
-import { Scale } from "lucide-react"
+import Image from "next/image"
 import { GuestGuard } from "@/components/auth-guard"
 
 export default function AuthLayout({
@@ -15,11 +15,18 @@ export default function AuthLayout({
       <div className="flex min-h-screen">
         {/* Left Panel - Branding */}
         <div className="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between bg-card border-r border-border p-12">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <Scale className="h-6 w-6 text-primary-foreground" />
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image
+              src="/hero-logo.png"
+              alt="SheriaBot"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-contain"
+            />
+            <div className="flex flex-col leading-none">
+              <span className="text-2xl font-bold text-foreground tracking-tight">SheriaBot</span>
+              <span className="text-[10px] text-primary/80 font-semibold tracking-[0.15em] uppercase mt-0.5">Kenya Fintech</span>
             </div>
-            <span className="text-2xl font-bold text-foreground">SheriaBot</span>
           </Link>
 
           <div className="max-w-md">
@@ -42,11 +49,18 @@ export default function AuthLayout({
         {/* Right Panel - Auth Form */}
         <div className="flex flex-1 flex-col">
           <div className="flex h-16 items-center justify-between px-6 lg:hidden border-b border-border">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <Scale className="h-5 w-5 text-primary-foreground" />
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image
+                src="/hero-logo.png"
+                alt="SheriaBot"
+                width={36}
+                height={36}
+                className="h-9 w-9 object-contain"
+              />
+              <div className="flex flex-col leading-none">
+                <span className="text-xl font-bold text-foreground tracking-tight">SheriaBot</span>
+                <span className="text-[9px] text-primary/80 font-semibold tracking-[0.15em] uppercase mt-0.5">Kenya Fintech</span>
               </div>
-              <span className="text-xl font-bold text-foreground">SheriaBot</span>
             </Link>
           </div>
           <div className="flex flex-1 items-center justify-center p-6">
