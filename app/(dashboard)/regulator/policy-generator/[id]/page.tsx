@@ -18,6 +18,7 @@ import {
   ExternalLink,
   Printer,
 } from "lucide-react"
+import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
 
 const policyData = {
   id: "pol-001",
@@ -186,11 +187,12 @@ export default function PolicyViewerPage() {
               </TabsList>
               <TabsContent value="preview" className="space-y-6">
                 {policyData.sections.map((section, index) => (
-                  <div key={index}>
-                    <h3 className="mb-3 text-lg font-semibold text-foreground">{section.title}</h3>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-                      {section.content}
-                    </div>
+                  <div key={index} className="space-y-3">
+                    <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                      <span className="w-1 h-4 rounded-full bg-primary inline-block shrink-0" />
+                      {section.title}
+                    </h3>
+                    <ComplianceFeedback content={section.content} variant="report" />
                   </div>
                 ))}
               </TabsContent>

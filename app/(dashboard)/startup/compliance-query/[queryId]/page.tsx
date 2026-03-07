@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   ExternalLink,
 } from "lucide-react"
+import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
 
 const mockQuery = {
   id: "Q-2024-001",
@@ -146,9 +147,11 @@ export default function QueryDetailPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-invert prose-sm max-w-none">
-                <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed">{mockQuery.answer}</div>
-              </div>
+              <ComplianceFeedback
+                content={mockQuery.answer}
+                variant="report"
+                collapsible
+              />
 
               <Separator className="my-6" />
 

@@ -1,8 +1,6 @@
 "use client"
 
-import React from "react"
-
-import { useState } from "react"
+import React, { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,10 +20,17 @@ import {
   ThumbsUp,
   ThumbsDown,
   Bookmark,
+  BookmarkCheck,
   AlertCircle,
 } from "lucide-react"
 import { useComplianceQuery, useComplianceHistory } from "@/hooks/use-compliance"
 import { formatDistanceToNow } from "date-fns"
+import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
+import { trpc } from "@/lib/trpc"
+import { toast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const suggestedQueries = [
   "What are the KYC requirements for digital lenders in Kenya?",
@@ -34,6 +39,8 @@ const suggestedQueries = [
   "Consumer protection obligations for fintech companies",
   "AML compliance requirements for cryptocurrency exchanges",
 ]
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Message {
   id: string
@@ -49,14 +56,148 @@ interface Message {
   timestamp: Date
 }
 
+type FeedbackRating = "up" | "down" | null
+
+// ─── MessageActionBar ─────────────────────────────────────────────────────────
+
+interface MessageActionBarProps {
+  message: Message
+  onCopy: (content: string) => void
+  onFeedback: (queryId: string, rating: "up" | "down") => Promise<void>
+  onSave: (queryId: string) => Promise<void>
+  feedbackState: Record<string, FeedbackRating>
+  savedState: Record<string, boolean>
+  feedbackLoading: Record<string, boolean>
+  saveLoading: Record<string, boolean>
+}
+
+function MessageActionBar({
+  message,
+  onCopy,
+  onFeedback,
+  onSave,
+  feedbackState,
+  savedState,
+  feedbackLoading,
+  saveLoading,
+}: MessageActionBarProps) {
+  const qId = message.queryId
+  const rating = qId ? (feedbackState[qId] ?? null) : null
+  const isSaved = qId ? (savedState[qId] ?? false) : false
+  const isFbLoading = qId ? (feedbackLoading[qId] ?? false) : false
+  const isSaveLoading = qId ? (saveLoading[qId] ?? false) : false
+  const noQueryId = !qId
+
+  return (
+    <div className="mt-4 flex items-center gap-1">
+      {/* Copy */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 px-2"
+        onClick={() => onCopy(message.content)}
+      >
+        <Copy className="mr-1 h-3 w-3" />
+        Copy
+      </Button>
+
+      {/* Save / Bookmark */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn(
+          "h-8 px-2 transition-colors duration-150",
+          isSaved && "text-warning",
+          noQueryId && "opacity-40 cursor-not-allowed",
+        )}
+        onClick={() => qId && onSave(qId)}
+        disabled={noQueryId || isSaveLoading}
+        title={noQueryId ? "Available once response has been saved" : undefined}
+        aria-label={isSaved ? "Remove from saved" : "Save response"}
+      >
+        {isSaveLoading ? (
+          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+        ) : isSaved ? (
+          <BookmarkCheck className="mr-1 h-3 w-3" />
+        ) : (
+          <Bookmark className="mr-1 h-3 w-3" />
+        )}
+        {isSaved ? "Saved" : "Save"}
+      </Button>
+
+      <div className="flex-1" />
+
+      {/* Thumbs Up */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn(
+          "h-8 w-8 transition-all duration-150",
+          rating === "up" && "bg-primary/10 text-primary",
+          noQueryId && "opacity-40 cursor-not-allowed",
+        )}
+        onClick={() => qId && onFeedback(qId, "up")}
+        disabled={noQueryId || isFbLoading}
+        title={noQueryId ? "Available once response has been saved" : "Mark as helpful"}
+        aria-label="Mark as helpful"
+        aria-pressed={rating === "up"}
+      >
+        {isFbLoading ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : (
+          <ThumbsUp className="h-3 w-3" />
+        )}
+      </Button>
+
+      {/* Thumbs Down */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn(
+          "h-8 w-8 transition-all duration-150",
+          rating === "down" && "bg-destructive/10 text-destructive",
+          noQueryId && "opacity-40 cursor-not-allowed",
+        )}
+        onClick={() => qId && onFeedback(qId, "down")}
+        disabled={noQueryId || isFbLoading}
+        title={noQueryId ? "Available once response has been saved" : "Mark as not helpful"}
+        aria-label="Mark as not helpful"
+        aria-pressed={rating === "down"}
+      >
+        {isFbLoading ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : (
+          <ThumbsDown className="h-3 w-3" />
+        )}
+      </Button>
+    </div>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function ComplianceQueryPage() {
   const [query, setQuery] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
+
+  // Per-queryId feedback rating ("up" | "down" | null)
+  const [feedbackState, setFeedbackState] = useState<Record<string, FeedbackRating>>({})
+  // Per-queryId save status
+  const [savedState, setSavedState] = useState<Record<string, boolean>>({})
+  // Per-queryId loading flags (prevent double-clicks while in-flight)
+  const [feedbackLoading, setFeedbackLoading] = useState<Record<string, boolean>>({})
+  const [saveLoading, setSaveLoading] = useState<Record<string, boolean>>({})
+
   const { submitQuery, isQuerying, queryError, submitFollowUp, isFollowingUp } = useComplianceQuery()
   const { data: historyData } = useComplianceHistory(1, 5)
 
+  const feedbackMutation = trpc.compliance.submitFeedback.useMutation()
+  const saveMutation = trpc.compliance.toggleSave.useMutation()
+
   const isLoading = isQuerying || isFollowingUp
   const lastQueryId = messages.filter((m) => m.queryId).at(-1)?.queryId
+
+  // ─── Handlers ───────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,18 +215,11 @@ export default function ComplianceQueryPage() {
     setQuery("")
 
     try {
-      let result;
+      let result
       if (lastQueryId) {
-        // Follow-up question
-        result = await submitFollowUp({
-          originalQueryId: lastQueryId,
-          question: currentQuery,
-        })
+        result = await submitFollowUp({ originalQueryId: lastQueryId, question: currentQuery })
       } else {
-        // New query
-        result = await submitQuery({
-          question: currentQuery,
-        })
+        result = await submitQuery({ question: currentQuery })
       }
 
       const assistantMessage: Message = {
@@ -97,7 +231,10 @@ export default function ComplianceQueryPage() {
           source: c.source,
           section: c.section,
         })),
-        confidence: "confidence" in result ? (result as { confidence?: number }).confidence : undefined,
+        confidence:
+          "confidence" in result
+            ? (result as { confidence?: number }).confidence
+            : undefined,
         queryId: result.queryId,
         timestamp: new Date(),
       }
@@ -114,13 +251,69 @@ export default function ComplianceQueryPage() {
     }
   }
 
-  const handleSuggestedQuery = (suggested: string) => {
-    setQuery(suggested)
-  }
+  const handleSuggestedQuery = (suggested: string) => setQuery(suggested)
 
   const handleCopy = (content: string) => {
     navigator.clipboard.writeText(content)
   }
+
+  const handleFeedback = async (queryId: string, rating: "up" | "down") => {
+    // Guard against concurrent clicks on the same response
+    if (feedbackLoading[queryId]) return
+
+    const previous = feedbackState[queryId] ?? null
+    // Toggle semantics: clicking the active rating removes it
+    const optimistic: FeedbackRating = previous === rating ? null : rating
+
+    // Optimistic update
+    setFeedbackState((prev) => ({ ...prev, [queryId]: optimistic }))
+    setFeedbackLoading((prev) => ({ ...prev, [queryId]: true }))
+
+    try {
+      const result = await feedbackMutation.mutateAsync({ queryId, rating })
+      // Confirm with authoritative server response
+      setFeedbackState((prev) => ({ ...prev, [queryId]: result.rating }))
+    } catch {
+      // Revert on error
+      setFeedbackState((prev) => ({ ...prev, [queryId]: previous }))
+      toast({
+        title: "Couldn't save feedback",
+        description: "Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setFeedbackLoading((prev) => ({ ...prev, [queryId]: false }))
+    }
+  }
+
+  const handleSave = async (queryId: string) => {
+    if (saveLoading[queryId]) return
+
+    const previous = savedState[queryId] ?? false
+
+    // Optimistic update
+    setSavedState((prev) => ({ ...prev, [queryId]: !previous }))
+    setSaveLoading((prev) => ({ ...prev, [queryId]: true }))
+
+    try {
+      const result = await saveMutation.mutateAsync({ queryId })
+      // Confirm with server state
+      setSavedState((prev) => ({ ...prev, [queryId]: result.saved }))
+      toast({ title: result.saved ? "Response saved" : "Removed from saved" })
+    } catch {
+      // Revert on error
+      setSavedState((prev) => ({ ...prev, [queryId]: previous }))
+      toast({
+        title: "Couldn't save response",
+        description: "Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setSaveLoading((prev) => ({ ...prev, [queryId]: false }))
+    }
+  }
+
+  // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex flex-col gap-6">
@@ -181,6 +374,7 @@ export default function ComplianceQueryPage() {
                             : "bg-muted"
                         }`}
                       >
+                        {/* SheriaBot header */}
                         {message.type === "assistant" && (
                           <div className="mb-2 flex items-center gap-2">
                             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
@@ -194,9 +388,17 @@ export default function ComplianceQueryPage() {
                             )}
                           </div>
                         )}
-                        <div className={`prose prose-sm max-w-none ${message.type === "user" ? "prose-invert" : ""}`}>
-                          <p className="whitespace-pre-line text-sm">{message.content}</p>
-                        </div>
+
+                        {/* Message content */}
+                        {message.type === "assistant" ? (
+                          <ComplianceFeedback content={message.content} variant="chat" />
+                        ) : (
+                          <p className="text-sm leading-relaxed whitespace-pre-line">
+                            {message.content}
+                          </p>
+                        )}
+
+                        {/* Legal citations */}
                         {message.citations && message.citations.length > 0 && (
                           <div className="mt-4 border-t border-border/50 pt-4">
                             <p className="mb-2 text-xs font-medium text-muted-foreground">
@@ -210,9 +412,13 @@ export default function ComplianceQueryPage() {
                                 >
                                   <Scale className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
                                   <div className="min-w-0">
-                                    <p className="text-xs font-medium text-foreground">{citation.source}</p>
+                                    <p className="text-xs font-medium text-foreground">
+                                      {citation.source}
+                                    </p>
                                     {citation.section && (
-                                      <p className="text-xs text-muted-foreground">{citation.section}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {citation.section}
+                                      </p>
                                     )}
                                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                       {citation.text}
@@ -223,39 +429,32 @@ export default function ComplianceQueryPage() {
                             </div>
                           </div>
                         )}
+
+                        {/* Copy / Save / Thumbs action bar */}
                         {message.type === "assistant" && (
-                          <div className="mt-4 flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 px-2"
-                              onClick={() => handleCopy(message.content)}
-                            >
-                              <Copy className="mr-1 h-3 w-3" />
-                              Copy
-                            </Button>
-                            <Button variant="ghost" size="sm" className="h-8 px-2">
-                              <Bookmark className="mr-1 h-3 w-3" />
-                              Save
-                            </Button>
-                            <div className="flex-1" />
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <ThumbsUp className="h-3 w-3" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <ThumbsDown className="h-3 w-3" />
-                            </Button>
-                          </div>
+                          <MessageActionBar
+                            message={message}
+                            onCopy={handleCopy}
+                            onFeedback={handleFeedback}
+                            onSave={handleSave}
+                            feedbackState={feedbackState}
+                            savedState={savedState}
+                            feedbackLoading={feedbackLoading}
+                            saveLoading={saveLoading}
+                          />
                         )}
                       </div>
                     </div>
                   ))}
+
                   {isLoading && (
                     <div className="flex justify-start">
                       <div className="rounded-2xl bg-muted px-4 py-3">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                          <span className="text-sm text-muted-foreground">Analyzing regulations...</span>
+                          <span className="text-sm text-muted-foreground">
+                            Analyzing regulations...
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -295,7 +494,8 @@ export default function ComplianceQueryPage() {
                 </Button>
               </form>
               <p className="mt-2 text-xs text-muted-foreground">
-                Answers are AI-generated based on Kenya&apos;s legal corpus. Always verify with official sources.
+                Answers are AI-generated based on Kenya&apos;s legal corpus. Always verify with
+                official sources.
               </p>
             </div>
           </Card>
@@ -303,7 +503,7 @@ export default function ComplianceQueryPage() {
 
         {/* Right Sidebar */}
         <div className="space-y-6">
-          {/* Quick Suggested Queries */}
+          {/* Suggested Queries */}
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-foreground">Suggested Queries</CardTitle>
@@ -325,7 +525,7 @@ export default function ComplianceQueryPage() {
             </CardContent>
           </Card>
 
-          {/* Query History - from API */}
+          {/* Query History */}
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-foreground">Recent Queries</CardTitle>
@@ -342,7 +542,9 @@ export default function ComplianceQueryPage() {
                     >
                       <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{item.question}</p>
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {item.query}
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
                         </p>
@@ -372,8 +574,8 @@ export default function ComplianceQueryPage() {
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
-                Our AI is trained on CBK guidelines, Data Protection Act, National Payment System Act,
-                and other relevant Kenyan legislation.
+                Our AI is trained on CBK guidelines, Data Protection Act, National Payment System
+                Act, and other relevant Kenyan legislation.
               </p>
             </CardContent>
           </Card>
