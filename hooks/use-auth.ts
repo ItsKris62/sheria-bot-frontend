@@ -5,25 +5,7 @@ import { useRouter } from "next/navigation";
 import { trpc, getErrorMessage, setAccessToken } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AuthUser, UserRole } from "@/lib/auth-store";
-
-const REFRESH_TOKEN_KEY = "sb_rt";
-
-/** Persist refresh token in a secure cookie */
-function persistRefreshToken(token: string) {
-  const maxAge = 30 * 24 * 60 * 60; // 30 days
-  document.cookie = `${REFRESH_TOKEN_KEY}=${token}; path=/; max-age=${maxAge}; SameSite=Strict; Secure`;
-}
-
-/** Read refresh token from cookie */
-export function getRefreshToken(): string {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${REFRESH_TOKEN_KEY}=([^;]*)`));
-  return match ? match[1] : "";
-}
-
-/** Clear refresh token cookie */
-function clearRefreshToken() {
-  document.cookie = `${REFRESH_TOKEN_KEY}=; path=/; max-age=0`;
-}
+import { supabase } from "@/lib/supabase-client";
 
 /** Map backend role to dashboard path */
 function getDashboardPath(role: UserRole): string {
@@ -33,7 +15,7 @@ function getDashboardPath(role: UserRole): string {
     case "ADMIN":
       return "/admin";
     case "ENTERPRISE":
-      return "/startup"; // Enterprise uses same dashboard for now
+      return "/startup";
     case "STARTUP":
     case "FINTECH_USER":
     default:
@@ -48,7 +30,6 @@ export function useAuth() {
   const loginMutation = trpc.auth.login.useMutation();
   const registerMutation = trpc.auth.register.useMutation();
   const logoutMutation = trpc.auth.logout.useMutation();
-  const refreshMutation = trpc.auth.refreshToken.useMutation();
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -64,9 +45,13 @@ export function useAuth() {
         createdAt: String(result.user.createdAt),
       };
 
-      setAuth(authUser, result.accessToken);
-      persistRefreshToken(result.refreshToken);
+      // Register the session with the Supabase client so it handles auto-refresh
+      await supabase.auth.setSession({
+        access_token: result.accessToken,
+        refresh_token: result.refreshToken,
+      });
 
+      setAuth(authUser, result.accessToken);
       router.push(getDashboardPath(authUser.role));
       return result;
     },
@@ -82,8 +67,7 @@ export function useAuth() {
       phone?: string;
     }) => {
       const result = await registerMutation.mutateAsync(data);
-      // Registration returns success + userId, not tokens
-      // User needs to verify email then login
+      // Registration returns success + userId — user must verify email then login
       return result;
     },
     [registerMutation],
@@ -92,31 +76,29 @@ export function useAuth() {
   const logout = useCallback(async () => {
     try {
       await logoutMutation.mutateAsync();
+      await supabase.auth.signOut();
     } catch {
-      // Even if the server call fails, clear local state
+      // Even if server calls fail, clear local state
     }
     clearAuth();
-    clearRefreshToken();
+    setAccessToken(null);
     router.push("/login");
   }, [logoutMutation, clearAuth, router]);
 
   const refreshSession = useCallback(async () => {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) return false;
-
     try {
-      const result = await refreshMutation.mutateAsync({ refreshToken });
-      if (result.accessToken) {
-        setAccessToken(result.accessToken);
-        useAuthStore.getState().updateToken(result.accessToken);
+      const { data: { session }, error } = await supabase.auth.refreshSession();
+      if (session?.access_token && !error) {
+        setAccessToken(session.access_token);
+        useAuthStore.getState().updateToken(session.access_token);
         return true;
       }
     } catch {
-      clearAuth();
-      clearRefreshToken();
+      // fall through
     }
+    clearAuth();
     return false;
-  }, [refreshMutation, clearAuth]);
+  }, [clearAuth]);
 
   return {
     login,

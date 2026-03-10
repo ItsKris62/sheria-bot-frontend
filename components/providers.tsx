@@ -1,14 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, createTRPCClient, setAccessToken } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AuthUser, UserRole } from "@/lib/auth-store";
-import { getRefreshToken } from "@/hooks/use-auth";
-
-/** Access tokens expire in 7 days (backend JWT_EXPIRES_IN=7d) */
-const ACCESS_TOKEN_LIFETIME_SEC = 7 * 24 * 60 * 60;
+import { supabase } from "@/lib/supabase-client";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -32,67 +29,48 @@ function makeQueryClient() {
 
 function AuthInitializer({ children }: { children: React.ReactNode }) {
   const { setAuth, clearAuth, setInitialized, isInitialized } = useAuthStore();
-  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trpcClient = trpc.useUtils();
 
-  const scheduleTokenRefresh = useCallback(
-    (lifetimeSec: number) => {
-      if (refreshTimerRef.current) {
-        clearTimeout(refreshTimerRef.current);
+  // Subscribe to Supabase auth state changes — handles automatic token refresh
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.access_token) {
+        setAccessToken(session.access_token);
+        useAuthStore.getState().updateToken(session.access_token);
       }
-      // Refresh 60 seconds before expiry, minimum 30 seconds
-      const refreshDelay = Math.max((lifetimeSec - 60) * 1000, 30_000);
-      refreshTimerRef.current = setTimeout(async () => {
-        const rt = getRefreshToken();
-        if (!rt) return;
+    });
+    return () => subscription.unsubscribe();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-        try {
-          const result = await (trpcClient.auth.refreshToken as any).fetch({ refreshToken: rt });
-          if (result.accessToken) {
-            setAccessToken(result.accessToken);
-            useAuthStore.getState().updateToken(result.accessToken);
-            scheduleTokenRefresh(ACCESS_TOKEN_LIFETIME_SEC);
-          }
-        } catch {
-          clearAuth();
-        }
-      }, refreshDelay);
-    },
-    [trpcClient, clearAuth],
-  );
-
+  // Restore session on page load using Supabase's persisted session
   useEffect(() => {
     if (isInitialized) return;
 
     async function initSession() {
-      const rt = getRefreshToken();
-      if (!rt) {
-        clearAuth();
-        setInitialized();
-        return;
-      }
-
       try {
-        const result = await (trpcClient.auth.refreshToken as any).fetch({ refreshToken: rt });
-        if (result.accessToken) {
-          setAccessToken(result.accessToken);
-          const user = await (trpcClient.auth.me as any).fetch();
-          setAuth(
-            {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              role: user.role as UserRole,
-              organizationId: user.organization?.id ?? null,
-              emailVerified: user.emailVerified,
-              createdAt: String(user.createdAt),
-            } satisfies AuthUser,
-            result.accessToken,
-          );
-          scheduleTokenRefresh(ACCESS_TOKEN_LIFETIME_SEC);
-        } else {
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session?.access_token) {
           clearAuth();
+          setInitialized();
+          return;
         }
+
+        setAccessToken(session.access_token);
+
+        const user = await (trpcClient.auth.me as any).fetch();
+        setAuth(
+          {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role as UserRole,
+            organizationId: user.organization?.id ?? null,
+            emailVerified: user.emailVerified,
+            createdAt: String(user.createdAt),
+          } satisfies AuthUser,
+          session.access_token,
+        );
       } catch {
         clearAuth();
       } finally {
@@ -101,13 +79,7 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
     }
 
     initSession();
-
-    return () => {
-      if (refreshTimerRef.current) {
-        clearTimeout(refreshTimerRef.current);
-      }
-    };
-  }, [isInitialized, setAuth, clearAuth, setInitialized, scheduleTokenRefresh, trpcClient]);
+  }, [isInitialized, setAuth, clearAuth, setInitialized, trpcClient]);
 
   return <>{children}</>;
 }
