@@ -6,8 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Scale, Mail, CheckCircle2, Loader2, Clock, ArrowRight } from "lucide-react"
+import { Scale, Mail, CheckCircle2, Clock, ArrowRight } from "lucide-react"
 import { trpc, getErrorMessage } from "@/lib/trpc"
+import { LoadingScreen } from "@/components/loading-screen"
 
 function VerifyEmailContent() {
   const router = useRouter()
@@ -28,14 +29,7 @@ function VerifyEmailContent() {
 
   if (token) {
     if (verifyMutation.isPending || (!verifyMutation.isSuccess && !verifyMutation.isError)) {
-      return (
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground">Verifying your email...</p>
-          </CardContent>
-        </Card>
-      )
+      return <LoadingScreen fullScreen={false} size="md" message="Verifying your email..." />
     }
 
     if (verifyMutation.isError) {
@@ -144,16 +138,7 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense
-      fallback={
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground">Loading...</p>
-          </CardContent>
-        </Card>
-      }
-    >
+    <Suspense fallback={<LoadingScreen fullScreen={false} size="md" />}>
       <VerifyEmailContent />
     </Suspense>
   )

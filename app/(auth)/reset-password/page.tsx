@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Scale, Eye, EyeOff, CheckCircle2, Loader2, ArrowRight, AlertCircle } from "lucide-react"
+import { LoadingScreen } from "@/components/loading-screen"
 import { trpc, getErrorMessage } from "@/lib/trpc"
 
 function ResetPasswordContent() {
@@ -186,16 +187,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense
-      fallback={
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground">Loading...</p>
-          </CardContent>
-        </Card>
-      }
-    >
+    <Suspense fallback={<LoadingScreen fullScreen={false} size="md" />}>
       <ResetPasswordContent />
     </Suspense>
   )

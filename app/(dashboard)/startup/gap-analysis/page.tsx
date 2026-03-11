@@ -27,6 +27,7 @@ import {
   Shield,
   BarChart3,
 } from "lucide-react"
+import { LoadingScreen } from "@/components/loading-screen"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -296,15 +297,7 @@ function AnalysisResultsView({
   }
 
   if (data.status === "ANALYZING" || data.status === "UPLOADING") {
-    return (
-      <Card>
-        <CardContent className="py-16 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="font-medium text-foreground">Analysis in progress...</p>
-          <p className="text-sm text-muted-foreground mt-1">This may take 1–2 minutes depending on document size.</p>
-        </CardContent>
-      </Card>
-    )
+    return <LoadingScreen fullScreen={false} size="sm" message="Analysis in progress..." />
   }
 
   if (data.status === "FAILED") {
