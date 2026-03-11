@@ -62,24 +62,30 @@ export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
   return <>{children}</>
 }
 
-/** Redirect authenticated users away from auth pages */
+/** Redirect authenticated users away from auth pages.
+ *  Exception: /verify-email must remain accessible to authenticated users
+ *  so they can confirm their email even after logging in. */
 export function GuestGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { isAuthenticated, isInitialized, user } = useAuthStore()
+
+  // Verification link must work for both authed and unauthed users
+  const isVerifyEmailPage = pathname === '/verify-email'
 
   useEffect(() => {
     if (!isInitialized) return
 
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && !isVerifyEmailPage) {
       router.replace(getRoleBasePath(user.role))
     }
-  }, [isInitialized, isAuthenticated, user, router])
+  }, [isInitialized, isAuthenticated, user, router, isVerifyEmailPage])
 
   if (!isInitialized) {
     return <LoadingScreen fullScreen />
   }
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !isVerifyEmailPage) {
     return null
   }
 
