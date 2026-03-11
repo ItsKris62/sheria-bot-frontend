@@ -86,10 +86,12 @@ export default function RegisterPage() {
         password: formData.password,
         name: `${formData.firstName} ${formData.lastName}`,
         role: ROLE_MAP[formData.organizationType],
+        companyName: formData.companyName || undefined,
       })
       setSuccess(true)
-    } catch {
-      setError(registerError || "Registration failed. Please try again.")
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Registration failed. Please try again."
+      setError(msg)
     }
   }
 

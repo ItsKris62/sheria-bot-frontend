@@ -29,10 +29,9 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password)
-    } catch (err) {
-      // Error is captured in loginError from the hook,
-      // but we also handle it locally for immediate feedback
-      setError(loginError || "Sign in failed. Please check your credentials.")
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Sign in failed. Please check your credentials."
+      setError(msg)
     }
   }
 

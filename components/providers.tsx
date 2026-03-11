@@ -37,6 +37,10 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
       if (session?.access_token) {
         setAccessToken(session.access_token);
         useAuthStore.getState().updateToken(session.access_token);
+      } else {
+        // SIGNED_OUT or session expired externally (admin revocation, refresh token expired)
+        setAccessToken(null);
+        useAuthStore.getState().clearAuth();
       }
     });
     return () => subscription.unsubscribe();

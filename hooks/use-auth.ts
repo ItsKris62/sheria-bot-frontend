@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { trpc, getErrorMessage, setAccessToken } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AuthUser, UserRole } from "@/lib/auth-store";
@@ -25,6 +26,7 @@ function getDashboardPath(role: UserRole): string {
 
 export function useAuth() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { setAuth, clearAuth, isAuthenticated, user, isLoading, isInitialized } = useAuthStore();
 
   const loginMutation = trpc.auth.login.useMutation();
@@ -64,6 +66,7 @@ export function useAuth() {
       password: string;
       name: string;
       role: "REGULATOR" | "STARTUP" | "ENTERPRISE";
+      companyName?: string;
       phone?: string;
     }) => {
       const result = await registerMutation.mutateAsync(data);
@@ -80,10 +83,11 @@ export function useAuth() {
     } catch {
       // Even if server calls fail, clear local state
     }
+    queryClient.clear();
     clearAuth();
     setAccessToken(null);
     router.push("/login");
-  }, [logoutMutation, clearAuth, router]);
+  }, [logoutMutation, queryClient, clearAuth, router]);
 
   const refreshSession = useCallback(async () => {
     try {
