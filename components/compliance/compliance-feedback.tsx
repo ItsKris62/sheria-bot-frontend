@@ -114,6 +114,10 @@ const OrderedContext = createContext(false)
 // Uses react-markdown + remark-gfm for proper GFM table, heading, and list
 // rendering with design-system-aligned styling.
 
+// Stable plugin array — must be outside the component or memoised to avoid
+// react-markdown re-processing the AST on every render.
+const GFM_PLUGINS = [remarkGfm]
+
 function MarkdownContent({ content, compact = false }: { content: string; compact?: boolean }) {
   const sz = compact ? 'text-xs' : 'text-sm'
   const tblSz = compact ? 'text-[11px]' : 'text-xs'
@@ -217,27 +221,35 @@ function MarkdownContent({ content, compact = false }: { content: string; compac
       li: LiItem,
 
       // ── GFM Tables ────────────────────────────────────────────────────
+      // min-w-[480px] guarantees the inner table always has a sensible width
+      // so the outer overflow-x-auto scroll kicks in rather than the table
+      // compressing columns to unreadable widths inside narrow chat bubbles.
+      // Row striping uses foreground-relative opacity so it stays visible
+      // on any background colour (muted, card, white, dark, etc.).
       table: ({ children }) => (
-        <div className="my-3 w-full overflow-x-auto rounded-md border border-border/50">
-          <table className="w-full text-left border-collapse">{children}</table>
+        <div className="my-3 w-full overflow-x-auto rounded-md border border-border/60 shadow-sm">
+          <table className="w-full min-w-[480px] text-left border-collapse">{children}</table>
         </div>
       ),
       thead: ({ children }) => (
-        <thead className="border-b border-border/50 bg-muted/40">{children}</thead>
+        <thead className="border-b-2 border-border/60 bg-primary/5">{children}</thead>
       ),
-      tbody: ({ children }) => <tbody>{children}</tbody>,
+      tbody: ({ children }) => <tbody className="divide-y divide-border/30">{children}</tbody>,
       tr: ({ children }) => (
-        <tr className="border-b border-border/30 last:border-0 even:bg-muted/20 transition-colors">
+        <tr className="even:bg-foreground/[0.03] hover:bg-foreground/[0.06] transition-colors duration-100">
           {children}
         </tr>
       ),
       th: ({ children }) => (
-        <th className={cn('px-3 py-2 font-semibold text-foreground whitespace-nowrap', tblSz)}>
+        <th className={cn(
+          'px-3 py-2.5 font-semibold text-foreground tracking-wide',
+          compact ? 'text-[10px] uppercase' : 'text-xs uppercase',
+        )}>
           {children}
         </th>
       ),
       td: ({ children }) => (
-        <td className={cn('px-3 py-2 text-foreground/80 align-top', tblSz)}>
+        <td className={cn('px-3 py-2 text-foreground/80 align-top break-words', tblSz)}>
           {children}
         </td>
       ),
@@ -246,7 +258,7 @@ function MarkdownContent({ content, compact = false }: { content: string; compac
   }, [compact])
 
   return (
-    <Markdown remarkPlugins={[remarkGfm]} components={components}>
+    <Markdown remarkPlugins={GFM_PLUGINS} components={components}>
       {content}
     </Markdown>
   )
