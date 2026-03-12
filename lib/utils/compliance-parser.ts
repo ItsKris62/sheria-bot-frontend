@@ -46,11 +46,18 @@ export interface NumberedListBlock {
   items: InlineNode[][]
 }
 
+export interface TableBlock {
+  type: 'table'
+  headers: InlineNode[][]
+  rows: InlineNode[][][]
+}
+
 export type ContentBlock =
   | ParagraphBlock
   | SubheadingBlock
   | BulletListBlock
   | NumberedListBlock
+  | TableBlock
 
 export interface ParsedSection {
   id: string
@@ -80,14 +87,14 @@ function detectStatus(text: string): ComplianceStatus | null {
 
 function detectSectionType(title: string): SectionType {
   const t = title.toLowerCase()
-  if (/summary|overview|executive|introduction|background/i.test(t)) return 'summary'
-  if (/requirement|document|documentation|mandatory|checklist|needed|prerequisite/i.test(t))
+  if (/direct answer|summary|overview|executive|introduction|background/i.test(t)) return 'summary'
+  if (/legal basis|compliance requirements?|requirement|document|documentation|mandatory|checklist|needed|prerequisite/i.test(t))
     return 'requirements'
-  if (/recommend|action|step|implement|remediat|next step|what to do|improve/i.test(t))
+  if (/implementation guidance|recommend|action|step|implement|remediat|next step|what to do|improve/i.test(t))
     return 'recommendations'
-  if (/risk|finding|gap|concern|critical|issue|problem|violation|non.compli/i.test(t))
+  if (/consequences? of non.compli|risk|finding|gap|concern|critical|issue|problem|violation|non.compli/i.test(t))
     return 'risk'
-  if (/monitor|ongoing|review|audit|report|maintenance|surveillance/i.test(t))
+  if (/timeline|monitor|ongoing|review|audit|report|maintenance|surveillance/i.test(t))
     return 'monitoring'
   return 'general'
 }
@@ -96,7 +103,7 @@ function detectSectionType(title: string): SectionType {
  * Parse inline **bold** markers into InlineNode[].
  * Any other text is returned as TextNode.
  */
-function parseInlineNodes(text: string): InlineNode[] {
+export function parseInlineNodes(text: string): InlineNode[] {
   // Split on **...**
   const parts = text.split(/(\*\*[^*]+\*\*)/)
   return parts
@@ -109,9 +116,30 @@ function parseInlineNodes(text: string): InlineNode[] {
     })
 }
 
+/** True when a pipe-delimited line is a GFM separator row: |---|:---:|---| */
+function isSeparatorRow(line: string): boolean {
+  const inner = line.replace(/\|/g, '').trim()
+  return inner.length > 0 && /^[-:\s]+$/.test(inner) && inner.includes('-')
+}
+
+/** Parse a single GFM table row into InlineNode cells. */
+function parseTableRow(line: string): InlineNode[][] {
+  return line
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((cell) => parseInlineNodes(cell.trim()))
+}
+
 /**
  * Convert a block of markdown text into ContentBlock[].
- * Handles: bold-only subheadings, bullet lists, numbered lists, paragraphs.
+ * Handles:
+ *  - ### level-3 subheadings
+ *  - **bold-only** lines as subheadings (legacy)
+ *  - GFM pipe tables (| col | col |)
+ *  - Bullet lists (-, *, •)
+ *  - Numbered lists (1. or 1))
+ *  - Regular paragraphs
  */
 function parseContentBlocks(content: string): ContentBlock[] {
   const lines = content.split('\n')
@@ -120,6 +148,7 @@ function parseContentBlocks(content: string): ContentBlock[] {
   let paragraphLines: string[] = []
   let bulletItems: string[] = []
   let numberedItems: string[] = []
+  let tableLines: string[] = []
 
   const flushParagraph = () => {
     if (paragraphLines.length === 0) return
@@ -148,6 +177,20 @@ function parseContentBlocks(content: string): ContentBlock[] {
     numberedItems = []
   }
 
+  const flushTable = () => {
+    if (tableLines.length === 0) return
+    const nonSepLines = tableLines.filter((l) => !isSeparatorRow(l))
+    if (nonSepLines.length > 0) {
+      const [headerLine, ...dataLines] = nonSepLines
+      blocks.push({
+        type: 'table',
+        headers: parseTableRow(headerLine),
+        rows: dataLines.map(parseTableRow),
+      })
+    }
+    tableLines = []
+  }
+
   for (const line of lines) {
     const trimmed = line.trim()
 
@@ -156,11 +199,34 @@ function parseContentBlocks(content: string): ContentBlock[] {
       flushParagraph()
       flushBullets()
       flushNumbers()
+      flushTable()
+      continue
+    }
+
+    // GFM table row: starts with |
+    if (trimmed.startsWith('|')) {
+      flushParagraph()
+      flushBullets()
+      flushNumbers()
+      tableLines.push(trimmed)
+      continue
+    }
+
+    // Non-table line encountered while accumulating a table — flush table first
+    if (tableLines.length > 0) {
+      flushTable()
+    }
+
+    // ### level-3 subheading
+    if (/^###\s/.test(trimmed)) {
+      flushParagraph()
+      flushBullets()
+      flushNumbers()
+      blocks.push({ type: 'subheading', text: trimmed.replace(/^###\s+/, '').trim() })
       continue
     }
 
     // Bold-only subheading: a line that is entirely **text** or **text:**
-    // e.g. "**Required Documents:**" or "**Summary**"
     if (/^\*\*[^*]+\*\*:?$/.test(trimmed)) {
       flushParagraph()
       flushBullets()
@@ -196,6 +262,7 @@ function parseContentBlocks(content: string): ContentBlock[] {
   flushParagraph()
   flushBullets()
   flushNumbers()
+  flushTable()
 
   return blocks
 }
@@ -207,8 +274,9 @@ function parseSectionBlock(raw: string, index: number): ParsedSection {
   let title = ''
   let contentLines: string[]
 
-  if (/^#+\s/.test(firstLine)) {
-    title = firstLine.replace(/^#+\s*/, '').trim()
+  // Match ## heading (level 2 only — ### is handled inside parseContentBlocks)
+  if (/^## /.test(firstLine)) {
+    title = firstLine.replace(/^## /, '').trim()
     contentLines = lines.slice(1)
   } else {
     contentLines = lines
@@ -236,7 +304,9 @@ function parseSectionBlock(raw: string, index: number): ParsedSection {
  * ParsedComplianceReport that the ComplianceFeedback component can render.
  *
  * Handles:
- *  - ## / ### section headers → ParsedSection[]
+ *  - ## section headers → ParsedSection[] (### is treated as sub-content)
+ *  - GFM pipe tables (| col | col |)
+ *  - ### level-3 headings within sections → SubheadingBlock
  *  - **bold** subheadings within sections
  *  - Bullet lists (-, *, •)
  *  - Numbered lists (1. or 1))
@@ -249,13 +319,13 @@ export function parseComplianceResponse(markdown: string): ParsedComplianceRepor
     return { sections: [] }
   }
 
-  // Check whether the content contains ## section headers
-  const hasHeaders = /^#{1,3} /m.test(markdown)
+  // Check whether the content contains ## level-2 section headers
+  const hasHeaders = /^## /m.test(markdown)
 
   if (hasHeaders) {
-    // Split before each heading line, keeping the heading with its section
+    // Split before each ## heading only (### remains inside sections as sub-content)
     const parts = markdown
-      .split(/(?=^#{1,3} )/m)
+      .split(/(?=^## )/m)
       .map((p) => p.trim())
       .filter((p) => p.length > 0)
 
@@ -264,7 +334,7 @@ export function parseComplianceResponse(markdown: string): ParsedComplianceRepor
     }
   }
 
-  // No headers — single general section
+  // No ## headers — single general section
   return {
     sections: [
       {

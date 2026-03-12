@@ -122,6 +122,60 @@ function InlineContent({ nodes }: { nodes: InlineNode[] }) {
   )
 }
 
+// ─── Table renderer ────────────────────────────────────────────────────────
+
+interface TableRendererProps {
+  block: Extract<ContentBlock, { type: 'table' }>
+  compact: boolean
+}
+
+function TableRenderer({ block, compact }: TableRendererProps) {
+  return (
+    <div className="my-3 w-full overflow-x-auto rounded-md border border-border/50">
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr className="border-b border-border/50 bg-muted/40">
+            {block.headers.map((cell, ci) => (
+              <th
+                key={ci}
+                className={cn(
+                  'px-3 py-2 font-semibold text-foreground whitespace-nowrap',
+                  compact ? 'text-[11px]' : 'text-xs',
+                )}
+              >
+                <InlineContent nodes={cell} />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {block.rows.map((row, ri) => (
+            <tr
+              key={ri}
+              className={cn(
+                'border-b border-border/30 last:border-0 transition-colors',
+                ri % 2 === 1 ? 'bg-muted/20' : '',
+              )}
+            >
+              {row.map((cell, ci) => (
+                <td
+                  key={ci}
+                  className={cn(
+                    'px-3 py-2 text-foreground/80 align-top',
+                    compact ? 'text-[11px]' : 'text-xs',
+                  )}
+                >
+                  <InlineContent nodes={cell} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 // ─── Content block renderers ───────────────────────────────────────────────
 
 interface BlockProps {
@@ -207,6 +261,9 @@ function BlockRenderer({ block, compact }: BlockProps) {
           ))}
         </ol>
       )
+
+    case 'table':
+      return <TableRenderer block={block} compact={compact} />
 
     default:
       return null
@@ -375,6 +432,9 @@ function ChatBlockRenderer({ block }: { block: ContentBlock }) {
           ))}
         </ol>
       )
+
+    case 'table':
+      return <TableRenderer block={block} compact={true} />
 
     default:
       return null
