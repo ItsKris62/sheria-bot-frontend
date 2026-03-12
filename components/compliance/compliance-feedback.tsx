@@ -1,6 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import React, { createContext, useContext, useMemo, useState } from 'react'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import type { Components } from 'react-markdown'
 import {
   Shield,
   FileText,
@@ -18,8 +21,6 @@ import { cn } from '@/lib/utils'
 import {
   parseComplianceResponse,
   type ParsedSection,
-  type ContentBlock,
-  type InlineNode,
   type SectionType,
   type ComplianceStatus,
 } from '@/lib/utils/compliance-parser'
@@ -103,171 +104,152 @@ const STATUS_STYLES: Record<ComplianceStatus, StatusStyle> = {
   },
 }
 
-// ─── Inline content renderer ───────────────────────────────────────────────
+// ─── Ordered-list context ──────────────────────────────────────────────────
+// react-markdown v10 removed the `ordered` prop from `li`.
+// We pass the list type via context from the ul/ol parent component.
 
-function InlineContent({ nodes }: { nodes: InlineNode[] }) {
-  return (
-    <>
-      {nodes.map((node, i) => {
-        if (node.type === 'bold') {
-          return (
-            <strong key={i} className="font-semibold text-foreground">
-              {node.content}
-            </strong>
-          )
-        }
-        return <span key={i}>{node.content}</span>
-      })}
-    </>
-  )
-}
+const OrderedContext = createContext(false)
 
-// ─── Table renderer ────────────────────────────────────────────────────────
+// ─── Markdown content renderer ─────────────────────────────────────────────
+// Uses react-markdown + remark-gfm for proper GFM table, heading, and list
+// rendering with design-system-aligned styling.
 
-interface TableRendererProps {
-  block: Extract<ContentBlock, { type: 'table' }>
-  compact: boolean
-}
+function MarkdownContent({ content, compact = false }: { content: string; compact?: boolean }) {
+  const sz = compact ? 'text-xs' : 'text-sm'
+  const tblSz = compact ? 'text-[11px]' : 'text-xs'
 
-function TableRenderer({ block, compact }: TableRendererProps) {
-  return (
-    <div className="my-3 w-full overflow-x-auto rounded-md border border-border/50">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="border-b border-border/50 bg-muted/40">
-            {block.headers.map((cell, ci) => (
-              <th
-                key={ci}
-                className={cn(
-                  'px-3 py-2 font-semibold text-foreground whitespace-nowrap',
-                  compact ? 'text-[11px]' : 'text-xs',
-                )}
-              >
-                <InlineContent nodes={cell} />
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {block.rows.map((row, ri) => (
-            <tr
-              key={ri}
-              className={cn(
-                'border-b border-border/30 last:border-0 transition-colors',
-                ri % 2 === 1 ? 'bg-muted/20' : '',
-              )}
-            >
-              {row.map((cell, ci) => (
-                <td
-                  key={ci}
-                  className={cn(
-                    'px-3 py-2 text-foreground/80 align-top',
-                    compact ? 'text-[11px]' : 'text-xs',
-                  )}
-                >
-                  <InlineContent nodes={cell} />
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-// ─── Content block renderers ───────────────────────────────────────────────
-
-interface BlockProps {
-  block: ContentBlock
-  compact: boolean
-}
-
-function BlockRenderer({ block, compact }: BlockProps) {
-  switch (block.type) {
-    case 'subheading':
+  const components = useMemo((): Components => {
+    // ── List items — reads OrderedContext set by ul/ol parent ─────────────
+    // Named function so React correctly identifies it as a component,
+    // allowing the useContext hook call.
+    function LiItem({ children }: React.LiHTMLAttributes<HTMLLIElement>) {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const ordered = useContext(OrderedContext)
+      if (ordered) {
+        return (
+          <li className={cn('text-foreground/80 leading-relaxed pl-1', sz)}>
+            {children}
+          </li>
+        )
+      }
       return (
-        <p
-          className={cn(
-            'font-semibold text-foreground mt-4 mb-2 first:mt-0 flex items-center gap-1.5',
-            compact ? 'text-xs' : 'text-sm',
-          )}
-        >
+        <li className="flex items-start gap-2.5 list-none">
+          <span className={cn(
+            'rounded-full bg-primary shrink-0',
+            compact ? 'h-1 w-1 mt-[5px]' : 'h-1.5 w-1.5 mt-[7px]',
+          )} />
+          <span className={cn('text-foreground/80 leading-relaxed', sz)}>{children}</span>
+        </li>
+      )
+    }
+
+    return {
+      // ── Headings ──────────────────────────────────────────────────────
+      h1: ({ children }) => (
+        <p className={cn('font-bold text-foreground mt-4 mb-2 first:mt-0', compact ? 'text-sm' : 'text-base')}>
+          {children}
+        </p>
+      ),
+      h2: ({ children }) => (
+        <p className={cn('font-semibold text-foreground mt-4 mb-2 first:mt-0', compact ? 'text-xs' : 'text-sm')}>
+          {children}
+        </p>
+      ),
+      h3: ({ children }) => (
+        <p className={cn(
+          'font-semibold text-foreground mt-3 mb-1.5 first:mt-0 flex items-center gap-1.5',
+          sz,
+        )}>
           <span className="w-1 h-3 rounded-full bg-primary/60 inline-block shrink-0" />
-          {block.text}
+          {children}
         </p>
-      )
-
-    case 'paragraph':
-      return (
-        <p
-          className={cn(
-            'text-foreground/80 leading-[1.7]',
-            compact ? 'text-xs' : 'text-sm',
-          )}
-        >
-          <InlineContent nodes={block.nodes} />
+      ),
+      h4: ({ children }) => (
+        <p className={cn(
+          'font-medium text-foreground/90 mt-2 mb-1 uppercase tracking-wide',
+          compact ? 'text-[10px]' : 'text-[11px]',
+        )}>
+          {children}
         </p>
-      )
+      ),
 
-    case 'bullet-list':
-      return (
-        <ul className={cn('my-2 space-y-1.5', compact ? 'space-y-1' : '')}>
-          {block.items.map((item, i) => (
-            <li key={i} className="flex items-start gap-2.5">
-              <span
-                className={cn(
-                  'mt-[7px] rounded-full bg-primary shrink-0',
-                  compact ? 'h-1 w-1 mt-[5px]' : 'h-1.5 w-1.5',
-                )}
-              />
-              <span
-                className={cn(
-                  'text-foreground/80 leading-relaxed',
-                  compact ? 'text-xs' : 'text-sm',
-                )}
-              >
-                <InlineContent nodes={item} />
-              </span>
-            </li>
-          ))}
-        </ul>
-      )
+      // ── Body text ──────────────────────────────────────────────────────
+      p: ({ children }) => (
+        <p className={cn('text-foreground/80 leading-[1.7] my-1.5', sz)}>{children}</p>
+      ),
+      strong: ({ children }) => (
+        <strong className="font-semibold text-foreground">{children}</strong>
+      ),
+      em: ({ children }) => (
+        <em className="italic text-foreground/60">{children}</em>
+      ),
+      code: ({ children }) => (
+        <code className="font-mono text-primary bg-primary/10 px-1 py-0.5 rounded text-[0.875em]">
+          {children}
+        </code>
+      ),
+      hr: () => <hr className="my-4 border-border/30" />,
+      blockquote: ({ children }) => (
+        <blockquote className="border-l-2 border-primary/40 pl-3 italic text-foreground/60 my-3">
+          {children}
+        </blockquote>
+      ),
 
-    case 'numbered-list':
-      return (
-        <ol className={cn('my-2 space-y-2', compact ? 'space-y-1.5' : '')}>
-          {block.items.map((item, i) => (
-            <li key={i} className="flex items-start gap-2.5">
-              <span
-                className={cn(
-                  'shrink-0 flex items-center justify-center rounded-full bg-primary/10 text-primary font-semibold leading-none',
-                  compact
-                    ? 'h-4 w-4 text-[10px] mt-0.5'
-                    : 'h-5 w-5 text-[11px] mt-0.5',
-                )}
-              >
-                {i + 1}
-              </span>
-              <span
-                className={cn(
-                  'text-foreground/80 leading-relaxed',
-                  compact ? 'text-xs' : 'text-sm',
-                )}
-              >
-                <InlineContent nodes={item} />
-              </span>
-            </li>
-          ))}
-        </ol>
-      )
+      // ── Lists ──────────────────────────────────────────────────────────
+      ul: ({ children }) => (
+        <OrderedContext.Provider value={false}>
+          <ul className={cn('my-2 space-y-1.5 list-none pl-0', compact ? 'space-y-1' : '')}>
+            {children}
+          </ul>
+        </OrderedContext.Provider>
+      ),
+      ol: ({ children }) => (
+        <OrderedContext.Provider value={true}>
+          <ol className={cn(
+            'my-2 list-decimal pl-5 space-y-1.5',
+            compact ? 'space-y-1' : '',
+            '[&>li::marker]:text-primary [&>li::marker]:font-semibold',
+          )}>
+            {children}
+          </ol>
+        </OrderedContext.Provider>
+      ),
+      li: LiItem,
 
-    case 'table':
-      return <TableRenderer block={block} compact={compact} />
+      // ── GFM Tables ────────────────────────────────────────────────────
+      table: ({ children }) => (
+        <div className="my-3 w-full overflow-x-auto rounded-md border border-border/50">
+          <table className="w-full text-left border-collapse">{children}</table>
+        </div>
+      ),
+      thead: ({ children }) => (
+        <thead className="border-b border-border/50 bg-muted/40">{children}</thead>
+      ),
+      tbody: ({ children }) => <tbody>{children}</tbody>,
+      tr: ({ children }) => (
+        <tr className="border-b border-border/30 last:border-0 even:bg-muted/20 transition-colors">
+          {children}
+        </tr>
+      ),
+      th: ({ children }) => (
+        <th className={cn('px-3 py-2 font-semibold text-foreground whitespace-nowrap', tblSz)}>
+          {children}
+        </th>
+      ),
+      td: ({ children }) => (
+        <td className={cn('px-3 py-2 text-foreground/80 align-top', tblSz)}>
+          {children}
+        </td>
+      ),
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compact])
 
-    default:
-      return null
-  }
+  return (
+    <Markdown remarkPlugins={[remarkGfm]} components={components}>
+      {content}
+    </Markdown>
+  )
 }
 
 // ─── Section renderer ──────────────────────────────────────────────────────
@@ -283,36 +265,33 @@ function SectionRenderer({ section, compact, collapsible }: SectionProps) {
   const style = SECTION_STYLES[section.type]
   const statusStyle = section.status ? STATUS_STYLES[section.status] : null
 
-  const bodyBlocks = (
-    <div className={cn('space-y-2', compact ? 'space-y-1.5' : '')}>
-      {section.blocks.map((block, i) => (
-        <BlockRenderer key={i} block={block} compact={compact} />
-      ))}
+  const body = (
+    <div className={cn(
+      'border-t border-border/30',
+      compact ? 'px-4 pb-3 pt-2.5' : 'px-4 pb-4 pt-3',
+    )}>
+      <MarkdownContent content={section.rawContent} compact={compact} />
     </div>
   )
 
-  // No title: render blocks inline, no card chrome
+  // No title: render content inline, no card chrome
   if (!section.title) {
-    return bodyBlocks
+    return <MarkdownContent content={section.rawContent} compact={compact} />
   }
 
   const { Icon } = style
 
   const header = (
-    <div
-      className={cn(
-        'flex items-center justify-between gap-3 px-4',
-        compact ? 'py-2.5' : 'py-3',
-      )}
-    >
+    <div className={cn(
+      'flex items-center justify-between gap-3 px-4',
+      compact ? 'py-2.5' : 'py-3',
+    )}>
       <div className="flex items-center gap-2 min-w-0">
         <Icon className={cn('shrink-0', compact ? 'h-3.5 w-3.5' : 'h-4 w-4', style.iconColor)} />
-        <span
-          className={cn(
-            'font-semibold text-foreground truncate',
-            compact ? 'text-xs' : 'text-sm',
-          )}
-        >
+        <span className={cn(
+          'font-semibold text-foreground truncate',
+          compact ? 'text-xs' : 'text-sm',
+        )}>
           {section.title}
         </span>
       </div>
@@ -332,25 +311,12 @@ function SectionRenderer({ section, compact, collapsible }: SectionProps) {
           </Badge>
         )}
         {collapsible && (
-          <ChevronDown
-            className={cn(
-              'h-3.5 w-3.5 text-muted-foreground transition-transform duration-200',
-              open ? 'rotate-0' : '-rotate-90',
-            )}
-          />
+          <ChevronDown className={cn(
+            'h-3.5 w-3.5 text-muted-foreground transition-transform duration-200',
+            open ? 'rotate-0' : '-rotate-90',
+          )} />
         )}
       </div>
-    </div>
-  )
-
-  const body = (
-    <div
-      className={cn(
-        'border-t border-border/30',
-        compact ? 'px-4 pb-3 pt-2.5' : 'px-4 pb-4 pt-3',
-      )}
-    >
-      {bodyBlocks}
     </div>
   )
 
@@ -384,74 +350,17 @@ function SectionRenderer({ section, compact, collapsible }: SectionProps) {
 }
 
 // ─── Chat-variant inline renderer ─────────────────────────────────────────
-// For use inside chat bubbles: no section cards, just clean styled prose.
-
-function ChatBlockRenderer({ block }: { block: ContentBlock }) {
-  switch (block.type) {
-    case 'subheading':
-      return (
-        <p className="text-xs font-semibold text-foreground mt-3 mb-1 first:mt-0 flex items-center gap-1.5">
-          <span className="w-0.5 h-3 rounded-full bg-primary/60 inline-block shrink-0" />
-          {block.text}
-        </p>
-      )
-
-    case 'paragraph':
-      return (
-        <p className="text-sm text-foreground/85 leading-relaxed">
-          <InlineContent nodes={block.nodes} />
-        </p>
-      )
-
-    case 'bullet-list':
-      return (
-        <ul className="my-1.5 space-y-1">
-          {block.items.map((item, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-              <span className="text-sm text-foreground/85 leading-relaxed">
-                <InlineContent nodes={item} />
-              </span>
-            </li>
-          ))}
-        </ul>
-      )
-
-    case 'numbered-list':
-      return (
-        <ol className="my-1.5 space-y-1.5">
-          {block.items.map((item, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="shrink-0 flex items-center justify-center h-4 w-4 rounded-full bg-primary/10 text-primary text-[10px] font-semibold mt-0.5">
-                {i + 1}
-              </span>
-              <span className="text-sm text-foreground/85 leading-relaxed">
-                <InlineContent nodes={item} />
-              </span>
-            </li>
-          ))}
-        </ol>
-      )
-
-    case 'table':
-      return <TableRenderer block={block} compact={true} />
-
-    default:
-      return null
-  }
-}
+// Clean prose inside chat bubbles — no section card chrome.
 
 function ChatSectionRenderer({ section }: { section: ParsedSection }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1">
       {section.title && (
         <p className="text-xs font-semibold text-foreground/70 uppercase tracking-wide mt-3 first:mt-0">
           {section.title}
         </p>
       )}
-      {section.blocks.map((block, i) => (
-        <ChatBlockRenderer key={i} block={block} />
-      ))}
+      <MarkdownContent content={section.rawContent} compact={true} />
     </div>
   )
 }
@@ -481,7 +390,9 @@ export interface ComplianceFeedbackProps {
 /**
  * ComplianceFeedback renders AI compliance response text as a professional,
  * structured compliance report UI. It parses raw markdown into typed sections
- * and content blocks, then renders them with appropriate visual styling.
+ * and renders each section's body via react-markdown + remark-gfm, providing
+ * correct GFM table, heading, and list rendering alongside enterprise-grade
+ * section card styling (color-coded borders, icons, status badges).
  *
  * @example
  * // Full report mode (query detail pages, policy viewer)
@@ -515,12 +426,9 @@ export function ComplianceFeedback({
   const isSingleUnnamed = report.sections.length === 1 && !report.sections[0].title
 
   if (isSingleUnnamed) {
-    // No ## headers in the content — render blocks directly without any card chrome
     return (
-      <div className={cn('space-y-2', className)}>
-        {report.sections[0].blocks.map((block, i) => (
-          <BlockRenderer key={i} block={block} compact={false} />
-        ))}
+      <div className={cn('', className)}>
+        <MarkdownContent content={report.sections[0].rawContent} compact={false} />
       </div>
     )
   }

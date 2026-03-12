@@ -64,6 +64,8 @@ export interface ParsedSection {
   title: string
   type: SectionType
   status: ComplianceStatus | null
+  /** Raw markdown content of this section (below the ## heading line). */
+  rawContent: string
   blocks: ContentBlock[]
 }
 
@@ -293,6 +295,7 @@ function parseSectionBlock(raw: string, index: number): ParsedSection {
     title,
     type: detectSectionType(title),
     status: detectStatus(content),
+    rawContent: content,
     blocks: parseContentBlocks(content),
   }
 }
@@ -342,6 +345,7 @@ export function parseComplianceResponse(markdown: string): ParsedComplianceRepor
         title: '',
         type: 'general',
         status: detectStatus(markdown),
+        rawContent: markdown,
         blocks: parseContentBlocks(markdown),
       },
     ],
