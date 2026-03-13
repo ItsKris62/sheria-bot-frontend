@@ -87,7 +87,7 @@ const testimonials = [
 const pricingPlans = [
   {
     name: "Startup",
-    price: "KES 15,000",
+    price: "KES 25,000",
     period: "/month",
     description: "Perfect for growing fintech startups",
     features: [

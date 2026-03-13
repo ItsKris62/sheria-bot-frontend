@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/hooks/use-toast"
 import { trpc } from "@/lib/trpc"
+import { FeatureGate } from "@/components/plan/feature-gate"
 import {
   AlertTriangle,
   CheckCircle2,
@@ -732,6 +733,7 @@ export default function GapAnalysisPage() {
   const analysisHistory = Array.isArray(analyses) ? analyses : []
 
   return (
+    <FeatureGate feature="gapAnalysis">
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -956,5 +958,6 @@ export default function GapAnalysisPage() {
         </CardContent>
       </Card>
     </div>
+    </FeatureGate>
   )
 }

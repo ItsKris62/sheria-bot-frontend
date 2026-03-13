@@ -26,13 +26,18 @@ import {
   Folder,
   Bell,
   Sparkles,
+  Lock,
 } from "lucide-react"
+import { usePlan } from "@/lib/plan-context"
+import type { FeatureKey } from "@/lib/plan-context"
 
 interface NavItem {
   title: string
   href: string
   icon: React.ComponentType<{ className?: string }>
   badge?: string | number
+  /** When set, the item is visually locked when the user's plan lacks this feature. */
+  lockedFeature?: FeatureKey
 }
 
 interface NavGroup {
@@ -77,7 +82,7 @@ const startupNav: NavGroup[] = [
     items: [
       { title: "Compliance Query", href: "/startup/compliance-query", icon: Search, badge: "AI" },
       { title: "Checklists", href: "/startup/checklists", icon: ClipboardCheck },
-      { title: "Gap Analysis", href: "/startup/gap-analysis", icon: AlertTriangle },
+      { title: "Gap Analysis", href: "/startup/gap-analysis", icon: AlertTriangle, lockedFeature: "gapAnalysis" },
     ],
   },
   {
@@ -85,7 +90,7 @@ const startupNav: NavGroup[] = [
     items: [
       { title: "Applications", href: "/startup/applications", icon: FileText },
       { title: "Calendar", href: "/startup/calendar", icon: Calendar },
-      { title: "Documents", href: "/startup/documents", icon: Folder },
+      { title: "Documents", href: "/startup/documents", icon: Folder, lockedFeature: "documentRepository" },
       { title: "Monitor", href: "/startup/monitor", icon: Bell, badge: 3 },
     ],
   },
@@ -98,7 +103,8 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ userType }: DashboardSidebarProps) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
-  
+  const { hasFeature } = usePlan()
+
   const navGroups = userType === "regulator" ? regulatorNav : startupNav
 
   return (
@@ -152,13 +158,16 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
               <div className="flex flex-col gap-1">
                 {group.items.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+                  const isLocked = item.lockedFeature ? !hasFeature(item.lockedFeature) : false
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
                       className={cn(
                         "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300",
-                        isActive
+                        isLocked
+                          ? "opacity-50 cursor-pointer"
+                          : isActive
                           ? "bg-primary/15 text-primary shadow-sm"
                           : "text-muted-foreground hover:bg-primary/10 hover:text-foreground",
                         collapsed && "justify-center px-2"
@@ -166,17 +175,19 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                       title={collapsed ? item.title : undefined}
                     >
                       {/* Active indicator */}
-                      {isActive && (
+                      {isActive && !isLocked && (
                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
                       )}
                       <item.icon className={cn(
                         "h-5 w-5 shrink-0 transition-all duration-300",
-                        isActive ? "text-primary" : "group-hover:text-primary"
+                        isLocked ? "text-muted-foreground" : isActive ? "text-primary" : "group-hover:text-primary"
                       )} />
                       {!collapsed && (
                         <>
                           <span className="flex-1">{item.title}</span>
-                          {item.badge && (
+                          {isLocked ? (
+                            <Lock className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
+                          ) : item.badge ? (
                             <span className={cn(
                               "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold transition-all duration-300",
                               typeof item.badge === "number"
@@ -185,7 +196,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                             )}>
                               {item.badge}
                             </span>
-                          )}
+                          ) : null}
                         </>
                       )}
                     </Link>

@@ -6,6 +6,7 @@ import { trpc, createTRPCClient, setAccessToken } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AuthUser, UserRole } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase-client";
+import { PlanProvider } from "@/lib/plan-context";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -95,7 +96,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <AuthInitializer>{children}</AuthInitializer>
+        <AuthInitializer>
+          <PlanProvider>{children}</PlanProvider>
+        </AuthInitializer>
       </QueryClientProvider>
     </trpc.Provider>
   );

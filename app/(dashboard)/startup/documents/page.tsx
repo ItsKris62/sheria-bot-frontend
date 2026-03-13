@@ -31,6 +31,7 @@ import {
 import { toast } from "@/hooks/use-toast"
 import { trpc } from "@/lib/trpc"
 import { getErrorMessage } from "@/lib/trpc"
+import { FeatureGate } from "@/components/plan/feature-gate"
 import { useAuthStore } from "@/lib/auth-store"
 import { UploadDocumentModal } from "@/components/vault/upload-document-modal"
 import { EditDocumentModal } from "@/components/vault/edit-document-modal"
@@ -390,6 +391,7 @@ export default function DocumentsPage() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
+    <FeatureGate feature="documentRepository">
     <div className="space-y-6">
       {/* ── Header ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -847,5 +849,6 @@ export default function DocumentsPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </FeatureGate>
   )
 }
