@@ -3,7 +3,8 @@
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { trpc, getErrorMessage, setAccessToken } from "@/lib/trpc";
+import { trpc, setAccessToken } from "@/lib/trpc";
+import { getAuthErrorMessage } from "@/lib/auth-error-messages";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AuthUser, UserRole } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase-client";
@@ -113,8 +114,8 @@ export function useAuth() {
     isAuthenticated,
     isLoading,
     isInitialized,
-    loginError: loginMutation.error ? getErrorMessage(loginMutation.error) : null,
-    registerError: registerMutation.error ? getErrorMessage(registerMutation.error) : null,
+    loginError: loginMutation.error ? getAuthErrorMessage(loginMutation.error) : null,
+    registerError: registerMutation.error ? getAuthErrorMessage(registerMutation.error) : null,
     isLoginLoading: loginMutation.isPending,
     isRegisterLoading: registerMutation.isPending,
   };

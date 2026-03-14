@@ -36,10 +36,27 @@ export function createTRPCClient() {
   });
 }
 
-/** Map tRPC error codes to user-friendly messages */
+/**
+ * Generic tRPC error mapper for non-auth routes.
+ * For auth routes (login, register, reset-password) use `getAuthErrorMessage`
+ * from `@/lib/auth-error-messages` instead — it has security-conscious mappings.
+ */
 export function getErrorMessage(error: unknown): string {
   if (error instanceof TRPCClientError) {
-    const code = error.data?.code;
+    const code = error.data?.code as string | undefined;
+
+    // Surface Zod validation errors with their specific messages
+    const zodError = error.data?.zodError;
+    if (zodError) {
+      const fieldErrors = zodError.fieldErrors as Record<string, string[]> | undefined;
+      if (fieldErrors) {
+        const firstField = Object.values(fieldErrors)[0];
+        if (firstField?.[0]) return firstField[0];
+      }
+      const formErrors = zodError.formErrors as string[] | undefined;
+      if (formErrors?.[0]) return formErrors[0];
+    }
+
     switch (code) {
       case "UNAUTHORIZED":
         return "Please sign in to continue.";
@@ -48,7 +65,8 @@ export function getErrorMessage(error: unknown): string {
       case "NOT_FOUND":
         return "The requested resource was not found.";
       case "TOO_MANY_REQUESTS":
-        return "Too many requests. Please try again later.";
+        // Preserve backend retryAfter message if present
+        return error.message || "Too many requests. Please wait a moment and try again.";
       case "BAD_REQUEST":
         return error.message || "Invalid request. Please check your input.";
       case "CONFLICT":
@@ -56,10 +74,16 @@ export function getErrorMessage(error: unknown): string {
       case "INTERNAL_SERVER_ERROR":
         return "Something went wrong on our end. Please try again.";
       default:
+        if (error.message?.toLowerCase().includes("network") || error.message?.toLowerCase().includes("fetch")) {
+          return "We couldn't reach our servers. Please check your internet connection and try again.";
+        }
         return error.message || "An unexpected error occurred.";
     }
   }
   if (error instanceof Error) {
+    if (error.message.toLowerCase().includes("network") || error.message.toLowerCase().includes("fetch")) {
+      return "We couldn't reach our servers. Please check your internet connection and try again.";
+    }
     return error.message;
   }
   return "An unexpected error occurred.";

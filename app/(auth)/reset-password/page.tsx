@@ -11,7 +11,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Scale, Eye, EyeOff, CheckCircle2, Loader2, ArrowRight, AlertCircle } from "lucide-react"
 import { LoadingScreen } from "@/components/loading-screen"
-import { trpc, getErrorMessage } from "@/lib/trpc"
+import { trpc } from "@/lib/trpc"
+import { getAuthErrorMessage } from "@/lib/auth-error-messages"
+import { PasswordStrengthIndicator, checkPasswordStrength } from "@/components/auth/password-strength-indicator"
 
 function ResetPasswordContent() {
   const router = useRouter()
@@ -25,18 +27,14 @@ function ResetPasswordContent() {
 
   const resetMutation = trpc.auth.resetPassword.useMutation()
 
-  const passwordRequirements = [
-    { met: password.length >= 8, text: "At least 8 characters" },
-    { met: /[A-Z]/.test(password), text: "One uppercase letter" },
-    { met: /[a-z]/.test(password), text: "One lowercase letter" },
-    { met: /[0-9]/.test(password), text: "One number" },
-  ]
-
-  const allRequirementsMet = passwordRequirements.every((req) => req.met)
+  const passwordStrength = checkPasswordStrength(password)
+  const confirmMismatch = confirmPassword !== "" && password !== confirmPassword
+  const confirmMatch = confirmPassword !== "" && password === confirmPassword
+  const canSubmit = passwordStrength.isValid && password === confirmPassword && confirmPassword !== "" && !!token
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!allRequirementsMet || password !== confirmPassword || !token) return
+    if (!canSubmit) return
     resetMutation.mutate({ token, newPassword: password })
   }
 
@@ -76,7 +74,7 @@ function ResetPasswordContent() {
             onClick={() => router.push("/login")}
           >
             Continue to Login
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
           </Button>
         </CardContent>
       </Card>
@@ -88,7 +86,7 @@ function ResetPasswordContent() {
       <CardHeader className="text-center">
         <Link href="/" className="mx-auto mb-4 flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <Scale className="h-5 w-5 text-primary-foreground" />
+            <Scale className="h-5 w-5 text-primary-foreground" aria-hidden="true" />
           </div>
           <span className="text-xl font-bold text-foreground">SheriaBot</span>
         </Link>
@@ -98,12 +96,13 @@ function ResetPasswordContent() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {resetMutation.isError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{getErrorMessage(resetMutation.error)}</AlertDescription>
+            <Alert variant="destructive" role="alert">
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
+              <AlertDescription>{getAuthErrorMessage(resetMutation.error)}</AlertDescription>
             </Alert>
           )}
 
+          {/* New password */}
           <div className="space-y-2">
             <Label htmlFor="password">New Password</Label>
             <div className="relative">
@@ -115,31 +114,26 @@ function ResetPasswordContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="h-11 pr-10"
+                aria-describedby="password-strength-reset"
+                autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
               </button>
             </div>
-          </div>
 
-          <div className="space-y-2 rounded-lg border border-border/50 bg-muted/30 p-3">
-            <p className="text-xs font-medium text-muted-foreground">Password Requirements</p>
-            <div className="grid grid-cols-2 gap-2">
-              {passwordRequirements.map((req) => (
-                <div key={req.text} className="flex items-center gap-2">
-                  <div className={`h-1.5 w-1.5 rounded-full ${req.met ? "bg-secondary" : "bg-muted-foreground/30"}`} />
-                  <span className={`text-xs ${req.met ? "text-secondary" : "text-muted-foreground"}`}>
-                    {req.text}
-                  </span>
-                </div>
-              ))}
+            {/* Strength indicator — replaces the old partial 4-rule checklist */}
+            <div id="password-strength-reset">
+              <PasswordStrengthIndicator password={password} showChecklist={true} />
             </div>
           </div>
 
+          {/* Confirm password */}
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <div className="relative">
@@ -150,29 +144,37 @@ function ResetPasswordContent() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="h-11 pr-10"
+                className={`h-11 pr-10 ${confirmMismatch ? "border-destructive focus-visible:ring-destructive" : confirmMatch ? "border-emerald-500 focus-visible:ring-emerald-500" : ""}`}
+                aria-describedby={confirmMismatch ? "confirm-error-reset" : undefined}
+                autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
               >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
               </button>
             </div>
-            {confirmPassword && password !== confirmPassword && (
-              <p className="text-xs text-destructive">Passwords do not match</p>
+            {confirmMismatch && (
+              <p id="confirm-error-reset" className="text-xs text-destructive" role="alert">
+                Passwords don&apos;t match. Please re-enter to confirm.
+              </p>
+            )}
+            {confirmMatch && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">Passwords match.</p>
             )}
           </div>
 
           <Button
             type="submit"
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            disabled={resetMutation.isPending || !allRequirementsMet || password !== confirmPassword}
+            disabled={resetMutation.isPending || !canSubmit}
           >
             {resetMutation.isPending ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                 Resetting...
               </>
             ) : (

@@ -30,8 +30,8 @@ export default function LoginPage() {
     try {
       await login(formData.email, formData.password)
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Sign in failed. Please check your credentials."
-      setError(msg)
+      const { getAuthErrorMessage } = await import("@/lib/auth-error-messages")
+      setError(getAuthErrorMessage(err))
     }
   }
 
@@ -88,8 +88,9 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
               </button>
             </div>
           </div>
