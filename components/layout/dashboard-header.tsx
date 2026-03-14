@@ -33,6 +33,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
+  MessageSquare,
 } from "lucide-react"
 import { useAuthStore } from "@/lib/auth-store"
 import { useAuth } from "@/hooks/use-auth"
@@ -51,9 +52,10 @@ function relativeTime(dateStr: string | Date): string {
 }
 
 /** Map backend notification types to UI icon variants */
-function notificationVariant(type: string): "alert" | "success" | "info" {
+function notificationVariant(type: string): "alert" | "success" | "info" | "ticket" {
   if (type === "COMPLIANCE_ALERT" || type === "DEADLINE_ALERT") return "alert"
   if (type === "POLICY_READY" || type === "DOCUMENT_READY") return "success"
+  if (type === "TICKET_CREATED" || type === "TICKET_STATUS_UPDATE" || type === "TICKET_RESPONSE") return "ticket"
   return "info"
 }
 
@@ -176,6 +178,8 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
                               ? "bg-destructive/10 text-destructive"
                               : variant === "success"
                               ? "bg-secondary/10 text-secondary"
+                              : variant === "ticket"
+                              ? "bg-emerald-500/10 text-emerald-600"
                               : "bg-primary/10 text-primary"
                           }`}
                         >
@@ -183,6 +187,8 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
                             <AlertCircle className="h-4 w-4" />
                           ) : variant === "success" ? (
                             <CheckCircle2 className="h-4 w-4" />
+                          ) : variant === "ticket" ? (
+                            <MessageSquare className="h-4 w-4" />
                           ) : (
                             <FileText className="h-4 w-4" />
                           )}
