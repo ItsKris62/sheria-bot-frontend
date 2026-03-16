@@ -92,8 +92,7 @@ export function RegulatorLogoStrip({ compact = false }: RegulatorLogoStripProps)
           <div className="mb-10 flex items-center justify-center gap-4">
             <span className="h-px flex-1 max-w-[120px] bg-border/40" />
             <p
-              className="text-xs font-semibold uppercase tracking-[0.25em] shrink-0"
-              style={{ color: "#00875A" }}
+              className="text-xs font-semibold uppercase tracking-[0.25em] shrink-0 text-primary"
             >
               Regulations We Cover
             </p>

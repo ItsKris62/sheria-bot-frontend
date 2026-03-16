@@ -142,8 +142,29 @@ export function Footer() {
           </div>
         </div>
 
+        {/* IntaSend Trust Badge */}
+        <div className="mt-16 flex flex-col items-center gap-2 border-t border-border/50 pt-10">
+          <Link href="https://intasend.com/security" target="_blank" rel="noopener noreferrer">
+            <Image
+              src="https://intasend-prod-static.s3.amazonaws.com/img/trust-badges/intasend-trust-badge-no-mpesa-hr-dark.png"
+              alt="IntaSend Secure Payments (PCI-DSS Compliant)"
+              width={220}
+              height={66}
+              className="h-auto w-[220px] object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
+            />
+          </Link>
+          <Link
+            href="https://intasend.com/security"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors duration-300"
+          >
+            Secured by IntaSend Payments
+          </Link>
+        </div>
+
         {/* Bottom Bar */}
-        <div className="mt-16 flex flex-col items-center justify-between gap-6 border-t border-border/50 pt-8 md:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-6 border-t border-border/50 pt-8 md:flex-row">
           <div className="flex flex-col items-center gap-2 md:items-start">
             <p className="text-sm text-muted-foreground">
               &copy; {new Date().getFullYear()} SheriaBot. All rights reserved.
