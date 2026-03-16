@@ -1,10 +1,9 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -49,6 +48,7 @@ import {
   BookOpen,
   TrendingUp,
   ShieldCheck,
+  MinusCircle,
 } from "lucide-react"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -121,14 +121,85 @@ const PRIORITY_CONFIG: Record<string, { label: string; color: string; badge: str
   },
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  NOT_STARTED: "border-border/50",
-  IN_PROGRESS: "border-blue-300 bg-blue-50/30 dark:bg-blue-900/10",
-  COMPLETED: "border-green-300 bg-green-50/30 dark:bg-green-900/10",
-  FAILED: "border-destructive/50 bg-destructive/5",
+// ─── Local Types ──────────────────────────────────────────────────────────────
+// Backend uses path aliases not resolvable in frontend tsconfig → cast via these types.
+
+type LegacyItemStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"
+type NormalizedItemStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "NOT_APPLICABLE"
+
+type ChecklistItemLocal = {
+  id: string
+  category: string
+  title: string
+  description: string
+  guidance: string | null
+  regulatoryReference: string
+  actionItems: string[]
+  deadline: string | null
+  penalty: string | null
+  priority: string
+  status: NormalizedItemStatus
+  notes: string | null
+  order: number
+  completedAt: Date | null
+  completedById: string | null
 }
 
-// ─── Multi-Select Component ────────────────────────────────────────────────
+type ChecklistCategoryLocal = {
+  name: string
+  items: ChecklistItemLocal[]
+  completedCount: number
+  totalCount: number
+  progress: number
+}
+
+type ChecklistDetailLocal = {
+  id: string
+  title: string
+  productType: string | null
+  businessStage: string | null
+  progress: number
+  completedItems: number
+  totalItems: number
+  status: string
+  createdAt: Date
+  updatedAt: Date
+  completedAt: Date | null
+  isNormalized: true
+  categories: ChecklistCategoryLocal[]
+}
+
+type ChecklistStatusLocal = {
+  checklistId: string
+  status: string
+  progress: number
+  completedItems: number
+  totalItems: number
+  title: string
+  createdAt: Date
+  isNormalized: boolean
+}
+
+type ChecklistSummaryLocal = {
+  id: string
+  title: string
+  productType: string | null
+  businessStage: string | null
+  progress: number
+  completedItems: number
+  totalItems: number
+  criticalItems: number
+  status: string
+  createdAt: Date
+  updatedAt: Date
+  isNormalized: boolean
+}
+
+/** Polling budget: 80 polls × 3 s = 4 minutes */
+const POLL_INTERVAL_MS  = 3_000
+const POLL_TIMEOUT_MS   = 4 * 60 * 1_000 // 4 minutes
+
+// ─── Multi-Select Component ───────────────────────────────────────────────────
 
 function MultiSelect({
   options,
@@ -170,7 +241,8 @@ function MultiSelect({
   )
 }
 
-// ─── Generate Checklist Dialog ─────────────────────────────────────────────
+// ─── Generate Checklist Dialog ────────────────────────────────────────────────
+// Fire-and-forget: submits async mutation, closes immediately, polls in detail view.
 
 function GenerateChecklistDialog({
   onSuccess,
@@ -184,24 +256,24 @@ function GenerateChecklistDialog({
   const [servicesOffered, setServicesOffered] = useState<string[]>([])
   const [additionalConcerns, setAdditionalConcerns] = useState("")
 
-  const generateMutation = trpc.compliance.generateChecklist.useMutation({
-    onSuccess: (data) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const generateMutation = trpc.compliance.generateChecklistAsync.useMutation<any>({
+    onSuccess: (data: { checklistId: string; status: string }) => {
       toast({
-        title: "Checklist generated",
-        description: "Your compliance checklist is ready. Review and track your progress below.",
+        title: "Generating your checklist",
+        description:
+          "Your checklist is being built in the background — progress will appear below.",
       })
       setOpen(false)
       resetForm()
-      // Navigate to the new checklist immediately
-      onSuccess(data.id)
+      onSuccess(data.checklistId)
     },
-    onError: (err) => {
+    onError: (err: { message?: string }) => {
       toast({
-        title: "Generation failed",
-        description: err.message || "Failed to generate checklist. Please try again.",
+        title: "Failed to start generation",
+        description: err.message ?? "Please try again.",
         variant: "destructive",
       })
-      // Form stays open with inputs preserved so user can retry
     },
   })
 
@@ -228,11 +300,14 @@ function GenerateChecklistDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => {
-      if (generateMutation.isPending) return // Prevent closing while generating
-      setOpen(v)
-      if (!v) resetForm()
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (generateMutation.isPending) return
+        setOpen(v)
+        if (!v) resetForm()
+      }}
+    >
       <DialogTrigger asChild>
         <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="mr-2 h-4 w-4" />
@@ -254,7 +329,10 @@ function GenerateChecklistDialog({
         <div className="space-y-5 py-2">
           {/* Product Type */}
           <div className="space-y-2">
-            <Label>Fintech Product / Service Type <span className="text-destructive">*</span></Label>
+            <Label>
+              Fintech Product / Service Type{" "}
+              <span className="text-destructive">*</span>
+            </Label>
             <Select
               value={productType}
               onValueChange={setProductType}
@@ -265,7 +343,9 @@ function GenerateChecklistDialog({
               </SelectTrigger>
               <SelectContent>
                 {PRODUCT_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -273,7 +353,9 @@ function GenerateChecklistDialog({
 
           {/* Business Stage */}
           <div className="space-y-2">
-            <Label>Business Stage <span className="text-destructive">*</span></Label>
+            <Label>
+              Business Stage <span className="text-destructive">*</span>
+            </Label>
             <Select
               value={businessStage}
               onValueChange={setBusinessStage}
@@ -284,7 +366,9 @@ function GenerateChecklistDialog({
               </SelectTrigger>
               <SelectContent>
                 {BUSINESS_STAGES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -292,7 +376,9 @@ function GenerateChecklistDialog({
 
           {/* Target Segments */}
           <div className="space-y-2">
-            <Label>Target Customer Segments <span className="text-destructive">*</span></Label>
+            <Label>
+              Target Customer Segments <span className="text-destructive">*</span>
+            </Label>
             <MultiSelect
               options={TARGET_SEGMENTS}
               selected={targetSegments}
@@ -303,7 +389,9 @@ function GenerateChecklistDialog({
 
           {/* Services Offered */}
           <div className="space-y-2">
-            <Label>Services Offered <span className="text-destructive">*</span></Label>
+            <Label>
+              Services Offered <span className="text-destructive">*</span>
+            </Label>
             <MultiSelect
               options={SERVICES_OFFERED}
               selected={servicesOffered}
@@ -314,7 +402,10 @@ function GenerateChecklistDialog({
 
           {/* Additional Concerns */}
           <div className="space-y-2">
-            <Label>Specific Compliance Concerns <span className="text-muted-foreground text-xs">(optional)</span></Label>
+            <Label>
+              Specific Compliance Concerns{" "}
+              <span className="text-muted-foreground text-xs">(optional)</span>
+            </Label>
             <Textarea
               placeholder="e.g. We plan to launch a mobile lending product targeting informal traders in rural counties..."
               value={additionalConcerns}
@@ -323,7 +414,9 @@ function GenerateChecklistDialog({
               maxLength={1000}
               disabled={generateMutation.isPending}
             />
-            <p className="text-xs text-muted-foreground text-right">{additionalConcerns.length}/1000</p>
+            <p className="text-xs text-muted-foreground text-right">
+              {additionalConcerns.length}/1000
+            </p>
           </div>
 
           {/* Info box */}
@@ -331,26 +424,12 @@ function GenerateChecklistDialog({
             <div className="flex items-start gap-2">
               <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <p className="text-sm text-muted-foreground">
-                Our AI retrieves relevant passages from Kenyan regulatory documents (CBK, DPA, POCAMLA, etc.)
-                to ground your checklist in actual law — not generic guidance.
+                Our AI retrieves relevant passages from Kenyan regulatory documents (CBK, DPA, POCAMLA,
+                etc.) to ground your checklist in actual law — not generic guidance. Generation runs in
+                the background and typically takes 1–3 minutes.
               </p>
             </div>
           </div>
-
-          {/* Generating state message */}
-          {generateMutation.isPending && (
-            <div className="rounded-lg bg-primary/5 border border-primary/20 p-4">
-              <div className="flex items-center gap-3">
-                <Loader2 className="h-5 w-5 animate-spin text-primary shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">Generating your checklist...</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Querying regulatory database and generating items. This takes 30–90 seconds.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           <Button
             onClick={handleGenerate}
@@ -360,7 +439,7 @@ function GenerateChecklistDialog({
             {generateMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating — please wait 30–90 seconds...
+                Starting generation...
               </>
             ) : (
               <>
@@ -375,30 +454,20 @@ function GenerateChecklistDialog({
   )
 }
 
-// ─── Checklist Card (Summary) ──────────────────────────────────────────────
+// ─── Checklist Card (Summary) ─────────────────────────────────────────────────
 
 function ChecklistCard({
   checklist,
   onSelect,
   onDelete,
 }: {
-  checklist: {
-    id: string
-    title: string
-    productType: string | null
-    businessStage: string | null
-    progress: number
-    status: string
-    totalItems: number
-    criticalItems: number
-    createdAt: Date
-  }
+  checklist: ChecklistSummaryLocal
   onSelect: (id: string) => void
   onDelete: (id: string) => void
 }) {
-  const isFailed = checklist.status === "FAILED"
+  const isFailed    = checklist.status === "FAILED"
   const isGenerating = checklist.status === "GENERATING"
-  const isCompleted = checklist.status === "COMPLETED"
+  const isCompleted  = checklist.status === "COMPLETED"
 
   const statusIcon = isCompleted && checklist.progress === 100
     ? <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -413,16 +482,20 @@ function ChecklistCard({
   return (
     <Card
       className={`border-border/50 bg-card transition-shadow hover:shadow-lg ${
-        isCompleted && !isFailed ? "cursor-pointer" : ""
+        !isFailed ? "cursor-pointer" : ""
       }`}
-      onClick={() => isCompleted && !isFailed && onSelect(checklist.id)}
+      onClick={() => !isFailed && onSelect(checklist.id)}
     >
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
-          <Badge variant="outline" className="text-xs">{checklist.productType ?? "Compliance"}</Badge>
+          <Badge variant="outline" className="text-xs">
+            {checklist.productType ?? "Compliance"}
+          </Badge>
           {statusIcon}
         </div>
-        <CardTitle className="mt-2 text-foreground text-base leading-tight">{checklist.title}</CardTitle>
+        <CardTitle className="mt-2 text-foreground text-base leading-tight">
+          {checklist.title}
+        </CardTitle>
         <CardDescription className="text-xs">
           {new Date(checklist.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
         </CardDescription>
@@ -437,7 +510,7 @@ function ChecklistCard({
           ) : isGenerating ? (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />
-              Generating your checklist...
+              Generating your checklist — click to view progress
             </p>
           ) : (
             <>
@@ -445,32 +518,55 @@ function ChecklistCard({
                 <span className="text-muted-foreground">{checklist.totalItems} items</span>
                 <span className="font-medium text-foreground">{checklist.progress}%</span>
               </div>
-              <Progress value={checklist.progress} className="h-2" />
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-2 rounded-full bg-primary transition-all duration-300"
+                  style={{ width: `${checklist.progress}%` }}
+                />
+              </div>
               {checklist.criticalItems > 0 && (
                 <p className="text-xs text-red-600 flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
-                  {checklist.criticalItems} critical item{checklist.criticalItems > 1 ? "s" : ""} pending
+                  {checklist.criticalItems} critical item
+                  {checklist.criticalItems > 1 ? "s" : ""} pending
                 </p>
               )}
             </>
           )}
           <div className="flex gap-2">
-            {isCompleted && !isFailed && (
+            {!isFailed && (
               <Button
                 variant="outline"
                 size="sm"
                 className="flex-1 bg-transparent"
-                onClick={(e) => { e.stopPropagation(); onSelect(checklist.id) }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onSelect(checklist.id)
+                }}
               >
-                View Checklist
-                <ChevronRight className="ml-1 h-3 w-3" />
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    View Progress
+                  </>
+                ) : (
+                  <>
+                    View Checklist
+                    <ChevronRight className="ml-1 h-3 w-3" />
+                  </>
+                )}
               </Button>
             )}
             <Button
               variant="ghost"
               size="sm"
-              className={`text-destructive hover:text-destructive hover:bg-destructive/10 ${isCompleted && !isFailed ? "" : "flex-1"}`}
-              onClick={(e) => { e.stopPropagation(); onDelete(checklist.id) }}
+              className={`text-destructive hover:text-destructive hover:bg-destructive/10 ${
+                !isFailed ? "" : "flex-1"
+              }`}
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(checklist.id)
+              }}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -481,19 +577,24 @@ function ChecklistCard({
   )
 }
 
-// ─── Item Status Icon ──────────────────────────────────────────────────────
+// ─── Item Status Icon ─────────────────────────────────────────────────────────
 
-function ItemStatusIcon({ status }: { status: string }) {
-  if (status === "COMPLETED") {
-    return <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
-  }
-  if (status === "IN_PROGRESS") {
-    return <Clock className="h-5 w-5 text-blue-500 shrink-0" />
-  }
+function NormalizedStatusIcon({ status }: { status: NormalizedItemStatus }) {
+  if (status === "COMPLETED")      return <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+  if (status === "IN_PROGRESS")    return <Clock className="h-5 w-5 text-blue-500 shrink-0" />
+  if (status === "NOT_APPLICABLE") return <MinusCircle className="h-5 w-5 text-muted-foreground/40 shrink-0" />
   return <Circle className="h-5 w-5 text-muted-foreground/50 shrink-0" />
 }
 
-// ─── PDF Export Utility ────────────────────────────────────────────────────
+function LegacyStatusIcon({ status }: { status: string }) {
+  if (status === "COMPLETED") return <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+  if (status === "IN_PROGRESS") return <Clock className="h-5 w-5 text-blue-500 shrink-0" />
+  return <Circle className="h-5 w-5 text-muted-foreground/50 shrink-0" />
+}
+
+// ─── PDF Export (Legacy) ──────────────────────────────────────────────────────
+// TODO: add a normalized-checklist PDF export when NormalizedChecklistDetailView
+// is stable. For now, this function is used only for legacy (isNormalized=false) checklists.
 
 function buildPrintHtml(data: {
   title: string
@@ -528,26 +629,26 @@ function buildPrintHtml(data: {
   const { title, productType, businessStage, createdAt, checklistData, itemProgress } = data
   const { categories, metadata } = checklistData
 
-  const completedItems = Object.values(itemProgress).filter((v) => v === "COMPLETED").length
+  const completedItems  = Object.values(itemProgress).filter((v) => v === "COMPLETED").length
   const inProgressItems = Object.values(itemProgress).filter((v) => v === "IN_PROGRESS").length
-  const mediumItems = categories.flatMap((c) => c.items).filter((i) => i.priority === "MEDIUM").length
-  const lowItems = categories.flatMap((c) => c.items).filter((i) => i.priority === "LOW").length
-  const progressPct = metadata.totalItems > 0 ? Math.round((completedItems / metadata.totalItems) * 100) : 0
-  const dateStr = new Date(createdAt).toLocaleDateString("en-KE", { day: "2-digit", month: "long", year: "numeric" })
+  const mediumItems     = categories.flatMap((c) => c.items).filter((i) => i.priority === "MEDIUM").length
+  const lowItems        = categories.flatMap((c) => c.items).filter((i) => i.priority === "LOW").length
+  const progressPct     = metadata.totalItems > 0 ? Math.round((completedItems / metadata.totalItems) * 100) : 0
+  const dateStr         = new Date(createdAt).toLocaleDateString("en-KE", { day: "2-digit", month: "long", year: "numeric" })
 
   const priorityBadge = (p: string) => {
     const colors: Record<string, string> = {
       CRITICAL: "background:#DC2626;color:#fff",
-      HIGH: "background:#EA580C;color:#fff",
-      MEDIUM: "background:#CA8A04;color:#fff",
-      LOW: "background:#16A34A;color:#fff",
+      HIGH:     "background:#EA580C;color:#fff",
+      MEDIUM:   "background:#CA8A04;color:#fff",
+      LOW:      "background:#16A34A;color:#fff",
     }
     return `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;${colors[p] ?? colors.LOW}">${p}</span>`
   }
 
   const itemStatusBadge = (id: string) => {
     const s = itemProgress[id] ?? "NOT_STARTED"
-    if (s === "COMPLETED") return `<span style="color:#16A34A;font-weight:600">✓ Completed</span>`
+    if (s === "COMPLETED")  return `<span style="color:#16A34A;font-weight:600">✓ Completed</span>`
     if (s === "IN_PROGRESS") return `<span style="color:#2563EB;font-weight:600">⟳ In Progress</span>`
     return `<span style="color:#6B7280">○ Not Started</span>`
   }
@@ -616,7 +717,6 @@ function buildPrintHtml(data: {
   </style>
 </head>
 <body>
-  <!-- Cover Page -->
   <div style="text-align:center;padding:40px 20px 32px;border-bottom:3px solid #1A2B4A;margin-bottom:32px">
     <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:16px">
       <div style="background:#1A2B4A;color:#00875A;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">S</div>
@@ -631,8 +731,6 @@ function buildPrintHtml(data: {
     </div>
     <p style="margin-top:24px;font-size:11px;color:#9CA3AF">Generated by SheriaBot — AI-Powered Regulatory Compliance for Kenya&apos;s Fintech Sector</p>
   </div>
-
-  <!-- Executive Summary -->
   <div style="margin-bottom:32px;page-break-after:always">
     <h2 style="font-size:16px;font-weight:700;color:#1A2B4A;margin-bottom:16px;border-bottom:2px solid #00875A;padding-bottom:6px">Executive Summary</h2>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
@@ -649,44 +747,12 @@ function buildPrintHtml(data: {
         <p style="font-size:11px;color:#6B7280;margin:4px 0 0">Est. Days to Compliance</p>
       </div>
     </div>
-    <h3 style="font-size:13px;font-weight:600;color:#1A2B4A;margin-bottom:10px">Items by Priority</h3>
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead>
-        <tr style="background:#1A2B4A;color:#fff">
-          <th style="padding:8px 12px;text-align:left;border-radius:4px 0 0 4px">Priority</th>
-          <th style="padding:8px 12px;text-align:center">Total</th>
-          <th style="padding:8px 12px;text-align:center">Completed</th>
-          <th style="padding:8px 12px;text-align:center;border-radius:0 4px 4px 0">Pending</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${[
-          { label: "Critical", key: "CRITICAL", count: metadata.criticalItems, color: "#DC2626" },
-          { label: "High", key: "HIGH", count: metadata.highItems, color: "#EA580C" },
-          { label: "Medium", key: "MEDIUM", count: mediumItems, color: "#CA8A04" },
-          { label: "Low", key: "LOW", count: lowItems, color: "#16A34A" },
-        ].map((row, i) => {
-          const allItems = categories.flatMap((c) => c.items).filter((it) => it.priority === row.key)
-          const done = allItems.filter((it) => itemProgress[it.id] === "COMPLETED").length
-          return `<tr style="background:${i % 2 === 0 ? "#F9FAFB" : "#fff"}">
-            <td style="padding:8px 12px"><span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${row.color}"></span>${row.label}</span></td>
-            <td style="padding:8px 12px;text-align:center;font-weight:600">${row.count}</td>
-            <td style="padding:8px 12px;text-align:center;color:#16A34A">${done}</td>
-            <td style="padding:8px 12px;text-align:center;color:#DC2626">${row.count - done}</td>
-          </tr>`
-        }).join("")}
-      </tbody>
-    </table>
     ${inProgressItems > 0 ? `<p style="margin-top:12px;font-size:12px;color:#2563EB">⟳ ${inProgressItems} items currently in progress</p>` : ""}
   </div>
-
-  <!-- Checklist Categories -->
   <div>
     <h2 style="font-size:16px;font-weight:700;color:#1A2B4A;margin-bottom:16px;border-bottom:2px solid #00875A;padding-bottom:6px">Compliance Requirements</h2>
     ${categoryRows}
   </div>
-
-  <!-- Disclaimer -->
   <div style="margin-top:40px;padding:20px;background:#F7F8FA;border-radius:8px;border-top:3px solid #D4A843;page-break-before:always">
     <h2 style="font-size:14px;font-weight:700;color:#1A2B4A;margin-bottom:10px">Disclaimer</h2>
     <p style="font-size:11px;color:#4A5568;line-height:1.6">
@@ -721,16 +787,460 @@ function handleExportPdf(data: Parameters<typeof buildPrintHtml>[0]) {
   printWindow.document.write(html)
   printWindow.document.close()
   printWindow.focus()
-  setTimeout(() => {
-    printWindow.print()
-  }, 500)
+  setTimeout(() => { printWindow.print() }, 500)
 }
 
-// ─── Active Checklist Detail View ─────────────────────────────────────────
+// ─── Normalized Checklist Detail View ────────────────────────────────────────
 
-type ItemStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"
+function NormalizedChecklistDetailView({
+  checklistId,
+  statusData,
+  onBack,
+}: {
+  checklistId: string
+  statusData: ChecklistStatusLocal
+  onBack: () => void
+}) {
+  const utils = trpc.useUtils()
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({})
+  const [expandedItems, setExpandedItems]   = useState<Record<string, boolean>>({})
+  const [editingNotes, setEditingNotes]     = useState<Record<string, string>>({})
 
-function ChecklistDetailView({
+  const { data: rawDetail, isLoading } = trpc.compliance.getChecklistDetail.useQuery(
+    { checklistId },
+    { enabled: true }
+  )
+  const detailData = rawDetail as ChecklistDetailLocal | undefined
+
+  const updateItemMutation = trpc.compliance.updateChecklistItem.useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onMutate: async (variables: any) => {
+      await utils.compliance.getChecklistDetail.cancel({ checklistId })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const prev = utils.compliance.getChecklistDetail.getData({ checklistId } as any)
+      // Optimistic update
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      utils.compliance.getChecklistDetail.setData({ checklistId } as any, (old: any) => {
+        if (!old) return old
+        return {
+          ...old,
+          categories: old.categories.map((cat: ChecklistCategoryLocal) => ({
+            ...cat,
+            items: cat.items.map((item: ChecklistItemLocal) =>
+              item.id === variables.itemId
+                ? { ...item, status: variables.status, notes: variables.notes ?? item.notes }
+                : item
+            ),
+          })),
+        }
+      })
+      return { prev }
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onSuccess: (data: any) => {
+      // Server response wins — apply authoritative server values
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      utils.compliance.getChecklistDetail.setData({ checklistId } as any, (old: any) => {
+        if (!old) return old
+        return {
+          ...old,
+          progress:       data.checklist.progress,
+          completedItems: data.checklist.completedItems,
+          status:         data.checklist.status,
+          completedAt:    data.checklist.completedAt,
+          categories: old.categories.map((cat: ChecklistCategoryLocal) => ({
+            ...cat,
+            items: cat.items.map((item: ChecklistItemLocal) =>
+              item.id === data.item.id
+                ? { ...item, status: data.item.status, notes: data.item.notes, completedAt: data.item.completedAt }
+                : item
+            ),
+          })),
+        }
+      })
+      // Refresh list card progress
+      utils.compliance.listChecklists.invalidate()
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any, _variables: any, context: any) => {
+      if (context?.prev) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        utils.compliance.getChecklistDetail.setData({ checklistId } as any, context.prev as any)
+      } else {
+        utils.compliance.getChecklistDetail.invalidate({ checklistId } as any)
+      }
+      toast({ title: "Failed to update item", description: err.message, variant: "destructive" })
+    },
+  })
+
+  // Cycle: PENDING → IN_PROGRESS → COMPLETED → PENDING
+  const cycleStatus = (current: NormalizedItemStatus): NormalizedItemStatus => {
+    if (current === "PENDING"      || current === "NOT_APPLICABLE") return "IN_PROGRESS"
+    if (current === "IN_PROGRESS") return "COMPLETED"
+    return "PENDING"
+  }
+
+  const handleStatusCycle = useCallback(
+    (itemId: string, current: NormalizedItemStatus) => {
+      const next = cycleStatus(current)
+      updateItemMutation.mutate({ checklistId, itemId, status: next })
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [checklistId, updateItemMutation]
+  )
+
+  const handleStatusSelect = useCallback(
+    (itemId: string, status: NormalizedItemStatus, notes?: string) => {
+      updateItemMutation.mutate({ checklistId, itemId, status, notes })
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [checklistId, updateItemMutation]
+  )
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    )
+  }
+
+  if (!detailData) {
+    return (
+      <Card className="border-destructive/50">
+        <CardContent className="pt-6 text-center">
+          <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
+          <p className="text-destructive font-medium">Failed to load checklist detail</p>
+          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>
+            ← Back
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const progress = detailData.progress
+  const completedCount  = detailData.completedItems
+  const totalItems      = detailData.totalItems
+  const isAllDone       = detailData.status === "COMPLETED"
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="mb-2 -ml-2 text-muted-foreground"
+          >
+            ← Back to Checklists
+          </Button>
+          <h2 className="text-xl font-bold text-foreground">{detailData.title}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {detailData.productType} · {detailData.businessStage}
+          </p>
+        </div>
+        {isAllDone && (
+          <Badge className="bg-green-600 text-white border-transparent text-sm px-3 py-1">
+            <CheckCircle2 className="h-4 w-4 mr-1.5" />
+            Fully Compliant
+          </Badge>
+        )}
+      </div>
+
+      {/* Progress Summary Card */}
+      <Card className="border-border/50 bg-primary/5">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-3">
+            <div>
+              <p className="text-sm font-medium text-foreground">Overall Progress</p>
+              <p className="text-4xl font-bold text-primary">{progress}%</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {completedCount} of {totalItems} completed
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {(["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const).map((priority) => {
+                const allItems = detailData.categories.flatMap((c) => c.items)
+                const count = allItems.filter((i) => i.priority === priority).length
+                const dot = PRIORITY_CONFIG[priority]?.dot ?? "bg-muted"
+                return (
+                  <div key={priority} className="flex items-center gap-1.5">
+                    <div className={`w-2 h-2 rounded-full ${dot}`} />
+                    <span className="text-muted-foreground capitalize">{priority.toLowerCase()}:</span>
+                    <span className="font-semibold text-foreground">{count}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+            <div
+              className="h-3 rounded-full bg-primary transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Hint */}
+      <p className="text-xs text-muted-foreground flex items-center gap-1">
+        <ShieldCheck className="h-3 w-3" />
+        Click the status icon to cycle: Pending → In Progress → Completed. Use the dropdown for
+        &quot;Not Applicable&quot;.
+      </p>
+
+      {/* Categories */}
+      <div className="space-y-4">
+        {detailData.categories.map((category) => {
+          const isOpen      = openCategories[category.name] !== false // default open
+          const catProgress = category.progress
+
+          return (
+            <Collapsible
+              key={category.name}
+              open={isOpen}
+              onOpenChange={(open) =>
+                setOpenCategories((prev) => ({ ...prev, [category.name]: open }))
+              }
+            >
+              <Card className="border-border/50 bg-card">
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg pb-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {isOpen ? (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                        )}
+                        <div className="min-w-0">
+                          <CardTitle className="text-base font-semibold truncate">
+                            {category.name}
+                            <span className="ml-2 text-xs font-normal text-muted-foreground">
+                              ({category.totalCount} item
+                              {category.totalCount !== 1 ? "s" : ""})
+                            </span>
+                          </CardTitle>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-sm text-muted-foreground">
+                          {category.completedCount}/{category.totalCount}
+                        </span>
+                        <div className="w-20">
+                          <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="h-1.5 rounded-full bg-primary transition-all duration-300"
+                              style={{ width: `${catProgress}%` }}
+                            />
+                          </div>
+                        </div>
+                        <span className="text-sm font-medium w-10 text-right">
+                          {catProgress}%
+                        </span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="pt-0 space-y-3">
+                    {category.items.map((item) => {
+                      const pc         = PRIORITY_CONFIG[item.priority] ?? PRIORITY_CONFIG.LOW
+                      const isExpanded = expandedItems[item.id]
+                      const isNA       = item.status === "NOT_APPLICABLE"
+
+                      const borderClass =
+                        item.status === "COMPLETED"
+                          ? "border-green-300 bg-green-50/30 dark:bg-green-900/10"
+                          : item.status === "IN_PROGRESS"
+                          ? "border-blue-300 bg-blue-50/30 dark:bg-blue-900/10"
+                          : item.status === "NOT_APPLICABLE"
+                          ? "border-border/30 opacity-60"
+                          : "border-border/50"
+
+                      return (
+                        <div
+                          key={item.id}
+                          className={`rounded-lg border p-4 transition-colors ${borderClass}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <button
+                              type="button"
+                              onClick={() => handleStatusCycle(item.id, item.status)}
+                              className="mt-0.5 shrink-0 transition-transform hover:scale-110"
+                              title={`Status: ${item.status}. Click to advance.`}
+                            >
+                              <NormalizedStatusIcon status={item.status} />
+                            </button>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p
+                                    className={`font-semibold leading-tight mt-0.5 text-sm ${
+                                      item.status === "COMPLETED"
+                                        ? "text-muted-foreground line-through"
+                                        : "text-foreground"
+                                    }`}
+                                  >
+                                    {item.title}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-xs ${pc.badge}`}
+                                  >
+                                    {pc.label}
+                                  </Badge>
+                                </div>
+                              </div>
+
+                              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                                <BookOpen className="h-3 w-3 shrink-0" />
+                                {item.regulatoryReference}
+                              </p>
+
+                              {/* Guidance pill — shown when present */}
+                              {item.guidance && (
+                                <p className="text-xs text-primary/80 mt-1.5 bg-primary/5 rounded px-2 py-1 border border-primary/10">
+                                  {item.guidance}
+                                </p>
+                              )}
+
+                              {/* Status selector + expand toggle */}
+                              <div className="flex items-center gap-3 mt-2">
+                                <Select
+                                  value={item.status}
+                                  onValueChange={(val) =>
+                                    handleStatusSelect(item.id, val as NormalizedItemStatus)
+                                  }
+                                >
+                                  <SelectTrigger className="h-7 w-40 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="PENDING">Pending</SelectItem>
+                                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                                    <SelectItem value="COMPLETED">Completed</SelectItem>
+                                    <SelectItem value="NOT_APPLICABLE">Not Applicable</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setExpandedItems((prev) => ({
+                                      ...prev,
+                                      [item.id]: !prev[item.id],
+                                    }))
+                                  }
+                                  className="text-xs text-primary hover:underline"
+                                >
+                                  {isExpanded ? "Hide details ↑" : "View details ↓"}
+                                </button>
+                              </div>
+
+                              {isExpanded && (
+                                <div className="mt-3 space-y-3 text-sm border-t border-border/30 pt-3">
+                                  <div>
+                                    <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wide">
+                                      Description
+                                    </p>
+                                    <p className="text-muted-foreground text-xs leading-relaxed">
+                                      {item.description}
+                                    </p>
+                                  </div>
+
+                                  {item.actionItems?.length > 0 && (
+                                    <div>
+                                      <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wide">
+                                        Action Items
+                                      </p>
+                                      <ol className="space-y-1 list-decimal list-inside">
+                                        {item.actionItems.map((action, i) => (
+                                          <li key={i} className="text-xs text-muted-foreground">
+                                            {action}
+                                          </li>
+                                        ))}
+                                      </ol>
+                                    </div>
+                                  )}
+
+                                  <div className="grid grid-cols-2 gap-3">
+                                    {item.deadline && (
+                                      <div className="rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-2">
+                                        <p className="text-xs font-medium text-green-800 dark:text-green-400">
+                                          ⏰ Deadline
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                          {item.deadline}
+                                        </p>
+                                      </div>
+                                    )}
+                                    {item.penalty && (
+                                      <div className="rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-2">
+                                        <p className="text-xs font-medium text-red-700 dark:text-red-400">
+                                          ⚠️ Penalty
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                          {item.penalty}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Notes */}
+                                  {!isNA && (
+                                    <div>
+                                      <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wide">
+                                        Notes
+                                      </p>
+                                      <Textarea
+                                        className="text-xs min-h-[56px]"
+                                        placeholder="Add your internal notes..."
+                                        value={editingNotes[item.id] ?? item.notes ?? ""}
+                                        onChange={(e) =>
+                                          setEditingNotes((prev) => ({
+                                            ...prev,
+                                            [item.id]: e.target.value,
+                                          }))
+                                        }
+                                        onBlur={() => {
+                                          const notes = editingNotes[item.id]
+                                          if (notes !== undefined && notes !== (item.notes ?? "")) {
+                                            handleStatusSelect(item.id, item.status, notes || undefined)
+                                          }
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── Legacy Checklist Detail View ─────────────────────────────────────────────
+// Handles pre-March 2026 checklists stored as JSON blob + itemProgress map.
+
+function LegacyChecklistDetailView({
   checklistId,
   onBack,
 }: {
@@ -740,29 +1250,26 @@ function ChecklistDetailView({
   const utils = trpc.useUtils()
   const { data, isLoading, error } = trpc.compliance.getChecklist.useQuery({ id: checklistId })
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({})
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
-  const [isExporting, setIsExporting] = useState(false)
-  // Optimistic local progress state
-  const [localProgress, setLocalProgress] = useState<Record<string, string> | null>(null)
+  const [expandedItems, setExpandedItems]   = useState<Record<string, boolean>>({})
+  const [isExporting, setIsExporting]       = useState(false)
+  const [localProgress, setLocalProgress]   = useState<Record<string, string> | null>(null)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const itemProgress = localProgress ?? ((data?.itemProgress as Record<string, string>) ?? {})
 
   const updateProgressMutation = trpc.compliance.updateChecklistProgress.useMutation({
     onSuccess: () => {
       utils.compliance.getChecklist.invalidate({ id: checklistId })
-      utils.compliance.getUserChecklists.invalidate()
-      // Clear optimistic state after server confirms
+      utils.compliance.listChecklists.invalidate()
       setLocalProgress(null)
     },
     onError: (err) => {
-      // Revert optimistic update
       setLocalProgress(null)
       toast({ title: "Failed to save progress", description: err.message, variant: "destructive" })
     },
   })
 
-  // Cycle through: NOT_STARTED → IN_PROGRESS → COMPLETED → NOT_STARTED
-  const cycleStatus = (current: ItemStatus): ItemStatus => {
+  const cycleStatus = (current: LegacyItemStatus): LegacyItemStatus => {
     if (current === "NOT_STARTED") return "IN_PROGRESS"
     if (current === "IN_PROGRESS") return "COMPLETED"
     return "NOT_STARTED"
@@ -771,23 +1278,24 @@ function ChecklistDetailView({
   const handleItemStatusCycle = useCallback(
     (itemId: string) => {
       if (!data) return
-      const current = (itemProgress[itemId] ?? "NOT_STARTED") as ItemStatus
+      const current = (itemProgress[itemId] ?? "NOT_STARTED") as LegacyItemStatus
       const next = cycleStatus(current)
-      // Optimistic update
-      const updated: Record<string, ItemStatus> = { ...(itemProgress as Record<string, ItemStatus>), [itemId]: next }
+      const updated = { ...(itemProgress as Record<string, LegacyItemStatus>), [itemId]: next }
       setLocalProgress(updated)
       updateProgressMutation.mutate({ checklistId, itemProgress: updated })
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, checklistId, itemProgress, updateProgressMutation]
   )
 
   const handleItemStatusChange = useCallback(
-    (itemId: string, status: ItemStatus) => {
+    (itemId: string, status: LegacyItemStatus) => {
       if (!data) return
-      const updated: Record<string, ItemStatus> = { ...(itemProgress as Record<string, ItemStatus>), [itemId]: status }
+      const updated = { ...(itemProgress as Record<string, LegacyItemStatus>), [itemId]: status }
       setLocalProgress(updated)
       updateProgressMutation.mutate({ checklistId, itemProgress: updated })
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, checklistId, itemProgress, updateProgressMutation]
   )
 
@@ -808,7 +1316,9 @@ function ChecklistDetailView({
           <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
           <p className="text-destructive font-medium">Failed to load checklist</p>
           <p className="text-sm text-muted-foreground mt-1">{error?.message ?? "Unknown error"}</p>
-          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>← Back</Button>
+          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>
+            ← Back
+          </Button>
         </CardContent>
       </Card>
     )
@@ -843,18 +1353,15 @@ function ChecklistDetailView({
   const totalItems = checklistData?.metadata.totalItems ?? 0
   const progressPct = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0
 
-  const mediumItems = (checklistData?.categories ?? []).flatMap((c) => c.items).filter((i) => i.priority === "MEDIUM").length
-  const lowItems = (checklistData?.categories ?? []).flatMap((c) => c.items).filter((i) => i.priority === "LOW").length
-
   const handleExport = () => {
     if (!checklistData) return
     setIsExporting(true)
     try {
       handleExportPdf({
-        title: data.title,
-        productType: data.productType,
+        title:         data.title,
+        productType:   data.productType,
         businessStage: data.businessStage,
-        createdAt: data.createdAt,
+        createdAt:     data.createdAt,
         checklistData,
         itemProgress,
       })
@@ -865,10 +1372,14 @@ function ChecklistDetailView({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <Button variant="ghost" size="sm" onClick={onBack} className="mb-2 -ml-2 text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="mb-2 -ml-2 text-muted-foreground"
+          >
             ← Back to Checklists
           </Button>
           <h2 className="text-xl font-bold text-foreground">{data.title}</h2>
@@ -892,7 +1403,7 @@ function ChecklistDetailView({
         </Button>
       </div>
 
-      {/* Progress Summary Card */}
+      {/* Progress Summary */}
       <Card className="border-border/50 bg-primary/5">
         <CardContent className="pt-4 pb-4">
           <div className="flex items-center justify-between mb-3 flex-wrap gap-3">
@@ -903,20 +1414,6 @@ function ChecklistDetailView({
                 {completedCount} of {totalItems} completed
                 {inProgressCount > 0 && ` · ${inProgressCount} in progress`}
               </p>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {[
-                { label: "Critical", count: checklistData?.metadata.criticalItems ?? 0, dot: "bg-red-600" },
-                { label: "High", count: checklistData?.metadata.highItems ?? 0, dot: "bg-orange-500" },
-                { label: "Medium", count: mediumItems, dot: "bg-yellow-500" },
-                { label: "Low", count: lowItems, dot: "bg-green-600" },
-              ].map(({ label, count, dot }) => (
-                <div key={label} className="flex items-center gap-1.5">
-                  <div className={`w-2 h-2 rounded-full ${dot}`} />
-                  <span className="text-muted-foreground">{label}:</span>
-                  <span className="font-semibold text-foreground">{count}</span>
-                </div>
-              ))}
             </div>
           </div>
           <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
@@ -934,7 +1431,6 @@ function ChecklistDetailView({
         </CardContent>
       </Card>
 
-      {/* Categories */}
       {!checklistData ? (
         <Card>
           <CardContent className="pt-6 text-center">
@@ -944,31 +1440,35 @@ function ChecklistDetailView({
         </Card>
       ) : (
         <div className="space-y-4">
-          {/* Hint */}
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <ShieldCheck className="h-3 w-3" />
             Click the status icon on each item to cycle: Not Started → In Progress → Completed
           </p>
-
           {checklistData.categories.map((category) => {
-            const catItems = category.items
-            const catCompleted = catItems.filter((i) => itemProgress[i.id] === "COMPLETED").length
+            const catItems      = category.items
+            const catCompleted  = catItems.filter((i) => itemProgress[i.id] === "COMPLETED").length
             const catInProgress = catItems.filter((i) => itemProgress[i.id] === "IN_PROGRESS").length
-            const catProgress = catItems.length > 0 ? Math.round((catCompleted / catItems.length) * 100) : 0
-            const isOpen = openCategories[category.id] !== false // default open
+            const catProgress   = catItems.length > 0 ? Math.round((catCompleted / catItems.length) * 100) : 0
+            const isOpen        = openCategories[category.id] !== false
 
             return (
               <Collapsible
                 key={category.id}
                 open={isOpen}
-                onOpenChange={(open) => setOpenCategories((prev) => ({ ...prev, [category.id]: open }))}
+                onOpenChange={(open) =>
+                  setOpenCategories((prev) => ({ ...prev, [category.id]: open }))
+                }
               >
                 <Card className="border-border/50 bg-card">
                   <CollapsibleTrigger asChild>
                     <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg pb-3">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                          {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
+                          {isOpen ? (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                          )}
                           <div className="min-w-0">
                             <CardTitle className="text-base font-semibold truncate">
                               {category.name}
@@ -976,13 +1476,19 @@ function ChecklistDetailView({
                                 ({catItems.length} item{catItems.length !== 1 ? "s" : ""})
                               </span>
                             </CardTitle>
-                            <CardDescription className="text-xs mt-0.5 truncate">{category.description}</CardDescription>
+                            <CardDescription className="text-xs mt-0.5 truncate">
+                              {category.description}
+                            </CardDescription>
                           </div>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                           <span className="text-sm text-muted-foreground">
                             {catCompleted}/{catItems.length}
-                            {catInProgress > 0 && <span className="text-blue-500 ml-1">({catInProgress} in progress)</span>}
+                            {catInProgress > 0 && (
+                              <span className="text-blue-500 ml-1">
+                                ({catInProgress} in progress)
+                              </span>
+                            )}
                           </span>
                           <div className="w-20">
                             <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
@@ -992,7 +1498,9 @@ function ChecklistDetailView({
                               />
                             </div>
                           </div>
-                          <span className="text-sm font-medium w-10 text-right">{catProgress}%</span>
+                          <span className="text-sm font-medium w-10 text-right">
+                            {catProgress}%
+                          </span>
                         </div>
                       </div>
                     </CardHeader>
@@ -1000,55 +1508,64 @@ function ChecklistDetailView({
                   <CollapsibleContent>
                     <CardContent className="pt-0 space-y-3">
                       {catItems.map((item) => {
-                        const status = (itemProgress[item.id] ?? "NOT_STARTED") as ItemStatus
-                        const pc = PRIORITY_CONFIG[item.priority] ?? PRIORITY_CONFIG.LOW
+                        const status     = (itemProgress[item.id] ?? "NOT_STARTED") as LegacyItemStatus
+                        const pc         = PRIORITY_CONFIG[item.priority] ?? PRIORITY_CONFIG.LOW
                         const isExpanded = expandedItems[item.id]
+
+                        const borderClass =
+                          status === "COMPLETED"
+                            ? "border-green-300 bg-green-50/30 dark:bg-green-900/10"
+                            : status === "IN_PROGRESS"
+                            ? "border-blue-300 bg-blue-50/30 dark:bg-blue-900/10"
+                            : "border-border/50"
 
                         return (
                           <div
                             key={item.id}
-                            className={`rounded-lg border p-4 transition-colors ${STATUS_COLORS[status] ?? STATUS_COLORS.NOT_STARTED}`}
+                            className={`rounded-lg border p-4 transition-colors ${borderClass}`}
                           >
                             <div className="flex items-start gap-3">
-                              {/* Clickable status icon to cycle through states */}
                               <button
                                 type="button"
                                 onClick={() => handleItemStatusCycle(item.id)}
                                 className="mt-0.5 shrink-0 transition-transform hover:scale-110"
                                 title={`Status: ${status}. Click to change.`}
                               >
-                                <ItemStatusIcon status={status} />
+                                <LegacyStatusIcon status={status} />
                               </button>
-
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="min-w-0">
-                                    <span className="text-xs text-muted-foreground font-mono">{item.id}</span>
+                                    <span className="text-xs text-muted-foreground font-mono">
+                                      {item.id}
+                                    </span>
                                     <p
                                       className={`font-semibold leading-tight mt-0.5 ${
-                                        status === "COMPLETED" ? "text-muted-foreground line-through" : "text-foreground"
+                                        status === "COMPLETED"
+                                          ? "text-muted-foreground line-through"
+                                          : "text-foreground"
                                       }`}
                                     >
                                       {item.title}
                                     </p>
                                   </div>
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    <Badge variant="outline" className={`text-xs ${pc.badge}`}>
-                                      {pc.label}
-                                    </Badge>
-                                  </div>
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-xs ${pc.badge} shrink-0`}
+                                  >
+                                    {pc.label}
+                                  </Badge>
                                 </div>
-
                                 <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
                                   <BookOpen className="h-3 w-3 shrink-0" />
                                   {item.regulatoryBasis}
                                 </p>
-
-                                {/* Status selector + expand toggle */}
                                 <div className="flex items-center gap-3 mt-2">
                                   <Select
                                     value={status}
-                                    onValueChange={(val) => handleItemStatusChange(item.id, val as ItemStatus)}
+                                    onValueChange={(val) =>
+                                      handleItemStatusChange(item.id, val as LegacyItemStatus)
+                                    }
                                   >
                                     <SelectTrigger className="h-7 w-36 text-xs">
                                       <SelectValue />
@@ -1061,22 +1578,32 @@ function ChecklistDetailView({
                                   </Select>
                                   <button
                                     type="button"
-                                    onClick={() => setExpandedItems((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
+                                    onClick={() =>
+                                      setExpandedItems((prev) => ({
+                                        ...prev,
+                                        [item.id]: !prev[item.id],
+                                      }))
+                                    }
                                     className="text-xs text-primary hover:underline"
                                   >
                                     {isExpanded ? "Hide details ↑" : "View details ↓"}
                                   </button>
                                 </div>
-
                                 {isExpanded && (
                                   <div className="mt-3 space-y-3 text-sm border-t border-border/30 pt-3">
                                     <div>
-                                      <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wide">Description</p>
-                                      <p className="text-muted-foreground text-xs leading-relaxed">{item.description}</p>
+                                      <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wide">
+                                        Description
+                                      </p>
+                                      <p className="text-muted-foreground text-xs leading-relaxed">
+                                        {item.description}
+                                      </p>
                                     </div>
                                     {item.actionItems?.length > 0 && (
                                       <div>
-                                        <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wide">Action Items</p>
+                                        <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wide">
+                                          Action Items
+                                        </p>
                                         <ol className="space-y-1 list-decimal list-inside">
                                           {item.actionItems.map((action, i) => (
                                             <li key={i} className="text-xs text-muted-foreground">
@@ -1089,14 +1616,22 @@ function ChecklistDetailView({
                                     <div className="grid grid-cols-2 gap-3">
                                       {item.deadline && (
                                         <div className="rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-2">
-                                          <p className="text-xs font-medium text-green-800 dark:text-green-400">⏰ Deadline</p>
-                                          <p className="text-xs text-muted-foreground mt-0.5">{item.deadline}</p>
+                                          <p className="text-xs font-medium text-green-800 dark:text-green-400">
+                                            ⏰ Deadline
+                                          </p>
+                                          <p className="text-xs text-muted-foreground mt-0.5">
+                                            {item.deadline}
+                                          </p>
                                         </div>
                                       )}
                                       {item.penalty && (
                                         <div className="rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-2">
-                                          <p className="text-xs font-medium text-red-700 dark:text-red-400">⚠️ Penalty</p>
-                                          <p className="text-xs text-muted-foreground mt-0.5">{item.penalty}</p>
+                                          <p className="text-xs font-medium text-red-700 dark:text-red-400">
+                                            ⚠️ Penalty
+                                          </p>
+                                          <p className="text-xs text-muted-foreground mt-0.5">
+                                            {item.penalty}
+                                          </p>
                                         </div>
                                       )}
                                     </div>
@@ -1119,34 +1654,208 @@ function ChecklistDetailView({
   )
 }
 
-// ─── Types ─────────────────────────────────────────────────────────────────
+// ─── Checklist Detail Router ──────────────────────────────────────────────────
+// Polls status → routes to NormalizedChecklistDetailView or LegacyChecklistDetailView.
 
-type ChecklistSummary = {
-  id: string
-  title: string
-  productType: string | null
-  businessStage: string | null
-  progress: number
-  status: string
-  totalItems: number
-  criticalItems: number
-  createdAt: Date
+function ChecklistDetailView({
+  checklistId,
+  onBack,
+}: {
+  checklistId: string
+  onBack: () => void
+}) {
+  const pollStartRef = useRef(Date.now())
+  const [timedOut, setTimedOut] = useState(false)
+
+  // Always poll status — determines isNormalized + GENERATING state.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: rawStatus, isLoading: statusLoading, error: statusError } =
+    trpc.compliance.getChecklistStatus.useQuery(
+      { checklistId },
+      {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        refetchInterval: (query: any) => {
+          const d = query?.state?.data as ChecklistStatusLocal | undefined
+          if (!d || d.status === "GENERATING") {
+            if (Date.now() - pollStartRef.current > POLL_TIMEOUT_MS) return false
+            return POLL_INTERVAL_MS
+          }
+          return false
+        },
+        refetchIntervalInBackground: false,
+      }
+    )
+
+  const statusData = rawStatus as ChecklistStatusLocal | undefined
+
+  // Set timeout flag after POLL_TIMEOUT_MS if still GENERATING
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!statusData || statusData.status === "GENERATING") {
+        setTimedOut(true)
+      }
+    }, POLL_TIMEOUT_MS)
+    return () => clearTimeout(timer)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Status error ──────────────────────────────────────────────────────────
+  if (statusError) {
+    return (
+      <div className="space-y-4">
+        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2 text-muted-foreground">
+          ← Back to Checklists
+        </Button>
+        <Card className="border-destructive/50">
+          <CardContent className="pt-6 text-center">
+            <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
+            <p className="text-destructive font-medium">Could not load checklist</p>
+            <p className="text-sm text-muted-foreground mt-1">{statusError.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // ── Generating / polling state ────────────────────────────────────────────
+  const isGenerating = statusLoading || !statusData || statusData.status === "GENERATING"
+  const isFailed     = statusData?.status === "FAILED"
+
+  if (isGenerating) {
+    const elapsed = Math.floor((Date.now() - pollStartRef.current) / 1000)
+
+    if (timedOut) {
+      return (
+        <div className="space-y-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="-ml-2 text-muted-foreground"
+          >
+            ← Back to Checklists
+          </Button>
+          <Card className="border-yellow-500/50 bg-yellow-50/10">
+            <CardContent className="pt-6 text-center space-y-3">
+              <AlertTriangle className="h-8 w-8 text-yellow-500 mx-auto" />
+              <p className="font-medium text-foreground">Generation is taking longer than expected</p>
+              <p className="text-sm text-muted-foreground">
+                The checklist generation timed out after 4 minutes. Please go back and check
+                whether the checklist appeared, or delete it and try again.
+              </p>
+              <Button variant="outline" className="bg-transparent" onClick={onBack}>
+                ← Back to Checklists
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="-ml-2 text-muted-foreground"
+        >
+          ← Back to Checklists
+        </Button>
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="pt-8 pb-8 text-center space-y-4">
+            <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
+            <div>
+              <p className="font-semibold text-foreground text-lg">
+                {statusData?.title ?? "Generating your checklist..."}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Our AI is retrieving Kenyan regulatory context and building your checklist.
+                This typically takes 1–3 minutes.
+              </p>
+            </div>
+            {statusData && (
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>⏱ {elapsed}s elapsed — checking every 3 seconds</p>
+              </div>
+            )}
+            <div className="w-full max-w-xs mx-auto bg-muted rounded-full h-2 overflow-hidden">
+              <div
+                className="h-2 rounded-full bg-primary animate-pulse"
+                style={{ width: "60%" }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // ── Failed state ──────────────────────────────────────────────────────────
+  if (isFailed) {
+    return (
+      <div className="space-y-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="-ml-2 text-muted-foreground"
+        >
+          ← Back to Checklists
+        </Button>
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="pt-6 text-center space-y-3">
+            <XCircle className="h-8 w-8 text-destructive mx-auto" />
+            <p className="font-medium text-foreground">Checklist generation failed</p>
+            <p className="text-sm text-muted-foreground">
+              The AI could not complete generation. Please go back, delete this checklist, and
+              try again.
+            </p>
+            <Button variant="outline" className="bg-transparent" onClick={onBack}>
+              ← Back to Checklists
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // ── Route by isNormalized ─────────────────────────────────────────────────
+  if (statusData.isNormalized) {
+    return (
+      <NormalizedChecklistDetailView
+        checklistId={checklistId}
+        statusData={statusData}
+        onBack={onBack}
+      />
+    )
+  }
+
+  return <LegacyChecklistDetailView checklistId={checklistId} onBack={onBack} />
 }
 
-// ─── Main Page ─────────────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ChecklistsPage() {
   const [activeChecklistId, setActiveChecklistId] = useState<string | null>(null)
   const utils = trpc.useUtils()
 
-  const { data: rawChecklists, isLoading, error, refetch } = trpc.compliance.getUserChecklists.useQuery()
-  // Cast to local type to get proper TypeScript inference (backend uses path aliases not resolvable in frontend tsconfig)
-  const checklists = rawChecklists as ChecklistSummary[] | undefined
+  const { data: rawChecklists, isLoading, error, refetch } =
+    trpc.compliance.listChecklists.useQuery(undefined, {
+      // Auto-poll when any checklist is GENERATING — stops when all leave that state
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      refetchInterval: (query: any) => {
+        const data = query?.state?.data as ChecklistSummaryLocal[] | undefined
+        return data?.some((c) => c.status === "GENERATING") ? POLL_INTERVAL_MS : false
+      },
+      refetchIntervalInBackground: false,
+    })
+
+  const checklists = rawChecklists as ChecklistSummaryLocal[] | undefined
 
   const deleteMutation = trpc.compliance.deleteChecklist.useMutation({
     onSuccess: () => {
       toast({ title: "Checklist deleted" })
-      utils.compliance.getUserChecklists.invalidate()
+      utils.compliance.listChecklists.invalidate()
       if (activeChecklistId) setActiveChecklistId(null)
     },
     onError: (err) => {
@@ -1155,22 +1864,21 @@ export default function ChecklistsPage() {
   })
 
   const handleDelete = (id: string) => {
-    if (confirm("Delete this checklist? This action cannot be undone.")) {
+    if (confirm("Delete this checklist?")) {
       deleteMutation.mutate({ id })
     }
   }
 
-  const handleGenerateSuccess = (id: string) => {
-    utils.compliance.getUserChecklists.invalidate()
-    // Navigate directly to the new checklist
-    setActiveChecklistId(id)
+  const handleGenerateSuccess = (checklistId: string) => {
+    utils.compliance.listChecklists.invalidate()
+    setActiveChecklistId(checklistId)
   }
 
-  // Precompute summary stats to avoid implicit-any in inline filter callbacks
-  const completedChecklistCount = checklists?.filter((c) => c.status === "COMPLETED").length ?? 0
+  // Precompute summary stats
+  const completedChecklistCount  = checklists?.filter((c) => c.status === "COMPLETED").length ?? 0
   const generatingChecklistCount = checklists?.filter((c) => c.status === "GENERATING").length ?? 0
-  const fullyDoneCount = checklists?.filter((c) => c.progress === 100).length ?? 0
-  const totalCriticalPending = checklists?.reduce((acc, c) => acc + c.criticalItems, 0) ?? 0
+  const fullyDoneCount           = checklists?.filter((c) => c.progress === 100).length ?? 0
+  const totalCriticalPending     = checklists?.reduce((acc, c) => acc + c.criticalItems, 0) ?? 0
 
   // Show detail view when a checklist is selected
   if (activeChecklistId) {
@@ -1191,7 +1899,8 @@ export default function ChecklistsPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Compliance Checklists</h1>
           <p className="text-muted-foreground mt-1">
-            AI-generated checklists grounded in actual Kenyan regulations — cite laws, track progress.
+            AI-generated checklists grounded in actual Kenyan regulations — cite laws, track
+            progress.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -1230,7 +1939,11 @@ export default function ChecklistsPage() {
             <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
             <p className="text-destructive font-medium">Failed to load checklists</p>
             <p className="text-sm text-muted-foreground mt-1">{error.message}</p>
-            <Button variant="outline" className="mt-4 bg-transparent" onClick={() => refetch()}>
+            <Button
+              variant="outline"
+              className="mt-4 bg-transparent"
+              onClick={() => refetch()}
+            >
               <RefreshCw className="mr-2 h-4 w-4" />
               Retry
             </Button>
@@ -1246,7 +1959,8 @@ export default function ChecklistsPage() {
             <h3 className="text-lg font-semibold text-foreground mb-2">No checklists yet</h3>
             <p className="text-muted-foreground text-sm max-w-md mx-auto mb-6">
               Generate your first AI-powered compliance checklist. Our system retrieves relevant
-              Kenyan regulations from CBK, DPA, POCAMLA and more to build a checklist specific to your fintech.
+              Kenyan regulations from CBK, DPA, POCAMLA and more to build a checklist specific to
+              your fintech.
             </p>
             <GenerateChecklistDialog onSuccess={handleGenerateSuccess} />
           </CardContent>
@@ -1261,26 +1975,23 @@ export default function ChecklistsPage() {
             <Card className="border-border/50 bg-card/50">
               <CardContent className="pt-4 pb-4">
                 <p className="text-xs text-muted-foreground">Total Checklists</p>
-                <p className="text-2xl font-bold text-foreground">{completedChecklistCount}</p>
+                <p className="text-2xl font-bold text-foreground">{checklists.length}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {generatingChecklistCount > 0 && `${generatingChecklistCount} generating...`}
+                  {completedChecklistCount > 0 && `${completedChecklistCount} completed`}
+                  {generatingChecklistCount > 0 && ` · ${generatingChecklistCount} generating`}
                 </p>
               </CardContent>
             </Card>
             <Card className="border-border/50 bg-card/50">
               <CardContent className="pt-4 pb-4">
-                <p className="text-xs text-muted-foreground">Fully Completed</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {fullyDoneCount}
-                </p>
+                <p className="text-xs text-muted-foreground">Fully Compliant</p>
+                <p className="text-2xl font-bold text-green-600">{fullyDoneCount}</p>
               </CardContent>
             </Card>
             <Card className="border-border/50 bg-card/50">
               <CardContent className="pt-4 pb-4">
                 <p className="text-xs text-muted-foreground">Critical Items Pending</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {totalCriticalPending}
-                </p>
+                <p className="text-2xl font-bold text-red-600">{totalCriticalPending}</p>
               </CardContent>
             </Card>
           </div>
@@ -1296,15 +2007,16 @@ export default function ChecklistsPage() {
             ))}
           </div>
 
-          {/* Info box */}
+          {/* Disclaimer */}
           <Card className="border-border/50 bg-muted/30">
             <CardContent className="pt-4 pb-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  <strong className="text-foreground">Disclaimer:</strong> These checklists are AI-generated guidance grounded in Kenyan regulations.
-                  They are intended as a starting point and should be reviewed by a qualified compliance officer or legal counsel.
-                  SheriaBot does not provide legal advice.
+                  <strong className="text-foreground">Disclaimer:</strong> These checklists are
+                  AI-generated guidance grounded in Kenyan regulations. They are intended as a
+                  starting point and should be reviewed by a qualified compliance officer or legal
+                  counsel. SheriaBot does not provide legal advice.
                 </p>
               </div>
             </CardContent>
