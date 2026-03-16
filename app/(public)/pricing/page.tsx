@@ -9,6 +9,7 @@ import {
   Building2,
   Scale,
   HelpCircle,
+  Shield,
 } from "lucide-react"
 import {
   Accordion,
@@ -16,72 +17,33 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import {
+  PUBLIC_PRICING_PLANS,
+  PLAN_COMPARISON_ROWS,
+  formatPrice,
+  getAnnualSavings,
+  type PlanId,
+} from "@/lib/config/plans"
 
-const plans = [
-  {
-    name: "Startup",
-    icon: Zap,
-    price: "KES 25,000",
-    period: "/month",
-    annual: "KES 250,000/year (Save 17%)",
-    description: "Perfect for growing fintech startups navigating compliance",
-    features: [
-      { text: "Unlimited compliance queries", included: true },
-      { text: "5 checklist generations/month", included: true },
-      { text: "Regulatory alerts & notifications", included: true },
-      { text: "Basic analytics dashboard", included: true },
-      { text: "Email support (48hr response)", included: true },
-      { text: "Gap analysis tool", included: false },
-      { text: "API access", included: false },
-      { text: "Custom integrations", included: false },
-    ],
-    cta: "Start Free Trial",
-    ctaLink: "/register?plan=startup",
-    popular: false,
-  },
-  {
-    name: "Business",
-    icon: Building2,
-    price: "KES 75,000",
-    period: "/month",
-    annual: "KES 750,000/year (Save 17%)",
-    description: "For established fintech companies with complex compliance needs",
-    features: [
-      { text: "Everything in Startup", included: true },
-      { text: "Unlimited checklist generations", included: true },
-      { text: "Gap analysis tool", included: true },
-      { text: "API access (10,000 calls/month)", included: true },
-      { text: "Advanced analytics & reporting", included: true },
-      { text: "Priority support (24hr response)", included: true },
-      { text: "Team collaboration (5 seats)", included: true },
-      { text: "Document repository (10GB)", included: true },
-    ],
-    cta: "Start Free Trial",
-    ctaLink: "/register?plan=business",
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    icon: Scale,
-    price: "Custom",
-    period: "",
-    annual: "Contact us for volume pricing",
-    description: "For regulators, banks, and large institutions",
-    features: [
-      { text: "Everything in Business", included: true },
-      { text: "AI Policy Generator", included: true },
-      { text: "Legal corpus management", included: true },
-      { text: "Unlimited API access", included: true },
-      { text: "Custom integrations & SSO", included: true },
-      { text: "Dedicated account manager", included: true },
-      { text: "On-premise deployment option", included: true },
-      { text: "99.9% uptime SLA guarantee", included: true },
-    ],
-    cta: "Contact Sales",
-    ctaLink: "/contact?subject=enterprise",
-    popular: false,
-  },
-]
+// ── Icon map for plan cards ─────────────────────────────────────────────────
+
+const PLAN_ICONS: Record<PlanId, React.ComponentType<{ className?: string }>> = {
+  REGULATOR: Shield,
+  STARTUP: Zap,
+  BUSINESS: Building2,
+  ENTERPRISE: Scale,
+}
+
+// ── Register CTA links per plan ─────────────────────────────────────────────
+
+const PLAN_CTA_LINKS: Record<PlanId, string> = {
+  REGULATOR: '/register',
+  STARTUP: '/register?plan=startup',
+  BUSINESS: '/register?plan=business',
+  ENTERPRISE: '/contact?subject=enterprise',
+}
+
+// ── FAQ data ─────────────────────────────────────────────────────────────────
 
 const faqs = [
   {
@@ -94,11 +56,11 @@ const faqs = [
   },
   {
     question: "Is there a free trial?",
-    answer: "Yes! All plans come with a 14-day free trial with full access to features. No credit card required to start.",
+    answer: "Yes! Startup and Business plans come with a 14-day free trial with full access to features. No credit card required to start.",
   },
   {
     question: "What happens to my data if I cancel?",
-    answer: "You can export all your data at any time. After cancellation, we retain your data for 30 days before permanent deletion, giving you time to reactivate if needed.",
+    answer: "You can export all your data at any time. After cancellation, you retain full access during the 7-day grace period, then data is retained for 30 days before permanent deletion.",
   },
   {
     question: "Do you offer discounts for NGOs or government agencies?",
@@ -106,22 +68,11 @@ const faqs = [
   },
   {
     question: "What's included in the free trial?",
-    answer: "The free trial includes full access to all features of the Business plan, allowing you to test compliance queries, checklist generation, and analytics.",
+    answer: "The free trial includes full access to all features of the selected plan, allowing you to test compliance queries, checklist generation, and analytics.",
   },
 ]
 
-const comparisonFeatures = [
-  { feature: "Compliance Queries", startup: "Unlimited", business: "Unlimited", enterprise: "Unlimited" },
-  { feature: "Checklist Generations", startup: "5/month", business: "Unlimited", enterprise: "Unlimited" },
-  { feature: "Gap Analysis", startup: "-", business: "Yes", enterprise: "Yes" },
-  { feature: "API Access", startup: "-", business: "10K calls/mo", enterprise: "Unlimited" },
-  { feature: "Team Seats", startup: "1", business: "5", enterprise: "Unlimited" },
-  { feature: "Storage", startup: "1GB", business: "10GB", enterprise: "Unlimited" },
-  { feature: "Support Response", startup: "48 hours", business: "24 hours", enterprise: "4 hours" },
-  { feature: "Policy Generator", startup: "-", business: "-", enterprise: "Yes" },
-  { feature: "Legal Corpus Management", startup: "-", business: "-", enterprise: "Yes" },
-  { feature: "SSO & Custom Integrations", startup: "-", business: "-", enterprise: "Yes" },
-]
+// ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
   return (
@@ -139,7 +90,7 @@ export default function PricingPage() {
               <span className="text-primary">Pricing</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-              Start with a 14-day free trial. No credit card required. 
+              Start with a 14-day free trial. No credit card required.{" "}
               Choose the plan that fits your compliance needs.
             </p>
           </div>
@@ -150,70 +101,82 @@ export default function PricingPage() {
       <section className="pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-3">
-            {plans.map((plan) => (
-              <Card 
-                key={plan.name}
-                className={`relative flex flex-col ${
-                  plan.popular 
-                    ? "border-primary/50 shadow-lg shadow-primary/10" 
-                    : "border-border/50"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
-                  </div>
-                )}
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                      plan.popular ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-                    }`}>
-                      <plan.icon className="h-5 w-5" />
+            {PUBLIC_PRICING_PLANS.map((plan) => {
+              const Icon = PLAN_ICONS[plan.id]
+              const ctaLink = PLAN_CTA_LINKS[plan.id]
+              const annualSavings = getAnnualSavings(plan)
+              const priceDisplay = formatPrice(plan.price.monthly, plan.price.currency)
+              const annualDisplay = plan.price.yearly !== null
+                ? `${formatPrice(plan.price.yearly, plan.price.currency)}/year${annualSavings ? ` (${annualSavings})` : ''}`
+                : 'Contact us for volume pricing'
+
+              return (
+                <Card
+                  key={plan.id}
+                  className={`relative flex flex-col ${
+                    plan.popular
+                      ? "border-primary/50 shadow-lg shadow-primary/10"
+                      : "border-border/50"
+                  }`}
+                >
+                  {plan.badge === 'Most Popular' && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
                     </div>
-                    <CardTitle className="text-xl">{plan.name}</CardTitle>
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col">
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
-                    <p className="mt-1 text-sm text-muted-foreground">{plan.annual}</p>
-                  </div>
+                  )}
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                        plan.popular ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                      }`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <CardTitle className="text-xl">{plan.name}</CardTitle>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">{plan.tagline}</p>
+                  </CardHeader>
+                  <CardContent className="flex flex-1 flex-col">
+                    <div className="mb-6">
+                      <span className="text-4xl font-bold text-foreground">{priceDisplay}</span>
+                      {plan.price.monthly !== null && plan.price.monthly > 0 && (
+                        <span className="text-muted-foreground">/month</span>
+                      )}
+                      <p className="mt-1 text-sm text-muted-foreground">{annualDisplay}</p>
+                    </div>
 
-                  <ul className="flex-1 space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature.text} className="flex items-start gap-2">
-                        <CheckCircle2 className={`mt-0.5 h-4 w-4 shrink-0 ${
-                          feature.included ? "text-secondary" : "text-muted-foreground/30"
-                        }`} />
-                        <span className={`text-sm ${
-                          feature.included ? "text-muted-foreground" : "text-muted-foreground/50 line-through"
-                        }`}>
-                          {feature.text}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                    <ul className="flex-1 space-y-3">
+                      {plan.features.map((feature) => (
+                        <li key={feature.text} className="flex items-start gap-2">
+                          <CheckCircle2 className={`mt-0.5 h-4 w-4 shrink-0 ${
+                            feature.included ? "text-secondary" : "text-muted-foreground/30"
+                          }`} />
+                          <span className={`text-sm ${
+                            feature.included ? "text-muted-foreground" : "text-muted-foreground/50 line-through"
+                          }`}>
+                            {feature.text}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
 
-                  <Button 
-                    className={`mt-8 w-full ${
-                      plan.popular 
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                        : "bg-transparent"
-                    }`}
-                    variant={plan.popular ? "default" : "outline"}
-                    asChild
-                  >
-                    <Link href={plan.ctaLink}>
-                      {plan.cta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    <Button
+                      className={`mt-8 w-full ${
+                        plan.popular
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                          : "bg-transparent"
+                      }`}
+                      variant={plan.popular ? "default" : "outline"}
+                      asChild
+                    >
+                      <Link href={ctaLink}>
+                        {plan.cta.type !== 'none' ? plan.cta.label : 'Get Started'}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -241,7 +204,7 @@ export default function PricingPage() {
                 </tr>
               </thead>
               <tbody>
-                {comparisonFeatures.map((row) => (
+                {PLAN_COMPARISON_ROWS.map((row) => (
                   <tr key={row.feature} className="border-b border-border/50">
                     <td className="py-4 text-sm text-muted-foreground">{row.feature}</td>
                     <td className="py-4 text-center text-sm text-muted-foreground">{row.startup}</td>
@@ -271,8 +234,8 @@ export default function PricingPage() {
           <div className="mx-auto mt-12 max-w-2xl">
             <Accordion type="single" collapsible className="space-y-4">
               {faqs.map((faq, index) => (
-                <AccordionItem 
-                  key={index} 
+                <AccordionItem
+                  key={index}
                   value={`item-${index}`}
                   className="rounded-lg border border-border/50 bg-card/50 px-4"
                 >
@@ -298,7 +261,7 @@ export default function PricingPage() {
                 Not Sure Which Plan is Right?
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-                Book a demo with our team and we&apos;ll help you find the perfect fit 
+                Book a demo with our team and we&apos;ll help you find the perfect fit
                 for your compliance needs.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
