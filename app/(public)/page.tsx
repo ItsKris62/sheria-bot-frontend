@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { RegulatorLogoStrip } from "@/components/landing/regulator-logo-strip"
 import {
   Scale,
   Shield,
@@ -256,6 +257,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <RegulatorLogoStrip />
 
       {/* Problem/Solution Section */}
       <section className="relative border-y border-border/50 bg-muted/20 py-24">
@@ -543,6 +546,9 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+          <div className="mt-10 pt-8 border-t border-border/30">
+            <RegulatorLogoStrip compact />
           </div>
         </div>
       </section>
