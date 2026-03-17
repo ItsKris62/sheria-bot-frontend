@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 import { trpc } from "@/lib/trpc"
 import { usePlan } from "@/lib/plan-context"
 import type { SubscriptionStatusValue } from "@/lib/plan-context"
-import { UsageIndicator } from "@/components/plan/feature-gate"
+import { UsageCard } from "@/components/usage/usage-card"
+import { UsageComparison } from "@/components/usage/usage-comparison"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -173,6 +174,7 @@ export default function BillingSettingsPage() {
   const [showComparison, setShowComparison] = useState(false)
   const [showEnterpriseModal, setShowEnterpriseModal] = useState(false)
   const [paymentPage, setPaymentPage] = useState(1)
+  const [usageCompareOpen, setUsageCompareOpen] = useState(false)
   const [enterpriseForm, setEnterpriseForm] = useState<EnterpriseFormState>({ name: "", email: "", message: "" })
   const [enterpriseSuccess, setEnterpriseSuccess] = useState(false)
 
@@ -471,36 +473,11 @@ export default function BillingSettingsPage() {
       </div>
 
       {/* ── Usage card ── */}
-      {usage && (
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="text-base">This Month&apos;s Usage</CardTitle>
-            <CardDescription>Resets on the 1st of each month</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <UsageIndicator
-              label="Compliance Queries"
-              current={usage.complianceQueries.current}
-              limit={usage.complianceQueries.limit}
-            />
-            <UsageIndicator
-              label="Checklist Generations"
-              current={usage.checklistGenerations.current}
-              limit={usage.checklistGenerations.limit}
-            />
-            <UsageIndicator
-              label="API Calls"
-              current={usage.apiCalls.current}
-              limit={usage.apiCalls.limit}
-            />
-            <UsageIndicator
-              label="Document Storage"
-              current={usage.documentStorageMB.current}
-              limit={usage.documentStorageMB.limit}
-            />
-          </CardContent>
-        </Card>
-      )}
+      <UsageCard
+        compareOpen={usageCompareOpen}
+        onCompareToggle={setUsageCompareOpen}
+      />
+      {usageCompareOpen && <UsageComparison />}
 
       {/* ── Feature comparison (collapsible) ── */}
       <Card className="border-border/50 bg-card/50 backdrop-blur">
