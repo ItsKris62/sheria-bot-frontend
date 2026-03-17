@@ -34,10 +34,12 @@ import {
   CheckCircle2,
   Loader2,
   MessageSquare,
+  Menu,
 } from "lucide-react"
 import { useAuthStore } from "@/lib/auth-store"
 import { useAuth } from "@/hooks/use-auth"
 import { useUnreadCount, useNotifications, useNotificationActions } from "@/hooks/use-notifications"
+import { useSidebar } from "@/lib/sidebar-context"
 
 /** Format a date as a relative time string (e.g. "5 minutes ago") */
 function relativeTime(dateStr: string | Date): string {
@@ -68,6 +70,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const authUser = useAuthStore((s) => s.user)
   const { logout } = useAuth()
+  const { setMobileOpen } = useSidebar()
 
   const user = {
     name: authUser?.name || (userType === "regulator" ? "Regulator" : "User"),
@@ -86,8 +89,18 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-xl">
-      {/* Left side - Search */}
-      <div className="flex items-center gap-4">
+      {/* Left side - Hamburger (mobile) + Search */}
+      <div className="flex items-center gap-2">
+        {/* Mobile hamburger — opens sidebar drawer */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open navigation"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
         <Button
           variant="outline"
           className="hidden w-64 justify-start gap-2 text-muted-foreground lg:flex bg-transparent"
@@ -125,7 +138,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
               <span className="sr-only">Notifications</span>
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-96">
+          <SheetContent className="w-full sm:w-96">
             <SheetHeader>
               <SheetTitle className="flex items-center justify-between">
                 Notifications

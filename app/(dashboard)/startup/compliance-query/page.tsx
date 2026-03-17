@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,6 +26,7 @@ import {
 import { useComplianceQuery, useComplianceHistory } from "@/hooks/use-compliance"
 import { formatDistanceToNow } from "date-fns"
 import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
+import { ThinkingIndicator } from "@/components/compliance/thinking-indicator"
 import { trpc } from "@/lib/trpc"
 import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
@@ -196,6 +197,15 @@ export default function ComplianceQueryPage() {
 
   const isLoading = isQuerying || isFollowingUp
   const lastQueryId = messages.filter((m) => m.queryId).at(-1)?.queryId
+
+  // Refs for auto-scroll and Ctrl+Enter form submission
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // Auto-scroll to bottom whenever messages update or loading starts
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages, isLoading])
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
@@ -448,17 +458,13 @@ export default function ComplianceQueryPage() {
                   ))}
 
                   {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="rounded-2xl bg-muted px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                          <span className="text-sm text-muted-foreground">
-                            Analyzing regulations...
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    <ThinkingIndicator
+                      query={messages.filter((m) => m.type === "user").at(-1)?.content ?? ""}
+                    />
                   )}
+
+                  {/* Sentinel div — auto-scrolls to keep latest message in view */}
+                  <div ref={messagesEndRef} />
                 </div>
               )}
             </ScrollArea>
@@ -473,11 +479,17 @@ export default function ComplianceQueryPage() {
 
             {/* Input Area */}
             <div className="border-t border-border p-4">
-              <form onSubmit={handleSubmit} className="flex gap-2">
+              <form ref={formRef} onSubmit={handleSubmit} className="flex gap-2">
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ask about KYC requirements, data protection, CBK guidelines..."
+                  onKeyDown={(e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                      e.preventDefault()
+                      formRef.current?.requestSubmit()
+                    }
+                  }}
+                  placeholder="Ask about KYC requirements, data protection, CBK guidelines…"
                   className="flex-1 bg-background"
                   disabled={isLoading}
                 />
@@ -495,7 +507,11 @@ export default function ComplianceQueryPage() {
               </form>
               <p className="mt-2 text-xs text-muted-foreground">
                 Answers are AI-generated based on Kenya&apos;s legal corpus. Always verify with
-                official sources.
+                official sources.{" "}
+                <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px]">
+                  Ctrl+Enter
+                </kbd>{" "}
+                to submit.
               </p>
             </div>
           </Card>

@@ -189,7 +189,7 @@ export default function StartupDashboard() {
       {/* Welcome Section */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome back, {displayName}</h1>
+          <h1 className="text-2xl font-bold text-foreground lg:text-3xl">Welcome back, {displayName}</h1>
           <p className="text-muted-foreground">Track your compliance status and stay ahead of regulations</p>
         </div>
         <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -263,7 +263,7 @@ export default function StartupDashboard() {
                 return (
                   <div
                     key={category.key}
-                    className={`rounded-lg p-4 ${theme.tailwindBgMuted}`}
+                    className={`rounded-lg p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02] cursor-default ${theme.tailwindBgMuted}`}
                   >
                     <div className="flex items-center justify-between">
                       <p
@@ -299,7 +299,7 @@ export default function StartupDashboard() {
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Upcoming Deadlines */}
-        <Card className="border-border/50 bg-card">
+        <Card className="border-border/50 bg-card transition-all duration-200 hover:border-border hover:shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-foreground">Upcoming Deadlines</CardTitle>
@@ -317,7 +317,7 @@ export default function StartupDashboard() {
               {upcomingDeadlines.map((deadline, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-4 rounded-lg border border-border/50 p-4"
+                  className="flex items-center gap-4 rounded-lg border border-border/50 p-4 transition-all duration-200 hover:border-primary/30 hover:shadow-sm cursor-default"
                 >
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                     deadline.priority === "high" ? "bg-destructive/10" : "bg-warning/10"
@@ -340,7 +340,7 @@ export default function StartupDashboard() {
         </Card>
 
         {/* Regulatory Alerts */}
-        <Card className="lg:col-span-2 border-border/50 bg-card">
+        <Card className="lg:col-span-2 border-border/50 bg-card transition-all duration-200 hover:border-border hover:shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-foreground">
@@ -361,7 +361,7 @@ export default function StartupDashboard() {
               {regulatoryAlerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className={`flex items-start gap-4 rounded-lg border p-4 transition-colors ${
+                  className={`flex items-start gap-4 rounded-lg border p-4 transition-all duration-200 hover:shadow-sm hover:border-primary/30 cursor-default ${
                     alert.read ? "border-border/50" : "border-primary/50 bg-primary/5"
                   }`}
                 >
@@ -400,32 +400,32 @@ export default function StartupDashboard() {
       {/* Quick Actions & Recent Queries */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Quick Actions */}
-        <Card className="border-border/50 bg-card">
+        <Card className="border-border/50 bg-card transition-all duration-200 hover:border-border hover:shadow-sm">
           <CardHeader>
             <CardTitle className="text-foreground">Quick Actions</CardTitle>
             <CardDescription>Common compliance tasks</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-2">
-              <Button asChild variant="outline" className="justify-start bg-transparent">
+              <Button asChild variant="outline" className="justify-start bg-transparent transition-all duration-200 hover:bg-primary/5 hover:border-primary/40 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/30">
                 <Link href="/startup/compliance-query">
                   <Search className="mr-2 h-4 w-4 text-primary" />
                   Ask Compliance Question
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="justify-start bg-transparent">
+              <Button asChild variant="outline" className="justify-start bg-transparent transition-all duration-200 hover:bg-secondary/5 hover:border-secondary/40 focus-visible:ring-2 focus-visible:ring-secondary/30">
                 <Link href="/startup/checklists">
                   <ClipboardCheck className="mr-2 h-4 w-4 text-secondary" />
                   Generate Checklist
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="justify-start bg-transparent">
+              <Button asChild variant="outline" className="justify-start bg-transparent transition-all duration-200 hover:bg-warning/5 hover:border-warning/40 focus-visible:ring-2 focus-visible:ring-warning/30">
                 <Link href="/startup/gap-analysis">
                   <AlertTriangle className="mr-2 h-4 w-4 text-warning" />
                   Run Gap Analysis
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="justify-start bg-transparent">
+              <Button asChild variant="outline" className="justify-start bg-transparent transition-all duration-200 hover:bg-muted/80 focus-visible:ring-2 focus-visible:ring-border">
                 <Link href="/startup/documents">
                   <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
                   View Documents
@@ -436,7 +436,7 @@ export default function StartupDashboard() {
         </Card>
 
         {/* Recent Queries */}
-        <Card className="lg:col-span-2 border-border/50 bg-card">
+        <Card className="lg:col-span-2 border-border/50 bg-card transition-all duration-200 hover:border-border hover:shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-foreground">Recent Queries</CardTitle>
