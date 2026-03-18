@@ -76,7 +76,7 @@ function StepIndicator({ stage }: { stage: Stage }) {
 function LoadingState() {
   const steps = [
     "Validating your verification link",
-    "Confirming with Supabase Auth",
+    "Confirming with Our Servers",
     "Activating your account",
   ]
   const [currentStep, setCurrentStep] = useState(0)
