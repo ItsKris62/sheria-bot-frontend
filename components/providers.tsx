@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/sonner";
 import { trpc, createTRPCClient, setAccessToken } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AuthUser, UserRole } from "@/lib/auth-store";
@@ -99,6 +100,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <AuthInitializer>
           <PlanProvider>{children}</PlanProvider>
         </AuthInitializer>
+        <Toaster position="top-right" closeButton />
       </QueryClientProvider>
     </trpc.Provider>
   );
