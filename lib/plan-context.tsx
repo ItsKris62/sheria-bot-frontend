@@ -16,9 +16,10 @@ export type SupportTier  = "community" | "email-48hr" | "priority-24hr" | "dedic
 export type AnalyticsTier = "none" | "basic" | "advanced";
 
 export interface QuotaEntitlement {
-  /** -1 = unlimited, 0 = not available, n = monthly cap */
+  /** -1 = unlimited, 0 = not available, n = cap for the given period */
   limit: number;
-  period: "month";
+  /** 'month' = reset on billing cycle; 'lifetime' = never resets */
+  period: "month" | "lifetime";
 }
 
 export interface StorageEntitlement {

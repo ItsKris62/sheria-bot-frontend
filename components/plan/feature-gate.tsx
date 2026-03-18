@@ -197,8 +197,10 @@ interface UsageIndicatorProps {
   label: string;
   /** Current usage count. */
   current: number;
-  /** Monthly limit. -1 = unlimited, 0 = unavailable. */
+  /** Quota limit. -1 = unlimited, 0 = unavailable, n = cap. */
   limit: number;
+  /** Billing period — controls the "limit reached" label text. Defaults to 'month'. */
+  period?: "month" | "lifetime";
   className?: string;
 }
 
@@ -206,7 +208,7 @@ interface UsageIndicatorProps {
  * Renders a labelled progress bar showing quota consumption.
  * Hidden when `limit === -1` (unlimited). Shows "Unavailable" when `limit === 0`.
  */
-export function UsageIndicator({ label, current, limit, className }: UsageIndicatorProps) {
+export function UsageIndicator({ label, current, limit, period = "month", className }: UsageIndicatorProps) {
   if (limit === -1) {
     // Unlimited — show a simple "Unlimited" pill instead of a bar
     return (
@@ -266,7 +268,7 @@ export function UsageIndicator({ label, current, limit, className }: UsageIndica
       {isFull && (
         <p className="text-xs text-destructive flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
-          Monthly limit reached
+          {period === "lifetime" ? "Lifetime limit reached" : "Monthly limit reached"}
         </p>
       )}
     </div>

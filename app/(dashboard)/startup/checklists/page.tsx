@@ -27,8 +27,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { trpc } from "@/lib/trpc"
+import { UsageIndicator, UpgradeBanner } from "@/components/plan/feature-gate"
+import { usePlan } from "@/lib/plan-context"
 import {
   ClipboardCheck,
   Plus,
@@ -185,6 +187,9 @@ type ChecklistSummaryLocal = {
   title: string
   productType: string | null
   businessStage: string | null
+  targetSegments: unknown
+  servicesOffered: unknown
+  additionalConcerns: string | null
   progress: number
   completedItems: number
   totalItems: number
@@ -244,36 +249,76 @@ function MultiSelect({
 // ─── Generate Checklist Dialog ────────────────────────────────────────────────
 // Fire-and-forget: submits async mutation, closes immediately, polls in detail view.
 
+type RetryDefaults = {
+  productType: string
+  businessStage: string
+  targetSegments: string[]
+  servicesOffered: string[]
+  additionalConcerns?: string
+}
+
 function GenerateChecklistDialog({
   onSuccess,
+  defaultValues,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: {
   onSuccess: (id: string) => void
+  defaultValues?: RetryDefaults
+  open?: boolean
+  onOpenChange?: (v: boolean) => void
 }) {
-  const [open, setOpen] = useState(false)
-  const [productType, setProductType] = useState("")
-  const [businessStage, setBusinessStage] = useState("")
-  const [targetSegments, setTargetSegments] = useState<string[]>([])
-  const [servicesOffered, setServicesOffered] = useState<string[]>([])
-  const [additionalConcerns, setAdditionalConcerns] = useState("")
+  const isControlled = controlledOpen !== undefined
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = isControlled ? controlledOpen! : internalOpen
+  const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen
+
+  const [productType, setProductType] = useState(defaultValues?.productType ?? "")
+  const [businessStage, setBusinessStage] = useState(defaultValues?.businessStage ?? "")
+  const [targetSegments, setTargetSegments] = useState<string[]>(defaultValues?.targetSegments ?? [])
+  const [servicesOffered, setServicesOffered] = useState<string[]>(defaultValues?.servicesOffered ?? [])
+  const [additionalConcerns, setAdditionalConcerns] = useState(defaultValues?.additionalConcerns ?? "")
+
+  // Sync form fields when the dialog opens with retry defaults
+  const prevOpenRef = useRef(false)
+  useEffect(() => {
+    if (open && !prevOpenRef.current && defaultValues) {
+      setProductType(defaultValues.productType)
+      setBusinessStage(defaultValues.businessStage)
+      setTargetSegments(defaultValues.targetSegments)
+      setServicesOffered(defaultValues.servicesOffered)
+      setAdditionalConcerns(defaultValues.additionalConcerns ?? "")
+    }
+    prevOpenRef.current = open
+  }, [open, defaultValues])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const generateMutation = trpc.compliance.generateChecklistAsync.useMutation<any>({
     onSuccess: (data: { checklistId: string; status: string }) => {
-      toast({
-        title: "Generating your checklist",
-        description:
-          "Your checklist is being built in the background — progress will appear below.",
+      toast.success("Checklist generation started", {
+        description: "Your checklist is being built in the background — this typically takes 1-3 minutes.",
       })
       setOpen(false)
       resetForm()
       onSuccess(data.checklistId)
     },
-    onError: (err: { message?: string }) => {
-      toast({
-        title: "Failed to start generation",
-        description: err.message ?? "Please try again.",
-        variant: "destructive",
-      })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
+      const code = (err?.data?.code ?? err?.shape?.data?.code) as string | undefined
+      if (code === "FORBIDDEN") {
+        toast.error("Feature not available on your plan", {
+          description: err.message ?? "Please upgrade your subscription to generate checklists.",
+        })
+      } else if (code === "TOO_MANY_REQUESTS") {
+        toast.error("Limit reached", {
+          description: err.message ?? "You have used all your checklist generations for this period. Upgrade your plan for more.",
+        })
+      } else {
+        toast.error("Failed to start generation", {
+          description: err.message ?? "Please try again.",
+        })
+      }
+      // Do NOT reset the form or close the dialog on error — keep fields populated for retry
     },
   })
 
@@ -305,15 +350,18 @@ function GenerateChecklistDialog({
       onOpenChange={(v) => {
         if (generateMutation.isPending) return
         setOpen(v)
-        if (!v) resetForm()
+        // Only reset the form when the dialog is closed after a success (form is already
+        // cleared by onSuccess handler). On error the user may want to edit and retry.
       }}
     >
-      <DialogTrigger asChild>
-        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-          <Plus className="mr-2 h-4 w-4" />
-          Generate Checklist
-        </Button>
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Plus className="mr-2 h-4 w-4" />
+            Generate Checklist
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -460,10 +508,12 @@ function ChecklistCard({
   checklist,
   onSelect,
   onDelete,
+  onRetry,
 }: {
   checklist: ChecklistSummaryLocal
   onSelect: (id: string) => void
   onDelete: (id: string) => void
+  onRetry: (checklist: ChecklistSummaryLocal) => void
 }) {
   const isFailed    = checklist.status === "FAILED"
   const isGenerating = checklist.status === "GENERATING"
@@ -505,7 +555,7 @@ function ChecklistCard({
           {isFailed ? (
             <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
-              Generation failed — please delete and try again
+              Generation failed — retry with the same inputs or adjust and resubmit
             </p>
           ) : isGenerating ? (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -557,12 +607,24 @@ function ChecklistCard({
                 )}
               </Button>
             )}
+            {isFailed && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 bg-transparent"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRetry(checklist)
+                }}
+              >
+                <RefreshCw className="mr-1 h-3 w-3" />
+                Retry
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
-              className={`text-destructive hover:text-destructive hover:bg-destructive/10 ${
-                !isFailed ? "" : "flex-1"
-              }`}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={(e) => {
                 e.stopPropagation()
                 onDelete(checklist.id)
@@ -777,10 +839,8 @@ function handleExportPdf(data: Parameters<typeof buildPrintHtml>[0]) {
   const html = buildPrintHtml(data)
   const printWindow = window.open("", "_blank", "width=900,height=700")
   if (!printWindow) {
-    toast({
-      title: "PDF export blocked",
+    toast.error("PDF export blocked", {
       description: "Please allow pop-ups for this site to export PDF.",
-      variant: "destructive",
     })
     return
   }
@@ -869,7 +929,7 @@ function NormalizedChecklistDetailView({
       } else {
         utils.compliance.getChecklistDetail.invalidate({ checklistId } as any)
       }
-      toast({ title: "Failed to update item", description: err.message, variant: "destructive" })
+      toast.error("Failed to update item", { description: err.message })
     },
   })
 
@@ -1265,7 +1325,7 @@ function LegacyChecklistDetailView({
     },
     onError: (err) => {
       setLocalProgress(null)
-      toast({ title: "Failed to save progress", description: err.message, variant: "destructive" })
+      toast.error("Failed to save progress", { description: err.message })
     },
   })
 
@@ -1837,7 +1897,14 @@ function ChecklistDetailView({
 
 export default function ChecklistsPage() {
   const [activeChecklistId, setActiveChecklistId] = useState<string | null>(null)
+  const [retryDialogOpen, setRetryDialogOpen] = useState(false)
+  const [retryDefaults, setRetryDefaults] = useState<RetryDefaults | undefined>(undefined)
   const utils = trpc.useUtils()
+  const { plan } = usePlan()
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: rawUsage } = trpc.compliance.getChecklistUsage.useQuery(undefined) as { data: any }
+  const usageData = rawUsage as { used: number; limit: number; period: "month" | "lifetime"; planName: string } | undefined
 
   const { data: rawChecklists, isLoading, error, refetch } =
     trpc.compliance.listChecklists.useQuery(undefined, {
@@ -1848,18 +1915,21 @@ export default function ChecklistsPage() {
         return data?.some((c) => c.status === "GENERATING") ? POLL_INTERVAL_MS : false
       },
       refetchIntervalInBackground: false,
-    })
+      onError: (err: { message?: string }) => {
+        toast.error("Failed to load checklists", { description: err.message })
+      },
+    } as Parameters<typeof trpc.compliance.listChecklists.useQuery>[1])
 
   const checklists = rawChecklists as ChecklistSummaryLocal[] | undefined
 
   const deleteMutation = trpc.compliance.deleteChecklist.useMutation({
     onSuccess: () => {
-      toast({ title: "Checklist deleted" })
+      toast.success("Checklist deleted")
       utils.compliance.listChecklists.invalidate()
       if (activeChecklistId) setActiveChecklistId(null)
     },
     onError: (err) => {
-      toast({ title: "Failed to delete", description: err.message, variant: "destructive" })
+      toast.error("Failed to delete", { description: err.message })
     },
   })
 
@@ -1872,6 +1942,17 @@ export default function ChecklistsPage() {
   const handleGenerateSuccess = (checklistId: string) => {
     utils.compliance.listChecklists.invalidate()
     setActiveChecklistId(checklistId)
+  }
+
+  const handleRetry = (checklist: ChecklistSummaryLocal) => {
+    setRetryDefaults({
+      productType: checklist.productType ?? "",
+      businessStage: checklist.businessStage ?? "",
+      targetSegments: Array.isArray(checklist.targetSegments) ? (checklist.targetSegments as string[]) : [],
+      servicesOffered: Array.isArray(checklist.servicesOffered) ? (checklist.servicesOffered as string[]) : [],
+      additionalConcerns: checklist.additionalConcerns ?? undefined,
+    })
+    setRetryDialogOpen(true)
   }
 
   // Precompute summary stats
@@ -1903,7 +1984,16 @@ export default function ChecklistsPage() {
             progress.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {usageData && usageData.limit !== -1 && (
+            <UsageIndicator
+              label={usageData.period === "lifetime" ? "Checklists (lifetime)" : "Checklists this month"}
+              current={usageData.used}
+              limit={usageData.limit}
+              period={usageData.period}
+              className="w-44 hidden sm:block"
+            />
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -1912,7 +2002,11 @@ export default function ChecklistsPage() {
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           </Button>
-          <GenerateChecklistDialog onSuccess={handleGenerateSuccess} />
+          {usageData && usageData.limit !== -1 && usageData.used >= usageData.limit ? (
+            <UpgradeBanner requiredPlan={plan === "REGULATOR" ? "STARTUP" : "BUSINESS"} compact className="w-56" />
+          ) : (
+            <GenerateChecklistDialog onSuccess={handleGenerateSuccess} />
+          )}
         </div>
       </div>
 
@@ -1962,7 +2056,23 @@ export default function ChecklistsPage() {
               Kenyan regulations from CBK, DPA, POCAMLA and more to build a checklist specific to
               your fintech.
             </p>
-            <GenerateChecklistDialog onSuccess={handleGenerateSuccess} />
+            {usageData && usageData.limit !== -1 && (
+              <div className="max-w-xs mx-auto mb-6">
+                <UsageIndicator
+                  label={usageData.period === "lifetime" ? "Checklists (lifetime)" : "Checklists this month"}
+                  current={usageData.used}
+                  limit={usageData.limit}
+                  period={usageData.period}
+                />
+              </div>
+            )}
+            {usageData && usageData.limit !== -1 && usageData.used >= usageData.limit ? (
+              <div className="max-w-sm mx-auto">
+                <UpgradeBanner requiredPlan={plan === "REGULATOR" ? "STARTUP" : "BUSINESS"} compact />
+              </div>
+            ) : (
+              <GenerateChecklistDialog onSuccess={handleGenerateSuccess} />
+            )}
           </CardContent>
         </Card>
       )}
@@ -2003,6 +2113,7 @@ export default function ChecklistsPage() {
                 checklist={checklist}
                 onSelect={setActiveChecklistId}
                 onDelete={handleDelete}
+                onRetry={handleRetry}
               />
             ))}
           </div>
@@ -2023,6 +2134,20 @@ export default function ChecklistsPage() {
           </Card>
         </>
       )}
+
+      {/* Retry dialog — opened programmatically when user clicks Retry on a FAILED card */}
+      <GenerateChecklistDialog
+        onSuccess={(id) => {
+          setRetryDialogOpen(false)
+          handleGenerateSuccess(id)
+        }}
+        defaultValues={retryDefaults}
+        open={retryDialogOpen}
+        onOpenChange={(v) => {
+          setRetryDialogOpen(v)
+          if (!v) setRetryDefaults(undefined)
+        }}
+      />
     </div>
   )
 }
