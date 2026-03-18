@@ -4,6 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   Bell,
   Mail,
   MessageSquare,
@@ -14,13 +20,43 @@ import {
   ClipboardCheck,
   BookOpen,
   Upload,
+  Shield,
+  UserCircle,
+  LifeBuoy,
+  Megaphone,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "@/hooks/use-toast"
+import { useCategoryPreferences, useUpdateCategoryPreference } from "@/hooks/use-notifications"
+
+type CategoryName = "SECURITY" | "COMPLIANCE" | "DOCUMENTS" | "ACCOUNT" | "SUPPORT" | "SYSTEM"
+
+const CATEGORY_META: Record<CategoryName, { label: string; desc: string; Icon: React.ElementType }> = {
+  SECURITY:   { label: "Security",   desc: "Password changes, login alerts, and security events",            Icon: Shield },
+  COMPLIANCE: { label: "Compliance", desc: "Checklists, gap analyses, policy documents",                     Icon: ClipboardCheck },
+  DOCUMENTS:  { label: "Documents",  desc: "Vault uploads, deletions, and document activity",                Icon: FileText },
+  ACCOUNT:    { label: "Account",    desc: "Profile changes, organization updates, subscription events",     Icon: UserCircle },
+  SUPPORT:    { label: "Support",    desc: "Support ticket creation and status updates",                     Icon: LifeBuoy },
+  SYSTEM:     { label: "System",     desc: "Platform announcements and maintenance notices",                 Icon: Megaphone },
+}
+
+import React from "react"
+
+interface CategoryPref {
+  id: string;
+  userId: string;
+  category: CategoryName;
+  inAppEnabled: boolean;
+  emailEnabled: boolean;
+}
 
 export default function NotificationSettingsPage() {
-  // Single DB-backed source of truth for all notification preferences
+  // Existing DB-backed email/channel preferences
   const { data: prefs, isLoading } = trpc.user.getNotificationPreferences.useQuery()
+
+  // Per-category in-app/email preferences
+  const { data: categoryPrefs, isLoading: isCategoryLoading } = useCategoryPreferences()
+  const updateCategoryPref = useUpdateCategoryPreference()
 
   const updateMutation = trpc.user.updateNotificationPreferences.useMutation({
     onSuccess: () => toast({ title: "Preferences saved" }),
@@ -269,6 +305,106 @@ export default function NotificationSettingsPage() {
               )}
           </CardContent>
         </Card>
+        {/* In-App Notifications by Category */}
+        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
+              In-App Notifications
+            </CardTitle>
+            <CardDescription>Control which categories appear in your notification bell</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isCategoryLoading
+              ? loadingRows(6)
+              : (Object.keys(CATEGORY_META) as CategoryName[]).map((cat) => {
+                  const meta = CATEGORY_META[cat]
+                  const Icon = meta.Icon
+                  const pref = (categoryPrefs as CategoryPref[] | undefined)?.find((p) => p.category === cat)
+                  const isEnabled = pref?.inAppEnabled ?? true
+                  const isSecurity = cat === "SECURITY"
+
+                  const switchEl = (
+                    <Switch
+                      checked={isEnabled}
+                      disabled={isSecurity || updateCategoryPref.isPending}
+                      onCheckedChange={(v) => {
+                        updateCategoryPref.mutate(
+                          { category: cat, inAppEnabled: v },
+                          { onError: (e) => toast({ title: e.message || "Failed to save", variant: "destructive" }) }
+                        )
+                      }}
+                    />
+                  )
+
+                  return (
+                    <div key={cat} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Icon className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-medium text-foreground">{meta.label}</p>
+                          <p className="text-sm text-muted-foreground">{meta.desc}</p>
+                        </div>
+                      </div>
+                      {isSecurity ? (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span>{switchEl}</span>
+                            </TooltipTrigger>
+                            <TooltipContent>Security notifications cannot be disabled</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : switchEl}
+                    </div>
+                  )
+                })}
+          </CardContent>
+        </Card>
+
+        {/* Email Notifications by Category */}
+        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" />
+              Email Notifications by Category
+            </CardTitle>
+            <CardDescription>Control which categories send you email notifications</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isCategoryLoading
+              ? loadingRows(6)
+              : (Object.keys(CATEGORY_META) as CategoryName[]).map((cat) => {
+                  const meta = CATEGORY_META[cat]
+                  const Icon = meta.Icon
+                  const pref = (categoryPrefs as CategoryPref[] | undefined)?.find((p) => p.category === cat)
+                  const isEnabled = pref?.emailEnabled ?? (cat !== "SYSTEM")
+
+                  return (
+                    <div key={cat} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Icon className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-medium text-foreground">{meta.label}</p>
+                          <p className="text-sm text-muted-foreground">{meta.desc}</p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={isEnabled}
+                        disabled={updateCategoryPref.isPending}
+                        onCheckedChange={(v) => {
+                          updateCategoryPref.mutate(
+                            { category: cat, emailEnabled: v },
+                            { onError: (e) => toast({ title: e.message || "Failed to save", variant: "destructive" }) }
+                          )
+                        }}
+                      />
+                    </div>
+                  )
+                })}
+          </CardContent>
+        </Card>
+
       </div>
     </div>
   )

@@ -44,38 +44,97 @@ import {
   LogOut,
   Laptop,
   Trash2,
+  Sparkles,
 } from "lucide-react"
 import { useUserActions, useSessions, useTotp, type SessionInfo } from "@/hooks/use-user"
 import { useAuth } from "@/hooks/use-auth"
 import { format, formatDistanceToNow } from "date-fns"
+import { PasswordStrengthIndicator, checkPasswordStrength } from "@/components/auth/password-strength-indicator"
+import { generateStrongPassword } from "@/lib/password"
 
 // ─── Change Password ───────────────────────────────────────────────────────────
 
 function ChangePasswordCard() {
   const { changePassword, isChangingPassword } = useUserActions()
+  const { logout } = useAuth()
   const [showCurrent, setShowCurrent] = useState(false)
   const [showNew, setShowNew] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [form, setForm] = useState({ current: "", newPass: "", confirm: "" })
   const [error, setError] = useState<string | null>(null)
+  // Stores the last generated password so the user can copy it.
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null)
+
+  const newPassStrength = checkPasswordStrength(form.newPass)
+
+  // Submit is enabled only when all fields are filled, new password passes all
+  // rules, confirmation matches, and new password differs from current.
+  const canSubmit =
+    !isChangingPassword &&
+    form.current.trim().length > 0 &&
+    form.newPass.length > 0 &&
+    form.confirm.length > 0 &&
+    newPassStrength.isValid &&
+    form.newPass === form.confirm &&
+    form.newPass !== form.current
 
   const handleSubmit = async () => {
     setError(null)
+
     if (form.newPass !== form.confirm) {
       setError("New passwords do not match")
       return
     }
-    if (form.newPass.length < 8) {
-      setError("New password must be at least 8 characters")
+    if (!newPassStrength.isValid) {
+      setError("New password does not meet the requirements shown below")
       return
     }
-    try {
-      await changePassword({ currentPassword: form.current, newPassword: form.newPass })
-      toast.success("Password changed successfully")
-      setForm({ current: "", newPass: "", confirm: "" })
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to change password")
+    if (form.newPass === form.current) {
+      setError("New password must be different from your current password")
+      return
     }
+
+    try {
+      await changePassword({
+        currentPassword: form.current,
+        newPassword: form.newPass,
+        confirmPassword: form.confirm,
+      })
+      toast.success(
+        "Password changed. You will be signed out — please log in again with your new password.",
+        { duration: 5000 }
+      )
+      setForm({ current: "", newPass: "", confirm: "" })
+      setGeneratedPassword(null)
+      // All Supabase sessions were revoked on the backend. Sign out locally.
+      await logout()
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to change password"
+      setError(message)
+    }
+  }
+
+  const handleSuggestPassword = () => {
+    try {
+      const pw = generateStrongPassword(16)
+      setForm((prev) => ({ ...prev, newPass: pw, confirm: pw }))
+      setGeneratedPassword(pw)
+      setShowNew(true)
+      setShowConfirm(true)
+      setError(null)
+      toast.info("Strong password generated. Save it in a password manager.")
+    } catch {
+      toast.error("Could not generate a password. Please try again.")
+    }
+  }
+
+  const handleCopyGenerated = () => {
+    if (!generatedPassword) return
+    navigator.clipboard.writeText(generatedPassword).then(() => {
+      toast.success("Password copied to clipboard")
+    }).catch(() => {
+      toast.error("Failed to copy. Please copy it manually.")
+    })
   }
 
   return (
@@ -85,7 +144,7 @@ function ChangePasswordCard() {
           <Key className="h-5 w-5 text-primary" />
           Change Password
         </CardTitle>
-        <CardDescription>Update your account password</CardDescription>
+        <CardDescription>Update your account password. All active sessions will be signed out after a successful change.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
@@ -93,6 +152,8 @@ function ChangePasswordCard() {
             {error}
           </div>
         )}
+
+        {/* Current Password */}
         <div className="space-y-2">
           <Label>Current Password</Label>
           <div className="relative">
@@ -101,56 +162,117 @@ function ChangePasswordCard() {
               className="bg-muted/50 pr-10"
               value={form.current}
               onChange={(e) => setForm({ ...form, current: e.target.value })}
+              autoComplete="current-password"
             />
             <button
               type="button"
               className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
               onClick={() => setShowCurrent((v) => !v)}
+              aria-label={showCurrent ? "Hide current password" : "Show current password"}
             >
               {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
         </div>
+
+        {/* New Password */}
         <div className="space-y-2">
-          <Label>New Password</Label>
+          <div className="flex items-center justify-between">
+            <Label>New Password</Label>
+            <button
+              type="button"
+              onClick={handleSuggestPassword}
+              className="flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Suggest strong password
+            </button>
+          </div>
           <div className="relative">
             <Input
               type={showNew ? "text" : "password"}
               className="bg-muted/50 pr-10"
               value={form.newPass}
-              onChange={(e) => setForm({ ...form, newPass: e.target.value })}
+              onChange={(e) => {
+                setForm({ ...form, newPass: e.target.value })
+                // Clear generated password display if user types manually.
+                if (e.target.value !== generatedPassword) setGeneratedPassword(null)
+              }}
+              autoComplete="new-password"
             />
             <button
               type="button"
               className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
               onClick={() => setShowNew((v) => !v)}
+              aria-label={showNew ? "Hide new password" : "Show new password"}
             >
               {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+
+          {/* Strength meter — shown as soon as the user starts typing */}
+          {form.newPass.length > 0 && (
+            <PasswordStrengthIndicator
+              password={form.newPass}
+              showChecklist={true}
+              className="mt-2"
+            />
+          )}
+
+          {/* Generated password display */}
+          {generatedPassword && form.newPass === generatedPassword && (
+            <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30 px-3 py-2">
+              <code className="flex-1 truncate text-xs font-mono text-emerald-800 dark:text-emerald-300">
+                {generatedPassword}
+              </code>
+              <button
+                type="button"
+                onClick={handleCopyGenerated}
+                className="shrink-0 text-emerald-700 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-200 transition-colors"
+                aria-label="Copy generated password"
+              >
+                <Copy className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* Confirm New Password */}
         <div className="space-y-2">
           <Label>Confirm New Password</Label>
           <div className="relative">
             <Input
               type={showConfirm ? "text" : "password"}
-              className="bg-muted/50 pr-10"
+              className={`bg-muted/50 pr-10 ${
+                form.confirm.length > 0 && form.newPass !== form.confirm
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : ""
+              }`}
               value={form.confirm}
               onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+              autoComplete="new-password"
             />
             <button
               type="button"
               className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
               onClick={() => setShowConfirm((v) => !v)}
+              aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
             >
               {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+          {form.confirm.length > 0 && form.newPass !== form.confirm && (
+            <p className="text-xs text-destructive">Passwords do not match</p>
+          )}
+          {form.confirm.length > 0 && form.newPass === form.confirm && form.confirm.length > 0 && (
+            <p className="text-xs text-emerald-600">Passwords match</p>
+          )}
         </div>
+
         <Button
           className="bg-primary text-primary-foreground"
           onClick={handleSubmit}
-          disabled={isChangingPassword || !form.current || !form.newPass || !form.confirm}
+          disabled={!canSubmit}
         >
           {isChangingPassword ? (
             <>

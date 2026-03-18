@@ -3,8 +3,11 @@
 import { useMemo } from "react";
 import { Check, X } from "lucide-react";
 
-// ── Password validation (mirrors backend password.schema.ts rules) ────────────
-// Kept local to avoid cross-package imports; must stay in sync with backend.
+// ── Password policy constants ─────────────────────────────────────────────────
+// These rules mirror src/shared/validation/password.schema.ts in the backend.
+// Cross-package imports are not supported in this monorepo layout, so this
+// file is the single source of truth for the frontend. PASSWORD_RULES is
+// exported so all forms (Sign Up, Change Password, etc.) share the same set.
 
 const PASSWORD_MIN_LENGTH = 10;
 const SPECIAL_CHAR_RE = /[!@#$%^&*()\-_+=[\]{}|;:'",.<>?/~`\\]/;
@@ -134,20 +137,24 @@ const LABEL_COLORS: Record<number, string> = {
 
 // ── Requirement rows shown in the checklist ───────────────────────────────────
 
-interface RequirementItem {
+export interface PasswordRequirement {
   key: keyof PasswordRules;
   label: string;
 }
 
-const REQUIREMENTS: RequirementItem[] = [
+/** Exported so Change Password and other forms can share the same rule list. */
+export const PASSWORD_RULES: PasswordRequirement[] = [
   { key: "minLength", label: `At least ${PASSWORD_MIN_LENGTH} characters` },
-  { key: "hasUppercase", label: "Uppercase letter (A–Z)" },
-  { key: "hasLowercase", label: "Lowercase letter (a–z)" },
-  { key: "hasDigit", label: "Number (0–9)" },
-  { key: "hasSpecial", label: "Special character (!, @, #, $, …)" },
+  { key: "hasUppercase", label: "Uppercase letter (A-Z)" },
+  { key: "hasLowercase", label: "Lowercase letter (a-z)" },
+  { key: "hasDigit", label: "Number (0-9)" },
+  { key: "hasSpecial", label: "Special character (!, @, #, $, ...)" },
   { key: "noRepeated", label: "No repeated characters (aaaa)" },
   { key: "noSequential", label: "No sequential patterns (abcd, 1234)" },
 ];
+
+// Internal alias used inside the component.
+const REQUIREMENTS = PASSWORD_RULES;
 
 // ── Component ─────────────────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -30,16 +30,31 @@ import {
   Building2,
   ChevronDown,
   FileText,
-  AlertCircle,
-  CheckCircle2,
   Loader2,
-  MessageSquare,
   Menu,
+  Shield,
+  ClipboardCheck,
+  UserCircle,
+  LifeBuoy,
+  Megaphone,
 } from "lucide-react"
 import { useAuthStore } from "@/lib/auth-store"
 import { useAuth } from "@/hooks/use-auth"
 import { useUnreadCount, useNotifications, useNotificationActions } from "@/hooks/use-notifications"
 import { useSidebar } from "@/lib/sidebar-context"
+import { trpc } from "@/lib/trpc"
+
+interface NotificationItem {
+  id: string
+  type: string
+  category: NotificationCategoryName
+  title: string
+  message: string
+  link: string | null
+  read: boolean
+  readAt: Date | null
+  createdAt: Date | string
+}
 
 /** Format a date as a relative time string (e.g. "5 minutes ago") */
 function relativeTime(dateStr: string | Date): string {
@@ -53,13 +68,26 @@ function relativeTime(dateStr: string | Date): string {
   return `${days} day${days === 1 ? "" : "s"} ago`
 }
 
-/** Map backend notification types to UI icon variants */
-function notificationVariant(type: string): "alert" | "success" | "info" | "ticket" {
-  if (type === "COMPLIANCE_ALERT" || type === "DEADLINE_ALERT") return "alert"
-  if (type === "POLICY_READY" || type === "DOCUMENT_READY") return "success"
-  if (type === "TICKET_CREATED" || type === "TICKET_STATUS_UPDATE" || type === "TICKET_RESPONSE") return "ticket"
-  return "info"
+type NotificationCategoryName = "SECURITY" | "COMPLIANCE" | "DOCUMENTS" | "ACCOUNT" | "SUPPORT" | "SYSTEM"
+
+const CATEGORY_CONFIG: Record<NotificationCategoryName, { label: string; Icon: React.ElementType; iconCls: string; bgCls: string }> = {
+  SECURITY:   { label: "Security",   Icon: Shield,         iconCls: "text-destructive",   bgCls: "bg-destructive/10" },
+  COMPLIANCE: { label: "Compliance", Icon: ClipboardCheck, iconCls: "text-yellow-600",    bgCls: "bg-yellow-500/10" },
+  DOCUMENTS:  { label: "Documents",  Icon: FileText,       iconCls: "text-primary",        bgCls: "bg-primary/10" },
+  ACCOUNT:    { label: "Account",    Icon: UserCircle,     iconCls: "text-emerald-600",    bgCls: "bg-emerald-500/10" },
+  SUPPORT:    { label: "Support",    Icon: LifeBuoy,       iconCls: "text-purple-600",     bgCls: "bg-purple-500/10" },
+  SYSTEM:     { label: "System",     Icon: Megaphone,      iconCls: "text-muted-foreground", bgCls: "bg-muted" },
 }
+
+const CATEGORY_TABS: Array<{ value: NotificationCategoryName | "ALL"; label: string }> = [
+  { value: "ALL",        label: "All" },
+  { value: "SECURITY",   label: "Security" },
+  { value: "COMPLIANCE", label: "Compliance" },
+  { value: "DOCUMENTS",  label: "Documents" },
+  { value: "ACCOUNT",    label: "Account" },
+  { value: "SUPPORT",    label: "Support" },
+  { value: "SYSTEM",     label: "System" },
+]
 
 interface DashboardHeaderProps {
   userType: "regulator" | "startup"
@@ -68,9 +96,11 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ userType }: DashboardHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<NotificationCategoryName | "ALL">("ALL")
   const authUser = useAuthStore((s) => s.user)
   const { logout } = useAuth()
   const { setMobileOpen } = useSidebar()
+  const utils = trpc.useUtils()
 
   const user = {
     name: authUser?.name || (userType === "regulator" ? "Regulator" : "User"),
@@ -81,11 +111,22 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
 
   // Real notification data from the backend
   const { data: unreadData } = useUnreadCount()
-  const { data: notifData, isLoading: isLoadingNotifs } = useNotifications({ limit: 10 })
+  const { data: notifData, isLoading: isLoadingNotifs } = useNotifications({
+    limit: 20,
+    category: activeCategory === "ALL" ? undefined : activeCategory,
+  })
   const { markAllAsRead, isMarkingAllAsRead } = useNotificationActions()
 
   const unreadCount = unreadData?.count ?? 0
-  const notificationList = notifData?.notifications ?? []
+  const notificationList = (notifData?.items ?? []) as NotificationItem[]
+
+  function handlePanelOpen(open: boolean) {
+    setNotificationsOpen(open)
+    if (open) {
+      utils.notification.list.invalidate()
+      utils.notification.getUnreadCount.invalidate()
+    }
+  }
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-xl">
@@ -126,19 +167,19 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
       {/* Right side - Actions */}
       <div className="flex items-center gap-2">
         {/* Notifications */}
-        <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+        <Sheet open={notificationsOpen} onOpenChange={handlePanelOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-                  {unreadCount > 9 ? "9+" : unreadCount}
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-[10px] font-medium text-primary-foreground">
+                  {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               )}
               <span className="sr-only">Notifications</span>
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-full sm:w-96">
+          <SheetContent className="w-full sm:w-[28rem]">
             <SheetHeader>
               <SheetTitle className="flex items-center justify-between">
                 Notifications
@@ -163,7 +204,25 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
                 </div>
               </SheetTitle>
             </SheetHeader>
-            <ScrollArea className="mt-6 h-[calc(100vh-8rem)]">
+
+            {/* Category filter tabs */}
+            <div className="mt-4 flex flex-wrap gap-1 border-b border-border pb-3">
+              {CATEGORY_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setActiveCategory(tab.value)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    activeCategory === tab.value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/70"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <ScrollArea className="mt-4 h-[calc(100vh-12rem)]">
               <div className="flex flex-col gap-2">
                 {isLoadingNotifs ? (
                   <div className="flex items-center justify-center py-8 text-muted-foreground">
@@ -175,9 +234,11 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
                     No notifications yet
                   </p>
                 ) : (
-                  notificationList.map((notification: any) => {
-                    const variant = notificationVariant(notification.type ?? "")
-                    const isUnread = !notification.readAt
+                  notificationList.map((notification) => {
+                    const catName = (notification.category ?? "SYSTEM") as NotificationCategoryName
+                    const config = CATEGORY_CONFIG[catName] ?? CATEGORY_CONFIG.SYSTEM
+                    const isUnread = !notification.read
+                    const Icon = config.Icon
                     return (
                       <div
                         key={notification.id}
@@ -186,25 +247,9 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
                         }`}
                       >
                         <div
-                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                            variant === "alert"
-                              ? "bg-destructive/10 text-destructive"
-                              : variant === "success"
-                              ? "bg-secondary/10 text-secondary"
-                              : variant === "ticket"
-                              ? "bg-emerald-500/10 text-emerald-600"
-                              : "bg-primary/10 text-primary"
-                          }`}
+                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${config.bgCls} ${config.iconCls}`}
                         >
-                          {variant === "alert" ? (
-                            <AlertCircle className="h-4 w-4" />
-                          ) : variant === "success" ? (
-                            <CheckCircle2 className="h-4 w-4" />
-                          ) : variant === "ticket" ? (
-                            <MessageSquare className="h-4 w-4" />
-                          ) : (
-                            <FileText className="h-4 w-4" />
-                          )}
+                          <Icon className="h-4 w-4" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-foreground text-sm">

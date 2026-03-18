@@ -2,18 +2,22 @@
 
 import { trpc } from "@/lib/trpc";
 
+type NotificationCategory = 'SECURITY' | 'COMPLIANCE' | 'DOCUMENTS' | 'ACCOUNT' | 'SUPPORT' | 'SYSTEM';
+
 /** List notifications for the current user */
 export function useNotifications(options?: {
   page?: number;
   limit?: number;
   unreadOnly?: boolean;
   type?: string;
+  category?: NotificationCategory;
 }) {
   return trpc.notification.list.useQuery({
     page: options?.page ?? 1,
     limit: options?.limit ?? 20,
     unreadOnly: options?.unreadOnly,
     type: options?.type,
+    category: options?.category,
   });
 }
 
@@ -86,6 +90,21 @@ export function useUpdateNotificationPreferences() {
   return trpc.notification.updatePreferences.useMutation({
     onSuccess: () => {
       utils.notification.getPreferences.invalidate();
+    },
+  });
+}
+
+/** Load per-category in-app/email preferences (seeds defaults if none exist) */
+export function useCategoryPreferences() {
+  return trpc.notification.getCategoryPreferences.useQuery();
+}
+
+export function useUpdateCategoryPreference() {
+  const utils = trpc.useUtils();
+
+  return trpc.notification.updateCategoryPreference.useMutation({
+    onSuccess: () => {
+      utils.notification.getCategoryPreferences.invalidate();
     },
   });
 }
