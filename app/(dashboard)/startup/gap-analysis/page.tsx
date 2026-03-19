@@ -353,6 +353,16 @@ function AnalysisResultsView({
         </Button>
       </div>
 
+      {/* RAG grounding warning — shown when Pinecone was unavailable during generation */}
+      {data.ragGrounded === false && (
+        <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm dark:border-yellow-800/50 dark:bg-yellow-900/20">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-600 dark:text-yellow-400" />
+          <p className="text-yellow-800 dark:text-yellow-300">
+            <span className="font-semibold">Limited regulatory grounding.</span> This analysis was generated without access to the SheriaBot regulatory document database. Results are based on AI training knowledge only and may not reflect the latest Kenyan regulations or recent amendments. Consider re-running the analysis when the service is available.
+          </p>
+        </div>
+      )}
+
       {/* Executive Summary Card */}
       <Card className={`border-2 ${scoreConfig.ring}`}>
         <CardContent className="pt-6">
