@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -11,6 +11,16 @@ import { Label } from "@/components/ui/label"
 import { toast } from "@/hooks/use-toast"
 import { trpc } from "@/lib/trpc"
 import { FeatureGate } from "@/components/plan/feature-gate"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  buildGapAnalysisReportHtml,
+  type GapAnalysisReportResult,
+} from "@/lib/utils/buildGapAnalysisReportHtml"
 import {
   AlertTriangle,
   CheckCircle2,
@@ -27,21 +37,11 @@ import {
   ChevronRight,
   Shield,
   BarChart3,
+  Lock,
 } from "lucide-react"
 import { LoadingScreen } from "@/components/loading-screen"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const REGULATORY_FRAMEWORKS = [
-  { id: "Data Protection Act 2019", label: "Data Protection Act 2019 (DPA)" },
-  { id: "CBK Prudential Guidelines", label: "CBK Prudential Guidelines" },
-  { id: "National Payment System Act 2011", label: "National Payment System Act 2011" },
-  { id: "POCAMLA", label: "Proceeds of Crime & AML Act (POCAMLA)" },
-  { id: "CBK Cybersecurity Guidelines", label: "CBK Cybersecurity Guidance Note" },
-  { id: "Consumer Protection Guidelines", label: "Consumer Protection Guidelines" },
-  { id: "Digital Credit Providers Regulations 2022", label: "Digital Credit Providers Regulations 2022" },
-  { id: "Capital Markets Authority Act", label: "Capital Markets Authority Act" },
-]
 
 const FOCUS_AREAS = [
   "Data handling and privacy",
@@ -71,6 +71,16 @@ const ALLOWED_TYPES = ["application/pdf", "application/vnd.openxmlformats-office
 const ALLOWED_EXTENSIONS = [".pdf", ".docx", ".doc", ".txt"]
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
+const STATUS_LABELS: Record<string, { label: string; description: string }> = {
+  UPLOADING:  { label: "Uploading document",              description: "Transferring your file to secure storage..." },
+  QUEUED:     { label: "Queued for analysis",             description: "Your analysis is queued and will start shortly..." },
+  EXTRACTING: { label: "Extracting text",                 description: "Reading and parsing your policy document..." },
+  ANALYZING:  { label: "Analysing against frameworks",    description: "Comparing your policies against Kenyan regulatory requirements..." },
+  COMPLETING: { label: "Finalising results",              description: "Compiling your gap analysis report..." },
+  COMPLETED:  { label: "Analysis complete",               description: "Your gap analysis is ready to view." },
+  FAILED:     { label: "Analysis failed",                 description: "An error occurred during analysis." },
+}
+
 function getScoreColor(score: number) {
   if (score >= 91) return { ring: "border-secondary", text: "text-secondary", bg: "bg-secondary/10" }
   if (score >= 71) return { ring: "border-yellow-500", text: "text-yellow-600", bg: "bg-yellow-50 dark:bg-yellow-900/20" }
@@ -83,40 +93,6 @@ function getScoreLabel(score: number) {
   if (score >= 71) return "Good"
   if (score >= 41) return "Needs Work"
   return "Critical Risk"
-}
-
-// ─── Multi-Select Component ─────────────────────────────────────────────────
-
-function MultiSelect({
-  options,
-  selected,
-  onChange,
-}: {
-  options: { id: string; label: string }[]
-  selected: string[]
-  onChange: (values: string[]) => void
-}) {
-  const toggle = (id: string) =>
-    onChange(selected.includes(id) ? selected.filter((v) => v !== id) : [...selected, id])
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((opt) => (
-        <button
-          key={opt.id}
-          type="button"
-          onClick={() => toggle(opt.id)}
-          className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
-            selected.includes(opt.id)
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-background text-foreground hover:bg-muted"
-          }`}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  )
 }
 
 // ─── File Upload Section ─────────────────────────────────────────────────────
@@ -274,6 +250,29 @@ function AnalysisResultsView({
   const { data, isLoading, error } = trpc.compliance.getGapAnalysisResult.useQuery({ id: analysisId })
   const [expandedGaps, setExpandedGaps] = useState<Record<string, boolean>>({})
 
+  const logExportMutation = trpc.compliance.logExport.useMutation()
+  const exportDocxMutation = trpc.compliance.exportDocx.useMutation({
+    onSuccess: (res) => {
+      // Trigger download via temporary anchor
+      const a = document.createElement("a")
+      a.href = res.downloadUrl
+      a.download = res.fileName
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      toast({ title: "Report ready", description: "Your Word document download has started." })
+    },
+    onError: (err) => {
+      toast({
+        title: "Export failed",
+        description: err.message.includes("FORBIDDEN")
+          ? "DOCX export is available on Business and Enterprise plans. Please upgrade."
+          : err.message || "Failed to generate report. Please try again.",
+        variant: "destructive",
+      })
+    },
+  })
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -331,6 +330,32 @@ function AnalysisResultsView({
     return (order[a.severity] ?? 3) - (order[b.severity] ?? 3)
   })
 
+  function handleExportPdf() {
+    const html = buildGapAnalysisReportHtml({
+      analysisId,
+      organizationName: data.organizationName ?? undefined,
+      userName: data.userName ?? undefined,
+      documentName: data.documentName,
+      createdAt: data.createdAt,
+      analysisDepth: data.analysisDepth ?? "standard",
+      ragGrounded: data.ragGrounded ?? false,
+      chunksProcessed: data.chunksProcessed ?? 0,
+      regulatoryFrameworks: data.regulatoryFrameworks ?? [],
+      result: results as unknown as GapAnalysisReportResult,
+    })
+    const printWindow = window.open("", "_blank")
+    if (!printWindow) {
+      toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site and try again.", variant: "destructive" })
+      return
+    }
+    printWindow.document.open()
+    printWindow.document.write(html)
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => printWindow.print(), 500)
+    logExportMutation.mutate({ analysisId, format: "pdf" })
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -342,15 +367,32 @@ function AnalysisResultsView({
           <h2 className="text-xl font-bold text-foreground">Gap Analysis Results</h2>
           <p className="text-sm text-muted-foreground mt-1">{data.documentName} · {new Date(data.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="bg-transparent"
-          onClick={() => toast({ title: "Export", description: "PDF export coming soon." })}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Export
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="bg-transparent">
+              <Download className="mr-2 h-4 w-4" />
+              Export
+              <ChevronDown className="ml-1 h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleExportPdf}>
+              <FileText className="mr-2 h-4 w-4" />
+              Export as PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => exportDocxMutation.mutate({ analysisId })}
+              disabled={exportDocxMutation.isPending}
+            >
+              {exportDocxMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Lock className="mr-2 h-4 w-4" />
+              )}
+              Export as Word (DOCX)
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* RAG grounding warning — shown when Pinecone was unavailable during generation */}
@@ -582,6 +624,124 @@ function AnalysisResultsView({
   )
 }
 
+// ─── Analysis Progress View ───────────────────────────────────────────────────
+
+function AnalysisProgressView({
+  documentName,
+  frameworks,
+  progress,
+  status,
+  errorMessage,
+  startedAt,
+  onBack,
+  onRetry,
+}: {
+  documentName: string
+  frameworks: string[]
+  progress: number
+  status: string
+  errorMessage?: string | null
+  startedAt: number | null
+  onBack: () => void
+  onRetry: () => void
+}) {
+  const [elapsed, setElapsed] = useState(0)
+  const isFailed = status === "FAILED"
+  const statusInfo = STATUS_LABELS[status] ?? { label: status, description: "" }
+
+  useEffect(() => {
+    if (isFailed || status === "COMPLETED") return
+    const start = startedAt ?? Date.now()
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - start) / 1000))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [isFailed, status, startedAt])
+
+  const formatElapsed = (s: number) => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`
+
+  return (
+    <FeatureGate feature="gapAnalysis">
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground">
+            {'\u2190'} Back
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Policy Gap Analysis</h1>
+            <p className="text-muted-foreground mt-1 text-sm truncate max-w-sm">{documentName}</p>
+          </div>
+        </div>
+
+        <Card className="border-border/50">
+          <CardContent className="pt-10 pb-10">
+            <div className="max-w-md mx-auto text-center space-y-6">
+              {isFailed ? (
+                <XCircle className="h-12 w-12 text-destructive mx-auto" />
+              ) : (
+                <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+              )}
+
+              <div>
+                <h2 className={`text-xl font-semibold ${isFailed ? "text-destructive" : "text-foreground"}`}>
+                  {statusInfo.label}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {isFailed ? (errorMessage ?? statusInfo.description) : statusInfo.description}
+                </p>
+              </div>
+
+              {!isFailed && (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{progress}%</span>
+                      {startedAt && <span>Elapsed: {formatElapsed(elapsed)}</span>}
+                    </div>
+                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {frameworks.length > 0 && (
+                    <div className="rounded-lg border border-border/50 bg-muted/30 p-3 text-left">
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Analysing against:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {frameworks.map((fw) => (
+                          <span key={fw} className="text-xs rounded border border-border bg-background px-2 py-0.5 text-foreground">
+                            {fw}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-muted-foreground">
+                    Deep analyses can take up to 3 minutes. Please keep this page open.
+                  </p>
+                </>
+              )}
+
+              {isFailed && (
+                <div className="flex gap-3 justify-center">
+                  <Button variant="outline" onClick={onBack}>Back</Button>
+                  <Button onClick={onRetry} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Try Again
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </FeatureGate>
+  )
+}
+
 // ─── Analysis History Item ────────────────────────────────────────────────────
 
 function AnalysisHistoryItem({
@@ -597,16 +757,22 @@ function AnalysisHistoryItem({
     status: string
     analysisDepth: string
     createdAt: Date
+    progress?: number
   }
   onView: (id: string, name: string) => void
   onDelete: (id: string) => void
 }) {
   const scoreConfig = analysis.overallScore != null ? getScoreColor(analysis.overallScore) : null
+  const isInProgress = analysis.status !== "COMPLETED" && analysis.status !== "FAILED"
 
   return (
     <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-card hover:bg-muted/30 transition-colors">
       <div className="flex items-center gap-4">
-        <FileText className="h-8 w-8 text-muted-foreground shrink-0" />
+        {isInProgress ? (
+          <Loader2 className="h-8 w-8 text-primary animate-spin shrink-0" />
+        ) : (
+          <FileText className="h-8 w-8 text-muted-foreground shrink-0" />
+        )}
         <div>
           <p className="font-medium text-foreground text-sm">{analysis.documentName}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -620,8 +786,19 @@ function AnalysisHistoryItem({
               "border-primary text-primary"
             }`}
           >
-            {analysis.status}
+            {STATUS_LABELS[analysis.status]?.label ?? analysis.status}
           </Badge>
+          {isInProgress && typeof analysis.progress === "number" && (
+            <div className="mt-1.5 flex items-center gap-2">
+              <div className="h-1 w-24 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${analysis.progress}%` }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground">{analysis.progress}%</span>
+            </div>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-3">
@@ -660,20 +837,72 @@ export default function GapAnalysisPage() {
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([])
   const [analysisDepth, setAnalysisDepth] = useState<"quick" | "standard" | "deep">("standard")
   const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>([])
+  const [consentChecked, setConsentChecked] = useState(false)
+
+  // Async polling state
+  const [activeAnalysisId, setActiveAnalysisId] = useState<string | null>(null)
+  const [isAwaitingResult, setIsAwaitingResult] = useState(false)
+  const [analysisStartedAt, setAnalysisStartedAt] = useState<number | null>(null)
+  const [pendingDocName, setPendingDocName] = useState<string>("")
+  const [pendingFrameworks, setPendingFrameworks] = useState<string[]>([])
+  const hasCheckedResumption = useRef(false)
 
   const utils = trpc.useUtils()
 
   const { data: analyses, isLoading: listLoading, error: listError } = trpc.compliance.getGapAnalysis.useQuery(undefined)
+  const { data: frameworksData, isLoading: frameworksLoading } = trpc.compliance.getFrameworks.useQuery()
+
+  // Polling query — active only while isAwaitingResult
+  const pollingQuery = trpc.compliance.getGapAnalysisResult.useQuery(
+    { id: activeAnalysisId! },
+    {
+      enabled: isAwaitingResult && activeAnalysisId !== null,
+      refetchInterval: (query) => {
+        const status = (query.state.data as any)?.status as string | undefined
+        if (status === "COMPLETED" || status === "FAILED") return false
+        return 3000
+      },
+    }
+  )
+
+  // Transition to results view on COMPLETED
+  useEffect(() => {
+    if (!isAwaitingResult || !pollingQuery.data) return
+    const d = pollingQuery.data as any
+    if (d.status === "COMPLETED") {
+      setIsAwaitingResult(false)
+      setActiveView({ id: d.id, name: d.documentName })
+      utils.compliance.getGapAnalysis.invalidate()
+      resetForm()
+      toast({ title: "Analysis complete", description: `Overall score: ${d.overallScore ?? "N/A"}/100` })
+    }
+    // FAILED: stay on progress view — AnalysisProgressView renders the error + retry UI
+  }, [(pollingQuery.data as any)?.status, isAwaitingResult]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Page-refresh resumption — detect in-progress analyses on first load
+  useEffect(() => {
+    if (hasCheckedResumption.current || isAwaitingResult || activeView || !analyses) return
+    hasCheckedResumption.current = true
+    const arr = Array.isArray(analyses) ? analyses : []
+    const inProgress = arr.find((a: any) => a.status !== "COMPLETED" && a.status !== "FAILED")
+    if (inProgress) {
+      setActiveAnalysisId(inProgress.id)
+      setPendingDocName(inProgress.documentName)
+      setPendingFrameworks([])
+      setIsAwaitingResult(true)
+    }
+  }, [analyses, isAwaitingResult, activeView])
 
   const runMutation = trpc.compliance.runGapAnalysis.useMutation({
     onSuccess: (data) => {
-      toast({
-        title: "Analysis complete",
-        description: `Overall score: ${data.overallScore ?? "N/A"}/100`,
-      })
+      const d = data as any
+      setActiveAnalysisId(d.id)
+      setIsAwaitingResult(true)
+      setAnalysisStartedAt(Date.now())
+      setPendingDocName(selectedFile?.name ?? "")
+      setPendingFrameworks([...selectedFrameworks])
       utils.compliance.getGapAnalysis.invalidate()
-      setActiveView({ id: data.id, name: data.documentName })
-      resetForm()
+      toast({ title: "Analysis queued", description: "Your document is being processed. This may take 1\u20133 minutes." })
     },
     onError: (err) => {
       toast({
@@ -699,6 +928,7 @@ export default function GapAnalysisPage() {
     setSelectedFrameworks([])
     setAnalysisDepth("standard")
     setSelectedFocusAreas([])
+    setConsentChecked(false)
   }
 
   const handleRunAnalysis = async () => {
@@ -725,7 +955,30 @@ export default function GapAnalysisPage() {
     reader.readAsDataURL(selectedFile)
   }
 
-  const canRun = selectedFile !== null && selectedFrameworks.length > 0 && !runMutation.isPending
+  const canRun = selectedFile !== null && selectedFrameworks.length > 0 && consentChecked && !runMutation.isPending && !isAwaitingResult
+
+  // Show async progress view
+  if (isAwaitingResult && activeAnalysisId) {
+    const pd = pollingQuery.data as any
+    return (
+      <AnalysisProgressView
+        documentName={pd?.documentName ?? pendingDocName}
+        frameworks={pendingFrameworks}
+        progress={pd?.progress ?? 5}
+        status={pd?.status ?? "QUEUED"}
+        errorMessage={pd?.errorMessage}
+        startedAt={analysisStartedAt}
+        onBack={() => {
+          setIsAwaitingResult(false)
+          setActiveAnalysisId(null)
+        }}
+        onRetry={() => {
+          setIsAwaitingResult(false)
+          setActiveAnalysisId(null)
+        }}
+      />
+    )
+  }
 
   // Show result view
   if (activeView) {
@@ -793,12 +1046,64 @@ export default function GapAnalysisPage() {
             {/* Frameworks */}
             <div className="space-y-2">
               <Label>Regulatory Frameworks <span className="text-destructive">*</span></Label>
-              <MultiSelect
-                options={REGULATORY_FRAMEWORKS}
-                selected={selectedFrameworks}
-                onChange={setSelectedFrameworks}
-              />
-              {selectedFrameworks.length === 0 && (
+              {frameworksLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-3/4" />
+                </div>
+              ) : frameworksData && frameworksData.length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(
+                    frameworksData.reduce<Record<string, typeof frameworksData>>((acc, fw) => {
+                      if (!acc[fw.category]) acc[fw.category] = []
+                      acc[fw.category].push(fw)
+                      return acc
+                    }, {})
+                  ).map(([category, fws]) => (
+                    <div key={category}>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">{category}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {fws.map((fw) => {
+                          const isSelected = selectedFrameworks.includes(fw.slug)
+                          if (fw.locked) {
+                            return (
+                              <div
+                                key={fw.slug}
+                                title={`Upgrade to ${fw.tier.charAt(0) + fw.tier.slice(1).toLowerCase()} to access`}
+                                className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm text-muted-foreground cursor-not-allowed select-none"
+                              >
+                                <Lock className="h-3 w-3 shrink-0" />
+                                {fw.name}
+                              </div>
+                            )
+                          }
+                          return (
+                            <button
+                              key={fw.slug}
+                              type="button"
+                              onClick={() =>
+                                setSelectedFrameworks((prev) =>
+                                  prev.includes(fw.slug) ? prev.filter((s) => s !== fw.slug) : [...prev, fw.slug]
+                                )
+                              }
+                              className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                                isSelected
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border bg-background text-foreground hover:bg-muted"
+                              }`}
+                            >
+                              {fw.name}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">No frameworks available.</p>
+              )}
+              {selectedFrameworks.length === 0 && !frameworksLoading && (
                 <p className="text-xs text-muted-foreground">Select at least one framework to analyse against</p>
               )}
             </div>
@@ -853,18 +1158,29 @@ export default function GapAnalysisPage() {
         </Card>
       </div>
 
+      {/* Cross-border data processing consent */}
+      <div className="rounded-lg border border-border/50 bg-muted/30 px-4 py-3">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={consentChecked}
+            onChange={(e) => setConsentChecked(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-input accent-primary cursor-pointer"
+          />
+          <span className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+            I understand that my document will be processed using AI services hosted outside Kenya,
+            in accordance with SheriaBot&apos;s Privacy Policy and the Data Protection Act 2019.
+          </span>
+        </label>
+      </div>
+
       {/* Run Analysis Button */}
       <Card className="border-border/50">
         <CardContent className="pt-6">
           {runMutation.isPending ? (
-            <div className="text-center py-4">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
-              <p className="font-medium text-foreground">Analysing your document...</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Uploading to secure storage, extracting text, and comparing against {selectedFrameworks.length} regulatory framework{selectedFrameworks.length > 1 ? "s" : ""}.
-                This may take 1–2 minutes.
-              </p>
-              <Progress className="mt-4 max-w-xs mx-auto h-2" value={undefined} />
+            <div className="flex items-center justify-center gap-3 py-3">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Uploading document...</p>
             </div>
           ) : (
             <div className="flex items-center justify-between">
@@ -874,7 +1190,9 @@ export default function GapAnalysisPage() {
                     <AlertTriangle className="h-4 w-4 text-warning" />
                     {!selectedFile
                       ? "Upload a document to continue"
-                      : "Select at least one regulatory framework"}
+                      : selectedFrameworks.length === 0
+                      ? "Select at least one regulatory framework"
+                      : "Confirm the data processing consent above to continue"}
                   </div>
                 )}
                 {canRun && (
@@ -938,6 +1256,7 @@ export default function GapAnalysisPage() {
               status: string
               analysisDepth: string
               createdAt: Date
+              progress?: number
             }) => (
               <AnalysisHistoryItem
                 key={analysis.id}
