@@ -4,6 +4,7 @@ import { useAuthStore } from "@/lib/auth-store"
 import { trpc } from "@/lib/trpc"
 import { getComplianceScoreTheme } from "@/lib/utils/compliance"
 import type { ComplianceScoreIcon } from "@/lib/utils/compliance"
+import { PRIORITY_CONFIG } from "@/lib/calendar-config"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,30 +30,6 @@ import {
 // -------------------------------------------------------------------------
 // Static fixtures (non-compliance sections — no backend change needed yet)
 // -------------------------------------------------------------------------
-
-const upcomingDeadlines = [
-  {
-    title: "Monthly AML Report",
-    date: "Feb 10, 2026",
-    daysLeft: 5,
-    type: "report",
-    priority: "high",
-  },
-  {
-    title: "License Renewal Application",
-    date: "Feb 28, 2026",
-    daysLeft: 23,
-    type: "application",
-    priority: "medium",
-  },
-  {
-    title: "Annual Compliance Audit",
-    date: "Mar 15, 2026",
-    daysLeft: 38,
-    type: "audit",
-    priority: "high",
-  },
-]
 
 const regulatoryAlerts = [
   {
@@ -177,6 +154,14 @@ export default function StartupDashboard() {
     staleTime: 5 * 60 * 1000,
     retry: 1,
   })
+
+  const {
+    data: upcomingDeadlines = [],
+    isLoading: deadlinesLoading,
+  } = trpc.calendar.upcoming.useQuery(
+    { daysAhead: 30 },
+    { staleTime: 5 * 60 * 1000 },
+  )
 
   const overallTheme = dashboardData
     ? getComplianceScoreTheme(dashboardData.overallScore)
@@ -314,27 +299,74 @@ export default function StartupDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {upcomingDeadlines.map((deadline, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-4 rounded-lg border border-border/50 p-4 transition-all duration-200 hover:border-primary/30 hover:shadow-sm cursor-default"
-                >
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                    deadline.priority === "high" ? "bg-destructive/10" : "bg-warning/10"
-                  }`}>
-                    <Calendar className={`h-5 w-5 ${
-                      deadline.priority === "high" ? "text-destructive" : "text-warning"
-                    }`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground text-sm">{deadline.title}</p>
-                    <p className="text-xs text-muted-foreground">{deadline.date}</p>
-                  </div>
-                  <Badge variant={deadline.daysLeft <= 7 ? "destructive" : "outline"}>
-                    {deadline.daysLeft}d left
-                  </Badge>
-                </div>
-              ))}
+              {deadlinesLoading ? (
+                <>
+                  <Skeleton className="h-[72px] rounded-lg" />
+                  <Skeleton className="h-[72px] rounded-lg" />
+                  <Skeleton className="h-[72px] rounded-lg" />
+                </>
+              ) : upcomingDeadlines.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  No upcoming compliance deadlines in the next 30 days.
+                </p>
+              ) : (
+                (upcomingDeadlines as Array<{
+                  id: string
+                  title: string
+                  dueDate: string | Date
+                  priority: string
+                  status: string
+                  category: string
+                  regulation: string | null
+                }>).map((event) => {
+                  const dueDate   = new Date(event.dueDate)
+                  const daysUntil = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                  const isUrgent  = daysUntil <= 3 && daysUntil > 0
+                  const isOverdue = daysUntil <= 0
+                  const priCfg    = PRIORITY_CONFIG[event.priority as keyof typeof PRIORITY_CONFIG]
+                                    ?? PRIORITY_CONFIG["MEDIUM"]
+
+                  return (
+                    <div
+                      key={event.id}
+                      className={`flex items-center gap-4 rounded-lg border p-4 transition-all duration-200 hover:border-primary/30 hover:shadow-sm cursor-default ${
+                        isUrgent  ? "border-orange-300/60 bg-orange-50/40 dark:bg-orange-950/20" :
+                        isOverdue ? "border-destructive/40 bg-destructive/5" :
+                                    "border-border/50"
+                      }`}
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+                        {isUrgent ? (
+                          <span className="relative flex h-5 w-5 items-center justify-center">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-50" />
+                            <Calendar className="relative h-4 w-4 text-orange-500" />
+                          </span>
+                        ) : (
+                          <Calendar className="h-5 w-5 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground text-sm truncate">{event.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {dueDate.toLocaleDateString("en-KE", { dateStyle: "medium" })}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        {isOverdue ? (
+                          <span className="text-xs font-bold text-destructive">OVERDUE</span>
+                        ) : (
+                          <Badge variant={daysUntil <= 7 ? "destructive" : "outline"}>
+                            {daysUntil}d left
+                          </Badge>
+                        )}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${priCfg.color}`}>
+                          {priCfg.label}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
             </div>
           </CardContent>
         </Card>

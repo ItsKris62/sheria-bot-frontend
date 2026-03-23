@@ -20,9 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { trpc } from "@/lib/trpc"
-import { getErrorMessage } from "@/lib/trpc"
 import { KENYAN_REGULATIONS } from "@/lib/calendar-config"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -64,17 +63,21 @@ export function AddEventModal({ open, onClose }: AddEventModalProps) {
 
   const createEvent = trpc.calendar.create.useMutation({
     onSuccess: () => {
+      toast.success("Compliance event created successfully")
       void utils.calendar.list.invalidate()
       void utils.calendar.upcoming.invalidate()
-      toast({ title: "Event created", description: `"${form.title}" has been added to your compliance calendar.` })
+      void utils.notification.list.invalidate()
+      void utils.notification.getUnreadCount.invalidate()
       handleClose()
     },
     onError: (error) => {
-      toast({
-        title:       "Failed to create event",
-        description: getErrorMessage(error),
-        variant:     "destructive",
-      })
+      if (error.data?.code === "CONFLICT") {
+        toast.error("Duplicate event", { description: error.message })
+      } else {
+        toast.error("Failed to create event", {
+          description: error.message || "An unexpected error occurred. Please try again.",
+        })
+      }
     },
   })
 
