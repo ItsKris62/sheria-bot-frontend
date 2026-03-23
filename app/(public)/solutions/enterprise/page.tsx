@@ -72,7 +72,7 @@ const useCases = [
     icon: Building2,
     title: "Banks & Financial Groups",
     description:
-      "Centralise compliance management across all regulated subsidiaries — banking, insurance, asset management — in one platform.",
+      "Centralise compliance management across all regulated subsidiaries banking, insurance, asset management in one platform.",
   },
   {
     icon: Globe,
