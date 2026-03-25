@@ -14,6 +14,8 @@ import {
   AlertTriangle,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
+import { usePlan } from "@/lib/plan-context"
+import { FeatureGate, LockedFeatureCard } from "@/components/plan/feature-gate"
 import { AddEventModal } from "@/components/calendar/AddEventModal"
 import { CATEGORY_CONFIG, PRIORITY_CONFIG } from "@/lib/calendar-config"
 
@@ -64,16 +66,22 @@ export default function CalendarPage() {
 
   const { firstDay, daysInMonth } = getDaysInMonth(currentDate)
 
+  // Gate all calendar queries behind the complianceCalendar entitlement so
+  // they never fire for users without access (avoids FORBIDDEN errors on mount).
+  const { hasFeature } = usePlan()
+  const calendarEnabled = hasFeature("complianceCalendar")
+
   // ── Data fetching ──────────────────────────────────────────────────────────
 
-  const { data: monthEvents = [], isLoading: eventsLoading } = trpc.calendar.list.useQuery({
-    month: currentDate.getMonth() + 1,
-    year:  currentDate.getFullYear(),
-  })
+  const { data: monthEvents = [], isLoading: eventsLoading } = trpc.calendar.list.useQuery(
+    { month: currentDate.getMonth() + 1, year: currentDate.getFullYear() },
+    { enabled: calendarEnabled },
+  )
 
-  const { data: upcomingEvents = [], isLoading: upcomingLoading } = trpc.calendar.upcoming.useQuery({
-    daysAhead: 30,
-  })
+  const { data: upcomingEvents = [], isLoading: upcomingLoading } = trpc.calendar.upcoming.useQuery(
+    { daysAhead: 30 },
+    { enabled: calendarEnabled },
+  )
 
   // ── Navigation ─────────────────────────────────────────────────────────────
 
@@ -92,6 +100,27 @@ export default function CalendarPage() {
   ).length
 
   return (
+    <FeatureGate
+      feature="complianceCalendar"
+      fallback={
+        <div className="space-y-4">
+          {/* Page header is always shown so the user knows where they are */}
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Compliance Calendar</h1>
+            <p className="text-muted-foreground mt-1">
+              Track deadlines, audits, and compliance milestones
+            </p>
+          </div>
+          <LockedFeatureCard
+            feature="complianceCalendar"
+            title="Compliance Calendar"
+            description="Create and manage org-scoped regulatory deadline events, get automated reminders, and never miss a filing date. Available on the Startup plan and above."
+            requiredPlan="STARTUP"
+            className="max-w-lg"
+          />
+        </div>
+      }
+    >
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -270,5 +299,6 @@ export default function CalendarPage() {
         onClose={() => setAddEventOpen(false)}
       />
     </div>
+    </FeatureGate>
   )
 }

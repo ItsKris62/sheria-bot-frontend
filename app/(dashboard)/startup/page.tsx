@@ -2,6 +2,8 @@
 
 import { useAuthStore } from "@/lib/auth-store"
 import { trpc } from "@/lib/trpc"
+import { usePlan } from "@/lib/plan-context"
+import { FeatureGate, LockedFeatureCard } from "@/components/plan/feature-gate"
 import { getComplianceScoreTheme } from "@/lib/utils/compliance"
 import type { ComplianceScoreIcon } from "@/lib/utils/compliance"
 import { PRIORITY_CONFIG } from "@/lib/calendar-config"
@@ -146,6 +148,11 @@ export default function StartupDashboard() {
   const user = useAuthStore((state) => state.user)
   const displayName = user?.name?.split(" ")[0] ?? "there"
 
+  // Derive calendar feature entitlement from plan context so the query is
+  // never fired for users who don't have access (avoids noisy FORBIDDEN errors).
+  const { hasFeature } = usePlan()
+  const calendarEnabled = hasFeature("complianceCalendar")
+
   const {
     data: dashboardData,
     isLoading: isDashboardLoading,
@@ -160,7 +167,7 @@ export default function StartupDashboard() {
     isLoading: deadlinesLoading,
   } = trpc.calendar.upcoming.useQuery(
     { daysAhead: 30 },
-    { staleTime: 5 * 60 * 1000 },
+    { staleTime: 5 * 60 * 1000, enabled: calendarEnabled },
   )
 
   const overallTheme = dashboardData
@@ -283,93 +290,105 @@ export default function StartupDashboard() {
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Upcoming Deadlines */}
-        <Card className="border-border/50 bg-card transition-all duration-200 hover:border-border hover:shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-foreground">Upcoming Deadlines</CardTitle>
-              <CardDescription>Don&apos;t miss these important dates</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/startup/calendar">
-                View all
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {deadlinesLoading ? (
-                <>
-                  <Skeleton className="h-[72px] rounded-lg" />
-                  <Skeleton className="h-[72px] rounded-lg" />
-                  <Skeleton className="h-[72px] rounded-lg" />
-                </>
-              ) : upcomingDeadlines.length === 0 ? (
-                <p className="py-6 text-center text-sm text-muted-foreground">
-                  No upcoming compliance deadlines in the next 30 days.
-                </p>
-              ) : (
-                (upcomingDeadlines as Array<{
-                  id: string
-                  title: string
-                  dueDate: string | Date
-                  priority: string
-                  status: string
-                  category: string
-                  regulation: string | null
-                }>).map((event) => {
-                  const dueDate   = new Date(event.dueDate)
-                  const daysUntil = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-                  const isUrgent  = daysUntil <= 3 && daysUntil > 0
-                  const isOverdue = daysUntil <= 0
-                  const priCfg    = PRIORITY_CONFIG[event.priority as keyof typeof PRIORITY_CONFIG]
-                                    ?? PRIORITY_CONFIG["MEDIUM"]
+        {/* Upcoming Deadlines — gated behind complianceCalendar entitlement */}
+        <FeatureGate
+          feature="complianceCalendar"
+          fallback={
+            <LockedFeatureCard
+              feature="complianceCalendar"
+              title="Upcoming Deadlines"
+              description="Track upcoming regulatory deadlines. Available on the Startup plan and above."
+              requiredPlan="STARTUP"
+            />
+          }
+        >
+          <Card className="border-border/50 bg-card transition-all duration-200 hover:border-border hover:shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-foreground">Upcoming Deadlines</CardTitle>
+                <CardDescription>Don&apos;t miss these important dates</CardDescription>
+              </div>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/startup/calendar">
+                  View all
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {deadlinesLoading ? (
+                  <>
+                    <Skeleton className="h-[72px] rounded-lg" />
+                    <Skeleton className="h-[72px] rounded-lg" />
+                    <Skeleton className="h-[72px] rounded-lg" />
+                  </>
+                ) : upcomingDeadlines.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-muted-foreground">
+                    No upcoming compliance deadlines in the next 30 days.
+                  </p>
+                ) : (
+                  (upcomingDeadlines as Array<{
+                    id: string
+                    title: string
+                    dueDate: string | Date
+                    priority: string
+                    status: string
+                    category: string
+                    regulation: string | null
+                  }>).map((event) => {
+                    const dueDate   = new Date(event.dueDate)
+                    const daysUntil = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                    const isUrgent  = daysUntil <= 3 && daysUntil > 0
+                    const isOverdue = daysUntil <= 0
+                    const priCfg    = PRIORITY_CONFIG[event.priority as keyof typeof PRIORITY_CONFIG]
+                                      ?? PRIORITY_CONFIG["MEDIUM"]
 
-                  return (
-                    <div
-                      key={event.id}
-                      className={`flex items-center gap-4 rounded-lg border p-4 transition-all duration-200 hover:border-primary/30 hover:shadow-sm cursor-default ${
-                        isUrgent  ? "border-orange-300/60 bg-orange-50/40 dark:bg-orange-950/20" :
-                        isOverdue ? "border-destructive/40 bg-destructive/5" :
-                                    "border-border/50"
-                      }`}
-                    >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/60">
-                        {isUrgent ? (
-                          <span className="relative flex h-5 w-5 items-center justify-center">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-50" />
-                            <Calendar className="relative h-4 w-4 text-orange-500" />
+                    return (
+                      <div
+                        key={event.id}
+                        className={`flex items-center gap-4 rounded-lg border p-4 transition-all duration-200 hover:border-primary/30 hover:shadow-sm cursor-default ${
+                          isUrgent  ? "border-orange-300/60 bg-orange-50/40 dark:bg-orange-950/20" :
+                          isOverdue ? "border-destructive/40 bg-destructive/5" :
+                                      "border-border/50"
+                        }`}
+                      >
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+                          {isUrgent ? (
+                            <span className="relative flex h-5 w-5 items-center justify-center">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-50" />
+                              <Calendar className="relative h-4 w-4 text-orange-500" />
+                            </span>
+                          ) : (
+                            <Calendar className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground text-sm truncate">{event.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {dueDate.toLocaleDateString("en-KE", { dateStyle: "medium" })}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          {isOverdue ? (
+                            <span className="text-xs font-bold text-destructive">OVERDUE</span>
+                          ) : (
+                            <Badge variant={daysUntil <= 7 ? "destructive" : "outline"}>
+                              {daysUntil}d left
+                            </Badge>
+                          )}
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded ${priCfg.color}`}>
+                            {priCfg.label}
                           </span>
-                        ) : (
-                          <Calendar className="h-5 w-5 text-muted-foreground" />
-                        )}
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground text-sm truncate">{event.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {dueDate.toLocaleDateString("en-KE", { dateStyle: "medium" })}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        {isOverdue ? (
-                          <span className="text-xs font-bold text-destructive">OVERDUE</span>
-                        ) : (
-                          <Badge variant={daysUntil <= 7 ? "destructive" : "outline"}>
-                            {daysUntil}d left
-                          </Badge>
-                        )}
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${priCfg.color}`}>
-                          {priCfg.label}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                    )
+                  })
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </FeatureGate>
 
         {/* Regulatory Alerts */}
         <Card className="lg:col-span-2 border-border/50 bg-card transition-all duration-200 hover:border-border hover:shadow-sm">

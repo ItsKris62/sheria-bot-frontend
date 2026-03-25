@@ -120,6 +120,7 @@ const FEATURE_LABELS: Partial<Record<FeatureKey, string>> = {
   documentRepository:   "Document Vault",
   analytics:            "Advanced Analytics",
   sso:                  "Single Sign-On (SSO)",
+  complianceCalendar:   "Compliance Calendar",
 };
 
 const FEATURE_DESCRIPTIONS: Partial<Record<FeatureKey, string>> = {
@@ -141,6 +142,8 @@ const FEATURE_DESCRIPTIONS: Partial<Record<FeatureKey, string>> = {
     "Track compliance trends, team activity, and regulatory risk across your organisation.",
   sso:
     "Enable enterprise Single Sign-On (SSO) via SAML / OIDC for seamless access management.",
+  complianceCalendar:
+    "Track upcoming regulatory deadlines, schedule audits, and get automated reminders — available on Startup and above.",
 };
 
 /**

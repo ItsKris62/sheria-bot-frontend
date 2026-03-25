@@ -39,6 +39,8 @@ export interface PlanEntitlements {
   teamCollaboration:    boolean;
   regulatoryDashboard:  boolean;
   regulatoryAlerts:     boolean;
+  /** Compliance Calendar — create/manage org-scoped deadline events */
+  complianceCalendar:   boolean;
   documentRepository:   StorageEntitlement;
   maxSeats:             number;
   supportTier:          SupportTier;
