@@ -5,6 +5,7 @@ import { DashboardSidebar } from "@/components/layout/dashboard-sidebar"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { AuthGuard } from "@/components/auth-guard"
 import { SubscriptionStatusBanner } from "@/components/plan/subscription-status-banner"
+import { TrialStatusBanner } from "@/components/trial/TrialStatusBanner"
 import { SidebarProvider, useSidebar } from "@/lib/sidebar-context"
 import { cn } from "@/lib/utils"
 
@@ -22,6 +23,9 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
     >
       <DashboardHeader userType="startup" />
       <SubscriptionStatusBanner />
+      <div className="px-4 pt-1 md:px-6">
+        <TrialStatusBanner />
+      </div>
       <main className="flex-1 p-4 md:p-6">
         {children}
       </main>

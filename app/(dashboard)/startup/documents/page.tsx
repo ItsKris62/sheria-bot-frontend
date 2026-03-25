@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef } from "react"
+import { keepPreviousData } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -233,7 +234,7 @@ export default function DocumentsPage() {
     },
     {
       enabled: !!user,
-      keepPreviousData: true,
+      placeholderData: keepPreviousData,
     }
   )
 

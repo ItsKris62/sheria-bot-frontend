@@ -4,6 +4,8 @@ import React from "react"
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { AuthGuard } from "@/components/auth-guard"
+import { TrialCtaBanner } from "@/components/trial/TrialCtaBanner"
+import { TrialStatusBanner } from "@/components/trial/TrialStatusBanner"
 import { SidebarProvider, useSidebar } from "@/lib/sidebar-context"
 import { cn } from "@/lib/utils"
 
@@ -17,6 +19,10 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
       )}
     >
       <DashboardHeader userType="regulator" />
+      <div className="px-4 pt-4 md:px-6 md:pt-4 space-y-2">
+        <TrialStatusBanner />
+        <TrialCtaBanner />
+      </div>
       <main className="flex-1 p-4 md:p-6">
         {children}
       </main>

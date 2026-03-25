@@ -12,10 +12,11 @@ import type { FeatureKey, PlanName } from "@/lib/plan-context";
 // Shared helpers
 // ============================================================================
 
-const PLAN_ORDER: PlanName[] = ["REGULATOR", "STARTUP", "BUSINESS", "ENTERPRISE"];
+const PLAN_ORDER: PlanName[] = ["REGULATOR", "FREE_TRIAL", "STARTUP", "BUSINESS", "ENTERPRISE"];
 
 const PLAN_LABELS: Record<PlanName, string> = {
   REGULATOR:  "Regulator (Free)",
+  FREE_TRIAL: "Free Trial",
   STARTUP:    "Startup",
   BUSINESS:   "Business",
   ENTERPRISE: "Enterprise",
@@ -26,6 +27,7 @@ const PLAN_BADGE_VARIANT: Record<
   "default" | "secondary" | "outline" | "destructive"
 > = {
   REGULATOR:  "outline",
+  FREE_TRIAL: "secondary",
   STARTUP:    "secondary",
   BUSINESS:   "default",
   ENTERPRISE: "default",
@@ -99,6 +101,12 @@ interface LockedFeatureCardProps {
   description?: string;
   /** Minimum plan required. If omitted, "Business" is assumed. */
   requiredPlan?: PlanName;
+  /**
+   * When true, the user is on a FREE_TRIAL but has hit the trial usage cap
+   * for this feature. Renders a "trial limit reached" message instead of the
+   * generic upgrade CTA.
+   */
+  trialCapHit?: boolean;
   className?: string;
 }
 
@@ -144,6 +152,7 @@ export function LockedFeatureCard({
   title,
   description,
   requiredPlan,
+  trialCapHit = false,
   className,
 }: LockedFeatureCardProps) {
   const { plan } = usePlan();
@@ -181,7 +190,11 @@ export function LockedFeatureCard({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">{featureDesc}</p>
+        <p className="text-sm text-muted-foreground">
+          {trialCapHit
+            ? `You have reached the free trial limit for ${featureLabel}. Upgrade to continue.`
+            : featureDesc}
+        </p>
         <UpgradeBanner requiredPlan={upgradePlan} compact />
       </CardContent>
     </Card>
@@ -294,6 +307,7 @@ interface UpgradeBannerProps {
 }
 
 const PLAN_PRICES: Partial<Record<PlanName, string>> = {
+  FREE_TRIAL: "Free (7-day trial)",
   STARTUP:    "KES 25,000 / month",
   BUSINESS:   "KES 75,000 / month",
   ENTERPRISE: "Custom pricing",

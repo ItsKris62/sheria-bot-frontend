@@ -10,7 +10,7 @@ import { useAuthStore } from "./auth-store";
 // frontend tsconfig. Types are kept in sync manually.
 // ============================================================================
 
-export type PlanName = "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
+export type PlanName = "REGULATOR" | "FREE_TRIAL" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
 
 export type SupportTier  = "community" | "email-48hr" | "priority-24hr" | "dedicated";
 export type AnalyticsTier = "none" | "basic" | "advanced";
@@ -69,6 +69,35 @@ export type SubscriptionStatusValue =
   | "EXPIRED"
   | null;
 
+/** Current usage counts within the free trial lifetime. */
+export interface TrialUsage {
+  complianceQueries: number;
+  gapAnalyses:       number;
+  checklists:        number;
+  vaultUploads:      number;
+  totalTokensUsed:   number;
+}
+
+/** Trial limits (mirrors FREE_TRIAL_LIMITS on the backend). */
+export interface TrialLimits {
+  complianceQueries: number;
+  gapAnalyses:       number;
+  checklists:        number;
+  vaultUploads:      number;
+  totalTokensUsed:   number;
+}
+
+/** Trial state returned by billing.getPlanAndUsage when plan === FREE_TRIAL. */
+export interface FrontendTrialStatus {
+  isEligible:    boolean;
+  isActive:      boolean;
+  hasUsedTrial:  boolean;
+  expiresAt:     string | null;
+  daysRemaining: number | null;
+  usage:         TrialUsage;
+  limits:        TrialLimits;
+}
+
 export interface PlanBilling {
   planStartDate:      string | null;
   planEndDate:        string | null;
@@ -85,6 +114,7 @@ export interface PlanData {
   entitlements: PlanEntitlements;
   usage:        PlanUsage;
   billing:      PlanBilling;
+  trial:        FrontendTrialStatus | null;
 }
 
 // ============================================================================
@@ -137,6 +167,15 @@ interface PlanContextValue {
 
   /** Human-readable plan display name. */
   planDisplayName: string;
+
+  /** Full trial status object (non-null only when plan === FREE_TRIAL). */
+  trial: FrontendTrialStatus | null;
+
+  /** True when the user is on an active free trial. */
+  isTrialActive: boolean;
+
+  /** Days remaining in the trial, or null if not on a trial. */
+  trialDaysRemaining: number | null;
 }
 
 // ============================================================================
@@ -154,6 +193,9 @@ const PlanContext = createContext<PlanContextValue>({
   getLimit: () => 0,
   isUnlimited: () => false,
   planDisplayName: "",
+  trial: null,
+  isTrialActive: false,
+  trialDaysRemaining: null,
 });
 
 // ============================================================================
@@ -163,6 +205,7 @@ const PlanContext = createContext<PlanContextValue>({
 function resolvePlanDisplayName(plan: PlanName | null): string {
   switch (plan) {
     case "REGULATOR":  return "Regulator (Free)";
+    case "FREE_TRIAL": return "Free Trial (7-day)";
     case "STARTUP":    return "Startup";
     case "BUSINESS":   return "Business";
     case "ENTERPRISE": return "Enterprise";
@@ -228,6 +271,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     const entitlements = data?.entitlements ?? null;
     const usage        = data?.usage        ?? null;
     const billing      = data?.billing      ?? null;
+    const trial        = (data as PlanData | undefined)?.trial ?? null;
 
     return {
       plan,
@@ -253,6 +297,9 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       },
 
       planDisplayName: resolvePlanDisplayName(plan),
+      trial,
+      isTrialActive:      trial?.isActive      ?? false,
+      trialDaysRemaining: trial?.daysRemaining  ?? null,
     };
   }, [data, isLoading, isError]);
 
