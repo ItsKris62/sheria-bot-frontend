@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { trpc } from "@/lib/trpc"
 import { FeatureGate } from "@/components/plan/feature-gate"
 import {
@@ -40,6 +40,17 @@ import {
   Lock,
 } from "lucide-react"
 import { LoadingScreen } from "@/components/loading-screen"
+
+// ─── Local Types ─────────────────────────────────────────────────────────────
+
+type FrameworkOption = {
+  slug: string
+  name: string
+  category: string
+  description: string | null
+  tier: string
+  locked: boolean
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -111,11 +122,11 @@ function FileUploadSection({
 
   const validateAndSetFile = (f: File) => {
     if (!ALLOWED_TYPES.includes(f.type) && !ALLOWED_EXTENSIONS.some((ext) => f.name.toLowerCase().endsWith(ext))) {
-      toast({ title: "Unsupported file type", description: "Upload a PDF, DOCX, DOC, or TXT file.", variant: "destructive" })
+      toast.error("Unsupported file type", { description: "Upload a PDF, DOCX, DOC, or TXT file." })
       return
     }
     if (f.size > MAX_FILE_SIZE) {
-      toast({ title: "File too large", description: "Maximum file size is 10MB.", variant: "destructive" })
+      toast.error("File too large", { description: "Maximum file size is 10MB." })
       return
     }
     onFile(f)
@@ -260,15 +271,13 @@ function AnalysisResultsView({
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
-      toast({ title: "Report ready", description: "Your Word document download has started." })
+      toast.success("Report ready", { description: "Your Word document download has started." })
     },
     onError: (err) => {
-      toast({
-        title: "Export failed",
+      toast.error("Export failed", {
         description: err.message.includes("FORBIDDEN")
           ? "DOCX export is available on Business and Enterprise plans. Please upgrade."
           : err.message || "Failed to generate report. Please try again.",
-        variant: "destructive",
       })
     },
   })
@@ -345,7 +354,7 @@ function AnalysisResultsView({
     })
     const printWindow = window.open("", "_blank")
     if (!printWindow) {
-      toast({ title: "Pop-up blocked", description: "Please allow pop-ups for this site and try again.", variant: "destructive" })
+      toast.error("Pop-up blocked", { description: "Please allow pop-ups for this site and try again." })
       return
     }
     printWindow.document.open()
@@ -849,7 +858,7 @@ export default function GapAnalysisPage() {
 
   const utils = trpc.useUtils()
 
-  const { data: analyses, isLoading: listLoading, error: listError } = trpc.compliance.getGapAnalysis.useQuery(undefined)
+  const { data: analyses, isLoading: listLoading, error: listError } = trpc.compliance.getGapAnalyses.useQuery()
   const { data: frameworksData, isLoading: frameworksLoading } = trpc.compliance.getFrameworks.useQuery()
 
   // Polling query — active only while isAwaitingResult
@@ -858,7 +867,7 @@ export default function GapAnalysisPage() {
     {
       enabled: isAwaitingResult && activeAnalysisId !== null,
       refetchInterval: (query) => {
-        const status = (query.state.data as any)?.status as string | undefined
+        const status = query.state.data?.status
         if (status === "COMPLETED" || status === "FAILED") return false
         return 3000
       },
@@ -868,23 +877,22 @@ export default function GapAnalysisPage() {
   // Transition to results view on COMPLETED
   useEffect(() => {
     if (!isAwaitingResult || !pollingQuery.data) return
-    const d = pollingQuery.data as any
+    const d = pollingQuery.data
     if (d.status === "COMPLETED") {
       setIsAwaitingResult(false)
       setActiveView({ id: d.id, name: d.documentName })
-      utils.compliance.getGapAnalysis.invalidate()
+      utils.compliance.getGapAnalyses.invalidate()
       resetForm()
-      toast({ title: "Analysis complete", description: `Overall score: ${d.overallScore ?? "N/A"}/100` })
+      toast.success("Analysis complete", { description: `Overall score: ${d.overallScore ?? "N/A"}/100` })
     }
     // FAILED: stay on progress view — AnalysisProgressView renders the error + retry UI
-  }, [(pollingQuery.data as any)?.status, isAwaitingResult]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pollingQuery.data?.status, isAwaitingResult]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Page-refresh resumption — detect in-progress analyses on first load
   useEffect(() => {
     if (hasCheckedResumption.current || isAwaitingResult || activeView || !analyses) return
     hasCheckedResumption.current = true
-    const arr = Array.isArray(analyses) ? analyses : []
-    const inProgress = arr.find((a: any) => a.status !== "COMPLETED" && a.status !== "FAILED")
+    const inProgress = analyses.find((a: { id: string; documentName: string; status: string }) => a.status !== "COMPLETED" && a.status !== "FAILED")
     if (inProgress) {
       setActiveAnalysisId(inProgress.id)
       setPendingDocName(inProgress.documentName)
@@ -895,31 +903,28 @@ export default function GapAnalysisPage() {
 
   const runMutation = trpc.compliance.runGapAnalysis.useMutation({
     onSuccess: (data) => {
-      const d = data as any
-      setActiveAnalysisId(d.id)
+      setActiveAnalysisId(data.id)
       setIsAwaitingResult(true)
       setAnalysisStartedAt(Date.now())
       setPendingDocName(selectedFile?.name ?? "")
       setPendingFrameworks([...selectedFrameworks])
-      utils.compliance.getGapAnalysis.invalidate()
-      toast({ title: "Analysis queued", description: "Your document is being processed. This may take 1\u20133 minutes." })
+      utils.compliance.getGapAnalyses.invalidate()
+      toast.success("Analysis queued", { description: "Your document is being processed. This may take 1–3 minutes." })
     },
     onError: (err) => {
-      toast({
-        title: "Analysis failed",
+      toast.error("Analysis failed", {
         description: err.message || "Failed to run gap analysis. Please try again.",
-        variant: "destructive",
       })
     },
   })
 
   const deleteMutation = trpc.compliance.deleteGapAnalysis.useMutation({
     onSuccess: () => {
-      toast({ title: "Analysis deleted" })
-      utils.compliance.getGapAnalysis.invalidate()
+      toast.success("Analysis deleted")
+      utils.compliance.getGapAnalyses.invalidate()
     },
     onError: (err) => {
-      toast({ title: "Failed to delete", description: err.message, variant: "destructive" })
+      toast.error("Failed to delete", { description: err.message })
     },
   })
 
@@ -950,7 +955,7 @@ export default function GapAnalysisPage() {
       })
     }
     reader.onerror = () => {
-      toast({ title: "File read error", description: "Could not read the file. Please try again.", variant: "destructive" })
+      toast.error("File read error", { description: "Could not read the file. Please try again." })
     }
     reader.readAsDataURL(selectedFile)
   }
@@ -959,7 +964,7 @@ export default function GapAnalysisPage() {
 
   // Show async progress view
   if (isAwaitingResult && activeAnalysisId) {
-    const pd = pollingQuery.data as any
+    const pd = pollingQuery.data
     return (
       <AnalysisProgressView
         documentName={pd?.documentName ?? pendingDocName}
@@ -993,7 +998,7 @@ export default function GapAnalysisPage() {
     )
   }
 
-  const analysisHistory = Array.isArray(analyses) ? analyses : []
+  const analysisHistory = analyses ?? []
 
   return (
     <FeatureGate feature="gapAnalysis">
@@ -1006,7 +1011,7 @@ export default function GapAnalysisPage() {
             Upload your policy documents and compare them against Kenyan regulatory requirements using AI.
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => utils.compliance.getGapAnalysis.invalidate()}>
+        <Button variant="ghost" size="sm" onClick={() => utils.compliance.getGapAnalyses.invalidate()}>
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
@@ -1054,16 +1059,16 @@ export default function GapAnalysisPage() {
               ) : frameworksData && frameworksData.length > 0 ? (
                 <div className="space-y-3">
                   {Object.entries(
-                    frameworksData.reduce<Record<string, typeof frameworksData>>((acc, fw) => {
+                    (frameworksData as FrameworkOption[]).reduce<Record<string, FrameworkOption[]>>((acc: Record<string, FrameworkOption[]>, fw: FrameworkOption) => {
                       if (!acc[fw.category]) acc[fw.category] = []
                       acc[fw.category].push(fw)
                       return acc
                     }, {})
-                  ).map(([category, fws]) => (
+                  ).map(([category, fws]: [string, FrameworkOption[]]) => (
                     <div key={category}>
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">{category}</p>
                       <div className="flex flex-wrap gap-1.5">
-                        {fws.map((fw) => {
+                        {fws.map((fw: FrameworkOption) => {
                           const isSelected = selectedFrameworks.includes(fw.slug)
                           if (fw.locked) {
                             return (
@@ -1256,7 +1261,7 @@ export default function GapAnalysisPage() {
               status: string
               analysisDepth: string
               createdAt: Date
-              progress?: number
+              progress: number
             }) => (
               <AnalysisHistoryItem
                 key={analysis.id}
