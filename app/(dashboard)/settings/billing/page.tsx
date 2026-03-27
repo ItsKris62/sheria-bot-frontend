@@ -2,11 +2,15 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
+import { getQueryKey } from "@trpc/react-query"
 import { trpc } from "@/lib/trpc"
 import { usePlan } from "@/lib/plan-context"
 import type { SubscriptionStatusValue } from "@/lib/plan-context"
 import { UsageCard } from "@/components/usage/usage-card"
 import { UsageComparison } from "@/components/usage/usage-comparison"
+import { InvoiceModal } from "@/components/billing/InvoiceModal"
+import { MpesaPaymentFlow } from "@/components/billing/MpesaPaymentFlow"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -42,7 +46,9 @@ import {
   Receipt,
   ChevronLeft,
   ChevronRight,
+  FileText,
 } from "lucide-react"
+import { toast } from "sonner"
 import {
   PLANS,
   PLAN_ORDER,
@@ -69,7 +75,15 @@ interface PaymentRecord {
   paidAt: string | null;
   createdAt: string;
   metadata: Record<string, unknown> | null;
+  // Invoice fields (may be null on older records)
+  invoiceNumber:      string | null;
+  subscriptionPlan:   string | null;
+  billingPeriodStart: string | null;
+  billingPeriodEnd:   string | null;
 }
+
+type PaymentMethodProvider = "STRIPE" | "MPESA"
+type MpesaPlan = "STARTUP" | "BUSINESS"
 
 interface EnterpriseFormState {
   name: string;
@@ -169,6 +183,7 @@ function PaymentStatusBadge({ status }: { status: string }) {
 
 export default function BillingSettingsPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { plan, usage, billing, isLoading } = usePlan()
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly")
   const [showComparison, setShowComparison] = useState(false)
@@ -177,6 +192,28 @@ export default function BillingSettingsPage() {
   const [usageCompareOpen, setUsageCompareOpen] = useState(false)
   const [enterpriseForm, setEnterpriseForm] = useState<EnterpriseFormState>({ name: "", email: "", message: "" })
   const [enterpriseSuccess, setEnterpriseSuccess] = useState(false)
+
+  // Invoice modal state
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null)
+
+  // M-Pesa payment flow state
+  const [mpesaFlowPlan, setMpesaFlowPlan] = useState<MpesaPlan | null>(null)
+
+  // Payment method selector state
+  const [selectedProvider, setSelectedProvider] = useState<PaymentMethodProvider | null>(null)
+  const [mpesaPhoneInput, setMpesaPhoneInput] = useState("")
+  const [mpesaPhoneError, setMpesaPhoneError] = useState<string | null>(null)
+
+  const updatePaymentMethodMutation = trpc.billing.updatePaymentMethod.useMutation({
+    onSuccess: () => {
+      toast.success("Payment method updated.")
+      setMpesaPhoneError(null)
+      void queryClient.invalidateQueries({ queryKey: getQueryKey(trpc.billing.getPlanAndUsage) })
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to update payment method.")
+    },
+  })
 
   const enterpriseMutation = trpc.billing.requestEnterprise.useMutation({
     onSuccess: () => {
@@ -445,10 +482,26 @@ export default function BillingSettingsPage() {
                       size="sm"
                       className="w-full text-xs"
                       variant={planConfig.popular ? "default" : "outline"}
-                      onClick={() => startCheckout(planId as "STARTUP" | "BUSINESS")}
+                      onClick={() => {
+                        const preferredMethod = billing && "preferredPaymentMethod" in billing
+                          ? (billing as unknown as { preferredPaymentMethod?: string | null }).preferredPaymentMethod
+                          : null
+                        if (preferredMethod === "MPESA") {
+                          setMpesaFlowPlan(planId as MpesaPlan)
+                        } else {
+                          startCheckout(planId as "STARTUP" | "BUSINESS")
+                        }
+                      }}
                       disabled={checkoutMutation.isPending}
                     >
-                      <Zap className="mr-1 h-3 w-3" />
+                      {(() => {
+                        const preferredMethod = billing && "preferredPaymentMethod" in billing
+                          ? (billing as unknown as { preferredPaymentMethod?: string | null }).preferredPaymentMethod
+                          : null
+                        return preferredMethod === "MPESA"
+                          ? <Smartphone className="mr-1 h-3 w-3" />
+                          : <Zap className="mr-1 h-3 w-3" />
+                      })()}
                       {checkoutMutation.isPending ? "Opening..." : planConfig.cta.label}
                     </Button>
                   ) : planConfig.cta.type === "contact-sales" ? (
@@ -564,17 +617,155 @@ export default function BillingSettingsPage() {
             </div>
           )}
 
-          {/* M-Pesa coming soon */}
-          <div className="flex items-center justify-between rounded-lg border border-dashed border-border bg-muted/10 px-4 py-3">
-            <div className="flex items-center gap-3">
-              <Smartphone className="h-5 w-5 text-muted-foreground/50" />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">M-Pesa</p>
-                <p className="text-xs text-muted-foreground">Mobile money payments</p>
+          {/* M-Pesa selector */}
+          {(() => {
+            const isMpesaActive = selectedProvider === "MPESA"
+            const storedPhone = billing && "mpesaPhoneNumber" in billing
+              ? (billing as unknown as { mpesaPhoneNumber?: string | null }).mpesaPhoneNumber ?? null
+              : null
+
+            function savePaymentMethod() {
+              if (selectedProvider === "MPESA") {
+                const raw = mpesaPhoneInput.trim()
+                if (!raw && !storedPhone) {
+                  setMpesaPhoneError("Phone number is required for M-Pesa.")
+                  return
+                }
+                const n = raw
+                  ? (() => {
+                    const s = raw.replace(/[\s\-()]/g, "")
+                    let v = s
+                    if (v.startsWith("+")) v = v.slice(1)
+                    if (/^0[71]\d{8}$/.test(v)) v = "254" + v.slice(1)
+                    return /^254\d{9}$/.test(v) ? v : null
+                  })()
+                  : null
+                if (raw && !n) {
+                  setMpesaPhoneError("Invalid number. Use 07XX XXX XXX or 254XXXXXXXXX.")
+                  return
+                }
+                updatePaymentMethodMutation.mutate({
+                  provider: "MPESA",
+                  ...(n ? { mpesaPhoneNumber: n } : {}),
+                })
+              } else if (selectedProvider === "STRIPE") {
+                updatePaymentMethodMutation.mutate({ provider: "STRIPE" })
+              }
+              setSelectedProvider(null)
+            }
+
+            return (
+              <div className="space-y-3">
+                {/* Card option */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedProvider(prev => prev === "STRIPE" ? null : "STRIPE")}
+                  className={`w-full flex items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors ${
+                    selectedProvider === "STRIPE"
+                      ? "border-primary bg-primary/5"
+                      : "border-border/50 hover:border-border"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Card (Stripe)</p>
+                      <p className="text-xs text-muted-foreground">Credit / debit card</p>
+                    </div>
+                  </div>
+                  {selectedProvider === "STRIPE" && (
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                  )}
+                </button>
+
+                {/* M-Pesa option */}
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProvider(prev => prev === "MPESA" ? null : "MPESA")}
+                    className={`w-full flex items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors ${
+                      isMpesaActive
+                        ? "border-green-500/50 bg-green-500/5"
+                        : "border-border/50 hover:border-border"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Smartphone className="h-5 w-5 text-green-600" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">M-Pesa</p>
+                        <p className="text-xs text-muted-foreground">
+                          {storedPhone
+                            ? `Saved: ${storedPhone.slice(0, 6)}****${storedPhone.slice(-3)}`
+                            : "Safaricom mobile money"}
+                        </p>
+                      </div>
+                    </div>
+                    {isMpesaActive && (
+                      <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                    )}
+                  </button>
+
+                  {/* Phone number input — shown when M-Pesa is selected */}
+                  {isMpesaActive && (
+                    <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-4 space-y-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="mpesa-phone-selector" className="text-xs font-medium">
+                          M-Pesa Phone Number
+                        </Label>
+                        <Input
+                          id="mpesa-phone-selector"
+                          type="tel"
+                          placeholder={storedPhone ? `Current: ${storedPhone.slice(0, 6)}...${storedPhone.slice(-3)}` : "e.g. 0712 345 678"}
+                          value={mpesaPhoneInput}
+                          onChange={(e) => {
+                            setMpesaPhoneInput(e.target.value)
+                            setMpesaPhoneError(null)
+                          }}
+                          className={`text-sm ${mpesaPhoneError ? "border-destructive" : ""}`}
+                        />
+                        {mpesaPhoneError && (
+                          <p className="text-xs text-destructive">{mpesaPhoneError}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Accepts: 07XX XXX XXX, 01XX XXX XXX, or 254XXXXXXXXX
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={savePaymentMethod}
+                          disabled={updatePaymentMethodMutation.isPending}
+                          className="text-xs"
+                        >
+                          {updatePaymentMethodMutation.isPending ? "Saving..." : "Save M-Pesa"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => { setSelectedProvider(null); setMpesaPhoneError(null) }}
+                          className="text-xs"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Save button for Card selection */}
+                {selectedProvider === "STRIPE" && (
+                  <Button
+                    size="sm"
+                    onClick={savePaymentMethod}
+                    disabled={updatePaymentMethodMutation.isPending}
+                    className="text-xs"
+                  >
+                    {updatePaymentMethodMutation.isPending ? "Saving..." : "Save Card as Default"}
+                  </Button>
+                )}
               </div>
-            </div>
-            <Badge variant="outline" className="text-xs text-muted-foreground">Coming soon</Badge>
-          </div>
+            )
+          })()}
         </CardContent>
       </Card>
 
@@ -687,92 +878,110 @@ export default function BillingSettingsPage() {
                   <thead>
                     <tr className="border-b border-border text-xs text-muted-foreground">
                       <th className="pb-3 text-left font-medium">Date</th>
+                      <th className="pb-3 text-left font-medium">Invoice #</th>
                       <th className="pb-3 text-left font-medium">Description</th>
                       <th className="pb-3 text-right font-medium">Amount</th>
                       <th className="pb-3 text-center font-medium">Status</th>
-                      <th className="pb-3 text-center font-medium">Provider</th>
-                      <th className="pb-3 text-right font-medium">Receipt</th>
+                      <th className="pb-3 text-center font-medium">Method</th>
+                      <th className="pb-3 text-right font-medium">Invoice</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {(paymentHistoryQuery.data.payments as PaymentRecord[]).map((p) => {
-                      const meta = p.metadata
-                      const receiptUrl = meta?.hostedInvoiceUrl as string | null | undefined
-                      return (
-                        <tr key={p.id} className="border-b border-border/40">
-                          <td className="py-3 text-muted-foreground">
-                            {p.paidAt
-                              ? new Date(p.paidAt).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" })
-                              : new Date(p.createdAt).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" })}
-                          </td>
-                          <td className="py-3 text-foreground max-w-[200px] truncate">
-                            {p.description ?? "Payment"}
-                          </td>
-                          <td className="py-3 text-right font-medium tabular-nums">
-                            {p.amount === 0 ? "—" : `${p.currency} ${(p.amount / 100).toLocaleString("en-KE")}`}
-                          </td>
-                          <td className="py-3 text-center">
-                            <PaymentStatusBadge status={p.status} />
-                          </td>
-                          <td className="py-3 text-center text-muted-foreground capitalize text-xs">
-                            {p.provider.toLowerCase()}
-                          </td>
-                          <td className="py-3 text-right">
-                            {receiptUrl ? (
-                              <a
-                                href={receiptUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                              >
-                                View
-                                <ExternalLink className="h-3 w-3" />
-                              </a>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">—</span>
-                            )}
-                          </td>
-                        </tr>
-                      )
-                    })}
+                    {(paymentHistoryQuery.data.payments as PaymentRecord[]).map((p) => (
+                      <tr
+                        key={p.id}
+                        className="border-b border-border/40 hover:bg-muted/20 cursor-pointer transition-colors"
+                        onClick={() => setSelectedPaymentId(p.id)}
+                      >
+                        <td className="py-3 text-muted-foreground whitespace-nowrap">
+                          {p.paidAt
+                            ? new Date(p.paidAt).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" })
+                            : new Date(p.createdAt).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" })}
+                        </td>
+                        <td className="py-3 text-muted-foreground font-mono text-xs whitespace-nowrap">
+                          {p.invoiceNumber ?? "—"}
+                        </td>
+                        <td className="py-3 text-foreground max-w-[160px] truncate">
+                          {p.description ?? "Payment"}
+                        </td>
+                        <td className="py-3 text-right font-medium tabular-nums whitespace-nowrap">
+                          {p.amount === 0 ? "—" : `${p.currency} ${(p.amount / 100).toLocaleString("en-KE")}`}
+                        </td>
+                        <td className="py-3 text-center">
+                          <PaymentStatusBadge status={p.status} />
+                        </td>
+                        <td className="py-3 text-center">
+                          {p.provider === "MPESA" ? (
+                            <Badge className="bg-green-500/10 text-green-700 border-green-500/20 text-xs gap-1">
+                              <Smartphone className="h-3 w-3" />
+                              M-Pesa
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs gap-1">
+                              <CreditCard className="h-3 w-3" />
+                              Card
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="py-3 text-right">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedPaymentId(p.id) }}
+                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                          >
+                            <FileText className="h-3 w-3" />
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
 
               {/* Mobile cards */}
               <div className="sm:hidden space-y-3">
-                {(paymentHistoryQuery.data.payments as PaymentRecord[]).map((p) => {
-                  const meta = p.metadata
-                  const receiptUrl = meta?.hostedInvoiceUrl as string | null | undefined
-                  return (
-                    <div key={p.id} className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
-                          {p.paidAt
-                            ? new Date(p.paidAt).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" })
-                            : new Date(p.createdAt).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" })}
-                        </span>
-                        <PaymentStatusBadge status={p.status} />
-                      </div>
-                      <p className="text-sm font-medium text-foreground truncate">{p.description ?? "Payment"}</p>
-                      <div className="flex items-center justify-between">
+                {(paymentHistoryQuery.data.payments as PaymentRecord[]).map((p) => (
+                  <div
+                    key={p.id}
+                    className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-2 cursor-pointer hover:border-border transition-colors"
+                    onClick={() => setSelectedPaymentId(p.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {p.paidAt
+                          ? new Date(p.paidAt).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" })
+                          : new Date(p.createdAt).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" })}
+                      </span>
+                      <PaymentStatusBadge status={p.status} />
+                    </div>
+                    <p className="text-sm font-medium text-foreground truncate">{p.description ?? "Payment"}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold tabular-nums">
                           {p.amount === 0 ? "—" : `${p.currency} ${(p.amount / 100).toLocaleString("en-KE")}`}
                         </span>
-                        {receiptUrl && (
-                          <a
-                            href={receiptUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline flex items-center gap-1"
-                          >
-                            Receipt <ExternalLink className="h-3 w-3" />
-                          </a>
+                        {p.provider === "MPESA" ? (
+                          <Badge className="bg-green-500/10 text-green-700 border-green-500/20 text-xs gap-1">
+                            <Smartphone className="h-3 w-3" />
+                            M-Pesa
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <CreditCard className="h-3 w-3" />
+                            Card
+                          </Badge>
                         )}
                       </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedPaymentId(p.id) }}
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline shrink-0"
+                      >
+                        <FileText className="h-3 w-3" />
+                        {p.invoiceNumber ?? "View"}
+                      </button>
                     </div>
-                  )
-                })}
+                  </div>
+                ))}
               </div>
 
               {/* Pagination */}
@@ -910,6 +1119,28 @@ export default function BillingSettingsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ── Invoice modal ── */}
+      {selectedPaymentId && (
+        <InvoiceModal
+          paymentId={selectedPaymentId}
+          onClose={() => setSelectedPaymentId(null)}
+        />
+      )}
+
+      {/* ── M-Pesa payment flow modal ── */}
+      {mpesaFlowPlan && (
+        <MpesaPaymentFlow
+          plan={mpesaFlowPlan}
+          storedPhone={
+            billing && "mpesaPhoneNumber" in billing
+              ? (billing as unknown as { mpesaPhoneNumber?: string | null }).mpesaPhoneNumber ?? null
+              : null
+          }
+          onClose={() => setMpesaFlowPlan(null)}
+          onSuccess={() => setMpesaFlowPlan(null)}
+        />
+      )}
     </div>
   )
 }
