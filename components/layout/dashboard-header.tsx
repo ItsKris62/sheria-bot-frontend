@@ -41,8 +41,10 @@ import {
 import { useAuthStore } from "@/lib/auth-store"
 import { useAuth } from "@/hooks/use-auth"
 import { useUnreadCount, useNotifications, useNotificationActions } from "@/hooks/use-notifications"
+import { useProfile } from "@/hooks/use-user"
 import { useSidebar } from "@/lib/sidebar-context"
 import { trpc } from "@/lib/trpc"
+import { UserAvatar } from "@/components/ui/user-avatar"
 
 interface NotificationItem {
   id: string
@@ -101,6 +103,9 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
   const { logout } = useAuth()
   const { setMobileOpen } = useSidebar()
   const utils = trpc.useUtils()
+  const { data: profileData } = useProfile()
+  // Avatar lives in the profile query (not in the auth store)
+  const avatarUrl = (profileData as { avatar?: string | null } | undefined)?.avatar ?? null
 
   const user = {
     name: authUser?.name || (userType === "regulator" ? "Regulator" : "User"),
@@ -286,9 +291,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2 px-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
-                {user.name.split(" ").map((n) => n[0]).join("")}
-              </div>
+              <UserAvatar user={{ name: user.name, avatar: avatarUrl }} size="sm" />
               <div className="hidden text-left lg:block">
                 <p className="text-sm font-medium text-foreground">{user.name}</p>
                 <p className="text-xs text-muted-foreground">{user.organization}</p>

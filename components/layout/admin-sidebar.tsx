@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import Image from "next/image"
+import { LOGOS } from "@/lib/constants/logos"
 import {
   LayoutDashboard,
   Users,
@@ -180,7 +181,7 @@ export function AdminSidebar() {
               className="group flex items-center gap-3 transition-all duration-300 hover:scale-105 hover:opacity-90"
             >
               <Image
-                src="/hero-logo.png"
+                src={LOGOS.hero}
                 alt="SheriaBot"
                 width={36}
                 height={36}
@@ -199,7 +200,7 @@ export function AdminSidebar() {
           {collapsed && (
             <Link href="/admin" className="group mx-auto">
               <Image
-                src="/hero-logo.png"
+                src={LOGOS.hero}
                 alt="SheriaBot"
                 width={36}
                 height={36}
@@ -246,7 +247,7 @@ export function AdminSidebar() {
           <div className="flex h-16 items-center border-b border-border/50 px-4">
             <Link href="/admin" className="group flex items-center gap-3 transition-all duration-300 hover:opacity-90">
               <Image
-                src="/hero-logo.png"
+                src={LOGOS.hero}
                 alt="SheriaBot"
                 width={36}
                 height={36}

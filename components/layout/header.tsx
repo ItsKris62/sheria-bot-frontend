@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { useAuthStore, type UserRole } from "@/lib/auth-store"
+import { LOGOS } from "@/lib/constants/logos"
 
 function getDashboardPath(role: UserRole): string {
   switch (role) {
@@ -145,7 +146,7 @@ export function Header() {
           className="group flex items-center gap-2.5 transition-all duration-300 hover:opacity-90"
         >
           <Image
-            src="/hero-logo.png"
+            src={LOGOS.hero}
             alt="SheriaBot"
             width={36}
             height={36}
@@ -292,7 +293,7 @@ export function Header() {
               {/* Mobile Logo */}
               <Link href="/" className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
                 <Image
-                  src="/hero-logo.png"
+                  src={LOGOS.hero}
                   alt="SheriaBot"
                   width={36}
                   height={36}

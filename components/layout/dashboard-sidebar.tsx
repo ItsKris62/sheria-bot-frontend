@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import Image from "next/image"
+import { LOGOS } from "@/lib/constants/logos"
 import {
   LayoutDashboard,
   FileText,
@@ -187,7 +188,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
           {!collapsed && (
             <Link href="/" className="group flex items-center gap-3 transition-all duration-300 hover:scale-105 hover:opacity-90">
               <Image
-                src="/hero-logo.png"
+                src={LOGOS.hero}
                 alt="SheriaBot"
                 width={36}
                 height={36}
@@ -203,7 +204,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
           {collapsed && (
             <Link href="/" className="group mx-auto">
               <Image
-                src="/hero-logo.png"
+                src={LOGOS.hero}
                 alt="SheriaBot"
                 width={36}
                 height={36}
@@ -281,7 +282,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
           <div className="flex h-16 items-center border-b border-border/50 px-4">
             <Link href="/" className="group flex items-center gap-3 transition-all duration-300 hover:opacity-90">
               <Image
-                src="/hero-logo.png"
+                src={LOGOS.hero}
                 alt="SheriaBot"
                 width={36}
                 height={36}

@@ -9,6 +9,7 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import Image from "next/image"
+import { LOGOS } from "@/lib/constants/logos"
 import {
   User,
   Building2,
@@ -47,7 +48,7 @@ export default function SettingsLayout({
           </Button>
           <Link href="/" className="flex items-center gap-2.5">
             <Image
-              src="/hero-logo.png"
+              src={LOGOS.hero}
               alt="SheriaBot"
               width={32}
               height={32}

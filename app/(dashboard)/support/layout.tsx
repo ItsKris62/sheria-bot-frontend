@@ -6,6 +6,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { useAuthStore } from "@/lib/auth-store"
+import { LOGOS } from "@/lib/constants/logos"
 
 function dashboardHref(role?: string): string {
   if (role === "REGULATOR") return "/regulator"
@@ -33,7 +34,7 @@ export default function SupportLayout({
           </Button>
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/navigation-bar-logo.png"
+              src={LOGOS.navigationBar}
               alt="SheriaBot"
               width={32}
               height={32}

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Github, Twitter, Linkedin } from "lucide-react"
+import { LOGOS } from "@/lib/constants/logos"
 
 const footerLinks = {
   product: [
@@ -46,7 +47,7 @@ export function Footer() {
           <div className="col-span-2 lg:col-span-1">
             <Link href="/" className="group inline-flex items-center transition-all duration-300 hover:scale-105 hover:opacity-90">
               <Image
-                src="/footer-logo.png"
+                src={LOGOS.footer}
                 alt="SheriaBot"
                 width={160}
                 height={48}

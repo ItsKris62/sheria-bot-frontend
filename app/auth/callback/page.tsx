@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabase-client"
 import { trpc } from "@/lib/trpc"
+import { LOGOS } from "@/lib/constants/logos"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -425,7 +426,7 @@ export default function AuthCallbackPage() {
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-border/50 px-6 lg:px-12">
         <Link href="/" className="flex items-center gap-2.5">
           <Image
-            src="/hero-logo.png"
+            src={LOGOS.hero}
             alt="SheriaBot"
             width={36}
             height={36}

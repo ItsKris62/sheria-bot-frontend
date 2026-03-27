@@ -4,6 +4,7 @@ import React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { GuestGuard } from "@/components/auth-guard"
+import { LOGOS } from "@/lib/constants/logos"
 
 export default function AuthLayout({
   children,
@@ -17,7 +18,7 @@ export default function AuthLayout({
         <div className="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between bg-card border-r border-border p-12">
           <Link href="/" className="flex items-center gap-2.5">
             <Image
-              src="/hero-logo.png"
+              src={LOGOS.hero}
               alt="SheriaBot"
               width={40}
               height={40}
@@ -51,7 +52,7 @@ export default function AuthLayout({
           <div className="flex h-16 items-center justify-between px-6 lg:hidden border-b border-border">
             <Link href="/" className="flex items-center gap-2.5">
               <Image
-                src="/hero-logo.png"
+                src={LOGOS.hero}
                 alt="SheriaBot"
                 width={36}
                 height={36}

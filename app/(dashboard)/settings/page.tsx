@@ -18,7 +18,6 @@ import {
 import {
   Loader2,
   Save,
-  Upload,
   Lock,
   CheckCircle2,
   AlertCircle,
@@ -28,6 +27,7 @@ import {
   ShieldCheck,
 } from "lucide-react"
 import { useProfile, useUserActions } from "@/hooks/use-user"
+import { AvatarUpload } from "@/components/settings/avatar-upload"
 
 // ── Local types ─────────────────────────────────────────────────────────────
 
@@ -39,6 +39,7 @@ interface ProfileData {
   email: string | null
   role: UserRole
   phone: string | null
+  avatar: string | null
   emailVerified: boolean
   createdAt: string | Date
   lastLoginAt: string | Date | null
@@ -165,15 +166,6 @@ export default function ProfileSettingsPage() {
 
   const isSaving = isUpdatingProfile || isUpdatingPreferences
 
-  // ── Initials for avatar ──────────────────────────────────────────────────
-  const initials = profile?.name
-    ? profile.name
-        .split(" ")
-        .slice(0, 2)
-        .map((n) => n[0]?.toUpperCase() ?? "")
-        .join("")
-    : "?"
-
   // ── Skeleton ─────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
@@ -229,10 +221,8 @@ export default function ProfileSettingsPage() {
       <Card className="border-border/50 bg-card">
         <CardContent className="pt-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            {/* Avatar */}
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground select-none">
-              {initials}
-            </div>
+            {/* Avatar upload */}
+            <AvatarUpload user={{ name: profile?.name ?? null, avatar: profile?.avatar ?? null }} />
 
             {/* Name + email + role */}
             <div className="flex-1 min-w-0">
@@ -254,15 +244,6 @@ export default function ProfileSettingsPage() {
                   </span>
                 )}
               </div>
-            </div>
-
-            {/* Upload avatar (placeholder) */}
-            <div className="flex flex-col gap-1.5">
-              <Button variant="outline" size="sm" className="bg-transparent" disabled>
-                <Upload className="mr-2 h-4 w-4" />
-                Upload picture
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">JPG, PNG, GIF — max 2 MB</p>
             </div>
           </div>
         </CardContent>
