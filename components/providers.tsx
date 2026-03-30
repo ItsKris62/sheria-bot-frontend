@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, MutationCache } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
-import { trpc, createTRPCClient, setAccessToken } from "@/lib/trpc";
+import { trpc, createTRPCClient, setAccessToken, getErrorMessage } from "@/lib/trpc";
+import { TRPCClientError } from "@trpc/client";
+import { toast } from "sonner";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AuthUser, UserRole } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase-client";
@@ -11,6 +13,17 @@ import { PlanProvider } from "@/lib/plan-context";
 
 function makeQueryClient() {
   return new QueryClient({
+    mutationCache: new MutationCache({
+      onError: (error, _variables, _context, mutation) => {
+        // Only fire for mutations that have no onError handler of their own,
+        // preventing duplicate toasts when a mutation already handles its errors.
+        if (mutation.options.onError) return;
+        const message = error instanceof TRPCClientError
+          ? getErrorMessage(error)
+          : "Something went wrong. Please try again.";
+        toast.error(message);
+      },
+    }),
     defaultOptions: {
       queries: {
         staleTime: 30 * 1000,

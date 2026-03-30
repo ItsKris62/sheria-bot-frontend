@@ -6,11 +6,12 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, Eye, EyeOff, Building2, Rocket, Scale, AlertCircle, CheckCircle2, Info } from "lucide-react"
+import { Eye, EyeOff, Building2, Rocket, Scale, AlertCircle, CheckCircle2, Info } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { LegalDocumentModal, type LegalDocumentType } from "@/components/legal/legal-document-modal"
 import { PasswordStrengthIndicator, checkPasswordStrength } from "@/components/auth/password-strength-indicator"
@@ -409,20 +410,15 @@ export default function RegisterPage() {
                 >
                   Back
                 </Button>
-                <Button
+                <LoadingButton
                   type="submit"
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                   disabled={!canSubmit}
+                  loading={isRegisterLoading}
+                  loadingText="Creating..."
                 >
-                  {isRegisterLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                      Creating...
-                    </>
-                  ) : (
-                    "Create Account"
-                  )}
-                </Button>
+                  Create Account
+                </LoadingButton>
               </div>
             </>
           )}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, useCallback } from "react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { toast } from "@/hooks/use-toast"
 import { trpc } from "@/lib/trpc"
 import { getErrorMessage } from "@/lib/trpc"
 import {
@@ -31,21 +31,10 @@ import {
   AlertCircle,
   ImageIcon,
   FileSpreadsheet,
+  HardDrive,
 } from "lucide-react"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const VAULT_MAX_FILE_SIZE = 25 * 1024 * 1024 // 25 MB
-
-const VAULT_ALLOWED_MIME_TYPES: Record<string, string> = {
-  "application/pdf": "PDF",
-  "application/msword": "DOC",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
-  "text/csv": "CSV",
-  "image/png": "PNG",
-  "image/jpeg": "JPG",
-}
 
 const DOCUMENT_CATEGORIES = [
   { value: "CORPORATE", label: "Corporate Documents" },
@@ -111,14 +100,53 @@ export function UploadDocumentModal({ open, onOpenChange, onSuccess }: UploadDoc
   const getUploadUrl = trpc.vault.getUploadUrl.useMutation()
   const confirmUpload = trpc.vault.confirmUpload.useMutation()
 
+  // ── Tier limits (fetched once when modal is open) ────────────────────────
+  const { data: uploadLimits } = trpc.vault.getUploadLimits.useQuery(undefined, {
+    enabled: open,
+    staleTime: 60_000,
+  })
+
+  const maxFileSizeBytes = (uploadLimits?.maxFileSizeMB ?? 25) * 1024 * 1024
+  const allowedMimeTypes: readonly string[] = uploadLimits?.allowedMimeTypes ?? [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "text/csv",
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "text/plain",
+  ]
+  const storageUsedMB = uploadLimits?.storageUsedMB ?? 0
+  const maxTotalStorageMB = uploadLimits?.maxTotalStorageMB ?? -1
+
+  // Build accept string and display label from allowed MIME types
+  const MIME_EXT_MAP: Record<string, string> = {
+    "application/pdf": ".pdf",
+    "application/msword": ".doc",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+    "text/csv": ".csv",
+    "image/png": ".png",
+    "image/jpeg": ".jpg,.jpeg",
+    "image/webp": ".webp",
+    "text/plain": ".txt",
+  }
+  const acceptAttr = allowedMimeTypes.map((m) => MIME_EXT_MAP[m] ?? "").filter(Boolean).join(",")
+  const acceptedLabel = allowedMimeTypes
+    .map((m) => MIME_EXT_MAP[m]?.replace(/\./g, "").toUpperCase())
+    .filter(Boolean)
+    .join(", ")
+
   // ── File validation ──────────────────────────────────────────────────────
 
   function validateFile(file: File): string | null {
-    if (!VAULT_ALLOWED_MIME_TYPES[file.type]) {
-      return `File type "${file.type || file.name.split(".").pop()}" is not allowed. Accepted: PDF, DOCX, XLSX, CSV, PNG, JPG.`
+    if (!(allowedMimeTypes as string[]).includes(file.type)) {
+      return `File type not allowed. Accepted: ${acceptedLabel}.`
     }
-    if (file.size > VAULT_MAX_FILE_SIZE) {
-      return `File is too large (${formatBytes(file.size)}). Maximum size is 25 MB.`
+    if (file.size > maxFileSizeBytes) {
+      return `File is too large (${formatBytes(file.size)}). Maximum size is ${formatBytes(maxFileSizeBytes)}.`
     }
     if (file.size < 1024) {
       return "File is too small (minimum 1 KB)."
@@ -147,7 +175,7 @@ export function UploadDocumentModal({ open, onOpenChange, onSuccess }: UploadDoc
     setDragging(false)
     const file = e.dataTransfer.files?.[0]
     if (file) handleFileSelect(file)
-  }, [])
+  }, [allowedMimeTypes, maxFileSizeBytes]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -226,20 +254,19 @@ export function UploadDocumentModal({ open, onOpenChange, onSuccess }: UploadDoc
       })
 
       setUploadStage("done")
-      toast({ title: "Document uploaded", description: `"${name.trim()}" was saved to your vault.` })
+      toast.success("Document uploaded", {
+        description: `"${name.trim()}" was saved to your vault.`,
+      })
 
       // Step 4: Invalidate cache + close
       await utils.vault.list.invalidate()
       await utils.vault.getStats.invalidate()
+      await utils.vault.getUploadLimits.invalidate()
       onSuccess()
       handleClose()
     } catch (err) {
       setUploadStage("error")
-      toast({
-        title: "Upload failed",
-        description: getErrorMessage(err),
-        variant: "destructive",
-      })
+      toast.error("Upload failed", { description: getErrorMessage(err) })
     }
   }
 
@@ -262,17 +289,41 @@ export function UploadDocumentModal({ open, onOpenChange, onSuccess }: UploadDoc
   const isUploading = uploadStage === "requesting" || uploadStage === "uploading" || uploadStage === "saving"
   const canSubmit = !!selectedFile && !!category && name.trim().length > 0 && !isUploading
 
+  // ── Storage usage bar (only shown when there is a quota) ─────────────────
+  const showStorageBar = maxTotalStorageMB > 0
+  const storageUsedPct = showStorageBar ? Math.min((storageUsedMB / maxTotalStorageMB) * 100, 100) : 0
+
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); else onOpenChange(v) }}>
       <DialogContent className="max-w-lg w-full max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
           <DialogTitle className="text-xl font-semibold">Upload Document</DialogTitle>
           <DialogDescription>
-            Add a compliance document to your vault. Max 25 MB. Accepted: PDF, DOCX, XLSX, CSV, PNG, JPG.
+            Add a compliance document to your vault. Max {formatBytes(maxFileSizeBytes)}.{" "}
+            Accepted: {acceptedLabel}.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
+          {/* ── Storage usage indicator ── */}
+          {showStorageBar && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <HardDrive className="h-3 w-3" />
+                  Storage
+                </span>
+                <span>{storageUsedMB.toFixed(1)} / {maxTotalStorageMB} MB</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className={`h-full rounded-full transition-all ${storageUsedPct >= 90 ? "bg-destructive" : storageUsedPct >= 70 ? "bg-yellow-500" : "bg-primary"}`}
+                  style={{ width: `${storageUsedPct}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* ── Drop zone ── */}
           <div
             role="button"
@@ -290,7 +341,7 @@ export function UploadDocumentModal({ open, onOpenChange, onSuccess }: UploadDoc
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.doc,.docx,.xlsx,.csv,.png,.jpg,.jpeg"
+              accept={acceptAttr}
               className="sr-only"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileSelect(f) }}
             />
@@ -327,7 +378,9 @@ export function UploadDocumentModal({ open, onOpenChange, onSuccess }: UploadDoc
                 </div>
                 <div>
                   <p className="font-medium text-sm text-foreground">Drop file here or click to browse</p>
-                  <p className="text-xs text-muted-foreground mt-1">PDF, DOCX, XLSX, CSV, PNG, JPG — max 25 MB</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {acceptedLabel} — max {formatBytes(maxFileSizeBytes)}
+                  </p>
                 </div>
               </>
             )}
@@ -412,9 +465,9 @@ export function UploadDocumentModal({ open, onOpenChange, onSuccess }: UploadDoc
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {uploadStage === "requesting" && "Preparing upload…"}
-                  {uploadStage === "uploading" && "Uploading to secure storage…"}
-                  {uploadStage === "saving" && "Saving document record…"}
+                  {uploadStage === "requesting" && "Preparing upload..."}
+                  {uploadStage === "uploading" && "Uploading to secure storage..."}
+                  {uploadStage === "saving" && "Saving document record..."}
                 </span>
                 {uploadStage === "uploading" && (
                   <span className="font-medium tabular-nums">{uploadProgress}%</span>
@@ -469,7 +522,7 @@ export function UploadDocumentModal({ open, onOpenChange, onSuccess }: UploadDoc
               {isUploading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading…
+                  Uploading...
                 </>
               ) : (
                 <>

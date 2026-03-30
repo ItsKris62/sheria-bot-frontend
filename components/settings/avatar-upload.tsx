@@ -97,6 +97,7 @@ export function AvatarUpload({ user }: AvatarUploadProps) {
       // Step 1 — Get presigned PUT URL
       const { uploadUrl, publicUrl } = await getUploadUrl.mutateAsync({
         contentType: file.type as AvatarMimeType,
+        fileSize: file.size,
       })
 
       // Step 2 — Upload directly to R2

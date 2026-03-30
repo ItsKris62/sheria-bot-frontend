@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -112,21 +113,24 @@ function FileUploadSection({
   file,
   onFile,
   onRemove,
+  maxFileSizeBytes,
 }: {
   file: File | null
   onFile: (file: File) => void
   onRemove: () => void
+  maxFileSizeBytes: number
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragActive, setDragActive] = useState(false)
+  const maxMB = Math.round(maxFileSizeBytes / 1024 / 1024)
 
   const validateAndSetFile = (f: File) => {
     if (!ALLOWED_TYPES.includes(f.type) && !ALLOWED_EXTENSIONS.some((ext) => f.name.toLowerCase().endsWith(ext))) {
       toast.error("Unsupported file type", { description: "Upload a PDF, DOCX, DOC, or TXT file." })
       return
     }
-    if (f.size > MAX_FILE_SIZE) {
-      toast.error("File too large", { description: "Maximum file size is 10MB." })
+    if (f.size > maxFileSizeBytes) {
+      toast.error("File too large", { description: `Maximum file size is ${maxMB}MB.` })
       return
     }
     onFile(f)
@@ -175,7 +179,7 @@ function FileUploadSection({
         <Upload className={`h-8 w-8 mx-auto mb-3 ${dragActive ? "text-primary" : "text-muted-foreground"}`} />
         <p className="text-sm font-medium text-foreground">Drop your policy document here</p>
         <p className="text-xs text-muted-foreground mt-1">or <span className="text-primary underline">browse files</span></p>
-        <p className="text-xs text-muted-foreground mt-3">PDF, DOCX, DOC, TXT · Max 10MB</p>
+        <p className="text-xs text-muted-foreground mt-3">PDF, DOCX, DOC, TXT · Max {maxMB}MB</p>
       </div>
       <input
         ref={inputRef}
@@ -860,6 +864,8 @@ export default function GapAnalysisPage() {
 
   const { data: analyses, isLoading: listLoading, error: listError } = trpc.compliance.getGapAnalyses.useQuery()
   const { data: frameworksData, isLoading: frameworksLoading } = trpc.compliance.getFrameworks.useQuery()
+  const { data: gapLimits } = trpc.compliance.getGapAnalysisLimits.useQuery()
+  const maxFileSizeBytes = (gapLimits?.maxFileSizeMB ?? 10) * 1024 * 1024
 
   // Polling query — active only while isAwaitingResult
   const pollingQuery = trpc.compliance.getGapAnalysisResult.useQuery(
@@ -1034,6 +1040,7 @@ export default function GapAnalysisPage() {
               file={selectedFile}
               onFile={setSelectedFile}
               onRemove={() => setSelectedFile(null)}
+              maxFileSizeBytes={maxFileSizeBytes}
             />
           </CardContent>
         </Card>
@@ -1184,7 +1191,7 @@ export default function GapAnalysisPage() {
         <CardContent className="pt-6">
           {runMutation.isPending ? (
             <div className="flex items-center justify-center gap-3 py-3">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">Uploading document...</p>
             </div>
           ) : (
@@ -1207,14 +1214,16 @@ export default function GapAnalysisPage() {
                   </div>
                 )}
               </div>
-              <Button
+              <LoadingButton
                 onClick={handleRunAnalysis}
                 disabled={!canRun}
+                loading={runMutation.isPending}
+                loadingText="Uploading..."
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <TrendingUp className="mr-2 h-4 w-4" />
                 Run Gap Analysis
-              </Button>
+              </LoadingButton>
             </div>
           )}
         </CardContent>

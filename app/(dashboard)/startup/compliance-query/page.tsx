@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -493,17 +494,14 @@ export default function ComplianceQueryPage() {
                   className="flex-1 bg-background"
                   disabled={isLoading}
                 />
-                <Button
+                <LoadingButton
                   type="submit"
-                  disabled={!query.trim() || isLoading}
+                  disabled={!query.trim()}
+                  loading={isLoading}
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
+                  <Send className="h-4 w-4" />
+                </LoadingButton>
               </form>
               <p className="mt-2 text-xs text-muted-foreground">
                 Answers are AI-generated based on Kenya&apos;s legal corpus. Always verify with

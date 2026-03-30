@@ -5,11 +5,12 @@ import React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react"
+import { Eye, EyeOff, AlertCircle } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 
 export default function LoginPage() {
@@ -105,20 +106,14 @@ export default function LoginPage() {
             </Label>
           </div>
 
-          <Button
+          <LoadingButton
             type="submit"
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            disabled={isLoginLoading}
+            loading={isLoginLoading}
+            loadingText="Signing in..."
           >
-            {isLoginLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              "Sign in"
-            )}
-          </Button>
+            Sign in
+          </LoadingButton>
 
         </form>
 

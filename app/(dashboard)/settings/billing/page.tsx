@@ -12,6 +12,7 @@ import { UsageComparison } from "@/components/usage/usage-comparison"
 import { InvoiceModal } from "@/components/billing/InvoiceModal"
 import { MpesaPaymentFlow } from "@/components/billing/MpesaPaymentFlow"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -283,9 +284,9 @@ export default function BillingSettingsPage() {
               Your last payment failed. Please update your payment method to avoid service interruption.
             </p>
           </div>
-          <Button size="sm" variant="outline" className="ml-auto shrink-0" onClick={openPortal} disabled={portalMutation.isPending}>
-            {portalMutation.isPending ? "Opening..." : "Update Payment"}
-          </Button>
+          <LoadingButton size="sm" variant="outline" className="ml-auto shrink-0" onClick={openPortal} loading={portalMutation.isPending} loadingText="Opening...">
+            Update Payment
+          </LoadingButton>
         </div>
       )}
 
@@ -302,14 +303,15 @@ export default function BillingSettingsPage() {
             </p>
           </div>
           {!isEnterprise && (
-            <Button
+            <LoadingButton
               size="sm"
               className="ml-auto shrink-0"
               onClick={() => startCheckout(currentPlanId === "BUSINESS" ? "BUSINESS" : "STARTUP")}
-              disabled={checkoutMutation.isPending}
+              loading={checkoutMutation.isPending}
+              loadingText="Opening..."
             >
-              {checkoutMutation.isPending ? "Opening..." : "Reactivate"}
-            </Button>
+              Reactivate
+            </LoadingButton>
           )}
         </div>
       )}
@@ -337,9 +339,9 @@ export default function BillingSettingsPage() {
             . Trial ends {formatDate(billing.trialEndsAt)}. Add a payment method to continue uninterrupted.
           </p>
           {isManagedByStripe && (
-            <Button size="sm" variant="outline" className="ml-auto shrink-0" onClick={openPortal} disabled={portalMutation.isPending}>
-              {portalMutation.isPending ? "Opening..." : "Manage"}
-            </Button>
+            <LoadingButton size="sm" variant="outline" className="ml-auto shrink-0" onClick={openPortal} loading={portalMutation.isPending} loadingText="Opening...">
+              Manage
+            </LoadingButton>
           )}
         </div>
       )}
@@ -478,7 +480,7 @@ export default function BillingSettingsPage() {
                       Downgrade via Portal
                     </Button>
                   ) : planConfig.cta.type === "subscribe" ? (
-                    <Button
+                    <LoadingButton
                       size="sm"
                       className="w-full text-xs"
                       variant={planConfig.popular ? "default" : "outline"}
@@ -492,18 +494,18 @@ export default function BillingSettingsPage() {
                           startCheckout(planId as "STARTUP" | "BUSINESS")
                         }
                       }}
-                      disabled={checkoutMutation.isPending}
+                      loading={checkoutMutation.isPending}
+                      loadingText="Opening..."
                     >
                       {(() => {
                         const preferredMethod = billing && "preferredPaymentMethod" in billing
                           ? (billing as unknown as { preferredPaymentMethod?: string | null }).preferredPaymentMethod
                           : null
                         return preferredMethod === "MPESA"
-                          ? <Smartphone className="mr-1 h-3 w-3" />
-                          : <Zap className="mr-1 h-3 w-3" />
+                          ? <><Smartphone className="mr-1 h-3 w-3" />{planConfig.cta.label}</>
+                          : <><Zap className="mr-1 h-3 w-3" />{planConfig.cta.label}</>
                       })()}
-                      {checkoutMutation.isPending ? "Opening..." : planConfig.cta.label}
-                    </Button>
+                    </LoadingButton>
                   ) : planConfig.cta.type === "contact-sales" ? (
                     <Button
                       size="sm"
@@ -603,10 +605,10 @@ export default function BillingSettingsPage() {
                   <p className="text-xs text-muted-foreground">Managed securely via Stripe</p>
                 </div>
               </div>
-              <Button size="sm" variant="outline" onClick={openPortal} disabled={portalMutation.isPending}>
+              <LoadingButton size="sm" variant="outline" onClick={openPortal} loading={portalMutation.isPending} loadingText="Opening...">
                 <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                {portalMutation.isPending ? "Opening..." : "Manage"}
-              </Button>
+                Manage
+              </LoadingButton>
             </div>
           ) : (
             <div className="flex items-center justify-between rounded-lg border border-dashed border-border bg-muted/10 px-4 py-3">
@@ -731,14 +733,15 @@ export default function BillingSettingsPage() {
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        <Button
+                        <LoadingButton
                           size="sm"
                           onClick={savePaymentMethod}
-                          disabled={updatePaymentMethodMutation.isPending}
+                          loading={updatePaymentMethodMutation.isPending}
+                          loadingText="Saving..."
                           className="text-xs"
                         >
-                          {updatePaymentMethodMutation.isPending ? "Saving..." : "Save M-Pesa"}
-                        </Button>
+                          Save M-Pesa
+                        </LoadingButton>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -754,14 +757,15 @@ export default function BillingSettingsPage() {
 
                 {/* Save button for Card selection */}
                 {selectedProvider === "STRIPE" && (
-                  <Button
+                  <LoadingButton
                     size="sm"
                     onClick={savePaymentMethod}
-                    disabled={updatePaymentMethodMutation.isPending}
+                    loading={updatePaymentMethodMutation.isPending}
+                    loadingText="Saving..."
                     className="text-xs"
                   >
-                    {updatePaymentMethodMutation.isPending ? "Saving..." : "Save Card as Default"}
-                  </Button>
+                    Save Card as Default
+                  </LoadingButton>
                 )}
               </div>
             )
@@ -799,41 +803,43 @@ export default function BillingSettingsPage() {
 
           <div className="flex flex-wrap gap-2 pt-1">
             {(isActive || isTrialing) && isManagedByStripe && !isRegulator && !isEnterprise && (
-              <Button variant="outline" size="sm" onClick={openPortal} disabled={portalMutation.isPending}>
+              <LoadingButton variant="outline" size="sm" onClick={openPortal} loading={portalMutation.isPending} loadingText="Opening...">
                 <CreditCard className="mr-1.5 h-3.5 w-3.5" />
-                {portalMutation.isPending ? "Opening..." : "Manage Subscription"}
+                Manage Subscription
                 <ExternalLink className="ml-1.5 h-3 w-3 opacity-60" />
-              </Button>
+              </LoadingButton>
             )}
 
             {(isExpired || isGracePeriod) && !isEnterprise && (
-              <Button
+              <LoadingButton
                 size="sm"
                 onClick={() => startCheckout(currentPlanId === "BUSINESS" ? "BUSINESS" : "STARTUP")}
-                disabled={checkoutMutation.isPending}
+                loading={checkoutMutation.isPending}
+                loadingText="Opening..."
               >
                 <Zap className="mr-1.5 h-3.5 w-3.5" />
-                {checkoutMutation.isPending ? "Opening..." : "Resubscribe"}
-              </Button>
+                Resubscribe
+              </LoadingButton>
             )}
 
             {isPastDue && isManagedByStripe && (
-              <Button size="sm" onClick={openPortal} disabled={portalMutation.isPending}>
+              <LoadingButton size="sm" onClick={openPortal} loading={portalMutation.isPending} loadingText="Opening...">
                 <CreditCard className="mr-1.5 h-3.5 w-3.5" />
-                {portalMutation.isPending ? "Opening..." : "Update Payment Method"}
+                Update Payment Method
                 <ExternalLink className="ml-1.5 h-3 w-3 opacity-60" />
-              </Button>
+              </LoadingButton>
             )}
 
             {isRegulator && (
-              <Button
+              <LoadingButton
                 size="sm"
                 onClick={() => startCheckout("STARTUP")}
-                disabled={checkoutMutation.isPending}
+                loading={checkoutMutation.isPending}
+                loadingText="Opening..."
               >
                 <Zap className="mr-1.5 h-3.5 w-3.5" />
-                {checkoutMutation.isPending ? "Opening..." : "Start Free Trial"}
-              </Button>
+                Start Free Trial
+              </LoadingButton>
             )}
 
             {isEnterprise && (
@@ -1097,7 +1103,7 @@ export default function BillingSettingsPage() {
                 >
                   Cancel
                 </Button>
-                <Button
+                <LoadingButton
                   onClick={() => {
                     enterpriseMutation.mutate({
                       name:    enterpriseForm.name,
@@ -1105,15 +1111,13 @@ export default function BillingSettingsPage() {
                       message: enterpriseForm.message || undefined,
                     })
                   }}
-                  disabled={
-                    !enterpriseForm.name.trim() ||
-                    !enterpriseForm.email.trim() ||
-                    enterpriseMutation.isPending
-                  }
+                  disabled={!enterpriseForm.name.trim() || !enterpriseForm.email.trim()}
+                  loading={enterpriseMutation.isPending}
+                  loadingText="Sending..."
                 >
                   <Send className="mr-1.5 h-4 w-4" />
-                  {enterpriseMutation.isPending ? "Sending..." : "Send Inquiry"}
-                </Button>
+                  Send Inquiry
+                </LoadingButton>
               </DialogFooter>
             </>
           )}
