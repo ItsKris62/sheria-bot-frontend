@@ -23,6 +23,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -51,6 +61,7 @@ import {
   TrendingUp,
   ShieldCheck,
   MinusCircle,
+  FileText,
 } from "lucide-react"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -132,6 +143,7 @@ type NormalizedItemStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "NOT_APPLI
 type ChecklistItemLocal = {
   id: string
   category: string
+  itemCode: string | null
   title: string
   description: string
   guidance: string | null
@@ -155,6 +167,15 @@ type ChecklistCategoryLocal = {
   progress: number
 }
 
+type ChecklistSummaryMetadata = {
+  totalCategories?: number
+  totalItems?: number
+  criticalItems?: number
+  highItems?: number
+  estimatedCompletionDays?: number
+  generatedFor?: { productType?: string; businessStage?: string; services?: string[] }
+}
+
 type ChecklistDetailLocal = {
   id: string
   title: string
@@ -164,6 +185,9 @@ type ChecklistDetailLocal = {
   completedItems: number
   totalItems: number
   status: string
+  summary: ChecklistSummaryMetadata | null
+  metadata: { errorMessage?: string } | null
+  generatedAt: Date | null
   createdAt: Date
   updatedAt: Date
   completedAt: Date | null
@@ -195,6 +219,8 @@ type ChecklistSummaryLocal = {
   totalItems: number
   criticalItems: number
   status: string
+  metadata: { errorMessage?: string } | null
+  generatedAt: Date | null
   createdAt: Date
   updatedAt: Date
   isNormalized: boolean
@@ -554,8 +580,10 @@ function ChecklistCard({
         <div className="space-y-3">
           {isFailed ? (
             <p className="text-xs text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              Generation failed — retry with the same inputs or adjust and resubmit
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              {checklist.metadata?.errorMessage
+                ? checklist.metadata.errorMessage
+                : "Generation failed — retry with the same inputs or adjust and resubmit"}
             </p>
           ) : isGenerating ? (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -850,6 +878,188 @@ function handleExportPdf(data: Parameters<typeof buildPrintHtml>[0]) {
   setTimeout(() => { printWindow.print() }, 500)
 }
 
+// ─── PDF Export (Normalized) ─────────────────────────────────────────────────
+
+function buildNormalizedPrintHtml(data: {
+  title: string
+  productType: string | null
+  businessStage: string | null
+  generatedAt: Date | null
+  createdAt: Date
+  progress: number
+  completedItems: number
+  totalItems: number
+  summary: ChecklistSummaryMetadata | null
+  categories: ChecklistCategoryLocal[]
+}): string {
+  const { title, productType, businessStage, generatedAt, createdAt, progress, completedItems, totalItems, summary, categories } = data
+  const dateStr = new Date(generatedAt ?? createdAt).toLocaleDateString("en-KE", { day: "2-digit", month: "long", year: "numeric" })
+  const criticalItems = summary?.criticalItems ?? categories.flatMap((c) => c.items).filter((i) => i.priority === "CRITICAL").length
+  const highItems = summary?.highItems ?? categories.flatMap((c) => c.items).filter((i) => i.priority === "HIGH").length
+
+  const priorityBadge = (p: string) => {
+    const colors: Record<string, string> = {
+      CRITICAL: "background:#DC2626;color:#fff",
+      HIGH:     "background:#EA580C;color:#fff",
+      MEDIUM:   "background:#CA8A04;color:#fff",
+      LOW:      "background:#16A34A;color:#fff",
+    }
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;${colors[p] ?? colors.LOW}">${p}</span>`
+  }
+
+  const statusBadge = (s: string) => {
+    if (s === "COMPLETED")      return `<span style="color:#16A34A;font-weight:600">✓ Completed</span>`
+    if (s === "IN_PROGRESS")    return `<span style="color:#2563EB;font-weight:600">⟳ In Progress</span>`
+    if (s === "NOT_APPLICABLE") return `<span style="color:#9CA3AF;font-weight:600">— Not Applicable</span>`
+    return `<span style="color:#6B7280">○ Pending</span>`
+  }
+
+  const categoryRows = categories.map((cat) => {
+    const catCompleted = cat.items.filter((i) => i.status === "COMPLETED").length
+    const itemsHtml = cat.items.map((item) => `
+      <div style="margin:10px 0;padding:12px;border:1px solid #E5E7EB;border-radius:6px;page-break-inside:avoid;${item.status === "NOT_APPLICABLE" ? "opacity:0.55;" : ""}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+          <div style="min-width:0">
+            ${item.itemCode ? `<span style="font-size:10px;color:#9CA3AF;font-family:monospace">${item.itemCode}</span><br>` : ""}
+            <p style="font-weight:600;color:#1A2B4A;margin:2px 0;font-size:13px;${item.status === "COMPLETED" ? "text-decoration:line-through;color:#6B7280;" : ""}">${item.title}</p>
+            <p style="font-size:11px;color:#6B7280;font-style:italic;margin:2px 0">📋 ${item.regulatoryReference}</p>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap">
+            ${priorityBadge(item.priority)}
+            <span style="font-size:10px">${statusBadge(item.status)}</span>
+          </div>
+        </div>
+        <p style="font-size:12px;color:#4A5568;margin:6px 0;line-height:1.5">${item.description}</p>
+        ${item.guidance ? `<p style="font-size:11px;color:#1D4ED8;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:4px;padding:6px 8px;margin:6px 0;line-height:1.5">💡 ${item.guidance}</p>` : ""}
+        ${item.actionItems?.length ? `
+          <div style="margin-top:8px">
+            <p style="font-size:11px;font-weight:600;color:#1A2B4A;margin-bottom:4px">Action Items:</p>
+            <ol style="margin:0;padding-left:16px">
+              ${item.actionItems.map((a) => `<li style="font-size:11px;color:#4A5568;margin-bottom:2px">${a}</li>`).join("")}
+            </ol>
+          </div>
+        ` : ""}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">⏰ Deadline</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.deadline}</p></div>` : ""}
+          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">⚠️ Penalty</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.penalty}</p></div>` : ""}
+        </div>
+        ${item.notes ? `<div style="margin-top:8px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#92400E">📝 Notes</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.notes}</p></div>` : ""}
+      </div>
+    `).join("")
+
+    return `
+      <div style="margin:24px 0;page-break-inside:avoid">
+        <div style="background:#1A2B4A;color:#fff;padding:10px 16px;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h3 style="margin:0;font-size:14px;font-weight:700">${cat.name}</h3>
+          </div>
+          <span style="font-size:12px;opacity:0.9">${catCompleted}/${cat.items.length} completed</span>
+        </div>
+        <div style="border:1px solid #E5E7EB;border-top:none;border-radius:0 0 6px 6px;padding:12px">
+          ${itemsHtml}
+        </div>
+      </div>
+    `
+  }).join("")
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${title} — SheriaBot Compliance Checklist</title>
+  <style>
+    @media print {
+      @page { margin: 15mm; size: A4; }
+      .no-print { display: none !important; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; color: #1A2B4A; margin: 0; padding: 20px; font-size: 13px; line-height: 1.5; }
+    h1, h2, h3 { margin: 0 0 8px; }
+  </style>
+</head>
+<body>
+  <div style="text-align:center;padding:40px 20px 32px;border-bottom:3px solid #1A2B4A;margin-bottom:32px">
+    <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="background:#1A2B4A;color:#00875A;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">S</div>
+      <span style="font-size:26px;font-weight:800;color:#1A2B4A;letter-spacing:-0.5px">SheriaBot</span>
+    </div>
+    <h1 style="font-size:22px;font-weight:700;color:#1A2B4A;margin:0 0 6px">Compliance Checklist Report</h1>
+    <p style="font-size:16px;color:#00875A;font-weight:600;margin:0 0 20px">${title}</p>
+    <div style="display:inline-grid;grid-template-columns:auto auto;gap:4px 24px;text-align:left;background:#F7F8FA;padding:16px 24px;border-radius:8px;font-size:12px">
+      <span style="color:#6B7280">Generated on:</span><span style="font-weight:600">${dateStr}</span>
+      <span style="color:#6B7280">Product Type:</span><span style="font-weight:600">${productType ?? "—"}</span>
+      <span style="color:#6B7280">Business Stage:</span><span style="font-weight:600">${businessStage ?? "—"}</span>
+    </div>
+    <p style="margin-top:24px;font-size:11px;color:#9CA3AF">Confidential — For Internal Use Only · Generated by SheriaBot</p>
+  </div>
+
+  <div style="margin-bottom:32px;page-break-after:always">
+    <h2 style="font-size:16px;font-weight:700;color:#1A2B4A;margin-bottom:16px;border-bottom:2px solid #00875A;padding-bottom:6px">Executive Summary</h2>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      <div style="background:#F7F8FA;border-radius:8px;padding:14px;text-align:center">
+        <p style="font-size:28px;font-weight:700;color:#1A2B4A;margin:0">${totalItems}</p>
+        <p style="font-size:11px;color:#6B7280;margin:4px 0 0">Total Items</p>
+      </div>
+      <div style="background:#F7F8FA;border-radius:8px;padding:14px;text-align:center">
+        <p style="font-size:28px;font-weight:700;color:#1A2B4A;margin:0">${progress}%</p>
+        <p style="font-size:11px;color:#6B7280;margin:4px 0 0">${completedItems} of ${totalItems} done</p>
+      </div>
+      <div style="background:#FFF1F2;border-radius:8px;padding:14px;text-align:center">
+        <p style="font-size:28px;font-weight:700;color:#DC2626;margin:0">${criticalItems}</p>
+        <p style="font-size:11px;color:#6B7280;margin:4px 0 0">Critical Items</p>
+      </div>
+      <div style="background:#FFF7ED;border-radius:8px;padding:14px;text-align:center">
+        <p style="font-size:28px;font-weight:700;color:#EA580C;margin:0">${highItems}</p>
+        <p style="font-size:11px;color:#6B7280;margin:4px 0 0">High Priority</p>
+      </div>
+    </div>
+    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:14px;font-size:12px;color:#4A5568;line-height:1.6">
+      This checklist was generated by SheriaBot AI based on Kenyan regulatory requirements and international standards.
+      It should be reviewed by qualified legal and compliance professionals before making regulatory decisions.
+    </div>
+  </div>
+
+  <div>
+    <h2 style="font-size:16px;font-weight:700;color:#1A2B4A;margin-bottom:16px;border-bottom:2px solid #00875A;padding-bottom:6px">Compliance Requirements</h2>
+    ${categoryRows}
+  </div>
+
+  <div style="margin-top:40px;padding:20px;background:#F7F8FA;border-radius:8px;border-top:3px solid #D4A843;page-break-before:always">
+    <h2 style="font-size:14px;font-weight:700;color:#1A2B4A;margin-bottom:10px">Disclaimer</h2>
+    <p style="font-size:11px;color:#4A5568;line-height:1.6">
+      This compliance checklist was generated by SheriaBot using AI-powered analysis of Kenyan financial regulations.
+      While every effort has been made to ensure accuracy, this document should not be considered legal advice.
+      Organizations should consult with qualified legal and compliance professionals to verify all requirements.
+      Regulatory requirements may change; please verify against the latest versions of referenced legislation.
+    </p>
+    <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="background:#1A2B4A;color:#00875A;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900">S</div>
+        <span style="font-size:12px;font-weight:700;color:#1A2B4A">SheriaBot</span>
+      </div>
+      <p style="font-size:10px;color:#9CA3AF">Generated: ${new Date().toISOString()}</p>
+    </div>
+  </div>
+</body>
+</html>`
+}
+
+function handleExportNormalizedPdf(data: Parameters<typeof buildNormalizedPrintHtml>[0]) {
+  const html = buildNormalizedPrintHtml(data)
+  const printWindow = window.open("", "_blank", "width=900,height=700")
+  if (!printWindow) {
+    toast.error("PDF export blocked", {
+      description: "Please allow pop-ups for this site to export PDF.",
+    })
+    return
+  }
+  printWindow.document.write(html)
+  printWindow.document.close()
+  printWindow.focus()
+  setTimeout(() => { printWindow.print() }, 500)
+}
+
 // ─── Normalized Checklist Detail View ────────────────────────────────────────
 
 function NormalizedChecklistDetailView({
@@ -865,12 +1075,34 @@ function NormalizedChecklistDetailView({
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({})
   const [expandedItems, setExpandedItems]   = useState<Record<string, boolean>>({})
   const [editingNotes, setEditingNotes]     = useState<Record<string, string>>({})
+  const [isExporting, setIsExporting]         = useState(false)
+  const [isExportingDocx, setIsExportingDocx] = useState(false)
 
   const { data: rawDetail, isLoading } = trpc.compliance.getChecklistDetail.useQuery(
     { checklistId },
     { enabled: true }
   )
   const detailData = rawDetail as ChecklistDetailLocal | undefined
+
+  const exportDocxMutation = trpc.compliance.exportChecklistDocx.useMutation({
+    onSuccess: (data: { downloadUrl: string; expiresAt: string; fileName: string }) => {
+      const link = document.createElement("a")
+      link.href = data.downloadUrl
+      link.download = data.fileName
+      link.click()
+      toast.success("DOCX downloaded successfully")
+    },
+    onError: (err: { message?: string }) => {
+      toast.error(err.message ?? "Failed to generate DOCX export")
+    },
+    onSettled: () => setIsExportingDocx(false),
+  })
+
+  const handleExportDocxClick = () => {
+    if (isExportingDocx) return
+    setIsExportingDocx(true)
+    exportDocxMutation.mutate({ checklistId })
+  }
 
   const updateItemMutation = trpc.compliance.updateChecklistItem.useMutation({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -986,8 +1218,67 @@ function NormalizedChecklistDetailView({
   const totalItems      = detailData.totalItems
   const isAllDone       = detailData.status === "COMPLETED"
 
+  const handleExportPdfClick = () => {
+    setIsExporting(true)
+    try {
+      handleExportNormalizedPdf({
+        title:         detailData.title,
+        productType:   detailData.productType,
+        businessStage: detailData.businessStage,
+        generatedAt:   detailData.generatedAt,
+        createdAt:     detailData.createdAt,
+        progress:      detailData.progress,
+        completedItems: detailData.completedItems,
+        totalItems:    detailData.totalItems,
+        summary:       detailData.summary as ChecklistSummaryMetadata | null,
+        categories:    detailData.categories,
+      })
+    } finally {
+      setTimeout(() => setIsExporting(false), 1000)
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {/* Completion celebration banner */}
+      {isAllDone && (
+        <div className="rounded-lg border border-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700 p-4 flex items-center gap-3">
+          <ShieldCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-emerald-800 dark:text-emerald-300">All compliance items have been addressed</p>
+            <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-0.5">
+              Your compliance checklist is complete. Export a PDF to share with your compliance team or auditors.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-emerald-400 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:border-emerald-600 dark:hover:bg-emerald-900/30 bg-transparent"
+              onClick={handleExportPdfClick}
+              disabled={isExporting}
+            >
+              <Download className="h-4 w-4 mr-1.5" />
+              Export PDF
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-emerald-400 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:border-emerald-600 dark:hover:bg-emerald-900/30 bg-transparent"
+              onClick={handleExportDocxClick}
+              disabled={isExportingDocx}
+            >
+              {isExportingDocx ? (
+                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+              ) : (
+                <FileText className="h-4 w-4 mr-1.5" />
+              )}
+              {isExportingDocx ? "Generating..." : "Export DOCX"}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -1002,14 +1293,49 @@ function NormalizedChecklistDetailView({
           <h2 className="text-xl font-bold text-foreground">{detailData.title}</h2>
           <p className="text-sm text-muted-foreground mt-1">
             {detailData.productType} · {detailData.businessStage}
+            {detailData.generatedAt && (
+              <span className="ml-2 text-xs">
+                · Generated {new Date(detailData.generatedAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
+              </span>
+            )}
           </p>
         </div>
-        {isAllDone && (
-          <Badge className="bg-green-600 text-white border-transparent text-sm px-3 py-1">
-            <CheckCircle2 className="h-4 w-4 mr-1.5" />
-            Fully Compliant
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-transparent"
+            onClick={handleExportPdfClick}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-1.5" />
+            )}
+            {isExporting ? "Opening PDF..." : "Export PDF"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-transparent"
+            onClick={handleExportDocxClick}
+            disabled={isExportingDocx}
+          >
+            {isExportingDocx ? (
+              <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+            ) : (
+              <FileText className="h-4 w-4 mr-1.5" />
+            )}
+            {isExportingDocx ? "Generating..." : "Export DOCX"}
+          </Button>
+          {isAllDone && (
+            <Badge className="bg-emerald-600 text-white border-transparent text-sm px-3 py-1">
+              <CheckCircle2 className="h-4 w-4 mr-1.5" />
+              Fully Compliant
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Progress Summary Card */}
@@ -1141,6 +1467,11 @@ function NormalizedChecklistDetailView({
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0">
+                                  {item.itemCode && (
+                                    <span className="text-xs text-muted-foreground font-mono">
+                                      {item.itemCode}
+                                    </span>
+                                  )}
                                   <p
                                     className={`font-semibold leading-tight mt-0.5 text-sm ${
                                       item.status === "COMPLETED"
@@ -1899,8 +2230,12 @@ export default function ChecklistsPage() {
   const [activeChecklistId, setActiveChecklistId] = useState<string | null>(null)
   const [retryDialogOpen, setRetryDialogOpen] = useState(false)
   const [retryDefaults, setRetryDefaults] = useState<RetryDefaults | undefined>(undefined)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const utils = trpc.useUtils()
   const { plan } = usePlan()
+  // Track which checklist IDs were GENERATING on the previous render so we can
+  // fire a success toast exactly once when they transition to a non-GENERATING state.
+  const prevGeneratingIdsRef = useRef<Set<string>>(new Set())
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: rawUsage } = trpc.compliance.getChecklistUsage.useQuery(undefined) as { data: any }
@@ -1922,6 +2257,29 @@ export default function ChecklistsPage() {
 
   const checklists = rawChecklists as ChecklistSummaryLocal[] | undefined
 
+  // Fire a toast exactly once when a GENERATING checklist becomes ready or failed.
+  useEffect(() => {
+    if (!checklists) return
+    const prevIds = prevGeneratingIdsRef.current
+    checklists.forEach((c) => {
+      if (prevIds.has(c.id) && c.status !== "GENERATING") {
+        if (c.status === "FAILED") {
+          toast.error(`Checklist generation failed`, {
+            description: c.metadata?.errorMessage ?? "Please retry with the same inputs.",
+          })
+        } else {
+          toast.success("Your checklist is ready!", {
+            description: `${c.title} has been generated and is ready to review.`,
+          })
+        }
+      }
+    })
+    // Update the ref to the current set of GENERATING IDs.
+    prevGeneratingIdsRef.current = new Set(
+      checklists.filter((c) => c.status === "GENERATING").map((c) => c.id)
+    )
+  }, [checklists])
+
   const deleteMutation = trpc.compliance.deleteChecklist.useMutation({
     onSuccess: () => {
       toast.success("Checklist deleted")
@@ -1934,8 +2292,13 @@ export default function ChecklistsPage() {
   })
 
   const handleDelete = (id: string) => {
-    if (confirm("Delete this checklist?")) {
-      deleteMutation.mutate({ id })
+    setDeleteTargetId(id)
+  }
+
+  const confirmDelete = () => {
+    if (deleteTargetId) {
+      deleteMutation.mutate({ id: deleteTargetId })
+      setDeleteTargetId(null)
     }
   }
 
@@ -2148,6 +2511,27 @@ export default function ChecklistsPage() {
           if (!v) setRetryDefaults(undefined)
         }}
       />
+
+      {/* Branded delete confirmation dialog */}
+      <AlertDialog open={deleteTargetId !== null} onOpenChange={(open) => { if (!open) setDeleteTargetId(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this checklist?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the checklist and all its items. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
