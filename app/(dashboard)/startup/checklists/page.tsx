@@ -63,6 +63,7 @@ import {
   MinusCircle,
   FileText,
 } from "lucide-react"
+import { LOGOS } from "@/lib/constants/logos"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -720,6 +721,8 @@ function LegacyStatusIcon({ status }: { status: string }) {
 // TODO: add a normalized-checklist PDF export when NormalizedChecklistDetailView
 // is stable. For now, this function is used only for legacy (isNormalized=false) checklists.
 
+const EXPORT_LOGO_URL = LOGOS.exportLogo
+
 function buildPrintHtml(data: {
   title: string
   productType: string | null
@@ -834,6 +837,7 @@ function buildPrintHtml(data: {
       @page { margin: 15mm; size: A4; }
       .no-print { display: none !important; }
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .print-footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 8px 0; font-size: 10px; color: #4A5568; border-top: 1px solid #E2E8F0; background: #fff; }
     }
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; color: #1A2B4A; margin: 0; padding: 20px; font-size: 13px; line-height: 1.5; }
@@ -841,10 +845,23 @@ function buildPrintHtml(data: {
   </style>
 </head>
 <body>
+  <div class="print-footer">
+    <img src="${EXPORT_LOGO_URL}" alt="SheriaBot" style="max-height:20px;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none';" />
+    <span>Powered by SheriaBot — AI-Powered Regulatory Compliance</span>
+    <span style="margin-left:12px;">Generated on ${dateStr}</span>
+  </div>
   <div style="text-align:center;padding:40px 20px 32px;border-bottom:3px solid #1A2B4A;margin-bottom:32px">
-    <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="background:#1A2B4A;color:#00875A;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">S</div>
-      <span style="font-size:26px;font-weight:800;color:#1A2B4A;letter-spacing:-0.5px">SheriaBot</span>
+    <div style="margin-bottom:16px">
+      <img
+        src="${EXPORT_LOGO_URL}"
+        alt="SheriaBot"
+        style="max-height:60px;max-width:200px;object-fit:contain;"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';"
+      />
+      <div style="display:none;align-items:center;gap:10px;justify-content:center">
+        <div style="background:#1A2B4A;color:#00875A;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">S</div>
+        <span style="font-size:26px;font-weight:800;color:#1A2B4A;letter-spacing:-0.5px">SheriaBot</span>
+      </div>
     </div>
     <h1 style="font-size:22px;font-weight:700;color:#1A2B4A;margin:0 0 6px">Compliance Checklist Report</h1>
     <p style="font-size:16px;color:#00875A;font-weight:600;margin:0 0 20px">${title}</p>
@@ -887,8 +904,11 @@ function buildPrintHtml(data: {
     </p>
     <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center">
       <div style="display:flex;align-items:center;gap:8px">
-        <div style="background:#1A2B4A;color:#00875A;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900">S</div>
-        <span style="font-size:12px;font-weight:700;color:#1A2B4A">SheriaBot</span>
+        <img src="${EXPORT_LOGO_URL}" alt="SheriaBot" style="max-height:28px;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';" />
+        <div style="display:none;align-items:center;gap:6px">
+          <div style="background:#1A2B4A;color:#00875A;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900">S</div>
+          <span style="font-size:12px;font-weight:700;color:#1A2B4A">SheriaBot</span>
+        </div>
       </div>
       <p style="font-size:10px;color:#9CA3AF">Generated: ${new Date(createdAt).toISOString()}</p>
     </div>
@@ -1006,6 +1026,7 @@ function buildNormalizedPrintHtml(data: {
       @page { margin: 15mm; size: A4; }
       .no-print { display: none !important; }
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .print-footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 8px 0; font-size: 10px; color: #4A5568; border-top: 1px solid #E2E8F0; background: #fff; }
     }
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; color: #1A2B4A; margin: 0; padding: 20px; font-size: 13px; line-height: 1.5; }
@@ -1013,10 +1034,23 @@ function buildNormalizedPrintHtml(data: {
   </style>
 </head>
 <body>
+  <div class="print-footer">
+    <img src="${EXPORT_LOGO_URL}" alt="SheriaBot" style="max-height:20px;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none';" />
+    <span>Powered by SheriaBot — AI-Powered Regulatory Compliance</span>
+    <span style="margin-left:12px;">Generated on ${dateStr}</span>
+  </div>
   <div style="text-align:center;padding:40px 20px 32px;border-bottom:3px solid #1A2B4A;margin-bottom:32px">
-    <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="background:#1A2B4A;color:#00875A;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">S</div>
-      <span style="font-size:26px;font-weight:800;color:#1A2B4A;letter-spacing:-0.5px">SheriaBot</span>
+    <div style="margin-bottom:16px">
+      <img
+        src="${EXPORT_LOGO_URL}"
+        alt="SheriaBot"
+        style="max-height:60px;max-width:200px;object-fit:contain;"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';"
+      />
+      <div style="display:none;align-items:center;gap:10px;justify-content:center">
+        <div style="background:#1A2B4A;color:#00875A;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">S</div>
+        <span style="font-size:26px;font-weight:800;color:#1A2B4A;letter-spacing:-0.5px">SheriaBot</span>
+      </div>
     </div>
     <h1 style="font-size:22px;font-weight:700;color:#1A2B4A;margin:0 0 6px">Compliance Checklist Report</h1>
     <p style="font-size:16px;color:#00875A;font-weight:600;margin:0 0 20px">${title}</p>
@@ -1069,8 +1103,11 @@ function buildNormalizedPrintHtml(data: {
     </p>
     <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center">
       <div style="display:flex;align-items:center;gap:8px">
-        <div style="background:#1A2B4A;color:#00875A;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900">S</div>
-        <span style="font-size:12px;font-weight:700;color:#1A2B4A">SheriaBot</span>
+        <img src="${EXPORT_LOGO_URL}" alt="SheriaBot" style="max-height:28px;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';" />
+        <div style="display:none;align-items:center;gap:6px">
+          <div style="background:#1A2B4A;color:#00875A;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900">S</div>
+          <span style="font-size:12px;font-weight:700;color:#1A2B4A">SheriaBot</span>
+        </div>
       </div>
       <p style="font-size:10px;color:#9CA3AF">Generated: ${new Date().toISOString()}</p>
     </div>

@@ -29,4 +29,11 @@ export const LOGOS = {
 
   /** Favicon — local path required for Next.js metadata */
   favicon: '/favicon-logo.png',
+
+  /**
+   * Absolute URL used in print/PDF exports — must be a full URL (not a relative
+   * path) so the print window can resolve it without a base origin.
+   * Served from the R2 public bucket.
+   */
+  exportLogo: `${R2}/branding/hero-logo.png`,
 } as const
