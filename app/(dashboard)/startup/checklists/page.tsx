@@ -176,6 +176,13 @@ type ChecklistSummaryMetadata = {
   generatedFor?: { productType?: string; businessStage?: string; services?: string[] }
 }
 
+type ChecklistMetadata = {
+  errorMessage?:   string | null
+  retryCount?:     number
+  generationTier?: string | null
+  note?:           string
+}
+
 type ChecklistDetailLocal = {
   id: string
   title: string
@@ -186,7 +193,7 @@ type ChecklistDetailLocal = {
   totalItems: number
   status: string
   summary: ChecklistSummaryMetadata | null
-  metadata: { errorMessage?: string } | null
+  metadata: ChecklistMetadata | null
   generatedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -204,6 +211,9 @@ type ChecklistStatusLocal = {
   title: string
   createdAt: Date
   isNormalized: boolean
+  productType: string | null
+  businessStage: string | null
+  metadata: ChecklistMetadata | null
 }
 
 type ChecklistSummaryLocal = {
@@ -219,7 +229,7 @@ type ChecklistSummaryLocal = {
   totalItems: number
   criticalItems: number
   status: string
-  metadata: { errorMessage?: string } | null
+  metadata: ChecklistMetadata | null
   generatedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -530,20 +540,34 @@ function GenerateChecklistDialog({
 
 // ─── Checklist Card (Summary) ─────────────────────────────────────────────────
 
+const MAX_CARD_RETRIES = 3
+
 function ChecklistCard({
   checklist,
   onSelect,
   onDelete,
-  onRetry,
 }: {
   checklist: ChecklistSummaryLocal
   onSelect: (id: string) => void
   onDelete: (id: string) => void
-  onRetry: (checklist: ChecklistSummaryLocal) => void
 }) {
+  const utils = trpc.useUtils()
   const isFailed    = checklist.status === "FAILED"
   const isGenerating = checklist.status === "GENERATING"
   const isCompleted  = checklist.status === "COMPLETED"
+  const retryCount  = checklist.metadata?.retryCount ?? 0
+  const maxReached  = retryCount >= MAX_CARD_RETRIES
+
+  const retryMutation = trpc.compliance.retryChecklist.useMutation({
+    onSuccess: () => {
+      utils.compliance.listChecklists.invalidate()
+      utils.compliance.getChecklistStatus.invalidate({ checklistId: checklist.id })
+      onSelect(checklist.id) // navigate to detail to watch GENERATING state
+    },
+    onError: (err: { message?: string }) => {
+      toast.error("Retry failed", { description: err.message ?? "Could not retry generation" })
+    },
+  })
 
   const statusIcon = isCompleted && checklist.progress === 100
     ? <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -557,10 +581,8 @@ function ChecklistCard({
 
   return (
     <Card
-      className={`border-border/50 bg-card transition-shadow hover:shadow-lg ${
-        !isFailed ? "cursor-pointer" : ""
-      }`}
-      onClick={() => !isFailed && onSelect(checklist.id)}
+      className="border-border/50 bg-card transition-shadow hover:shadow-lg cursor-pointer"
+      onClick={() => onSelect(checklist.id)}
     >
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
@@ -583,7 +605,7 @@ function ChecklistCard({
               <AlertCircle className="h-3 w-3 shrink-0" />
               {checklist.metadata?.errorMessage
                 ? checklist.metadata.errorMessage
-                : "Generation failed — retry with the same inputs or adjust and resubmit"}
+                : "Generation failed — click to view details and retry"}
             </p>
           ) : isGenerating ? (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -636,18 +658,30 @@ function ChecklistCard({
               </Button>
             )}
             {isFailed && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 bg-transparent"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onRetry(checklist)
-                }}
-              >
-                <RefreshCw className="mr-1 h-3 w-3" />
-                Retry
-              </Button>
+              maxReached ? (
+                <p className="flex-1 text-xs text-muted-foreground flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3 shrink-0" />
+                  Maximum retries reached
+                </p>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 bg-transparent"
+                  disabled={retryMutation.isPending}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    retryMutation.mutate({ checklistId: checklist.id })
+                  }}
+                >
+                  {retryMutation.isPending ? (
+                    <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                  ) : (
+                    <RefreshCw className="mr-1 h-3 w-3" />
+                  )}
+                  {retryMutation.isPending ? "Retrying..." : "Retry"}
+                </Button>
+              )
             )}
             <Button
               variant="ghost"
@@ -1238,6 +1272,9 @@ function NormalizedChecklistDetailView({
     }
   }
 
+  const generationTier = detailData.metadata?.generationTier
+  const tierNote       = detailData.metadata?.note
+
   return (
     <div className="space-y-6">
       {/* Completion celebration banner */}
@@ -1337,6 +1374,43 @@ function NormalizedChecklistDetailView({
           )}
         </div>
       </div>
+
+      {/* Tier quality banners — shown for non-full generation tiers */}
+      {generationTier === "simplified" && (
+        <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700 p-3 flex items-start gap-3">
+          <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <span className="font-medium text-blue-800 dark:text-blue-300">Simplified generation — </span>
+            <span className="text-blue-700 dark:text-blue-400">
+              This checklist was generated with a reduced regulatory context due to a timeout on the first attempt.
+              All items are validated and complete, but you may re-generate for a more comprehensive result.
+            </span>
+          </div>
+        </div>
+      )}
+      {generationTier === "minimal" && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700 p-3 flex items-start gap-3">
+          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <span className="font-medium text-amber-800 dark:text-amber-300">Minimal generation — </span>
+            <span className="text-amber-700 dark:text-amber-400">
+              This checklist was generated without live regulatory context (no RAG) after two prior timeouts.
+              Items are based on training knowledge only. Re-generate when API response times improve for best results.
+            </span>
+          </div>
+        </div>
+      )}
+      {generationTier === "partial" && (
+        <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700 p-3 flex items-start gap-3">
+          <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <span className="font-medium text-blue-800 dark:text-blue-300">Partial recovery — </span>
+            <span className="text-blue-700 dark:text-blue-400">
+              {tierNote ?? "Some checklist categories were recovered from a partial AI response. Review items carefully and re-generate if any categories appear incomplete."}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Progress Summary Card */}
       <Card className="border-border/50 bg-primary/5">
@@ -2048,6 +2122,8 @@ function LegacyChecklistDetailView({
 // ─── Checklist Detail Router ──────────────────────────────────────────────────
 // Polls status → routes to NormalizedChecklistDetailView or LegacyChecklistDetailView.
 
+const MAX_DETAIL_RETRIES = 3
+
 function ChecklistDetailView({
   checklistId,
   onBack,
@@ -2057,6 +2133,8 @@ function ChecklistDetailView({
 }) {
   const pollStartRef = useRef(Date.now())
   const [timedOut, setTimedOut] = useState(false)
+  const [newChecklistDialogOpen, setNewChecklistDialogOpen] = useState(false)
+  const utils = trpc.useUtils()
 
   // Always poll status — determines isNormalized + GENERATING state.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2078,6 +2156,19 @@ function ChecklistDetailView({
     )
 
   const statusData = rawStatus as ChecklistStatusLocal | undefined
+
+  const retryMutation = trpc.compliance.retryChecklist.useMutation({
+    onSuccess: () => {
+      pollStartRef.current = Date.now() // reset poll timer
+      setTimedOut(false)
+      utils.compliance.getChecklistStatus.invalidate({ checklistId })
+      utils.compliance.listChecklists.invalidate()
+      toast.success("Retry started", { description: "Checklist generation is in progress." })
+    },
+    onError: (err: { message?: string }) => {
+      toast.error("Retry failed", { description: err.message ?? "Could not retry generation" })
+    },
+  })
 
   // Set timeout flag after POLL_TIMEOUT_MS if still GENERATING
   useEffect(() => {
@@ -2183,6 +2274,10 @@ function ChecklistDetailView({
 
   // ── Failed state ──────────────────────────────────────────────────────────
   if (isFailed) {
+    const errorMessage = statusData?.metadata?.errorMessage
+    const retryCount   = statusData?.metadata?.retryCount ?? 0
+    const maxReached   = retryCount >= MAX_DETAIL_RETRIES
+
     return (
       <div className="space-y-4">
         <Button
@@ -2193,19 +2288,93 @@ function ChecklistDetailView({
         >
           ← Back to Checklists
         </Button>
-        <Card className="border-destructive/50 bg-destructive/5">
-          <CardContent className="pt-6 text-center space-y-3">
-            <XCircle className="h-8 w-8 text-destructive mx-auto" />
-            <p className="font-medium text-foreground">Checklist generation failed</p>
-            <p className="text-sm text-muted-foreground">
-              The AI could not complete generation. Please go back, delete this checklist, and
-              try again.
+
+        {/* Error banner */}
+        <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 flex items-start gap-3">
+          <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-destructive">Generation failed</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {errorMessage ?? "The AI could not complete generation. You can retry or generate a new checklist."}
             </p>
-            <Button variant="outline" className="bg-transparent" onClick={onBack}>
-              ← Back to Checklists
+            {retryCount > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Attempt {retryCount + 1} of {MAX_DETAIL_RETRIES + 1}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Inputs summary */}
+        {(statusData?.productType || statusData?.businessStage) && (
+          <Card className="border-border/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">Generation inputs</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 pb-4">
+              <div className="flex flex-wrap gap-2">
+                {statusData.productType && (
+                  <Badge variant="secondary">{statusData.productType}</Badge>
+                )}
+                {statusData.businessStage && (
+                  <Badge variant="outline">{statusData.businessStage}</Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          {maxReached ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              Maximum retry attempts reached. Please generate a new checklist.
+            </div>
+          ) : (
+            <Button
+              variant="default"
+              disabled={retryMutation.isPending}
+              onClick={() => retryMutation.mutate({ checklistId })}
+            >
+              {retryMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              {retryMutation.isPending ? "Retrying..." : "Retry Generation"}
             </Button>
-          </CardContent>
-        </Card>
+          )}
+          <Button
+            variant="outline"
+            className="bg-transparent"
+            onClick={() => setNewChecklistDialogOpen(true)}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Generate New Checklist
+          </Button>
+          <Button variant="ghost" onClick={onBack} className="text-muted-foreground">
+            ← Back
+          </Button>
+        </div>
+
+        {/* New checklist dialog pre-filled with same inputs */}
+        <GenerateChecklistDialog
+          open={newChecklistDialogOpen}
+          onOpenChange={setNewChecklistDialogOpen}
+          defaultValues={statusData?.productType ? {
+            productType:        statusData.productType ?? "",
+            businessStage:      statusData.businessStage ?? "",
+            targetSegments:     [],
+            servicesOffered:    [],
+            additionalConcerns: undefined,
+          } : undefined}
+          onSuccess={(_id) => {
+            setNewChecklistDialogOpen(false)
+            utils.compliance.listChecklists.invalidate()
+            onBack()
+          }}
+        />
       </div>
     )
   }
@@ -2228,8 +2397,6 @@ function ChecklistDetailView({
 
 export default function ChecklistsPage() {
   const [activeChecklistId, setActiveChecklistId] = useState<string | null>(null)
-  const [retryDialogOpen, setRetryDialogOpen] = useState(false)
-  const [retryDefaults, setRetryDefaults] = useState<RetryDefaults | undefined>(undefined)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const utils = trpc.useUtils()
   const { plan } = usePlan()
@@ -2305,17 +2472,6 @@ export default function ChecklistsPage() {
   const handleGenerateSuccess = (checklistId: string) => {
     utils.compliance.listChecklists.invalidate()
     setActiveChecklistId(checklistId)
-  }
-
-  const handleRetry = (checklist: ChecklistSummaryLocal) => {
-    setRetryDefaults({
-      productType: checklist.productType ?? "",
-      businessStage: checklist.businessStage ?? "",
-      targetSegments: Array.isArray(checklist.targetSegments) ? (checklist.targetSegments as string[]) : [],
-      servicesOffered: Array.isArray(checklist.servicesOffered) ? (checklist.servicesOffered as string[]) : [],
-      additionalConcerns: checklist.additionalConcerns ?? undefined,
-    })
-    setRetryDialogOpen(true)
   }
 
   // Precompute summary stats
@@ -2476,7 +2632,6 @@ export default function ChecklistsPage() {
                 checklist={checklist}
                 onSelect={setActiveChecklistId}
                 onDelete={handleDelete}
-                onRetry={handleRetry}
               />
             ))}
           </div>
@@ -2497,20 +2652,6 @@ export default function ChecklistsPage() {
           </Card>
         </>
       )}
-
-      {/* Retry dialog — opened programmatically when user clicks Retry on a FAILED card */}
-      <GenerateChecklistDialog
-        onSuccess={(id) => {
-          setRetryDialogOpen(false)
-          handleGenerateSuccess(id)
-        }}
-        defaultValues={retryDefaults}
-        open={retryDialogOpen}
-        onOpenChange={(v) => {
-          setRetryDialogOpen(v)
-          if (!v) setRetryDefaults(undefined)
-        }}
-      />
 
       {/* Branded delete confirmation dialog */}
       <AlertDialog open={deleteTargetId !== null} onOpenChange={(open) => { if (!open) setDeleteTargetId(null) }}>
