@@ -9,7 +9,6 @@ import {
   Globe,
   TrendingUp,
   Heart,
-  MapPin,
   Briefcase,
   Code2,
   BarChart3,
@@ -53,32 +52,6 @@ const whyJoin = [
   },
 ]
 
-const openRoles = [
-  {
-    title: "Full-Stack Engineer",
-    department: "Engineering",
-    location: "Nairobi / Remote",
-    type: "Full-time",
-    description:
-      "Own end-to-end features across our Next.js frontend and Fastify/TypeScript backend. You'll work with tRPC, Prisma, Supabase, and our AI/RAG pipeline to build compliance tooling used by Kenya's top fintechs.",
-  },
-  {
-    title: "Compliance Analyst",
-    department: "Regulatory Intelligence",
-    location: "Nairobi",
-    type: "Full-time",
-    description:
-      "Translate Kenya's regulatory landscape — CBK circulars, ODPC guidelines, CMA notices — into structured knowledge that powers our AI models and client checklists. Law degree or equivalent regulatory experience required.",
-  },
-  {
-    title: "Growth & Partnerships Lead",
-    department: "Commercial",
-    location: "Nairobi",
-    type: "Full-time",
-    description:
-      "Drive adoption among Kenya's fintech startups, enterprise financial institutions, and regulatory bodies. Build relationships with the Kenya Bankers Association, fintech hubs, and CBK-adjacent bodies.",
-  },
-]
 
 const coreValues = [
   {
@@ -129,7 +102,7 @@ export default function CareersPage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
-              <Button size="lg" variant="outline" asChild className="bg-transparent">
+              <Button size="lg" variant="outline" asChild className="bg-transparent hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all duration-300">
                 <a href="mailto:careers@sheriabot.com">Send a General Application</a>
               </Button>
             </div>
@@ -183,45 +156,28 @@ export default function CareersPage() {
             </p>
           </div>
 
-          <div className="mt-16 space-y-6">
-            {openRoles.map((role) => (
-              <Card
-                key={role.title}
-                className="border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+          <div className="mt-16">
+            <div className="rounded-xl border border-border/50 bg-card/50 p-12 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted/50">
+                <Briefcase className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="mt-6 text-xl font-semibold text-foreground">No Open Positions Right Now</h3>
+              <p className="mt-3 mx-auto max-w-md text-muted-foreground leading-relaxed">
+                We&apos;re not actively hiring at the moment, but we&apos;re always interested in hearing from
+                exceptional people. Send us a general application and we&apos;ll be in touch when the right
+                opportunity opens up.
+              </p>
+              <Button
+                size="lg"
+                asChild
+                className="mt-8 bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                <CardContent className="p-6">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-xl font-semibold text-foreground">{role.title}</h3>
-                        <Badge variant="outline" className="text-xs">
-                          {role.department}
-                        </Badge>
-                      </div>
-                      <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          {role.location}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Briefcase className="h-4 w-4" />
-                          {role.type}
-                        </span>
-                      </div>
-                      <p className="mt-3 text-muted-foreground leading-relaxed">{role.description}</p>
-                    </div>
-                    <div className="shrink-0">
-                      <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-                        <a href="mailto:careers@sheriabot.com">
-                          Apply
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </a>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                <a href="mailto:careers@sheriabot.com">
+                  Send a General Application
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+            </div>
           </div>
 
           <div className="mt-8 rounded-lg border border-dashed border-border bg-muted/20 p-6 text-center">
@@ -335,7 +291,7 @@ export default function CareersPage() {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
-                <Button size="lg" variant="outline" asChild className="bg-transparent">
+                <Button size="lg" variant="outline" asChild className="bg-transparent hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all duration-300">
                   <Link href="/about">Learn About SheriaBot</Link>
                 </Button>
               </div>

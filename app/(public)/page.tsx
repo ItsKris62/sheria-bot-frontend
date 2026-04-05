@@ -168,8 +168,8 @@ export default function LandingPage() {
         {/* Animated background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" data-parallax="0.3" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} data-parallax="0.5" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/8 rounded-full blur-3xl animate-float" data-parallax="0.3" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/6 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }} data-parallax="0.5" />
           {/* Grid pattern */}
           <div 
             className="absolute inset-0 opacity-[0.02]"
@@ -219,11 +219,11 @@ export default function LandingPage() {
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                asChild 
-                className="w-full sm:w-auto rounded-xl bg-transparent border-border/50 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 px-8"
+              <Button
+                size="lg"
+                variant="outline"
+                asChild
+                className="w-full sm:w-auto rounded-xl bg-transparent border-border/50 hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all duration-300 px-8"
               >
                 <Link href="/about">Learn How It Works</Link>
               </Button>
@@ -353,7 +353,7 @@ export default function LandingPage() {
 
       {/* User Types / Solutions Section */}
       <section id="solutions" className="relative border-y border-border/50 bg-muted/20 py-24 sm:py-32 scroll-mt-20">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-3xl" data-parallax="0.2" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/8 rounded-full blur-3xl" data-parallax="0.2" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-6 border-primary/50 text-primary bg-primary/5">
@@ -611,11 +611,11 @@ export default function LandingPage() {
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </Link>
                 </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  asChild 
-                  className="w-full sm:w-auto rounded-xl bg-transparent border-border/50 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 px-8"
+                <Button
+                  size="lg"
+                  variant="outline"
+                  asChild
+                  className="w-full sm:w-auto rounded-xl bg-transparent border-border/50 hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all duration-300 px-8"
                 >
                   <Link href="/contact">Talk to Sales</Link>
                 </Button>
