@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { QueryClient, QueryClientProvider, MutationCache } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, MutationCache, QueryCache } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { trpc, createTRPCClient, setAccessToken, getErrorMessage } from "@/lib/trpc";
+import { SESSION_EXPIRED_FLAG } from "@/lib/session-timeouts";
 import { TRPCClientError } from "@trpc/client";
 import { toast } from "sonner";
 import { useAuthStore } from "@/lib/auth-store";
@@ -11,11 +12,48 @@ import type { AuthUser, UserRole } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase-client";
 import { PlanProvider } from "@/lib/plan-context";
 
+/** Clears local auth state when the backend returns UNAUTHORIZED.
+ *  Called from both QueryCache and MutationCache onError handlers.
+ *  Sets a sessionStorage flag so the login page can show the "session expired" banner.
+ *  AuthGuard picks up the cleared isAuthenticated state and redirects to /login. */
+function handleUnauthorized() {
+  // Guard: don't fire if the user is already logged out
+  if (!useAuthStore.getState().isAuthenticated) return;
+
+  setAccessToken(null);
+  useAuthStore.getState().clearAuth();
+
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem(SESSION_EXPIRED_FLAG, "1");
+  }
+}
+
+function isUnauthorizedError(error: unknown): boolean {
+  return (
+    error instanceof TRPCClientError &&
+    "data" in (error as unknown as Record<string, unknown>) &&
+    ((error as unknown as Record<string, unknown>).data as Record<string, unknown> | undefined)?.code === "UNAUTHORIZED"
+  );
+}
+
 function makeQueryClient() {
   return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error) => {
+        if (isUnauthorizedError(error)) {
+          handleUnauthorized();
+          // AuthGuard handles redirect; toast shown on login page via sessionStorage flag
+          return;
+        }
+      },
+    }),
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) => {
-        // Only fire for mutations that have no onError handler of their own,
+        if (isUnauthorizedError(error)) {
+          handleUnauthorized();
+          return;
+        }
+        // Only fire generic toast for mutations that have no onError handler of their own,
         // preventing duplicate toasts when a mutation already handles its errors.
         if (mutation.options.onError) return;
         const message = error instanceof TRPCClientError
