@@ -14,7 +14,6 @@ import {
   LayoutDashboard,
   Users,
   MessageSquare,
-  FileText,
   Bot,
   CreditCard,
   Activity,
@@ -25,6 +24,8 @@ import {
   BookOpen,
   Newspaper,
   Shield,
+  BarChart2,
+  Lock,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -48,13 +49,14 @@ const adminNav: NavGroup[] = [
     title: "Overview",
     items: [
       { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
+      { title: "Analytics", href: "/admin/analytics", icon: BarChart2 },
     ],
   },
   {
     title: "Users",
     items: [
       { title: "User Management", href: "/admin/users", icon: Users },
-      { title: "Organizations", href: "/admin/users", icon: Building2 },
+      { title: "Organizations", href: "/admin/organizations", icon: Building2 },
     ],
   },
   {
@@ -76,6 +78,7 @@ const adminNav: NavGroup[] = [
       { title: "AI Configuration", href: "/admin/ai-config", icon: Bot },
       { title: "Billing & Plans", href: "/admin/billing", icon: CreditCard },
       { title: "Audit Logs", href: "/admin/audit-logs", icon: Activity },
+      { title: "Security", href: "/admin/security", icon: Lock },
       { title: "System Settings", href: "/admin/system", icon: Settings },
     ],
   },

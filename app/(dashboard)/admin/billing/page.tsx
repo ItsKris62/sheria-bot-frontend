@@ -1,131 +1,235 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { CreditCard, TrendingUp, Users, DollarSign, Download, ArrowUpRight } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts"
+import { DollarSign, TrendingUp, CreditCard, CheckCircle2, AlertCircle, XCircle } from "lucide-react"
+import { trpc } from "@/lib/trpc"
 
-const subscriptions = [
-  { plan: "Starter", users: 45, revenue: "KES 225,000", growth: "+12%" },
-  { plan: "Professional", users: 32, revenue: "KES 640,000", growth: "+8%" },
-  { plan: "Enterprise", users: 12, revenue: "KES 600,000", growth: "+15%" },
-]
+function formatKES(amount: number) {
+  if (amount >= 1_000_000) return `KES ${(amount / 1_000_000).toFixed(1)}M`
+  if (amount >= 1_000) return `KES ${(amount / 1_000).toFixed(0)}K`
+  return `KES ${amount.toLocaleString()}`
+}
 
-const recentTransactions = [
-  { user: "Safaricom PLC", amount: "KES 50,000", plan: "Enterprise", date: "2024-01-28", status: "completed" },
-  { user: "M-Pesa Foundation", amount: "KES 20,000", plan: "Professional", date: "2024-01-27", status: "completed" },
-  { user: "KCB Group", amount: "KES 5,000", plan: "Starter", date: "2024-01-26", status: "completed" },
-  { user: "Equity Bank", amount: "KES 50,000", plan: "Enterprise", date: "2024-01-25", status: "pending" },
-]
+const STATUS_STYLES: Record<string, { label: string; className: string; icon: React.ElementType }> = {
+  COMPLETED: { label: "Completed", className: "bg-green-100 text-green-700", icon: CheckCircle2 },
+  PENDING:   { label: "Pending",   className: "bg-yellow-100 text-yellow-700", icon: AlertCircle },
+  FAILED:    { label: "Failed",    className: "bg-red-100 text-red-700", icon: XCircle },
+  REFUNDED:  { label: "Refunded",  className: "bg-gray-100 text-gray-600", icon: CreditCard },
+}
 
-export default function BillingAdminPage() {
+export default function AdminBillingPage() {
+  const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
+
+  const { data: revenue, isLoading: revLoading } = trpc.admin.getRevenueMetrics.useQuery({ dateFrom: sixMonthsAgo })
+  const { data: subOverview, isLoading: subLoading } = trpc.admin.getSubscriptionOverview.useQuery()
+  const { data: subBreakdown, isLoading: breakLoading } = trpc.admin.getSubscriptionBreakdown.useQuery()
+  const { data: recentPayments, isLoading: paymentsLoading } = trpc.admin.getRecentPayments.useQuery({ limit: 15 })
+
+  const kpiLoading = revLoading || subLoading
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Billing & Revenue</h1>
-          <p className="text-muted-foreground mt-1">Manage subscriptions and payments</p>
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-[#1A2B4A]">Billing Management</h1>
+        <p className="text-sm text-gray-500 mt-1">Revenue, subscriptions, and payment history</p>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {kpiLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
+        ) : (
+          <>
+            <Card>
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide">Total Revenue</p>
+                    <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{revenue ? formatKES(revenue.totalRevenue) : "—"}</p>
+                    <p className="text-xs text-gray-400">All time</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-[#00875A]"><DollarSign className="w-5 h-5 text-white" /></div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide">This Month</p>
+                    <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{revenue ? formatKES(revenue.currentMonthRevenue) : "—"}</p>
+                    <p className="text-xs text-gray-400">Last: {revenue ? formatKES(revenue.lastMonthRevenue) : "—"}</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-[#1A2B4A]"><TrendingUp className="w-5 h-5 text-white" /></div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide">Active Orgs</p>
+                    <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{subOverview?.totalActive ?? "—"}</p>
+                    <p className="text-xs text-gray-400">Churn: {subOverview?.churnRate ?? 0}%</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-purple-600"><CreditCard className="w-5 h-5 text-white" /></div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide">Payment Success</p>
+                    <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{revenue ? `${revenue.successRate}%` : "—"}</p>
+                    <p className="text-xs text-gray-400">Last 6 months</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-[#D4A843]"><CheckCircle2 className="w-5 h-5 text-white" /></div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Revenue Chart */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Monthly Revenue (KES)</CardTitle>
+              <CardDescription>Last 6 months</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {revLoading ? (
+                <Skeleton className="h-52 w-full rounded-lg" />
+              ) : !revenue?.series.length ? (
+                <div className="h-52 flex items-center justify-center text-gray-400">
+                  <div className="text-center">
+                    <DollarSign className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                    <p>No payment data yet</p>
+                  </div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={210}>
+                  <BarChart data={revenue.series} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={(v: string) => new Date(v + "-01").toLocaleDateString("en-KE", { month: "short" })} />
+                    <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`} />
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(value: number) => [formatKES(value), "Revenue"]} />
+                    <Bar dataKey="amount" fill="#00875A" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
         </div>
-        <Button variant="outline"><Download className="h-4 w-4 mr-2" />Export Report</Button>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-primary/10"><DollarSign className="h-5 w-5 text-primary" /></div>
-              <div>
-                <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                <p className="text-2xl font-bold text-foreground">KES 2.4M</p>
-              </div>
-            </div>
-            <Badge className="mt-2 bg-primary/10 text-primary"><TrendingUp className="h-3 w-3 mr-1" />+15% vs last month</Badge>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-primary/10"><Users className="h-5 w-5 text-primary" /></div>
-              <div>
-                <p className="text-sm text-muted-foreground">Paid Subscribers</p>
-                <p className="text-2xl font-bold text-foreground">89</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-primary/10"><CreditCard className="h-5 w-5 text-primary" /></div>
-              <div>
-                <p className="text-sm text-muted-foreground">Avg Revenue/User</p>
-                <p className="text-2xl font-bold text-foreground">KES 27K</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-warning/10"><ArrowUpRight className="h-5 w-5 text-warning" /></div>
-              <div>
-                <p className="text-sm text-muted-foreground">Churn Rate</p>
-                <p className="text-2xl font-bold text-foreground">2.1%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardHeader>
-            <CardTitle>Subscription Breakdown</CardTitle>
-            <CardDescription>Revenue by plan type</CardDescription>
+        {/* Plan distribution */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Plan Distribution</CardTitle>
+            <CardDescription>Organizations by tier</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {subscriptions.map((sub) => (
-                <div key={sub.plan} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                  <div>
-                    <p className="font-medium text-foreground">{sub.plan}</p>
-                    <p className="text-sm text-muted-foreground">{sub.users} subscribers</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-foreground">{sub.revenue}</p>
-                    <Badge className="bg-primary/10 text-primary text-xs">{sub.growth}</Badge>
-                  </div>
+            {breakLoading ? (
+              <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-7 w-full rounded" />)}</div>
+            ) : !subBreakdown ? (
+              <p className="text-sm text-gray-400 text-center py-8">No data</p>
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(subBreakdown.byPlan).map(([plan, count]) => {
+                  const pct = subBreakdown.total > 0 ? Math.round((count / subBreakdown.total) * 100) : 0
+                  const colors: Record<string, string> = { REGULATOR: "bg-slate-400", STARTUP: "bg-blue-500", BUSINESS: "bg-purple-500", ENTERPRISE: "bg-emerald-500" }
+                  return (
+                    <div key={plan}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-600">{plan}</span>
+                        <span className="font-medium">{count} ({pct}%)</span>
+                      </div>
+                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full ${colors[plan] ?? "bg-gray-400"}`} style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  )
+                })}
+                <div className="pt-2 border-t mt-3 flex gap-4 text-xs text-gray-500">
+                  <span>Stripe: {revenue ? formatKES(revenue.byProvider.STRIPE) : "—"}</span>
+                  <span>M-Pesa: {revenue ? formatKES(revenue.byProvider.MPESA) : "—"}</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Latest payment activity</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentTransactions.map((tx, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                  <div>
-                    <p className="font-medium text-sm text-foreground">{tx.user}</p>
-                    <p className="text-xs text-muted-foreground">{tx.plan} - {new Date(tx.date).toLocaleDateString("en-KE")}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-sm text-foreground">{tx.amount}</p>
-                    <Badge className={tx.status === "completed" ? "bg-primary/10 text-primary text-xs" : "bg-warning/10 text-warning text-xs"}>
-                      {tx.status}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Recent Payments */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Recent Payments</CardTitle>
+          <CardDescription>Latest transactions across all organizations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {paymentsLoading ? (
+            <div className="space-y-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}</div>
+          ) : !recentPayments?.length ? (
+            <div className="text-center py-10 text-gray-400">
+              <CreditCard className="w-10 h-10 mx-auto mb-2 opacity-30" />
+              <p>No payment records found</p>
+            </div>
+          ) : (
+            <div className="rounded-md border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Invoice</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Organization</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">Plan</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Provider</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Amount</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {recentPayments.map((p) => {
+                    const style = STATUS_STYLES[p.status] ?? STATUS_STYLES.PENDING
+                    const Icon = style.icon
+                    return (
+                      <tr key={p.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-mono text-xs text-gray-600">{p.invoiceNumber ?? p.id.slice(0, 8)}</td>
+                        <td className="px-4 py-3 hidden md:table-cell text-gray-700 max-w-[160px] truncate">{p.orgName}</td>
+                        <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs">{p.subscriptionPlan ?? "—"}</td>
+                        <td className="px-4 py-3 hidden md:table-cell text-gray-500">{p.provider}</td>
+                        <td className="px-4 py-3 font-medium">{formatKES(p.amount)}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${style.className}`}>
+                            <Icon className="w-3 h-3" />
+                            {style.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs">
+                          {p.paidAt ? new Date(p.paidAt).toLocaleDateString("en-KE") : "—"}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

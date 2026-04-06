@@ -5,66 +5,88 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  Users,
-  FileText,
-  Bot,
-  CreditCard,
-  Activity,
-  Settings,
-  AlertTriangle,
-  ArrowRight,
-  Building2,
-  Shield,
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from "recharts"
+import {
+  Users, FileText, Bot, CreditCard, Activity, Settings,
+  AlertTriangle, ArrowRight, Building2, Shield, TrendingUp,
+  CheckCircle2, XCircle, Zap,
 } from "lucide-react"
 import { useAdminStats } from "@/hooks/use-admin"
 import { trpc } from "@/lib/trpc"
 
-// static – no backend needed
 const quickActions = [
-  { label: "User Management", href: "/admin/users", icon: Users, description: "Manage users and permissions" },
-  { label: "Knowledge Base", href: "/admin/content/knowledge-base", icon: FileText, description: "Edit regulatory content" },
-  { label: "AI Configuration", href: "/admin/ai-config", icon: Bot, description: "Configure AI models and responses" },
-  { label: "Billing & Plans", href: "/admin/billing", icon: CreditCard, description: "Manage subscriptions and payments" },
-  { label: "Audit Logs", href: "/admin/audit-logs", icon: Activity, description: "View system activity logs" },
-  { label: "System Settings", href: "/admin/system", icon: Settings, description: "Platform configuration" },
+  { label: "User Management",   href: "/admin/users",                    icon: Users,    description: "Manage users and permissions" },
+  { label: "Organizations",     href: "/admin/organizations",            icon: Building2, description: "View and manage all organizations" },
+  { label: "Analytics",         href: "/admin/analytics",               icon: TrendingUp, description: "Platform metrics and revenue" },
+  { label: "AI Configuration",  href: "/admin/ai-config",               icon: Bot,      description: "Configure AI models and responses" },
+  { label: "Billing & Plans",   href: "/admin/billing",                 icon: CreditCard, description: "Manage subscriptions and payments" },
+  { label: "System Settings",   href: "/admin/system",                  icon: Settings, description: "Platform configuration" },
 ]
+
+function ServiceBadge({ status }: { status: string | undefined }) {
+  if (!status) return <Badge variant="outline" className="text-gray-400">Checking...</Badge>
+  if (status === "healthy") return <Badge className="bg-green-100 text-green-700 border-0">Healthy</Badge>
+  if (status === "degraded") return <Badge className="bg-yellow-100 text-yellow-700 border-0">Degraded</Badge>
+  return <Badge className="bg-red-100 text-red-700 border-0">Down</Badge>
+}
 
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useAdminStats()
-  const { data: health } = trpc.admin.getDetailedHealth.useQuery()
+  const { data: health } = trpc.admin.getDetailedHealth.useQuery({ refetchInterval: 30000 } as never)
   const { data: logsData } = trpc.admin.getLogs.useQuery({ page: 1, limit: 5 })
-  const recentLogs = (logsData as any)?.logs ?? []
+  const { data: growth } = trpc.admin.getUserGrowth.useQuery({
+    period: "daily",
+    dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+  })
+  const { data: aiUsage } = trpc.admin.getAIUsageMetrics.useQuery({
+    dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+  })
+
+  const recentLogs = (logsData as { items?: Array<{ id: string; action: string; userId: string | null; entityType: string | null; createdAt: Date }> })?.items ?? []
 
   const statCards = [
-    { label: "Total Users", value: (stats as any)?.totalUsers?.toLocaleString(), icon: Users },
-    { label: "Active Organizations", value: (stats as any)?.totalOrganizations?.toLocaleString(), icon: Building2 },
-    { label: "AI Queries", value: (stats as any)?.totalQueries?.toLocaleString(), icon: Bot },
-    { label: "Total Policies", value: (stats as any)?.totalPolicies?.toLocaleString(), icon: FileText },
+    { label: "Total Users",          value: (stats as { totalUsers?: number })?.totalUsers?.toLocaleString(),         icon: Users,     color: "bg-[#1A2B4A]" },
+    { label: "Active Organizations",  value: (stats as { totalOrganizations?: number })?.totalOrganizations?.toLocaleString(), icon: Building2, color: "bg-[#00875A]" },
+    { label: "AI Queries",           value: (stats as { totalQueries?: number })?.totalQueries?.toLocaleString(),      icon: Bot,       color: "bg-[#D4A843]" },
+    { label: "Total Policies",       value: (stats as { totalPolicies?: number })?.totalPolicies?.toLocaleString(),    icon: FileText,  color: "bg-purple-600" },
   ]
 
+  const typedHealth = health as {
+    uptime?: number
+    status?: string
+    services?: {
+      database?: { status: string; latencyMs?: number }
+      redis?: { status: string; latencyMs?: number }
+      storage?: { status: string }
+      pinecone?: { status: string }
+    }
+  } | undefined
+
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Platform overview and system management</p>
+        <h1 className="text-2xl font-bold text-[#1A2B4A]">Admin Dashboard</h1>
+        <p className="text-gray-500 mt-1">Platform overview and system management</p>
       </div>
 
+      {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.label} className="border-border/50 bg-card/50 backdrop-blur">
-              <CardContent className="pt-6">
+            <Card key={stat.label}>
+              <CardContent className="pt-5 pb-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    <p className="text-sm text-gray-500">{stat.label}</p>
                     {statsLoading
                       ? <Skeleton className="h-8 w-20 mt-1" />
-                      : <p className="text-2xl font-bold text-foreground">{stat.value ?? "—"}</p>
+                      : <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{stat.value ?? "—"}</p>
                     }
                   </div>
-                  <div className="p-3 rounded-lg bg-primary/10">
-                    <Icon className="h-5 w-5 text-primary" />
+                  <div className={`p-2.5 rounded-lg ${stat.color}`}>
+                    <Icon className="h-5 w-5 text-white" />
                   </div>
                 </div>
               </CardContent>
@@ -73,9 +95,59 @@ export default function AdminDashboard() {
         })}
       </div>
 
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">User Signups (last 30 days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!growth?.series.length ? (
+              <div className="h-36 flex items-center justify-center text-gray-300">
+                <Users className="w-8 h-8" />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={144}>
+                <LineChart data={growth.series} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} tickFormatter={(v: string) => new Date(v).toLocaleDateString("en-KE", { month: "short", day: "numeric" })} />
+                  <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} formatter={(v: number) => [v, "Users"]} />
+                  <Line type="monotone" dataKey="count" stroke="#1A2B4A" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">AI Queries (last 30 days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!aiUsage?.series.length ? (
+              <div className="h-36 flex items-center justify-center text-gray-300">
+                <Zap className="w-8 h-8" />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={144}>
+                <BarChart data={aiUsage.series} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} tickFormatter={(v: string) => new Date(v).toLocaleDateString("en-KE", { month: "short", day: "numeric" })} />
+                  <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} formatter={(v: number) => [v, "Queries"]} />
+                  <Bar dataKey="count" fill="#D4A843" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-3">
+        {/* Quick Actions + Recent Activity */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
               <CardDescription>Common administrative tasks</CardDescription>
@@ -86,15 +158,15 @@ export default function AdminDashboard() {
                   const Icon = action.icon
                   return (
                     <Link key={action.label} href={action.href}>
-                      <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <Icon className="h-5 w-5 text-primary" />
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
+                        <div className="p-2 rounded-lg bg-[#1A2B4A]/10">
+                          <Icon className="h-4 w-4 text-[#1A2B4A]" />
                         </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-foreground">{action.label}</p>
-                          <p className="text-xs text-muted-foreground">{action.description}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-[#1A2B4A] text-sm">{action.label}</p>
+                          <p className="text-xs text-gray-400 truncate">{action.description}</p>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        <ArrowRight className="h-4 w-4 text-gray-300 flex-shrink-0" />
                       </div>
                     </Link>
                   )
@@ -103,92 +175,103 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest platform audit events</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Activity className="w-4 h-4" /> Recent Activity</CardTitle>
+              <CardDescription>Latest audit log entries</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentLogs.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 text-center">No recent activity</p>
-                ) : (
-                  recentLogs.map((log: any) => (
-                    <div key={log.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+              {recentLogs.length === 0 ? (
+                <p className="text-sm text-gray-400 py-4 text-center">No recent activity</p>
+              ) : (
+                <div className="space-y-3">
+                  {recentLogs.map((log) => (
+                    <div key={log.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                       <div>
-                        <p className="text-sm font-medium text-foreground">{log.action}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {log.user?.email ?? log.userId ?? "System"}
-                          {log.entityType ? ` · ${log.entityType}` : ""}
+                        <p className="text-sm font-medium text-[#1A2B4A]">{log.action}</p>
+                        <p className="text-xs text-gray-400">
+                          {log.userId ?? "System"}{log.entityType ? ` · ${log.entityType}` : ""}
                         </p>
                       </div>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-gray-400 flex-shrink-0 ml-4">
                         {new Date(log.createdAt).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" })}
                       </span>
                     </div>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
+              <Link href="/admin/audit-logs" className="block mt-3 text-xs text-[#00875A] hover:underline text-center">
+                View all audit logs →
+              </Link>
             </CardContent>
           </Card>
         </div>
 
+        {/* System Health */}
         <div className="space-y-6">
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-warning" />
-                System Alerts
+                <Shield className="h-4 w-4 text-[#1A2B4A]" /> System Health
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {!(stats as any)?.recentActivity?.length ? (
-                <p className="text-sm text-muted-foreground">No active alerts</p>
-              ) : (
-                (stats as any).recentActivity.slice(0, 3).map((item: any, i: number) => (
-                  <div key={i} className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-sm text-foreground">{item.description ?? item.action}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(item.createdAt ?? Date.now()).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" })}
-                    </p>
-                  </div>
-                ))
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Overall</span>
+                <ServiceBadge status={typedHealth?.status} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Database</span>
+                <ServiceBadge status={typedHealth?.services?.database?.status} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Redis Cache</span>
+                <ServiceBadge status={typedHealth?.services?.redis?.status} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Storage (R2)</span>
+                <ServiceBadge status={typedHealth?.services?.storage?.status} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Pinecone</span>
+                <ServiceBadge status={typedHealth?.services?.pinecone?.status} />
+              </div>
+              {typedHealth?.uptime && (
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <span className="text-sm text-gray-500">Uptime</span>
+                  <span className="text-sm font-medium text-[#1A2B4A]">
+                    {Math.floor(typedHealth.uptime / 3600)}h {Math.floor((typedHealth.uptime % 3600) / 60)}m
+                  </span>
+                </div>
               )}
+              <Link href="/admin/system" className="block mt-2 text-xs text-[#00875A] hover:underline text-center">
+                Full system status →
+              </Link>
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-primary" />
-                System Health
+                <AlertTriangle className="h-4 w-4 text-yellow-500" /> Pending Actions
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Uptime</span>
-                <Badge className="bg-primary/10 text-primary">
-                  {(health as any)?.uptime ? `${Math.floor((health as any).uptime / 3600)}h` : "—"}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Database</span>
-                <Badge className={(health as any)?.database ? "bg-primary/10 text-primary" : "bg-warning/10 text-warning"}>
-                  {(health as any)?.database ? "Healthy" : "Checking…"}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">AI Service</span>
-                <Badge className={(health as any)?.ai ? "bg-primary/10 text-primary" : "bg-warning/10 text-warning"}>
-                  {(health as any)?.ai ? "Operational" : "Checking…"}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Cache</span>
-                <Badge className={(health as any)?.cache ? "bg-primary/10 text-primary" : "bg-warning/10 text-warning"}>
-                  {(health as any)?.cache ? "Connected" : "Checking…"}
-                </Badge>
-              </div>
+            <CardContent className="space-y-2 text-sm">
+              <Link href="/admin/users?status=pending" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
+                <Users className="w-4 h-4 text-gray-400" />
+                <span className="text-gray-600">Pending user approvals</span>
+                <ArrowRight className="w-3 h-3 text-gray-300 ml-auto" />
+              </Link>
+              <Link href="/admin/support" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
+                <CheckCircle2 className="w-4 h-4 text-gray-400" />
+                <span className="text-gray-600">Open support tickets</span>
+                <ArrowRight className="w-3 h-3 text-gray-300 ml-auto" />
+              </Link>
+              <Link href="/admin/security" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
+                <XCircle className="w-4 h-4 text-gray-400" />
+                <span className="text-gray-600">Failed login attempts</span>
+                <ArrowRight className="w-3 h-3 text-gray-300 ml-auto" />
+              </Link>
             </CardContent>
           </Card>
         </div>

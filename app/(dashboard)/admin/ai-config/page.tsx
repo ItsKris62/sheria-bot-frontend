@@ -1,145 +1,202 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
-import { Bot, Settings, RefreshCw, Save, Zap, Shield, Database } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Bot, Zap, Save, RefreshCw, CheckCircle2 } from "lucide-react"
+import { trpc } from "@/lib/trpc"
+import { toast } from "sonner"
+
+// AI-related SystemConfig keys we expose for editing
+const AI_CONFIG_KEYS = [
+  { key: "ai_daily_cost_limit",   label: "Daily Cost Limit (USD)",          type: "number", description: "Maximum estimated spend per day across all AI calls" },
+  { key: "max_queries_per_hour",  label: "Max Queries / Hour (per user)",   type: "number", description: "Rate limit: how many compliance queries one user can run per hour" },
+  { key: "max_policies_per_hour", label: "Max Policies / Hour (per user)",  type: "number", description: "Rate limit: how many policy documents one user can generate per hour" },
+  { key: "session_timeout_hours", label: "Session Timeout (hours)",         type: "number", description: "How long a user session remains valid before re-authentication" },
+]
 
 export default function AIConfigPage() {
+  const { data: sysConfig, isLoading } = trpc.admin.getSystemConfig.useQuery()
+  const { data: aiUsage, isLoading: usageLoading } = trpc.admin.getAIUsageMetrics.useQuery({
+    dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+  })
+  const { data: checklistMetrics } = trpc.admin.getChecklistMetrics.useQuery()
+
+  const updateMutation = trpc.admin.updateSystemConfig.useMutation({
+    onSuccess: () => toast.success("AI configuration saved"),
+    onError: (err) => toast.error(err.message),
+  })
+
+  // Local editable state — keyed by config key
+  const [edits, setEdits] = useState<Record<string, string>>({})
+  const [dirty, setDirty] = useState(false)
+
+  // Populate edits from loaded config
+  useEffect(() => {
+    if (!sysConfig) return
+    const initial: Record<string, string> = {}
+    for (const { key } of AI_CONFIG_KEYS) {
+      const v = (sysConfig as Record<string, unknown>)[key]
+      if (v !== undefined) initial[key] = String(v)
+    }
+    setEdits(initial)
+    setDirty(false)
+  }, [sysConfig])
+
+  const handleChange = (key: string, value: string) => {
+    setEdits((prev) => ({ ...prev, [key]: value }))
+    setDirty(true)
+  }
+
+  const handleSave = () => {
+    const payload: Record<string, unknown> = {}
+    for (const { key, type } of AI_CONFIG_KEYS) {
+      if (edits[key] !== undefined) {
+        payload[key] = type === "number" ? Number(edits[key]) : edits[key]
+      }
+    }
+    updateMutation.mutate({ config: payload })
+    setDirty(false)
+  }
+
+  const handleReset = () => {
+    if (!sysConfig) return
+    const initial: Record<string, string> = {}
+    for (const { key } of AI_CONFIG_KEYS) {
+      const v = (sysConfig as Record<string, unknown>)[key]
+      if (v !== undefined) initial[key] = String(v)
+    }
+    setEdits(initial)
+    setDirty(false)
+    toast.info("Reset to saved values")
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">AI Configuration</h1>
-          <p className="text-muted-foreground mt-1">Configure AI models and response behavior</p>
+          <h1 className="text-2xl font-bold text-[#1A2B4A]">AI Configuration</h1>
+          <p className="text-sm text-gray-500 mt-1">Rate limits, cost controls, and usage metrics</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline"><RefreshCw className="h-4 w-4 mr-2" />Reset to Default</Button>
-          <Button className="bg-primary text-primary-foreground"><Save className="h-4 w-4 mr-2" />Save Changes</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleReset} disabled={!dirty}>
+            <RefreshCw className="h-4 w-4 mr-2" /> Reset
+          </Button>
+          <Button
+            className="bg-[#00875A] hover:bg-[#007a50]"
+            onClick={handleSave}
+            disabled={!dirty || updateMutation.isPending}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {updateMutation.isPending ? "Saving..." : "Save Changes"}
+          </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Bot className="h-5 w-5 text-primary" />Model Settings</CardTitle>
-            <CardDescription>Configure the AI model parameters</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label>Temperature</Label>
-              <div className="flex items-center gap-4">
-                <Slider defaultValue={[0.7]} max={1} step={0.1} className="flex-1" />
-                <span className="text-sm text-muted-foreground w-12">0.7</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Controls randomness in responses. Lower = more focused.</p>
-            </div>
-            <div className="space-y-2">
-              <Label>Max Tokens</Label>
-              <Input type="number" defaultValue={2048} className="bg-muted/50" />
-              <p className="text-xs text-muted-foreground">Maximum length of AI responses.</p>
-            </div>
-            <div className="space-y-2">
-              <Label>Response Timeout (seconds)</Label>
-              <Input type="number" defaultValue={30} className="bg-muted/50" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Safety Settings</CardTitle>
-            <CardDescription>Content filtering and safety options</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">Content Filtering</p>
-                <p className="text-xs text-muted-foreground">Filter potentially harmful content</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">Source Citations</p>
-                <p className="text-xs text-muted-foreground">Always include regulatory sources</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">Legal Disclaimer</p>
-                <p className="text-xs text-muted-foreground">Add disclaimer to all responses</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">Confidence Threshold</p>
-                <p className="text-xs text-muted-foreground">Minimum confidence for responses</p>
-              </div>
-              <Badge className="bg-primary/10 text-primary">70%</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50 bg-card/50 backdrop-blur lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5 text-primary" />System Prompt</CardTitle>
-            <CardDescription>Define the AI assistant behavior and context</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              className="min-h-[200px] bg-muted/50 font-mono text-sm"
-              defaultValue={`You are SheriaBot, an AI assistant specialized in Kenya's fintech regulatory landscape. Your role is to:
-
-1. Provide accurate information about CBK regulations, Data Protection Act 2019, POCAMLA, and other relevant laws
-2. Help users understand compliance requirements for mobile money, PSP licenses, and other fintech services
-3. Generate compliance checklists and gap analysis reports
-4. Always cite specific regulations and sections when providing guidance
-5. Include appropriate disclaimers about seeking professional legal advice
-
-Key regulations you are trained on:
-- Central Bank of Kenya Act
-- National Payment System Act
-- Data Protection Act 2019
-- POCAMLA and AML/CFT regulations
-- CBK Prudential Guidelines`}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50 bg-card/50 backdrop-blur lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Zap className="h-5 w-5 text-primary" />Performance Metrics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="p-4 rounded-lg bg-muted/50 text-center">
-                <p className="text-2xl font-bold text-foreground">98.5%</p>
-                <p className="text-sm text-muted-foreground">Accuracy Rate</p>
-              </div>
-              <div className="p-4 rounded-lg bg-muted/50 text-center">
-                <p className="text-2xl font-bold text-foreground">1.2s</p>
-                <p className="text-sm text-muted-foreground">Avg Response Time</p>
-              </div>
-              <div className="p-4 rounded-lg bg-muted/50 text-center">
-                <p className="text-2xl font-bold text-foreground">94%</p>
-                <p className="text-sm text-muted-foreground">User Satisfaction</p>
-              </div>
-              <div className="p-4 rounded-lg bg-muted/50 text-center">
-                <p className="text-2xl font-bold text-foreground">12,456</p>
-                <p className="text-sm text-muted-foreground">Queries This Month</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* AI Usage Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {usageLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)
+        ) : (
+          [
+            { label: "Queries (30d)",    value: aiUsage?.totalQueries ?? 0 },
+            { label: "Policies (30d)",   value: aiUsage?.totalPolicies ?? 0 },
+            { label: "Checklists (30d)", value: aiUsage?.totalChecklists ?? 0 },
+            { label: "Gap Analyses (30d)", value: aiUsage?.totalGapAnalyses ?? 0 },
+          ].map((s) => (
+            <Card key={s.label}>
+              <CardContent className="pt-4 pb-3 text-center">
+                <Zap className="w-5 h-5 mx-auto text-[#D4A843] mb-1" />
+                <p className="text-2xl font-bold text-[#1A2B4A]">{s.value.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">{s.label}</p>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
+
+      {/* Checklist Generation Metrics */}
+      {checklistMetrics && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#00875A]" /> Checklist Generation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            {[
+              { label: "All-time attempted", value: checklistMetrics.alltime?.attempted ?? 0 },
+              { label: "All-time succeeded", value: checklistMetrics.alltime?.succeeded ?? 0 },
+              { label: "Today attempted",   value: checklistMetrics.today?.attempted ?? 0 },
+              { label: "Today succeeded",   value: checklistMetrics.today?.succeeded ?? 0 },
+            ].map((s) => (
+              <div key={s.label} className="text-center p-3 rounded-lg bg-gray-50">
+                <p className="text-xl font-bold text-[#1A2B4A]">{s.value}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Rate Limit & Cost Configuration */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Bot className="w-4 h-4" /> Rate Limits & Cost Controls
+          </CardTitle>
+          <CardDescription>
+            These values are persisted in SystemConfig and take effect immediately.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {AI_CONFIG_KEYS.map(({ key, label, description }) => (
+                <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-[#1A2B4A]">{label}</p>
+                    <p className="text-xs text-gray-400">{description}</p>
+                  </div>
+                  <input
+                    type="number"
+                    className="w-32 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00875A] focus:border-transparent"
+                    value={edits[key] ?? ""}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Model Info (read-only) */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Active AI Models</CardTitle>
+          <CardDescription>Read-only — change model IDs in src/config/ai.config.ts</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+            {[
+              { label: "Policy / Checklist", model: "claude-sonnet-4-6" },
+              { label: "Compliance Queries", model: "claude-haiku-4-5-20251001" },
+              { label: "Complex Analysis",   model: "claude-opus-4-6" },
+            ].map((m) => (
+              <div key={m.label} className="p-3 rounded-lg bg-gray-50 border border-gray-100">
+                <p className="text-xs text-gray-500 mb-1">{m.label}</p>
+                <p className="font-mono text-xs font-medium text-[#1A2B4A]">{m.model}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

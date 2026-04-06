@@ -40,6 +40,16 @@ import {
 import { useAdminUsers, useAdminActions, useAdminStats } from "@/hooks/use-admin"
 import { trpc } from "@/lib/trpc"
 import { toast } from "@/hooks/use-toast"
+import { toast as sonnerToast } from "sonner"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 
 const roleColorMap: Record<string, string> = {
   STARTUP: "bg-primary/10 text-primary",
@@ -80,6 +90,8 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState("all")
   const [page, setPage] = useState(1)
   const [pendingUserId, setPendingUserId] = useState<string | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createForm, setCreateForm] = useState({ email: "", fullName: "", password: "", role: "STARTUP" })
   const limit = 20
 
   const { data, isLoading } = useAdminUsers({
@@ -92,6 +104,17 @@ export default function UsersPage() {
   const { disableUser, enableUser, isDisabling, isEnabling } = useAdminActions()
 
   const utils = trpc.useUtils()
+
+  const createUserMutation = trpc.admin.createUser.useMutation({
+    onSuccess: () => {
+      sonnerToast.success("User created successfully")
+      setCreateOpen(false)
+      setCreateForm({ email: "", fullName: "", password: "", role: "STARTUP" })
+      void utils.admin.listUsers.invalidate()
+    },
+    onError: (err) => sonnerToast.error(err.message),
+  })
+
   const deleteUserMutation = trpc.admin.deleteUser.useMutation({
     onSuccess: () => {
       utils.admin.listUsers.invalidate()
@@ -136,7 +159,7 @@ export default function UsersPage() {
           <h1 className="text-2xl font-bold text-foreground">User Management</h1>
           <p className="text-muted-foreground mt-1">Manage platform users and their permissions</p>
         </div>
-        <Button className="bg-primary text-primary-foreground">
+        <Button className="bg-[#00875A] hover:bg-[#007a50] text-white" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add User
         </Button>
@@ -316,6 +339,68 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Create User Dialog */}
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New User</DialogTitle>
+            <DialogDescription>Add a new user directly without an invitation email.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1">
+              <Label>Full Name</Label>
+              <Input
+                placeholder="Jane Doe"
+                value={createForm.fullName}
+                onChange={(e) => setCreateForm((f) => ({ ...f, fullName: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Email Address</Label>
+              <Input
+                type="email"
+                placeholder="jane@example.com"
+                value={createForm.email}
+                onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Password</Label>
+              <Input
+                type="password"
+                placeholder="Minimum 8 characters"
+                value={createForm.password}
+                onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Role</Label>
+              <Select value={createForm.role} onValueChange={(v) => setCreateForm((f) => ({ ...f, role: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="REGULATOR">Regulator</SelectItem>
+                  <SelectItem value="STARTUP">Startup</SelectItem>
+                  <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button
+              className="bg-[#00875A] hover:bg-[#007a50]"
+              disabled={!createForm.email || !createForm.fullName || createForm.password.length < 8 || createUserMutation.isPending}
+              onClick={() => createUserMutation.mutate({ ...createForm, role: createForm.role as never })}
+            >
+              {createUserMutation.isPending ? "Creating..." : "Create User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
