@@ -82,24 +82,34 @@ function StatCard({
   )
 }
 
+type DateRange = "7d" | "30d" | "90d" | "1y"
+
+const RANGE_DAYS: Record<DateRange, number> = { "7d": 7, "30d": 30, "90d": 90, "1y": 365 }
+const RANGE_LABELS: Record<DateRange, string> = {
+  "7d": "Last 7 days",
+  "30d": "Last 30 days",
+  "90d": "Last 3 months",
+  "1y": "Last 12 months",
+}
+
 export default function AdminAnalyticsPage() {
   const [growthPeriod, setGrowthPeriod] = useState<"daily" | "weekly" | "monthly">("daily")
+  const [dateRange, setDateRange] = useState<DateRange>("30d")
 
-  const growthDateFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-  const revenueFrom = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
-  const aiFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const dateFrom = new Date(Date.now() - RANGE_DAYS[dateRange] * 24 * 60 * 60 * 1000).toISOString()
+  const rangeLabel = RANGE_LABELS[dateRange]
 
   const { data: growth, isLoading: growthLoading } = trpc.admin.getUserGrowth.useQuery({
     period: growthPeriod,
-    dateFrom: growthDateFrom,
+    dateFrom,
   })
 
   const { data: revenue, isLoading: revenueLoading } = trpc.admin.getRevenueMetrics.useQuery({
-    dateFrom: revenueFrom,
+    dateFrom,
   })
 
   const { data: aiUsage, isLoading: aiLoading } = trpc.admin.getAIUsageMetrics.useQuery({
-    dateFrom: aiFrom,
+    dateFrom,
   })
 
   const { data: subBreakdown, isLoading: subLoading } = trpc.admin.getSubscriptionBreakdown.useQuery()
@@ -113,9 +123,22 @@ export default function AdminAnalyticsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#1A2B4A]">Analytics</h1>
-        <p className="text-sm text-gray-500 mt-1">Platform metrics and growth insights</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1A2B4A]">Analytics</h1>
+          <p className="text-sm text-gray-500 mt-1">Platform metrics and growth insights</p>
+        </div>
+        <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
+          <SelectTrigger className="w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7d">Last 7 days</SelectItem>
+            <SelectItem value="30d">Last 30 days</SelectItem>
+            <SelectItem value="90d">Last 3 months</SelectItem>
+            <SelectItem value="1y">Last 12 months</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Overview KPI cards */}
@@ -139,9 +162,9 @@ export default function AdminAnalyticsPage() {
               color="bg-[#1A2B4A]"
             />
             <StatCard
-              label="Total Users"
+              label="New Users"
               value={growth?.total ?? "—"}
-              sub="In selected period"
+              sub={rangeLabel}
               icon={Users}
               color="bg-purple-600"
             />
@@ -171,9 +194,9 @@ export default function AdminAnalyticsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <CardTitle className="text-base">User Growth</CardTitle>
-                  <CardDescription>New signups over time</CardDescription>
+                  <CardDescription>New signups — {rangeLabel}</CardDescription>
                 </div>
-                <Select value={growthPeriod} onValueChange={(v) => setGrowthPeriod(v as never)}>
+                <Select value={growthPeriod} onValueChange={(v) => setGrowthPeriod(v as "daily" | "weekly" | "monthly")}>
                   <SelectTrigger className="w-36">
                     <SelectValue />
                   </SelectTrigger>
@@ -261,7 +284,7 @@ export default function AdminAnalyticsPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Monthly Revenue (KES)</CardTitle>
-              <CardDescription>Last 6 months</CardDescription>
+              <CardDescription>{rangeLabel}</CardDescription>
             </CardHeader>
             <CardContent>
               {revenueLoading ? (
@@ -322,7 +345,7 @@ export default function AdminAnalyticsPage() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Daily AI Queries (last 30 days)</CardTitle>
+              <CardTitle className="text-base">AI Queries — {rangeLabel}</CardTitle>
             </CardHeader>
             <CardContent>
               {aiLoading ? (
@@ -406,7 +429,7 @@ export default function AdminAnalyticsPage() {
                   <div className="h-64 flex items-center justify-center text-gray-400">No data</div>
                 ) : (
                   <div className="space-y-3 pt-2">
-                    {Object.entries(subBreakdown.byStatus).map(([status, count], i) => {
+                    {(Object.entries(subBreakdown.byStatus) as [string, number][]).map(([status, count], i) => {
                       const pct = subBreakdown.total > 0 ? Math.round((count / subBreakdown.total) * 100) : 0
                       return (
                         <div key={status}>

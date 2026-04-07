@@ -22,15 +22,20 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog"
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Search, MoreVertical, BookOpen, CheckCircle2,
-  Archive, Trash2, ChevronLeft, ChevronRight, FileText, Eye,
+  Archive, Trash2, ChevronLeft, ChevronRight, FileText, Eye, Plus,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
@@ -42,18 +47,31 @@ const STATUS_STYLES: Record<string, string> = {
   UNDER_REVIEW: "bg-blue-100 text-blue-700",
 }
 
+type ContentItem = {
+  id: string
+  title: string | null
+  category: string | null
+  contentStatus: string
+  viewCount: number
+  updatedAt: Date | string
+}
+
 export default function KnowledgeBasePage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [searchInput, setSearchInput] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createForm, setCreateForm] = useState({ title: "", excerpt: "", category: "" })
 
   const utils = trpc.useUtils()
 
   const { data, isLoading, isError } = trpc.admin.listContent.useQuery({
     contentType: "KNOWLEDGE_BASE_ARTICLE",
-    contentStatus: statusFilter !== "all" ? (statusFilter as never) : undefined,
+    contentStatus: statusFilter !== "all"
+      ? (statusFilter as "DRAFT" | "PUBLISHED" | "ARCHIVED" | "UNDER_REVIEW")
+      : undefined,
     search: search || undefined,
     page,
     limit: 20,
@@ -69,13 +87,28 @@ export default function KnowledgeBasePage() {
     onError: (err) => toast.error(err.message),
   })
 
+  const createMutation = trpc.admin.createContent.useMutation({
+    onSuccess: () => {
+      toast.success("Draft article created")
+      setCreateOpen(false)
+      setCreateForm({ title: "", excerpt: "", category: "" })
+      void utils.admin.listContent.invalidate()
+    },
+    onError: (err) => toast.error(err.message),
+  })
+
   const totalPages = data ? Math.ceil(data.total / 20) : 1
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#1A2B4A]">Knowledge Base</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage help articles and compliance guides</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1A2B4A]">Knowledge Base</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage help articles and compliance guides</p>
+        </div>
+        <Button className="bg-[#00875A] hover:bg-[#007a50] text-white gap-2" onClick={() => setCreateOpen(true)}>
+          <Plus className="w-4 h-4" /> New Article
+        </Button>
       </div>
 
       <Card>
@@ -125,7 +158,7 @@ export default function KnowledgeBasePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {data.items.map((item) => (
+                  {(data.items as ContentItem[]).map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
@@ -172,6 +205,58 @@ export default function KnowledgeBasePage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>New Knowledge Base Article</DialogTitle>
+            <DialogDescription>Creates a draft article. You can edit the full content after creation.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Title <span className="text-red-500">*</span></Label>
+              <Input
+                placeholder="Article title"
+                value={createForm.title}
+                onChange={(e) => setCreateForm((f) => ({ ...f, title: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Summary</Label>
+              <Textarea
+                placeholder="Brief description of what this article covers (optional)"
+                value={createForm.excerpt}
+                onChange={(e) => setCreateForm((f) => ({ ...f, excerpt: e.target.value }))}
+                rows={2}
+                className="resize-none"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Category</Label>
+              <Input
+                placeholder="e.g. AML/KYC, Data Protection"
+                value={createForm.category}
+                onChange={(e) => setCreateForm((f) => ({ ...f, category: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button
+              className="bg-[#00875A] hover:bg-[#007a50]"
+              disabled={!createForm.title.trim() || createMutation.isPending}
+              onClick={() => createMutation.mutate({
+                contentType: "KNOWLEDGE_BASE_ARTICLE",
+                title: createForm.title.trim(),
+                excerpt: createForm.excerpt.trim() || undefined,
+                category: createForm.category.trim() || undefined,
+              })}
+            >
+              {createMutation.isPending ? "Creating..." : "Create Draft"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>

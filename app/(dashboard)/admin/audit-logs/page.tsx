@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Activity, User, Settings, FileText, Shield, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react"
+import { Activity, User, Settings, FileText, Shield, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Download } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 
 type TypeConfigEntry = { label: string; icon: React.ElementType; color: string }
@@ -57,11 +57,44 @@ export default function AuditLogsPage() {
   const total: number = (data as { total?: number })?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / limit))
 
+  function exportCSV() {
+    const header = ["ID", "Action", "Entity Type", "Entity ID", "User ID", "IP Address", "Date"]
+    const rows = logs.map((l) => [
+      l.id,
+      l.action,
+      l.entityType ?? "",
+      l.entityId ?? "",
+      l.userId ?? "",
+      l.ipAddress ?? "",
+      new Date(l.createdAt).toISOString(),
+    ])
+    const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n")
+    const blob = new Blob([csv], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#1A2B4A]">Audit Logs</h1>
-        <p className="text-gray-500 mt-1">Track all system activity and administrative actions</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1A2B4A]">Audit Logs</h1>
+          <p className="text-gray-500 mt-1">Track all system activity and administrative actions</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={exportCSV}
+          disabled={logs.length === 0}
+          className="gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Export CSV
+        </Button>
       </div>
 
       <Card>

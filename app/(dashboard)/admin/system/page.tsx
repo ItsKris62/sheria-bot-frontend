@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Settings, Database, Server, Shield, Mail, AlertTriangle, Loader2, Save,
 } from "lucide-react"
@@ -98,6 +99,7 @@ export default function SystemSettingsPage() {
   // Local editable state for SystemConfig
   const [localConfig, setLocalConfig] = useState<Partial<SystemConfigValues>>({})
   const [dirty, setDirty] = useState(false)
+  const [maintenanceMessage, setMaintenanceMessage] = useState("")
 
   useEffect(() => {
     if (systemConfigData) {
@@ -370,17 +372,29 @@ export default function SystemSettingsPage() {
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
               <AlertTriangle className="h-6 w-6 text-yellow-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="font-medium text-foreground">Maintenance Mode</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Enable maintenance mode to temporarily disable the platform for all non-admin users.
-                </p>
-                <div className="flex items-center gap-3 mt-4">
+              <div className="flex-1 space-y-4">
+                <div>
+                  <h3 className="font-medium text-foreground">Maintenance Mode</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Enable maintenance mode to temporarily disable the platform for all non-admin users.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Maintenance Message (shown to users)</Label>
+                  <Textarea
+                    placeholder="We're performing scheduled maintenance. We'll be back shortly."
+                    value={maintenanceMessage}
+                    onChange={(e) => setMaintenanceMessage(e.target.value)}
+                    className="bg-muted/50 text-sm resize-none"
+                    rows={2}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
-                    className="bg-transparent"
+                    className="bg-transparent border-yellow-400 text-yellow-700 hover:bg-yellow-50"
                     disabled={maintenanceMutation.isPending}
-                    onClick={() => maintenanceMutation.mutate({ enabled: true } as never)}
+                    onClick={() => maintenanceMutation.mutate({ enabled: true, message: maintenanceMessage || undefined })}
                   >
                     {maintenanceMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     Enable Maintenance
@@ -389,7 +403,7 @@ export default function SystemSettingsPage() {
                     variant="outline"
                     className="bg-transparent text-muted-foreground"
                     disabled={maintenanceMutation.isPending}
-                    onClick={() => maintenanceMutation.mutate({ enabled: false } as never)}
+                    onClick={() => maintenanceMutation.mutate({ enabled: false })}
                   >
                     Disable Maintenance
                   </Button>

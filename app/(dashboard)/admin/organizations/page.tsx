@@ -70,17 +70,20 @@ export default function AdminOrganizationsPage() {
 
   const utils = trpc.useUtils()
 
+  const { data: orgStats } = trpc.admin.getOrganizationStats.useQuery()
+
   const { data, isLoading, isError } = trpc.admin.getAllOrganizations.useQuery({
     page,
     limit: 20,
     search: search || undefined,
-    status: undefined,
+    tier: tierFilter !== "all" ? tierFilter : undefined,
   })
 
   const suspendMutation = trpc.admin.suspendOrganization.useMutation({
     onSuccess: () => {
       toast.success("Organization suspended")
       void utils.admin.getAllOrganizations.invalidate()
+      void utils.admin.getOrganizationStats.invalidate()
     },
     onError: (err) => toast.error(err.message),
   })
@@ -89,6 +92,7 @@ export default function AdminOrganizationsPage() {
     onSuccess: () => {
       toast.success("Organization reactivated")
       void utils.admin.getAllOrganizations.invalidate()
+      void utils.admin.getOrganizationStats.invalidate()
     },
     onError: (err) => toast.error(err.message),
   })
@@ -100,14 +104,8 @@ export default function AdminOrganizationsPage() {
 
   const totalPages = data ? Math.ceil(data.total / 20) : 1
 
-  const stats = data
-    ? {
-        total: data.total,
-        active: data.items.filter((o) => o.subscriptionStatus === "ACTIVE").length,
-        enterprise: data.items.filter((o) => o.subscriptionTier === "ENTERPRISE").length,
-        startup: data.items.filter((o) => o.subscriptionTier === "STARTUP").length,
-      }
-    : null
+  type OrgStats = { total: number; active: number; byTier: { REGULATOR: number; STARTUP: number; BUSINESS: number; ENTERPRISE: number } }
+  const s = orgStats as OrgStats | undefined
 
   return (
     <div className="p-6 space-y-6">
@@ -119,19 +117,19 @@ export default function AdminOrganizationsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total", value: data?.total ?? "—", icon: Building2, color: "text-blue-600" },
-          { label: "Active", value: stats?.active ?? "—", icon: CheckCircle, color: "text-green-600" },
-          { label: "Startups", value: stats?.startup ?? "—", icon: TrendingUp, color: "text-purple-600" },
-          { label: "Enterprise", value: stats?.enterprise ?? "—", icon: Users, color: "text-emerald-600" },
-        ].map((s) => (
-          <Card key={s.label}>
+          { label: "Total", value: s?.total?.toLocaleString() ?? "—", icon: Building2, color: "text-blue-600" },
+          { label: "Active", value: s?.active?.toLocaleString() ?? "—", icon: CheckCircle, color: "text-green-600" },
+          { label: "Startups", value: s?.byTier?.STARTUP?.toLocaleString() ?? "—", icon: TrendingUp, color: "text-purple-600" },
+          { label: "Enterprise", value: s?.byTier?.ENTERPRISE?.toLocaleString() ?? "—", icon: Users, color: "text-emerald-600" },
+        ].map((card) => (
+          <Card key={card.label}>
             <CardContent className="pt-4 pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500">{s.label}</p>
-                  <p className="text-2xl font-bold text-[#1A2B4A]">{s.value}</p>
+                  <p className="text-xs text-gray-500">{card.label}</p>
+                  <p className="text-2xl font-bold text-[#1A2B4A]">{card.value}</p>
                 </div>
-                <s.icon className={`w-8 h-8 ${s.color} opacity-80`} />
+                <card.icon className={`w-8 h-8 ${card.color} opacity-80`} />
               </div>
             </CardContent>
           </Card>
@@ -200,9 +198,7 @@ export default function AdminOrganizationsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {data.items
-                    .filter((o) => tierFilter === "all" || o.subscriptionTier === tierFilter)
-                    .map((org) => (
+                  {data.items.map((org) => (
                       <tr key={org.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">

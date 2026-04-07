@@ -88,6 +88,7 @@ function UserRowSkeleton() {
 export default function UsersPage() {
   const [search, setSearch] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
   const [page, setPage] = useState(1)
   const [pendingUserId, setPendingUserId] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
@@ -98,6 +99,7 @@ export default function UsersPage() {
     page,
     limit,
     role: roleFilter === "all" ? undefined : roleFilter,
+    status: statusFilter === "all" ? undefined : statusFilter,
     search: search || undefined,
   })
   const { data: statsData, isLoading: statsLoading } = useAdminStats()
@@ -124,20 +126,25 @@ export default function UsersPage() {
     onError: (err) => toast({ title: "Delete failed", description: err.message, variant: "destructive" }),
   })
 
-  const users: any[] = (data as any)?.users ?? []
-  const total: number = (data as any)?.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / limit))
+  type StatsShape = { users?: { total?: number; active?: number }; organizations?: { total?: number } }
+  const s = statsData as StatsShape | undefined
 
-  const s = statsData as any
+  type UserRow = {
+    id: string; fullName: string; email: string; role: string;
+    status: string; deletedAt: Date | null; organization?: { name: string } | null
+  }
+  const users = ((data as { users?: UserRow[] })?.users ?? []) as UserRow[]
+  const total: number = (data as { pagination?: { total?: number } })?.pagination?.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / limit))
 
   async function handleSuspend(userId: string, isSuspended: boolean) {
     setPendingUserId(userId)
     try {
       if (isSuspended) {
-        await enableUser({ userId } as any)
+        await enableUser({ userId })
         toast({ title: "User reactivated" })
       } else {
-        await disableUser({ userId, reason: "Suspended by administrator" } as any)
+        await disableUser({ userId, reason: "Suspended by administrator" })
         toast({ title: "User suspended" })
       }
     } catch (err: any) {
@@ -149,7 +156,7 @@ export default function UsersPage() {
 
   async function handleDelete(userId: string) {
     if (!confirm("Are you sure you want to delete this user? This cannot be undone.")) return
-    deleteUserMutation.mutate({ userId } as any)
+    deleteUserMutation.mutate({ userId })
   }
 
   return (
@@ -185,7 +192,7 @@ export default function UsersPage() {
                   <div className="p-3 rounded-lg bg-primary/10"><Users className="h-5 w-5 text-primary" /></div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Users</p>
-                    <p className="text-2xl font-bold text-foreground">{s?.totalUsers?.toLocaleString() ?? "—"}</p>
+                    <p className="text-2xl font-bold text-foreground">{s?.users?.total?.toLocaleString() ?? "—"}</p>
                   </div>
                 </div>
               </CardContent>
@@ -195,8 +202,8 @@ export default function UsersPage() {
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-lg bg-primary/10"><Building2 className="h-5 w-5 text-primary" /></div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Startups</p>
-                    <p className="text-2xl font-bold text-foreground">{s?.totalOrganizations?.toLocaleString() ?? "—"}</p>
+                    <p className="text-sm text-muted-foreground">Organizations</p>
+                    <p className="text-2xl font-bold text-foreground">{s?.organizations?.total?.toLocaleString() ?? "—"}</p>
                   </div>
                 </div>
               </CardContent>
@@ -206,8 +213,8 @@ export default function UsersPage() {
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-lg bg-warning/10"><Shield className="h-5 w-5 text-warning" /></div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Active Sessions</p>
-                    <p className="text-2xl font-bold text-foreground">{s?.activeSessions?.toLocaleString() ?? "—"}</p>
+                    <p className="text-sm text-muted-foreground">Active Users (30d)</p>
+                    <p className="text-2xl font-bold text-foreground">{s?.users?.active?.toLocaleString() ?? "—"}</p>
                   </div>
                 </div>
               </CardContent>
@@ -244,6 +251,14 @@ export default function UsersPage() {
                   <SelectItem value="ADMIN">Admin</SelectItem>
                 </SelectContent>
               </Select>
+              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1) }}>
+                <SelectTrigger className="w-[140px] bg-muted/50"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
@@ -254,10 +269,10 @@ export default function UsersPage() {
             ) : users.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">No users found</p>
             ) : (
-              users.map((user: any) => {
+              users.map((user) => {
                 const isSuspended = !!user.deletedAt || user.status === "SUSPENDED" || user.status === "INACTIVE"
                 const isPending = pendingUserId === user.id || (deleteUserMutation.isPending && deleteUserMutation.variables?.userId === user.id)
-                const initials = (user.fullName ?? user.name ?? user.email ?? "?")
+                const initials = (user.fullName ?? user.email ?? "?")
                   .split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
 
                 return (
@@ -271,7 +286,7 @@ export default function UsersPage() {
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-foreground">{user.fullName ?? user.name ?? user.email}</p>
+                          <p className="font-medium text-foreground">{user.fullName ?? user.email}</p>
                           {isSuspended ? (
                             <Badge variant="outline" className="border-destructive/50 text-destructive text-xs">Suspended</Badge>
                           ) : (
@@ -280,7 +295,7 @@ export default function UsersPage() {
                         </div>
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           <span>{user.email}</span>
-                          {user.organizationName && <span>{user.organizationName}</span>}
+                          {user.organization?.name && <span>{user.organization.name}</span>}
                         </div>
                       </div>
                     </div>
@@ -394,7 +409,10 @@ export default function UsersPage() {
             <Button
               className="bg-[#00875A] hover:bg-[#007a50]"
               disabled={!createForm.email || !createForm.fullName || createForm.password.length < 8 || createUserMutation.isPending}
-              onClick={() => createUserMutation.mutate({ ...createForm, role: createForm.role as never })}
+              onClick={() => createUserMutation.mutate({
+                  ...createForm,
+                  role: createForm.role as "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN",
+                })}
             >
               {createUserMutation.isPending ? "Creating..." : "Create User"}
             </Button>

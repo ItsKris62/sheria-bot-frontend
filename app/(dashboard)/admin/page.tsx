@@ -33,7 +33,7 @@ function ServiceBadge({ status }: { status: string | undefined }) {
 
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useAdminStats()
-  const { data: health } = trpc.admin.getDetailedHealth.useQuery({ refetchInterval: 30000 } as never)
+  const { data: health } = trpc.admin.getDetailedHealth.useQuery(undefined, { refetchInterval: 30000 })
   const { data: logsData } = trpc.admin.getLogs.useQuery({ page: 1, limit: 5 })
   const { data: growth } = trpc.admin.getUserGrowth.useQuery({
     period: "daily",
@@ -45,11 +45,19 @@ export default function AdminDashboard() {
 
   const recentLogs = (logsData as { items?: Array<{ id: string; action: string; userId: string | null; entityType: string | null; createdAt: Date }> })?.items ?? []
 
+  type StatsShape = {
+    users?: { total?: number; active?: number }
+    organizations?: { total?: number }
+    queries?: { total?: number }
+    policies?: { total?: number }
+  }
+  const s = stats as StatsShape | undefined
+
   const statCards = [
-    { label: "Total Users",          value: (stats as { totalUsers?: number })?.totalUsers?.toLocaleString(),         icon: Users,     color: "bg-[#1A2B4A]" },
-    { label: "Active Organizations",  value: (stats as { totalOrganizations?: number })?.totalOrganizations?.toLocaleString(), icon: Building2, color: "bg-[#00875A]" },
-    { label: "AI Queries",           value: (stats as { totalQueries?: number })?.totalQueries?.toLocaleString(),      icon: Bot,       color: "bg-[#D4A843]" },
-    { label: "Total Policies",       value: (stats as { totalPolicies?: number })?.totalPolicies?.toLocaleString(),    icon: FileText,  color: "bg-purple-600" },
+    { label: "Total Users",         value: s?.users?.total?.toLocaleString(),         icon: Users,     color: "bg-[#1A2B4A]" },
+    { label: "Organizations",       value: s?.organizations?.total?.toLocaleString(), icon: Building2, color: "bg-[#00875A]" },
+    { label: "AI Queries",          value: s?.queries?.total?.toLocaleString(),        icon: Bot,       color: "bg-[#D4A843]" },
+    { label: "Total Policies",      value: s?.policies?.total?.toLocaleString(),       icon: FileText,  color: "bg-purple-600" },
   ]
 
   const typedHealth = health as {

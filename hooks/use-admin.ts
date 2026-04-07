@@ -12,12 +12,14 @@ export function useAdminUsers(options?: {
   page?: number;
   limit?: number;
   role?: string;
+  status?: string;
   search?: string;
 }) {
   return trpc.admin.listUsers.useQuery({
     page: options?.page ?? 1,
     limit: options?.limit ?? 20,
     role: options?.role as "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined,
+    status: options?.status as "active" | "inactive" | undefined,
     search: options?.search,
   });
 }

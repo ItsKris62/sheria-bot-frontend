@@ -21,7 +21,15 @@ import {
   Ban,
   CheckCircle2,
   Loader2,
+  KeyRound,
 } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { trpc } from "@/lib/trpc"
 import { useAdminActions } from "@/hooks/use-admin"
 import { toast } from "@/hooks/use-toast"
@@ -39,15 +47,35 @@ export default function UserDetailPage() {
   const userId = params.userId as string
   const [actionPending, setActionPending] = useState(false)
 
+  const utils = trpc.useUtils()
   const { data: userData, isLoading, refetch } = trpc.admin.getUser.useQuery({ userId })
   const { data: activityData, isLoading: activityLoading } = trpc.admin.getUserActivityLog.useQuery({ userId })
   const { disableUser, enableUser } = useAdminActions()
 
-  const user = userData as any
-  const activity: any[] = (activityData as any) ?? []
+  const forceResetMutation = trpc.admin.forcePasswordReset.useMutation({
+    onSuccess: () => toast({ title: "Password reset forced — user sessions cleared" }),
+    onError: (err) => toast({ title: "Failed", description: err.message, variant: "destructive" }),
+  })
+
+  const updateRoleMutation = trpc.admin.updateUserRole.useMutation({
+    onSuccess: () => { toast({ title: "Role updated" }); void utils.admin.getUser.invalidate({ userId }) },
+    onError: (err) => toast({ title: "Failed", description: err.message, variant: "destructive" }),
+  })
+
+  type UserDetail = {
+    id: string; fullName: string; email: string; role: string; status: string
+    emailVerified: boolean; organizationId: string | null; organizationName: string | null
+    organizationPlan: string | null; lastLoginAt: string | Date | null
+    lastLoginIp: string | null; createdAt: string | Date; updatedAt: string | Date
+    sessionCount: number; policyCount: number; queryCount: number; deletedAt?: string | Date | null
+  }
+  type ActivityEntry = { action: string; createdAt: string | Date }
+
+  const user = userData as UserDetail | undefined
+  const activity = ((activityData as ActivityEntry[] | undefined) ?? []) as ActivityEntry[]
 
   const isSuspended = !!user?.deletedAt || user?.status === "SUSPENDED" || user?.status === "INACTIVE"
-  const initials = (user?.fullName ?? user?.name ?? user?.email ?? "?")
+  const initials = (user?.fullName ?? user?.email ?? "?")
     .split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
 
   async function handleToggleSuspend() {
@@ -55,10 +83,10 @@ export default function UserDetailPage() {
     setActionPending(true)
     try {
       if (isSuspended) {
-        await enableUser({ userId } as any)
+        await enableUser({ userId })
         toast({ title: "User reactivated successfully" })
       } else {
-        await disableUser({ userId, reason: "Suspended by administrator" } as any)
+        await disableUser({ userId, reason: "Suspended by administrator" })
         toast({ title: "User suspended" })
       }
       refetch()
@@ -147,7 +175,7 @@ export default function UserDetailPage() {
                 <Avatar className="h-20 w-20">
                   <AvatarFallback className="bg-primary/10 text-primary text-2xl">{initials}</AvatarFallback>
                 </Avatar>
-                <h2 className="mt-4 text-xl font-bold text-foreground">{user.fullName ?? user.name}</h2>
+                <h2 className="mt-4 text-xl font-bold text-foreground">{user.fullName}</h2>
                 {user.organizationName && (
                   <p className="text-muted-foreground">{user.organizationName}</p>
                 )}
@@ -206,7 +234,7 @@ export default function UserDetailPage() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Plan</span>
-                <Badge className="bg-warning/10 text-warning">{user.subscriptionTier ?? "Free"}</Badge>
+                <Badge className="bg-warning/10 text-warning">{user.organizationPlan ?? "—"}</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Email Verified</span>
@@ -267,7 +295,7 @@ export default function UserDetailPage() {
                     <p className="text-sm text-muted-foreground text-center py-4">No activity yet</p>
                   ) : (
                     <div className="space-y-4">
-                      {activity.slice(0, 5).map((item: any, index: number) => (
+                      {activity.slice(0, 5).map((item, index) => (
                         <div key={index} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                           <div className="flex items-center gap-3">
                             <Activity className="h-4 w-4 text-primary" />
@@ -304,7 +332,7 @@ export default function UserDetailPage() {
                     <p className="text-sm text-muted-foreground text-center py-8">No activity recorded</p>
                   ) : (
                     <div className="space-y-1">
-                      {activity.map((item: any, index: number) => (
+                      {activity.map((item, index) => (
                         <div key={index} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                           <div className="flex items-center gap-3">
                             <Activity className="h-4 w-4 text-primary shrink-0" />
@@ -328,13 +356,30 @@ export default function UserDetailPage() {
                   <CardDescription>Current access level for this user</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Change Role */}
                   <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                     <div className="flex items-center gap-3">
                       <Shield className="h-4 w-4 text-primary" />
                       <span className="text-sm font-medium text-foreground">Role</span>
                     </div>
-                    <Badge className={roleColorMap[user.role] ?? "bg-muted text-muted-foreground"}>{user.role}</Badge>
+                    <Select
+                      value={user.role}
+                      disabled={updateRoleMutation.isPending}
+                      onValueChange={(role) => updateRoleMutation.mutate({ userId, role: role as "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" })}
+                    >
+                      <SelectTrigger className="w-36 h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="REGULATOR">Regulator</SelectItem>
+                        <SelectItem value="STARTUP">Startup</SelectItem>
+                        <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+                        <SelectItem value="ADMIN">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+
+                  {/* Feature access derived from role */}
                   {[
                     { name: "Compliance Queries", enabled: true },
                     { name: "Policy Generation", enabled: ["STARTUP", "REGULATOR", "ENTERPRISE", "ADMIN"].includes(user.role) },
@@ -353,6 +398,26 @@ export default function UserDetailPage() {
                       </Badge>
                     </div>
                   ))}
+
+                  {/* Force Password Reset */}
+                  <div className="pt-2 border-t border-border/50">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive border-destructive/40 hover:bg-destructive/10"
+                      disabled={forceResetMutation.isPending}
+                      onClick={() => forceResetMutation.mutate({ userId })}
+                    >
+                      {forceResetMutation.isPending
+                        ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        : <KeyRound className="h-4 w-4 mr-2" />
+                      }
+                      Force Password Reset
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1.5">
+                      Invalidates all sessions. User must reset password on next login.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

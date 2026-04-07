@@ -75,6 +75,7 @@ export default function OrgDetailPage() {
   const utils = trpc.useUtils()
 
   const { data: org, isLoading, isError } = trpc.admin.getOrgDetails.useQuery({ orgId })
+  const { data: membersData, isLoading: membersLoading } = trpc.admin.getOrgMembers.useQuery({ orgId })
 
   const suspendMutation = trpc.admin.suspendOrganization.useMutation({
     onSuccess: () => {
@@ -218,6 +219,63 @@ export default function OrgDetailPage() {
           </Card>
         </div>
 
+          {/* Members Table */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="w-4 h-4" /> Members
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {membersLoading ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between py-2">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-7 w-7 rounded-full" />
+                        <Skeleton className="h-4 w-40" />
+                      </div>
+                      <Skeleton className="h-5 w-16" />
+                    </div>
+                  ))}
+                </div>
+              ) : !membersData?.length ? (
+                <p className="text-sm text-gray-400 text-center py-4">No members yet</p>
+              ) : (
+                <div className="divide-y">
+                  {(membersData as { id: string; fullName: string; email: string; role: string; status: string; createdAt: string | Date }[]).map((member) => (
+                    <div key={member.id} className="flex items-center justify-between py-2.5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-[#1A2B4A]/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-[#1A2B4A] text-xs font-bold">
+                            {(member.fullName || member.email).charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-[#1A2B4A] truncate">{member.fullName || "—"}</p>
+                          <p className="text-xs text-gray-400 truncate">{member.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        <span className="text-xs text-gray-500 hidden sm:block">
+                          {new Date(member.createdAt).toLocaleDateString("en-KE")}
+                        </span>
+                        <Badge className={
+                          member.role === "ADMIN" ? "bg-red-100 text-red-700" :
+                          member.role === "REGULATOR" ? "bg-slate-100 text-slate-700" :
+                          "bg-blue-100 text-blue-700"
+                        }>
+                          {member.role}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Right column — Actions */}
         <div className="space-y-4">
           {/* Quick Actions */}
@@ -345,7 +403,7 @@ export default function OrgDetailPage() {
               disabled={!selectedPlan || updatePlanMutation.isPending}
               onClick={() => {
                 if (!selectedPlan) return
-                updatePlanMutation.mutate({ orgId, plan: selectedPlan as never })
+                updatePlanMutation.mutate({ orgId, plan: selectedPlan as "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE" })
               }}
             >
               {updatePlanMutation.isPending ? "Updating..." : "Update Plan"}
