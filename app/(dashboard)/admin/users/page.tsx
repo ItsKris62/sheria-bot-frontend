@@ -131,7 +131,8 @@ export default function UsersPage() {
 
   type UserRow = {
     id: string; fullName: string; email: string; role: string;
-    status: string; deletedAt: Date | null; organization?: { name: string } | null
+    status: string; emailVerified: boolean; lastLoginAt: Date | string | null
+    organization?: { name: string } | null
   }
   const users = ((data as { users?: UserRow[] })?.users ?? []) as UserRow[]
   const total: number = (data as { pagination?: { total?: number } })?.pagination?.total ?? 0
@@ -270,7 +271,7 @@ export default function UsersPage() {
               <p className="py-8 text-center text-sm text-muted-foreground">No users found</p>
             ) : (
               users.map((user) => {
-                const isSuspended = !!user.deletedAt || user.status === "SUSPENDED" || user.status === "INACTIVE"
+                const isSuspended = user.status === "SUSPENDED"
                 const isPending = pendingUserId === user.id || (deleteUserMutation.isPending && deleteUserMutation.variables?.userId === user.id)
                 const initials = (user.fullName ?? user.email ?? "?")
                   .split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -300,9 +301,14 @@ export default function UsersPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Badge className={roleColorMap[user.role] ?? "bg-muted text-muted-foreground"}>
-                        {roleLabel[user.role] ?? user.role}
-                      </Badge>
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge className={roleColorMap[user.role] ?? "bg-muted text-muted-foreground"}>
+                          {roleLabel[user.role] ?? user.role}
+                        </Badge>
+                        <Badge variant="outline" className={user.emailVerified ? "border-green-400 text-green-600 text-xs" : "border-orange-400 text-orange-600 text-xs"}>
+                          {user.emailVerified ? "Verified" : "Unverified"}
+                        </Badge>
+                      </div>
                       {isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                       ) : (
