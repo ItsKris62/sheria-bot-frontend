@@ -39,12 +39,12 @@ interface NavItem {
   badgeQuery?: "supportOpen"
 }
 
-interface NavGroup {
+export interface AdminNavGroup {
   title: string
   items: NavItem[]
 }
 
-const adminNav: NavGroup[] = [
+export const adminNav: AdminNavGroup[] = [
   {
     title: "Overview",
     items: [

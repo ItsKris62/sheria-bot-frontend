@@ -33,7 +33,7 @@ import { usePlan } from "@/lib/plan-context"
 import type { FeatureKey } from "@/lib/plan-context"
 import { useSidebar } from "@/lib/sidebar-context"
 
-interface NavItem {
+export interface NavItem {
   title: string
   href: string
   icon: React.ComponentType<{ className?: string }>
@@ -42,12 +42,12 @@ interface NavItem {
   lockedFeature?: FeatureKey
 }
 
-interface NavGroup {
+export interface NavGroup {
   title: string
   items: NavItem[]
 }
 
-const regulatorNav: NavGroup[] = [
+export const regulatorNav: NavGroup[] = [
   {
     title: "Overview",
     items: [
@@ -72,7 +72,7 @@ const regulatorNav: NavGroup[] = [
   },
 ]
 
-const startupNav: NavGroup[] = [
+export const startupNav: NavGroup[] = [
   {
     title: "Overview",
     items: [

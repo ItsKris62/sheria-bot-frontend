@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -45,6 +46,17 @@ import { useProfile } from "@/hooks/use-user"
 import { useSidebar } from "@/lib/sidebar-context"
 import { trpc } from "@/lib/trpc"
 import { UserAvatar } from "@/components/ui/user-avatar"
+import { startupNav, regulatorNav } from "@/components/layout/dashboard-sidebar"
+import { adminNav } from "@/components/layout/admin-sidebar"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command"
 
 interface NotificationItem {
   id: string
@@ -92,10 +104,11 @@ const CATEGORY_TABS: Array<{ value: NotificationCategoryName | "ALL"; label: str
 ]
 
 interface DashboardHeaderProps {
-  userType: "regulator" | "startup"
+  userType: "regulator" | "startup" | "admin"
 }
 
 export function DashboardHeader({ userType }: DashboardHeaderProps) {
+  const router = useRouter()
   const [searchOpen, setSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<NotificationCategoryName | "ALL">("ALL")
@@ -124,6 +137,35 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
 
   const unreadCount = unreadData?.count ?? 0
   const notificationList = (notifData?.items ?? []) as NotificationItem[]
+
+  const navGroups = 
+    userType === "admin" ? adminNav :
+    userType === "regulator" ? regulatorNav : startupNav
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setSearchOpen((open) => !open)
+      } else if (e.key === "/") {
+        if (
+          e.target instanceof HTMLElement &&
+          (e.target.isContentEditable || e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT")
+        ) {
+          return
+        }
+        e.preventDefault()
+        setSearchOpen((open) => !open)
+      }
+    }
+    document.addEventListener("keydown", down)
+    return () => document.removeEventListener("keydown", down)
+  }, [])
+
+  const runCommand = useCallback((command: () => unknown) => {
+    setSearchOpen(false)
+    command()
+  }, [])
 
   function handlePanelOpen(open: boolean) {
     setNotificationsOpen(open)
@@ -155,7 +197,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
           <Search className="h-4 w-4" />
           <span>Search...</span>
           <kbd className="ml-auto hidden rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground lg:inline-block">
-            /
+            <span className="text-xs">⌘</span>K
           </kbd>
         </Button>
         <Button
@@ -336,6 +378,47 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <CommandInput placeholder="Type a command or search..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          
+          {navGroups.map((group) => (
+            <CommandGroup key={group.title} heading={group.title}>
+              {group.items.map((item) => (
+                <CommandItem
+                  key={item.href}
+                  value={item.title}
+                  onSelect={() => {
+                    runCommand(() => router.push(item.href))
+                  }}
+                >
+                  <item.icon className="mr-2 h-4 w-4" />
+                  <span>{item.title}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ))}
+          
+          <CommandSeparator />
+          
+          <CommandGroup heading="System">
+            <CommandItem value="Profile Settings" onSelect={() => runCommand(() => router.push("/settings"))}>
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile Settings</span>
+            </CommandItem>
+            <CommandItem value="Support" onSelect={() => runCommand(() => router.push("/support"))}>
+              <LifeBuoy className="mr-2 h-4 w-4" />
+              <span>Support</span>
+            </CommandItem>
+            <CommandItem value="Sign out Logout" onSelect={() => runCommand(() => logout())}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sign out</span>
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </header>
   )
 }
