@@ -1,7 +1,13 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Github, Twitter, Linkedin } from "lucide-react"
+import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react"
 import { LOGOS } from "@/lib/constants/logos"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const footerLinks = {
   product: [
@@ -30,9 +36,10 @@ const footerLinks = {
 }
 
 const socialLinks = [
-  { name: "Twitter", href: "#", icon: Twitter },
+  { name: "X (formerly Twitter)", href: "#", icon: Twitter },
+  { name: "Facebook", href: "#", icon: Facebook },
   { name: "LinkedIn", href: "#", icon: Linkedin },
-  { name: "GitHub", href: "#", icon: Github },
+  { name: "Instagram", href: "#", icon: Instagram },
 ]
 
 export function Footer() {
@@ -60,16 +67,24 @@ export function Footer() {
             
             {/* Social Links */}
             <div className="mt-6 flex items-center gap-3">
-              {socialLinks.map((social) => (
-                <Link
-                  key={social.name}
-                  href={social.href}
-                  className="group flex h-10 w-10 items-center justify-center rounded-xl border border-border/50 bg-card/50 text-muted-foreground transition-all duration-300 hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:scale-110"
-                >
-                  <social.icon className="h-4 w-4" />
-                  <span className="sr-only">{social.name}</span>
-                </Link>
-              ))}
+              <TooltipProvider delayDuration={300}>
+                {socialLinks.map((social) => (
+                  <Tooltip key={social.name}>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={social.href}
+                        className="group flex h-10 w-10 items-center justify-center rounded-xl border border-border/50 bg-card/50 text-muted-foreground transition-all duration-300 hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:scale-110"
+                      >
+                        <social.icon className="h-4 w-4" />
+                        <span className="sr-only">{social.name}</span>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{social.name}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </TooltipProvider>
             </div>
           </div>
 
