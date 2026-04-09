@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -171,7 +178,7 @@ export default function ContactPage() {
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
               Whether you&apos;re a fintech startup navigating your first CBK licence, an enterprise tightening
-              your ODPC posture, or a regulatory body exploring AI tools — we&apos;d love to hear from you.
+              your ODPC posture, or a regulatory body exploring AI tools we&apos;d love to hear from you.
             </p>
           </div>
         </div>
@@ -262,20 +269,21 @@ export default function ContactPage() {
                         {/* Role dropdown */}
                         <div className="space-y-2">
                           <Label htmlFor="role">I represent a</Label>
-                          <select
-                            id="role"
-                            name="role"
+                          <Select
                             value={fields.role}
-                            onChange={handleChange}
-                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            onValueChange={(value) => setFields((prev) => ({ ...prev, role: value }))}
                           >
-                            <option value="">Select…</option>
-                            {roleOptions.map((opt) => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
-                            ))}
-                          </select>
+                            <SelectTrigger id="role" className="w-full bg-transparent">
+                              <SelectValue placeholder="Select…" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {roleOptions.map((opt) => (
+                                <SelectItem key={opt} value={opt}>
+                                  {opt}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
 
