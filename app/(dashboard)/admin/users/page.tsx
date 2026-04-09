@@ -167,7 +167,7 @@ export default function UsersPage() {
           <h1 className="text-2xl font-bold text-foreground">User Management</h1>
           <p className="text-muted-foreground mt-1">Manage platform users and their permissions</p>
         </div>
-        <Button className="bg-[#00875A] hover:bg-[#007a50] text-white" onClick={() => setCreateOpen(true)}>
+        <Button className="bg-secondary hover:bg-[#007a50] text-white" onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add User
         </Button>
@@ -413,7 +413,7 @@ export default function UsersPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
             <Button
-              className="bg-[#00875A] hover:bg-[#007a50]"
+              className="bg-secondary hover:bg-[#007a50]"
               disabled={!createForm.email || !createForm.fullName || createForm.password.length < 8 || createUserMutation.isPending}
               onClick={() => createUserMutation.mutate({
                   ...createForm,

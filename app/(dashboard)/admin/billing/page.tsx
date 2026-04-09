@@ -40,7 +40,7 @@ export default function AdminBillingPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#1A2B4A]">Billing Management</h1>
+        <h1 className="text-2xl font-bold text-foreground">Billing Management</h1>
         <p className="text-sm text-gray-500 mt-1">Revenue, subscriptions, and payment history</p>
       </div>
 
@@ -55,10 +55,10 @@ export default function AdminBillingPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide">Total Revenue</p>
-                    <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{revenue ? formatKES(revenue.totalRevenue) : "—"}</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">{revenue ? formatKES(revenue.totalRevenue) : "—"}</p>
                     <p className="text-xs text-gray-400">All time</p>
                   </div>
-                  <div className="p-2 rounded-lg bg-[#00875A]"><DollarSign className="w-5 h-5 text-white" /></div>
+                  <div className="p-2 rounded-lg bg-secondary"><DollarSign className="w-5 h-5 text-white" /></div>
                 </div>
               </CardContent>
             </Card>
@@ -67,10 +67,10 @@ export default function AdminBillingPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide">This Month</p>
-                    <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{revenue ? formatKES(revenue.currentMonthRevenue) : "—"}</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">{revenue ? formatKES(revenue.currentMonthRevenue) : "—"}</p>
                     <p className="text-xs text-gray-400">Last: {revenue ? formatKES(revenue.lastMonthRevenue) : "—"}</p>
                   </div>
-                  <div className="p-2 rounded-lg bg-[#1A2B4A]"><TrendingUp className="w-5 h-5 text-white" /></div>
+                  <div className="p-2 rounded-lg bg-primary"><TrendingUp className="w-5 h-5 text-white" /></div>
                 </div>
               </CardContent>
             </Card>
@@ -79,10 +79,10 @@ export default function AdminBillingPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide">Active Orgs</p>
-                    <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{subOverview?.totalActive ?? "—"}</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">{subOverview?.totalActive ?? "—"}</p>
                     <p className="text-xs text-gray-400">Churn: {subOverview?.churnRate ?? 0}%</p>
                   </div>
-                  <div className="p-2 rounded-lg bg-purple-600"><CreditCard className="w-5 h-5 text-white" /></div>
+                  <div className="p-2 rounded-lg bg-accent"><CreditCard className="w-5 h-5 text-white" /></div>
                 </div>
               </CardContent>
             </Card>
@@ -91,10 +91,10 @@ export default function AdminBillingPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide">Payment Success</p>
-                    <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{revenue ? `${revenue.successRate}%` : "—"}</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">{revenue ? `${revenue.successRate}%` : "—"}</p>
                     <p className="text-xs text-gray-400">Last 6 months</p>
                   </div>
-                  <div className="p-2 rounded-lg bg-[#D4A843]"><CheckCircle2 className="w-5 h-5 text-white" /></div>
+                  <div className="p-2 rounded-lg bg-warning"><CheckCircle2 className="w-5 h-5 text-white" /></div>
                 </div>
               </CardContent>
             </Card>
@@ -123,11 +123,11 @@ export default function AdminBillingPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={210}>
                   <BarChart data={revenue.series} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={(v: string) => new Date(v + "-01").toLocaleDateString("en-KE", { month: "short" })} />
                     <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`} />
                     <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(value: number) => [formatKES(value), "Revenue"]} />
-                    <Bar dataKey="amount" fill="#00875A" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="amount" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}

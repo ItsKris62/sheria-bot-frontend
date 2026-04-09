@@ -76,7 +76,7 @@ export default function AIConfigPage() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A2B4A]">AI Configuration</h1>
+          <h1 className="text-2xl font-bold text-foreground">AI Configuration</h1>
           <p className="text-sm text-gray-500 mt-1">Rate limits, cost controls, and usage metrics</p>
         </div>
         <div className="flex gap-2">
@@ -84,7 +84,7 @@ export default function AIConfigPage() {
             <RefreshCw className="h-4 w-4 mr-2" /> Reset
           </Button>
           <Button
-            className="bg-[#00875A] hover:bg-[#007a50]"
+            className="bg-secondary hover:bg-[#007a50]"
             onClick={handleSave}
             disabled={!dirty || updateMutation.isPending}
           >
@@ -107,8 +107,8 @@ export default function AIConfigPage() {
           ].map((s) => (
             <Card key={s.label}>
               <CardContent className="pt-4 pb-3 text-center">
-                <Zap className="w-5 h-5 mx-auto text-[#D4A843] mb-1" />
-                <p className="text-2xl font-bold text-[#1A2B4A]">{s.value.toLocaleString()}</p>
+                <Zap className="w-5 h-5 mx-auto text-warning mb-1" />
+                <p className="text-2xl font-bold text-foreground">{s.value.toLocaleString()}</p>
                 <p className="text-xs text-gray-500">{s.label}</p>
               </CardContent>
             </Card>
@@ -121,7 +121,7 @@ export default function AIConfigPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#00875A]" /> Checklist Generation
+              <CheckCircle2 className="w-4 h-4 text-primary" /> Checklist Generation
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -132,7 +132,7 @@ export default function AIConfigPage() {
               { label: "Today succeeded",   value: checklistMetrics.today?.succeeded ?? 0 },
             ].map((s) => (
               <div key={s.label} className="text-center p-3 rounded-lg bg-gray-50">
-                <p className="text-xl font-bold text-[#1A2B4A]">{s.value}</p>
+                <p className="text-xl font-bold text-foreground">{s.value}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
               </div>
             ))}
@@ -160,12 +160,12 @@ export default function AIConfigPage() {
               {AI_CONFIG_KEYS.map(({ key, label, description }) => (
                 <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-[#1A2B4A]">{label}</p>
+                    <p className="text-sm font-medium text-foreground">{label}</p>
                     <p className="text-xs text-gray-400">{description}</p>
                   </div>
                   <input
                     type="number"
-                    className="w-32 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00875A] focus:border-transparent"
+                    className="w-32 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent"
                     value={edits[key] ?? ""}
                     onChange={(e) => handleChange(key, e.target.value)}
                   />
@@ -191,7 +191,7 @@ export default function AIConfigPage() {
             ].map((m) => (
               <div key={m.label} className="p-3 rounded-lg bg-gray-50 border border-gray-100">
                 <p className="text-xs text-gray-500 mb-1">{m.label}</p>
-                <p className="font-mono text-xs font-medium text-[#1A2B4A]">{m.model}</p>
+                <p className="font-mono text-xs font-medium text-foreground">{m.model}</p>
               </div>
             ))}
           </div>

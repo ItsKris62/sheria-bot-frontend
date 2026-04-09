@@ -54,10 +54,10 @@ export default function AdminDashboard() {
   const s = stats as StatsShape | undefined
 
   const statCards = [
-    { label: "Total Users",         value: s?.users?.total?.toLocaleString(),         icon: Users,     color: "bg-[#1A2B4A]" },
-    { label: "Organizations",       value: s?.organizations?.total?.toLocaleString(), icon: Building2, color: "bg-[#00875A]" },
-    { label: "AI Queries",          value: s?.queries?.total?.toLocaleString(),        icon: Bot,       color: "bg-[#D4A843]" },
-    { label: "Total Policies",      value: s?.policies?.total?.toLocaleString(),       icon: FileText,  color: "bg-purple-600" },
+    { label: "Total Users",         value: s?.users?.total?.toLocaleString(),         icon: Users,     color: "bg-primary" },
+    { label: "Organizations",       value: s?.organizations?.total?.toLocaleString(), icon: Building2, color: "bg-secondary" },
+    { label: "AI Queries",          value: s?.queries?.total?.toLocaleString(),        icon: Bot,       color: "bg-warning" },
+    { label: "Total Policies",      value: s?.policies?.total?.toLocaleString(),       icon: FileText,  color: "bg-accent" },
   ]
 
   const typedHealth = health as {
@@ -74,8 +74,8 @@ export default function AdminDashboard() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#1A2B4A]">Admin Dashboard</h1>
-        <p className="text-gray-500 mt-1">Platform overview and system management</p>
+        <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-1">Platform overview and system management</p>
       </div>
 
       {/* KPI Cards */}
@@ -90,7 +90,7 @@ export default function AdminDashboard() {
                     <p className="text-sm text-gray-500">{stat.label}</p>
                     {statsLoading
                       ? <Skeleton className="h-8 w-20 mt-1" />
-                      : <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{stat.value ?? "—"}</p>
+                      : <p className="text-2xl font-bold text-foreground mt-1">{stat.value ?? "—"}</p>
                     }
                   </div>
                   <div className={`p-2.5 rounded-lg ${stat.color}`}>
@@ -117,11 +117,11 @@ export default function AdminDashboard() {
             ) : (
               <ResponsiveContainer width="100%" height={144}>
                 <LineChart data={growth.series} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} tickFormatter={(v: string) => new Date(v).toLocaleDateString("en-KE", { month: "short", day: "numeric" })} />
-                  <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v: string) => new Date(v).toLocaleDateString("en-KE", { month: "short", day: "numeric" })} />
+                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
                   <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} formatter={(v: number) => [v, "Users"]} />
-                  <Line type="monotone" dataKey="count" stroke="#1A2B4A" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -140,11 +140,11 @@ export default function AdminDashboard() {
             ) : (
               <ResponsiveContainer width="100%" height={144}>
                 <BarChart data={aiUsage.series} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} tickFormatter={(v: string) => new Date(v).toLocaleDateString("en-KE", { month: "short", day: "numeric" })} />
-                  <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v: string) => new Date(v).toLocaleDateString("en-KE", { month: "short", day: "numeric" })} />
+                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
                   <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} formatter={(v: number) => [v, "Queries"]} />
-                  <Bar dataKey="count" fill="#D4A843" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="count" fill="hsl(var(--warning))" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -166,13 +166,13 @@ export default function AdminDashboard() {
                   const Icon = action.icon
                   return (
                     <Link key={action.label} href={action.href}>
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
-                        <div className="p-2 rounded-lg bg-[#1A2B4A]/10">
-                          <Icon className="h-4 w-4 text-[#1A2B4A]" />
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-card hover:bg-muted transition-colors cursor-pointer border border-border/50">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Icon className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-[#1A2B4A] text-sm">{action.label}</p>
-                          <p className="text-xs text-gray-400 truncate">{action.description}</p>
+                          <p className="font-medium text-foreground text-sm">{action.label}</p>
+                          <p className="text-xs text-muted-foreground truncate">{action.description}</p>
                         </div>
                         <ArrowRight className="h-4 w-4 text-gray-300 flex-shrink-0" />
                       </div>
@@ -196,8 +196,8 @@ export default function AdminDashboard() {
                   {recentLogs.map((log) => (
                     <div key={log.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                       <div>
-                        <p className="text-sm font-medium text-[#1A2B4A]">{log.action}</p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-sm font-medium text-foreground">{log.action}</p>
+                        <p className="text-xs text-muted-foreground">
                           {log.userId ?? "System"}{log.entityType ? ` · ${log.entityType}` : ""}
                         </p>
                       </div>
@@ -208,7 +208,7 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               )}
-              <Link href="/admin/audit-logs" className="block mt-3 text-xs text-[#00875A] hover:underline text-center">
+              <Link href="/admin/audit-logs" className="block mt-3 text-xs text-primary hover:underline text-center">
                 View all audit logs →
               </Link>
             </CardContent>
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-[#1A2B4A]" /> System Health
+                <Shield className="h-4 w-4 text-primary" /> System Health
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -246,13 +246,13 @@ export default function AdminDashboard() {
               </div>
               {typedHealth?.uptime && (
                 <div className="flex items-center justify-between pt-2 border-t">
-                  <span className="text-sm text-gray-500">Uptime</span>
-                  <span className="text-sm font-medium text-[#1A2B4A]">
+                  <span className="text-sm text-muted-foreground">Uptime</span>
+                  <span className="text-sm font-medium text-foreground">
                     {Math.floor(typedHealth.uptime / 3600)}h {Math.floor((typedHealth.uptime % 3600) / 60)}m
                   </span>
                 </div>
               )}
-              <Link href="/admin/system" className="block mt-2 text-xs text-[#00875A] hover:underline text-center">
+              <Link href="/admin/system" className="block mt-2 text-xs text-primary hover:underline text-center">
                 Full system status →
               </Link>
             </CardContent>

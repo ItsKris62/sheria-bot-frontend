@@ -82,7 +82,7 @@ export default function AuditLogsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A2B4A]">Audit Logs</h1>
+          <h1 className="text-2xl font-bold text-foreground">Audit Logs</h1>
           <p className="text-gray-500 mt-1">Track all system activity and administrative actions</p>
         </div>
         <Button
@@ -164,7 +164,7 @@ export default function AuditLogsPage() {
                           <Icon className="h-3.5 w-3.5" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-[#1A2B4A] text-sm truncate">{log.action}</p>
+                          <p className="font-medium text-foreground text-sm truncate">{log.action}</p>
                           <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5 flex-wrap">
                             <span>{log.userId ?? "System"}</span>
                             {log.entityId && <span className="font-mono">{log.entityId.slice(0, 8)}</span>}

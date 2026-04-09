@@ -110,7 +110,7 @@ export default function AdminOrganizationsPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#1A2B4A]">Organizations</h1>
+        <h1 className="text-2xl font-bold text-foreground">Organizations</h1>
         <p className="text-sm text-gray-500 mt-1">Manage all organizations on the platform</p>
       </div>
 
@@ -127,7 +127,7 @@ export default function AdminOrganizationsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-gray-500">{card.label}</p>
-                  <p className="text-2xl font-bold text-[#1A2B4A]">{card.value}</p>
+                  <p className="text-2xl font-bold text-foreground">{card.value}</p>
                 </div>
                 <card.icon className={`w-8 h-8 ${card.color} opacity-80`} />
               </div>
@@ -202,13 +202,13 @@ export default function AdminOrganizationsPage() {
                       <tr key={org.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[#1A2B4A] flex items-center justify-center flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                               <span className="text-white text-xs font-bold">
                                 {org.name.charAt(0).toUpperCase()}
                               </span>
                             </div>
                             <div>
-                              <p className="font-medium text-[#1A2B4A] truncate max-w-[200px]">{org.name}</p>
+                              <p className="font-medium text-foreground truncate max-w-[200px]">{org.name}</p>
                               {org.registrationNumber && (
                                 <p className="text-xs text-gray-400">Reg: {org.registrationNumber}</p>
                               )}

@@ -146,7 +146,7 @@ export default function OrgDetailPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A2B4A]">{org.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{org.name}</h1>
           <p className="text-sm text-gray-500 capitalize">{org.type} &middot; Reg: {org.registrationNumber ?? "N/A"}</p>
         </div>
         <div className="flex gap-2">
@@ -171,8 +171,8 @@ export default function OrgDetailPage() {
             ].map((s) => (
               <Card key={s.label}>
                 <CardContent className="pt-4 pb-3 text-center">
-                  <s.icon className="w-6 h-6 mx-auto text-[#1A2B4A] mb-1 opacity-70" />
-                  <p className="text-2xl font-bold text-[#1A2B4A]">{s.value}</p>
+                  <s.icon className="w-6 h-6 mx-auto text-foreground mb-1 opacity-70" />
+                  <p className="text-2xl font-bold text-foreground">{s.value}</p>
                   <p className="text-xs text-gray-500">{s.label}</p>
                 </CardContent>
               </Card>
@@ -246,13 +246,13 @@ export default function OrgDetailPage() {
                   {(membersData as { id: string; fullName: string; email: string; role: string; status: string; createdAt: string | Date }[]).map((member) => (
                     <div key={member.id} className="flex items-center justify-between py-2.5">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-7 h-7 rounded-full bg-[#1A2B4A]/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-[#1A2B4A] text-xs font-bold">
+                        <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-foreground text-xs font-bold">
                             {(member.fullName || member.email).charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-[#1A2B4A] truncate">{member.fullName || "—"}</p>
+                          <p className="text-sm font-medium text-foreground truncate">{member.fullName || "—"}</p>
                           <p className="text-xs text-gray-400 truncate">{member.email}</p>
                         </div>
                       </div>
@@ -399,7 +399,7 @@ export default function OrgDetailPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setPlanDialogOpen(false)}>Cancel</Button>
             <Button
-              className="bg-[#00875A] hover:bg-[#007a50]"
+              className="bg-secondary hover:bg-[#007a50]"
               disabled={!selectedPlan || updatePlanMutation.isPending}
               onClick={() => {
                 if (!selectedPlan) return

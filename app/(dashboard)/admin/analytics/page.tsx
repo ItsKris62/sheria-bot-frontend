@@ -36,7 +36,7 @@ import {
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 
-const COLORS = ["#1A2B4A", "#00875A", "#D4A843", "#4A5568", "#6366f1", "#f43f5e"]
+const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--warning))", "#4A5568", "#6366f1", "#f43f5e"]
 
 const PLAN_DISPLAY: Record<string, string> = {
   REGULATOR: "Regulator",
@@ -70,7 +70,7 @@ function StatCard({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide">{label}</p>
-            <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{value}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
             {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
           </div>
           <div className={`p-2 rounded-lg ${color}`}>
@@ -125,7 +125,7 @@ export default function AdminAnalyticsPage() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A2B4A]">Analytics</h1>
+          <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
           <p className="text-sm text-gray-500 mt-1">Platform metrics and growth insights</p>
         </div>
         <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
@@ -152,28 +152,28 @@ export default function AdminAnalyticsPage() {
               value={revenue ? formatKES(revenue.totalRevenue) : "—"}
               sub="All time"
               icon={DollarSign}
-              color="bg-[#00875A]"
+              color="bg-secondary"
             />
             <StatCard
               label="This Month"
               value={revenue ? formatKES(revenue.currentMonthRevenue) : "—"}
               sub={`Last month: ${revenue ? formatKES(revenue.lastMonthRevenue) : "—"}`}
               icon={TrendingUp}
-              color="bg-[#1A2B4A]"
+              color="bg-primary"
             />
             <StatCard
               label="New Users"
               value={growth?.total ?? "—"}
               sub={rangeLabel}
               icon={Users}
-              color="bg-purple-600"
+              color="bg-accent"
             />
             <StatCard
               label="AI Queries (month)"
               value={aiUsage?.queriesThisMonth ?? "—"}
               sub={`Total: ${aiUsage?.totalQueries ?? "—"}`}
               icon={Zap}
-              color="bg-[#D4A843]"
+              color="bg-warning"
             />
           </>
         )}
@@ -221,7 +221,7 @@ export default function AdminAnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
                   <LineChart data={growth.series} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis
                       dataKey="date"
                       tick={{ fontSize: 11, fill: "#6b7280" }}
@@ -240,7 +240,7 @@ export default function AdminAnalyticsPage() {
                     <Line
                       type="monotone"
                       dataKey="count"
-                      stroke="#1A2B4A"
+                      stroke="hsl(var(--primary))"
                       strokeWidth={2}
                       dot={false}
                       activeDot={{ r: 5 }}
@@ -262,19 +262,19 @@ export default function AdminAnalyticsPage() {
                 <Card>
                   <CardContent className="pt-5 pb-4 text-center">
                     <p className="text-xs text-gray-500 uppercase tracking-wide">Payment Success Rate</p>
-                    <p className="text-3xl font-bold text-[#00875A] mt-1">{revenue.successRate}%</p>
+                    <p className="text-3xl font-bold text-primary mt-1">{revenue.successRate}%</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="pt-5 pb-4 text-center">
                     <p className="text-xs text-gray-500 uppercase tracking-wide">Stripe Revenue</p>
-                    <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{formatKES(revenue.byProvider.STRIPE)}</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">{formatKES(revenue.byProvider.STRIPE)}</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="pt-5 pb-4 text-center">
                     <p className="text-xs text-gray-500 uppercase tracking-wide">M-Pesa Revenue</p>
-                    <p className="text-2xl font-bold text-[#1A2B4A] mt-1">{formatKES(revenue.byProvider.MPESA)}</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">{formatKES(revenue.byProvider.MPESA)}</p>
                   </CardContent>
                 </Card>
               </>
@@ -299,7 +299,7 @@ export default function AdminAnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={revenue.series} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis
                       dataKey="date"
                       tick={{ fontSize: 11, fill: "#6b7280" }}
@@ -313,7 +313,7 @@ export default function AdminAnalyticsPage() {
                       contentStyle={{ fontSize: 12, borderRadius: 8 }}
                       formatter={(value: number) => [formatKES(value), "Revenue"]}
                     />
-                    <Bar dataKey="amount" fill="#00875A" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="amount" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -335,7 +335,7 @@ export default function AdminAnalyticsPage() {
               ].map((s) => (
                 <Card key={s.label}>
                   <CardContent className="pt-4 pb-3 text-center">
-                    <p className="text-2xl font-bold text-[#1A2B4A]">{s.value.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-foreground">{s.value.toLocaleString()}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
                   </CardContent>
                 </Card>
@@ -360,7 +360,7 @@ export default function AdminAnalyticsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
                   <LineChart data={aiUsage.series} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis
                       dataKey="date"
                       tick={{ fontSize: 11, fill: "#6b7280" }}
@@ -371,7 +371,7 @@ export default function AdminAnalyticsPage() {
                       contentStyle={{ fontSize: 12, borderRadius: 8 }}
                       formatter={(value: number) => [value, "Queries"]}
                     />
-                    <Line type="monotone" dataKey="count" stroke="#D4A843" strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="count" stroke="hsl(var(--warning))" strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
                   </LineChart>
                 </ResponsiveContainer>
               )}

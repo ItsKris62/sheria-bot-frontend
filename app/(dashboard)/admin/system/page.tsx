@@ -248,7 +248,7 @@ export default function SystemSettingsPage() {
                 )}
                 <Button
                   size="sm"
-                  className="bg-[#00875A] hover:bg-[#007a50] text-white"
+                  className="bg-secondary hover:bg-[#007a50] text-white"
                   onClick={handleSave}
                   disabled={!dirty || updateConfigMutation.isPending}
                 >

@@ -92,10 +92,10 @@ export default function BlogPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A2B4A]">Blog</h1>
+          <h1 className="text-2xl font-bold text-foreground">Blog</h1>
           <p className="text-sm text-gray-500 mt-1">Manage blog posts and regulatory insights</p>
         </div>
-        <Button className="bg-[#00875A] hover:bg-[#007a50] text-white gap-2" onClick={() => setCreateOpen(true)}>
+        <Button className="bg-secondary hover:bg-[#007a50] text-white gap-2" onClick={() => setCreateOpen(true)}>
           <Plus className="w-4 h-4" /> New Post
         </Button>
       </div>
@@ -152,7 +152,7 @@ export default function BlogPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          <p className="font-medium text-[#1A2B4A] truncate max-w-[240px]">{item.title ?? "(Untitled)"}</p>
+                          <p className="font-medium text-foreground truncate max-w-[240px]">{item.title ?? "(Untitled)"}</p>
                         </div>
                         {item.excerpt && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[240px] pl-6">{item.excerpt}</p>}
                       </td>
@@ -235,7 +235,7 @@ export default function BlogPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
             <Button
-              className="bg-[#00875A] hover:bg-[#007a50]"
+              className="bg-secondary hover:bg-[#007a50]"
               disabled={!createForm.title.trim() || createMutation.isPending}
               onClick={() => createMutation.mutate({
                 contentType: "BLOG_POST",

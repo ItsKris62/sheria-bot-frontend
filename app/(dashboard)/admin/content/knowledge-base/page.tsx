@@ -103,10 +103,10 @@ export default function KnowledgeBasePage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A2B4A]">Knowledge Base</h1>
+          <h1 className="text-2xl font-bold text-foreground">Knowledge Base</h1>
           <p className="text-sm text-gray-500 mt-1">Manage help articles and compliance guides</p>
         </div>
-        <Button className="bg-[#00875A] hover:bg-[#007a50] text-white gap-2" onClick={() => setCreateOpen(true)}>
+        <Button className="bg-secondary hover:bg-[#007a50] text-white gap-2" onClick={() => setCreateOpen(true)}>
           <Plus className="w-4 h-4" /> New Article
         </Button>
       </div>
@@ -163,7 +163,7 @@ export default function KnowledgeBasePage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          <p className="font-medium text-[#1A2B4A] truncate max-w-[240px]">{item.title ?? "(Untitled)"}</p>
+                          <p className="font-medium text-foreground truncate max-w-[240px]">{item.title ?? "(Untitled)"}</p>
                         </div>
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell text-gray-500 capitalize">{item.category ?? "—"}</td>
@@ -243,7 +243,7 @@ export default function KnowledgeBasePage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
             <Button
-              className="bg-[#00875A] hover:bg-[#007a50]"
+              className="bg-secondary hover:bg-[#007a50]"
               disabled={!createForm.title.trim() || createMutation.isPending}
               onClick={() => createMutation.mutate({
                 contentType: "KNOWLEDGE_BASE_ARTICLE",

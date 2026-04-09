@@ -222,7 +222,7 @@ export default function SecurityPage() {
                 className="h-9 text-sm bg-muted/50"
               />
             </div>
-            <Button size="sm" className="bg-[#1A2B4A] hover:bg-[#1a2b4a]/80 text-white h-9" onClick={applyFilters}>
+            <Button size="sm" className="bg-primary hover:bg-primary/80 text-white h-9" onClick={applyFilters}>
               Apply
             </Button>
             <Button size="sm" variant="ghost" className="h-9" onClick={clearFilters}>
