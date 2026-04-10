@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type ElementType } from "react"
+import { Activity, BarChart2, DollarSign, PieChart as PieIcon, TrendingUp, Users, Zap } from "lucide-react"
+import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, XAxis, YAxis } from "recharts"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Skeleton } from "@/components/ui/skeleton"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import {
   Select,
   SelectContent,
@@ -11,44 +13,83 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts"
-import {
-  Users,
-  TrendingUp,
-  DollarSign,
-  Zap,
-  BarChart2,
-  PieChart as PieIcon,
-} from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { trpc } from "@/lib/trpc"
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--warning))", "#4A5568", "#6366f1", "#f43f5e"]
+type DateRange = "7d" | "30d" | "90d" | "1y"
 
+const LIVE_QUERY_OPTIONS = { refetchInterval: 10_000, refetchIntervalInBackground: true }
+const RANGE_DAYS: Record<DateRange, number> = { "7d": 7, "30d": 30, "90d": 90, "1y": 365 }
+const RANGE_LABELS: Record<DateRange, string> = {
+  "7d": "Last 7 days",
+  "30d": "Last 30 days",
+  "90d": "Last 3 months",
+  "1y": "Last 12 months",
+}
 const PLAN_DISPLAY: Record<string, string> = {
   REGULATOR: "Regulator",
   STARTUP: "Startup",
   BUSINESS: "Business",
   ENTERPRISE: "Enterprise",
 }
+const PLAN_COLORS: Record<string, string> = {
+  REGULATOR: "hsl(var(--chart-1))",
+  STARTUP: "hsl(var(--chart-2))",
+  BUSINESS: "hsl(var(--chart-3))",
+  ENTERPRISE: "hsl(var(--chart-4))",
+}
+const STATUS_COLORS: Record<string, string> = {
+  ACTIVE: "hsl(var(--chart-2))",
+  TRIALING: "hsl(var(--chart-1))",
+  PAST_DUE: "hsl(var(--chart-4))",
+  CANCELLED: "hsl(var(--chart-5))",
+  GRACE_PERIOD: "hsl(var(--chart-3))",
+  EXPIRED: "hsl(var(--muted-foreground))",
+}
+
+const userGrowthConfig = {
+  count: { label: "New users", color: "hsl(var(--chart-1))" },
+} satisfies ChartConfig
+
+const revenueConfig = {
+  amount: { label: "Revenue", color: "hsl(var(--chart-2))" },
+} satisfies ChartConfig
+
+const aiConfig = {
+  count: { label: "AI queries", color: "hsl(var(--chart-3))" },
+} satisfies ChartConfig
 
 function formatKES(amount: number) {
   if (amount >= 1_000_000) return `KES ${(amount / 1_000_000).toFixed(1)}M`
   if (amount >= 1_000) return `KES ${(amount / 1_000).toFixed(0)}K`
-  return `KES ${amount.toLocaleString()}`
+  return `KES ${amount.toLocaleString("en-KE", { maximumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`
+}
+
+function formatPercent(value: number) {
+  return `${Math.round(value)}%`
+}
+
+function formatMonthLabel(value: string) {
+  return new Date(`${value}-01`).toLocaleDateString("en-KE", { month: "short", year: "2-digit" })
+}
+
+function formatSeriesLabel(value: string, period: "daily" | "weekly" | "monthly") {
+  if (period === "monthly") return formatMonthLabel(value)
+  return new Date(value).toLocaleDateString("en-KE", { month: "short", day: "numeric" })
+}
+
+function formatStatusLabel(status: string) {
+  return status.replace(/_/g, " ").toLowerCase().replace(/^./, (char) => char.toUpperCase())
+}
+
+function getPercentDelta(current: number, previous: number) {
+  if (previous <= 0) return current > 0 ? 100 : 0
+  return ((current - previous) / previous) * 100
+}
+
+function getPeakPoint<T>(items: T[], getValue: (item: T) => number) {
+  return items.reduce<T | null>((peak, item) => (!peak || getValue(item) > getValue(peak) ? item : peak), null)
 }
 
 function StatCard({
@@ -56,25 +97,25 @@ function StatCard({
   value,
   sub,
   icon: Icon,
-  color,
+  tone,
 }: {
   label: string
   value: string | number
   sub?: string
-  icon: React.ElementType
-  color: string
+  icon: ElementType
+  tone: string
 }) {
   return (
-    <Card>
+    <Card className="border-border/60">
       <CardContent className="pt-5 pb-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">{label}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
-            {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+            <p className="text-2xl font-semibold text-foreground">{value}</p>
+            {sub ? <p className="text-xs text-muted-foreground">{sub}</p> : null}
           </div>
-          <div className={`p-2 rounded-lg ${color}`}>
-            <Icon className="w-5 h-5 text-white" />
+          <div className="rounded-xl p-2.5" style={{ backgroundColor: tone }}>
+            <Icon className="h-5 w-5 text-white" />
           </div>
         </div>
       </CardContent>
@@ -82,14 +123,15 @@ function StatCard({
   )
 }
 
-type DateRange = "7d" | "30d" | "90d" | "1y"
-
-const RANGE_DAYS: Record<DateRange, number> = { "7d": 7, "30d": 30, "90d": 90, "1y": 365 }
-const RANGE_LABELS: Record<DateRange, string> = {
-  "7d": "Last 7 days",
-  "30d": "Last 30 days",
-  "90d": "Last 3 months",
-  "1y": "Last 12 months",
+function EmptyState({ icon: Icon, message }: { icon: ElementType; message: string }) {
+  return (
+    <div className="flex h-[280px] items-center justify-center text-muted-foreground">
+      <div className="text-center">
+        <Icon className="mx-auto mb-2 h-10 w-10 opacity-30" />
+        <p>{message}</p>
+      </div>
+    </div>
+  )
 }
 
 export default function AdminAnalyticsPage() {
@@ -99,37 +141,76 @@ export default function AdminAnalyticsPage() {
   const dateFrom = new Date(Date.now() - RANGE_DAYS[dateRange] * 24 * 60 * 60 * 1000).toISOString()
   const rangeLabel = RANGE_LABELS[dateRange]
 
-  const { data: growth, isLoading: growthLoading } = trpc.admin.getUserGrowth.useQuery({
-    period: growthPeriod,
-    dateFrom,
-  })
+  const growthQuery = trpc.admin.getUserGrowth.useQuery({ period: growthPeriod, dateFrom }, LIVE_QUERY_OPTIONS)
+  const revenueQuery = trpc.admin.getRevenueMetrics.useQuery({ dateFrom }, LIVE_QUERY_OPTIONS)
+  const aiQuery = trpc.admin.getAIUsageMetrics.useQuery({ dateFrom }, LIVE_QUERY_OPTIONS)
+  const breakdownQuery = trpc.admin.getSubscriptionBreakdown.useQuery(undefined, LIVE_QUERY_OPTIONS)
+  const overviewQuery = trpc.admin.getSubscriptionOverview.useQuery(undefined, LIVE_QUERY_OPTIONS)
 
-  const { data: revenue, isLoading: revenueLoading } = trpc.admin.getRevenueMetrics.useQuery({
-    dateFrom,
-  })
+  const growth = growthQuery.data
+  const revenue = revenueQuery.data
+  const aiUsage = aiQuery.data
+  const subBreakdown = breakdownQuery.data
+  const subOverview = overviewQuery.data
+  const isRefreshing = [
+    growthQuery.isFetching,
+    revenueQuery.isFetching,
+    aiQuery.isFetching,
+    breakdownQuery.isFetching,
+    overviewQuery.isFetching,
+  ].some(Boolean)
 
-  const { data: aiUsage, isLoading: aiLoading } = trpc.admin.getAIUsageMetrics.useQuery({
-    dateFrom,
-  })
+  const growthSeries = growth?.series ?? []
+  const revenueSeries = revenue?.series ?? []
+  const aiSeries = aiUsage?.series ?? []
 
-  const { data: subBreakdown, isLoading: subLoading } = trpc.admin.getSubscriptionBreakdown.useQuery()
-
-  const planPieData = subBreakdown
-    ? Object.entries(subBreakdown.byPlan).map(([name, value]) => ({
-        name: PLAN_DISPLAY[name] ?? name,
-        value,
-      }))
+  const planChartData = subBreakdown
+    ? Object.entries(subBreakdown.byPlan)
+        .filter(([, value]) => value > 0)
+        .map(([plan, value]) => ({
+          plan,
+          name: PLAN_DISPLAY[plan] ?? plan,
+          value,
+          fill: PLAN_COLORS[plan] ?? "hsl(var(--chart-5))",
+        }))
     : []
 
+  const statusRows = subBreakdown
+    ? Object.entries(subBreakdown.byStatus)
+        .filter(([, value]) => value > 0)
+        .sort(([, a], [, b]) => b - a)
+        .map(([status, value]) => ({
+          status,
+          label: formatStatusLabel(status),
+          value,
+          percent: subBreakdown.total > 0 ? Math.round((value / subBreakdown.total) * 100) : 0,
+          color: STATUS_COLORS[status] ?? "hsl(var(--chart-5))",
+        }))
+    : []
+
+  const monthlyDelta = revenue ? getPercentDelta(revenue.currentMonthRevenue, revenue.lastMonthRevenue) : 0
+  const peakGrowthDay = getPeakPoint(growthSeries, (item) => item.count)
+  const peakRevenueMonth = getPeakPoint(revenueSeries, (item) => item.amount)
+  const peakUsageDay = getPeakPoint(aiSeries, (item) => item.count)
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
-          <p className="text-sm text-gray-500 mt-1">Platform metrics and growth insights</p>
+    <div className="space-y-6 p-6">
+      <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
+            <Badge variant="secondary" className="gap-2 border border-border/60 bg-muted/60 text-foreground">
+              <span className={`h-2 w-2 rounded-full ${isRefreshing ? "animate-pulse" : ""}`} style={{ backgroundColor: "hsl(var(--chart-2))" }} />
+              Live refresh every 10s
+            </Badge>
+          </div>
+          <p className="max-w-3xl text-sm text-muted-foreground">
+            Executive visibility into growth, revenue performance, AI adoption, and subscription health.
+          </p>
         </div>
-        <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
-          <SelectTrigger className="w-44">
+
+        <Select value={dateRange} onValueChange={(value) => setDateRange(value as DateRange)}>
+          <SelectTrigger className="w-full sm:w-44">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -141,63 +222,38 @@ export default function AdminAnalyticsPage() {
         </Select>
       </div>
 
-      {/* Overview KPI cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {revenueLoading ? (
-          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+        {revenueQuery.isLoading || growthQuery.isLoading || aiQuery.isLoading || overviewQuery.isLoading ? (
+          Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} className="h-28 rounded-xl" />)
         ) : (
           <>
-            <StatCard
-              label="Total Revenue"
-              value={revenue ? formatKES(revenue.totalRevenue) : "—"}
-              sub="All time"
-              icon={DollarSign}
-              color="bg-secondary"
-            />
-            <StatCard
-              label="This Month"
-              value={revenue ? formatKES(revenue.currentMonthRevenue) : "—"}
-              sub={`Last month: ${revenue ? formatKES(revenue.lastMonthRevenue) : "—"}`}
-              icon={TrendingUp}
-              color="bg-primary"
-            />
-            <StatCard
-              label="New Users"
-              value={growth?.total ?? "—"}
-              sub={rangeLabel}
-              icon={Users}
-              color="bg-accent"
-            />
-            <StatCard
-              label="AI Queries (month)"
-              value={aiUsage?.queriesThisMonth ?? "—"}
-              sub={`Total: ${aiUsage?.totalQueries ?? "—"}`}
-              icon={Zap}
-              color="bg-warning"
-            />
+            <StatCard label="Revenue booked" value={revenue ? formatKES(revenue.totalRevenue) : "—"} sub="All-time completed payments" icon={DollarSign} tone="hsl(var(--chart-2))" />
+            <StatCard label="This month" value={revenue ? formatKES(revenue.currentMonthRevenue) : "—"} sub={revenue ? `${formatPercent(monthlyDelta)} vs last month` : "—"} icon={TrendingUp} tone="hsl(var(--chart-1))" />
+            <StatCard label="New users" value={growth ? growth.total.toLocaleString() : "—"} sub={rangeLabel} icon={Users} tone="hsl(var(--chart-3))" />
+            <StatCard label="Trial conversion" value={subOverview ? formatPercent(subOverview.trialConversionRate) : "—"} sub={subOverview ? `${subOverview.totalActive} active organizations` : "Subscription health"} icon={PieIcon} tone="hsl(var(--chart-4))" />
+            <StatCard label="AI queries this month" value={aiUsage ? aiUsage.queriesThisMonth.toLocaleString() : "—"} sub={aiUsage ? `${aiUsage.totalQueries.toLocaleString()} in ${rangeLabel.toLowerCase()}` : "—"} icon={Zap} tone="hsl(var(--chart-5))" />
           </>
         )}
       </div>
 
-      <Tabs defaultValue="users">
-        <TabsList className="mb-4">
-          <TabsTrigger value="users"><Users className="w-4 h-4 mr-1.5" />Users</TabsTrigger>
-          <TabsTrigger value="revenue"><DollarSign className="w-4 h-4 mr-1.5" />Revenue</TabsTrigger>
-          <TabsTrigger value="ai"><Zap className="w-4 h-4 mr-1.5" />AI Usage</TabsTrigger>
-          <TabsTrigger value="subscriptions"><PieIcon className="w-4 h-4 mr-1.5" />Subscriptions</TabsTrigger>
+      <Tabs defaultValue="users" className="space-y-4">
+        <TabsList className="h-auto flex-wrap justify-start gap-2 bg-transparent p-0">
+          <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" />Users</TabsTrigger>
+          <TabsTrigger value="revenue" className="gap-2"><DollarSign className="h-4 w-4" />Revenue</TabsTrigger>
+          <TabsTrigger value="ai" className="gap-2"><Zap className="h-4 w-4" />AI usage</TabsTrigger>
+          <TabsTrigger value="subscriptions" className="gap-2"><PieIcon className="h-4 w-4" />Subscriptions</TabsTrigger>
         </TabsList>
 
-        {/* USERS TAB */}
         <TabsContent value="users" className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <CardTitle className="text-base">User Growth</CardTitle>
-                  <CardDescription>New signups — {rangeLabel}</CardDescription>
+                  <CardTitle className="text-base">User growth trend</CardTitle>
+                  <CardDescription>Net new signups across {rangeLabel.toLowerCase()}.</CardDescription>
                 </div>
-                <Select value={growthPeriod} onValueChange={(v) => setGrowthPeriod(v as "daily" | "weekly" | "monthly")}>
-                  <SelectTrigger className="w-36">
+                <Select value={growthPeriod} onValueChange={(value) => setGrowthPeriod(value as "daily" | "weekly" | "monthly")}>
+                  <SelectTrigger className="w-full sm:w-36">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -209,134 +265,108 @@ export default function AdminAnalyticsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              {growthLoading ? (
-                <Skeleton className="h-64 w-full rounded-lg" />
-              ) : !growth?.series.length ? (
-                <div className="h-64 flex items-center justify-center text-gray-400">
-                  <div className="text-center">
-                    <BarChart2 className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                    <p>No signup data for this period</p>
-                  </div>
-                </div>
+              {growthQuery.isLoading ? (
+                <Skeleton className="h-[320px] w-full rounded-lg" />
+              ) : !growthSeries.length ? (
+                <EmptyState icon={BarChart2} message="No signup activity was recorded for this period." />
               ) : (
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={growth.series} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 11, fill: "#6b7280" }}
-                      tickFormatter={(v: string) => {
-                        const d = new Date(v)
-                        return growthPeriod === "monthly"
-                          ? d.toLocaleDateString("en-KE", { month: "short", year: "2-digit" })
-                          : d.toLocaleDateString("en-KE", { month: "short", day: "numeric" })
-                      }}
+                <ChartContainer config={userGrowthConfig} className="h-[320px] w-full">
+                  <LineChart data={growthSeries} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <XAxis axisLine={false} tickLine={false} dataKey="date" tickFormatter={(value) => formatSeriesLabel(value, growthPeriod)} />
+                    <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
+                    <ChartTooltip
+                      cursor={false}
+                      content={
+                        <ChartTooltipContent
+                          indicator="line"
+                          labelFormatter={(value) => formatSeriesLabel(String(value), growthPeriod)}
+                          formatter={(value) => <span className="font-medium text-foreground">{Number(value).toLocaleString()} new users</span>}
+                        />
+                      }
                     />
-                    <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} allowDecimals={false} />
-                    <Tooltip
-                      contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                      formatter={(value: number) => [value, "New Users"]}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="count"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      dot={false}
-                      activeDot={{ r: 5 }}
-                    />
+                    <Line type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={3} dot={false} activeDot={{ r: 5 }} />
                   </LineChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               )}
             </CardContent>
           </Card>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Peak signup period</p><p className="mt-2 text-xl font-semibold text-foreground">{peakGrowthDay ? `${peakGrowthDay.count.toLocaleString()} users` : "—"}</p><p className="mt-1 text-xs text-muted-foreground">{peakGrowthDay ? formatSeriesLabel(peakGrowthDay.date, growthPeriod) : "No data"}</p></CardContent></Card>
+            <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Average per bucket</p><p className="mt-2 text-xl font-semibold text-foreground">{growthSeries.length && growth ? Math.round(growth.total / growthSeries.length).toLocaleString() : "0"}</p><p className="mt-1 text-xs text-muted-foreground">Measured by selected cadence</p></CardContent></Card>
+            <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Range total</p><p className="mt-2 text-xl font-semibold text-foreground">{growth ? growth.total.toLocaleString() : "0"}</p><p className="mt-1 text-xs text-muted-foreground">Updated automatically in real time</p></CardContent></Card>
+          </div>
         </TabsContent>
 
-        {/* REVENUE TAB */}
         <TabsContent value="revenue" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {revenueLoading ? (
-              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
-            ) : revenue ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            {revenueQuery.isLoading ? (
+              Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-24 rounded-xl" />)
+            ) : (
               <>
-                <Card>
-                  <CardContent className="pt-5 pb-4 text-center">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">Payment Success Rate</p>
-                    <p className="text-3xl font-bold text-primary mt-1">{revenue.successRate}%</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-5 pb-4 text-center">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">Stripe Revenue</p>
-                    <p className="text-2xl font-bold text-foreground mt-1">{formatKES(revenue.byProvider.STRIPE)}</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-5 pb-4 text-center">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">M-Pesa Revenue</p>
-                    <p className="text-2xl font-bold text-foreground mt-1">{formatKES(revenue.byProvider.MPESA)}</p>
-                  </CardContent>
-                </Card>
+                <StatCard label="Payment success rate" value={revenue ? formatPercent(revenue.successRate) : "—"} sub="Completed vs attempted payments" icon={Activity} tone="hsl(var(--chart-1))" />
+                <StatCard label="Stripe volume" value={revenue ? formatKES(revenue.byProvider.STRIPE) : "—"} sub="Selected period" icon={DollarSign} tone="hsl(var(--chart-2))" />
+                <StatCard label="M-Pesa volume" value={revenue ? formatKES(revenue.byProvider.MPESA) : "—"} sub="Selected period" icon={DollarSign} tone="hsl(var(--chart-3))" />
               </>
-            ) : null}
+            )}
           </div>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Monthly Revenue (KES)</CardTitle>
-              <CardDescription>{rangeLabel}</CardDescription>
+              <CardTitle className="text-base">Revenue trend</CardTitle>
+              <CardDescription>Monthly completed revenue in Kenyan shillings.</CardDescription>
             </CardHeader>
             <CardContent>
-              {revenueLoading ? (
-                <Skeleton className="h-64 w-full rounded-lg" />
-              ) : !revenue?.series.length ? (
-                <div className="h-64 flex items-center justify-center text-gray-400">
-                  <div className="text-center">
-                    <DollarSign className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                    <p>No revenue data available</p>
-                  </div>
-                </div>
+              {revenueQuery.isLoading ? (
+                <Skeleton className="h-[320px] w-full rounded-lg" />
+              ) : !revenueSeries.length ? (
+                <EmptyState icon={DollarSign} message="No completed revenue has been recorded yet." />
               ) : (
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={revenue.series} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 11, fill: "#6b7280" }}
-                      tickFormatter={(v: string) => {
-                        const d = new Date(v + "-01")
-                        return d.toLocaleDateString("en-KE", { month: "short", year: "2-digit" })
-                      }}
+                <ChartContainer config={revenueConfig} className="h-[320px] w-full">
+                  <BarChart data={revenueSeries} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <XAxis axisLine={false} tickLine={false} dataKey="date" tickFormatter={formatMonthLabel} />
+                    <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `${Math.round(Number(value) / 1000)}K`} />
+                    <ChartTooltip
+                      cursor={false}
+                      content={
+                        <ChartTooltipContent
+                          indicator="dot"
+                          labelFormatter={(value) => formatMonthLabel(String(value))}
+                          formatter={(value) => <span className="font-medium text-foreground">{formatKES(Number(value))}</span>}
+                        />
+                      }
                     />
-                    <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`} />
-                    <Tooltip
-                      contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                      formatter={(value: number) => [formatKES(value), "Revenue"]}
-                    />
-                    <Bar dataKey="amount" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="amount" fill="var(--color-amount)" radius={[8, 8, 0, 0]} />
                   </BarChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               )}
             </CardContent>
           </Card>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Top revenue month</p><p className="mt-2 text-xl font-semibold text-foreground">{peakRevenueMonth ? formatKES(peakRevenueMonth.amount) : "—"}</p><p className="mt-1 text-xs text-muted-foreground">{peakRevenueMonth ? formatMonthLabel(peakRevenueMonth.date) : "No data"}</p></CardContent></Card>
+            <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Month-over-month movement</p><p className="mt-2 text-xl font-semibold text-foreground">{revenue ? formatPercent(monthlyDelta) : "—"}</p><p className="mt-1 text-xs text-muted-foreground">Current calendar month versus previous month</p></CardContent></Card>
+          </div>
         </TabsContent>
 
-        {/* AI USAGE TAB */}
         <TabsContent value="ai" className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {aiLoading ? (
-              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {aiQuery.isLoading ? (
+              Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-24 rounded-xl" />)
             ) : aiUsage ? (
               [
-                { label: "Queries (period)", value: aiUsage.totalQueries },
-                { label: "Policies completed", value: aiUsage.totalPolicies },
-                { label: "Checklists generated", value: aiUsage.totalChecklists },
-                { label: "Gap analyses done", value: aiUsage.totalGapAnalyses },
-              ].map((s) => (
-                <Card key={s.label}>
-                  <CardContent className="pt-4 pb-3 text-center">
-                    <p className="text-2xl font-bold text-foreground">{s.value.toLocaleString()}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+                { label: "Queries in range", value: aiUsage.totalQueries.toLocaleString() },
+                { label: "Policies completed", value: aiUsage.totalPolicies.toLocaleString() },
+                { label: "Checklists generated", value: aiUsage.totalChecklists.toLocaleString() },
+                { label: "Gap analyses", value: aiUsage.totalGapAnalyses.toLocaleString() },
+              ].map((item, index) => (
+                <Card key={item.label} className="border-border/60">
+                  <CardContent className="pt-5 pb-4">
+                    <p className="text-sm text-muted-foreground">{item.label}</p>
+                    <p className="mt-2 text-2xl font-semibold text-foreground">{item.value}</p>
+                    <div className="mt-3 h-1.5 rounded-full" style={{ backgroundColor: `hsl(var(--chart-${(index % 5) + 1}))` }} />
                   </CardContent>
                 </Card>
               ))
@@ -345,108 +375,138 @@ export default function AdminAnalyticsPage() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">AI Queries — {rangeLabel}</CardTitle>
+              <CardTitle className="text-base">AI engagement trend</CardTitle>
+              <CardDescription>Operational usage of AI workflows across {rangeLabel.toLowerCase()}.</CardDescription>
             </CardHeader>
             <CardContent>
-              {aiLoading ? (
-                <Skeleton className="h-64 w-full rounded-lg" />
-              ) : !aiUsage?.series.length ? (
-                <div className="h-64 flex items-center justify-center text-gray-400">
-                  <div className="text-center">
-                    <Zap className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                    <p>No AI usage data for this period</p>
-                  </div>
-                </div>
+              {aiQuery.isLoading ? (
+                <Skeleton className="h-[320px] w-full rounded-lg" />
+              ) : !aiSeries.length ? (
+                <EmptyState icon={Zap} message="No AI usage was recorded for this period." />
               ) : (
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={aiUsage.series} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 11, fill: "#6b7280" }}
-                      tickFormatter={(v: string) => new Date(v).toLocaleDateString("en-KE", { month: "short", day: "numeric" })}
+                <ChartContainer config={aiConfig} className="h-[320px] w-full">
+                  <LineChart data={aiSeries} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <XAxis axisLine={false} tickLine={false} dataKey="date" tickFormatter={(value) => formatSeriesLabel(value, "daily")} />
+                    <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
+                    <ChartTooltip
+                      cursor={false}
+                      content={
+                        <ChartTooltipContent
+                          indicator="line"
+                          labelFormatter={(value) => formatSeriesLabel(String(value), "daily")}
+                          formatter={(value) => <span className="font-medium text-foreground">{Number(value).toLocaleString()} queries</span>}
+                        />
+                      }
                     />
-                    <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} allowDecimals={false} />
-                    <Tooltip
-                      contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                      formatter={(value: number) => [value, "Queries"]}
-                    />
-                    <Line type="monotone" dataKey="count" stroke="hsl(var(--warning))" strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={3} dot={false} activeDot={{ r: 5 }} />
                   </LineChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               )}
             </CardContent>
           </Card>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Peak AI usage day</p><p className="mt-2 text-xl font-semibold text-foreground">{peakUsageDay ? `${peakUsageDay.count.toLocaleString()} queries` : "—"}</p><p className="mt-1 text-xs text-muted-foreground">{peakUsageDay ? formatSeriesLabel(peakUsageDay.date, "daily") : "No data"}</p></CardContent></Card>
+            <Card><CardContent className="pt-5"><p className="text-sm text-muted-foreground">Current month throughput</p><p className="mt-2 text-xl font-semibold text-foreground">{aiUsage ? aiUsage.queriesThisMonth.toLocaleString() : "0"}</p><p className="mt-1 text-xs text-muted-foreground">Real-time demand signal for AI features</p></CardContent></Card>
+          </div>
         </TabsContent>
 
-        {/* SUBSCRIPTIONS TAB */}
         <TabsContent value="subscriptions" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Plan breakdown pie */}
+          <div className="grid gap-4 md:grid-cols-3">
+            {overviewQuery.isLoading ? (
+              Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-24 rounded-xl" />)
+            ) : (
+              <>
+                <StatCard label="Active organizations" value={subOverview ? subOverview.totalActive.toLocaleString() : "—"} sub="Currently in active billing state" icon={PieIcon} tone="hsl(var(--chart-2))" />
+                <StatCard label="Churn rate" value={subOverview ? formatPercent(subOverview.churnRate) : "—"} sub="Cancelled or expired organizations" icon={TrendingUp} tone="hsl(var(--chart-5))" />
+                <StatCard label="Tracked organizations" value={subBreakdown ? subBreakdown.total.toLocaleString() : "—"} sub="Full subscription base" icon={Users} tone="hsl(var(--chart-4))" />
+              </>
+            )}
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Organizations by Plan</CardTitle>
+                <CardTitle className="text-base">Organization mix by plan</CardTitle>
+                <CardDescription>Distribution across the available subscription tiers.</CardDescription>
               </CardHeader>
               <CardContent>
-                {subLoading ? (
-                  <Skeleton className="h-64 w-full rounded-lg" />
-                ) : !planPieData.length ? (
-                  <div className="h-64 flex items-center justify-center text-gray-400">No data</div>
+                {breakdownQuery.isLoading ? (
+                  <Skeleton className="h-[320px] w-full rounded-lg" />
+                ) : !planChartData.length ? (
+                  <EmptyState icon={PieIcon} message="No subscription plan data is available." />
                 ) : (
-                  <ResponsiveContainer width="100%" height={260}>
-                    <PieChart>
-                      <Pie
-                        data={planPieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={90}
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: ${value}`}
-                        labelLine={false}
-                      >
-                        {planPieData.map((_, index) => (
-                          <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                      <Legend formatter={(v) => <span style={{ fontSize: 12 }}>{v}</span>} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="grid gap-6 lg:grid-cols-[320px_1fr] lg:items-center">
+                    <ChartContainer config={{ plans: { label: "Organizations", color: "hsl(var(--chart-1))" } }} className="mx-auto h-[280px] max-w-[320px]">
+                      <PieChart>
+                        <ChartTooltip
+                          cursor={false}
+                          content={
+                            <ChartTooltipContent
+                              hideLabel
+                              formatter={(value, _name, item) => (
+                                <span className="font-medium text-foreground">
+                                  {String(item?.payload?.name ?? "")} : {Number(value).toLocaleString()}
+                                </span>
+                              )}
+                            />
+                          }
+                        />
+                        <Pie data={planChartData} dataKey="value" nameKey="name" innerRadius={72} outerRadius={108} paddingAngle={3} strokeWidth={0}>
+                          {planChartData.map((entry) => <Cell key={entry.plan} fill={entry.fill} />)}
+                        </Pie>
+                      </PieChart>
+                    </ChartContainer>
+
+                    <div className="space-y-4">
+                      {planChartData.map((entry) => {
+                        const percent = subBreakdown && subBreakdown.total > 0 ? Math.round((entry.value / subBreakdown.total) * 100) : 0
+                        return (
+                          <div key={entry.plan} className="space-y-2">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2">
+                                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.fill }} />
+                                <span className="text-sm font-medium text-foreground">{entry.name}</span>
+                              </div>
+                              <span className="text-sm text-muted-foreground">{entry.value.toLocaleString()} ({percent}%)</span>
+                            </div>
+                            <div className="h-2 rounded-full bg-muted">
+                              <div className="h-full rounded-full" style={{ width: `${percent}%`, backgroundColor: entry.fill }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Status breakdown */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">By Subscription Status</CardTitle>
+                <CardTitle className="text-base">Subscription status health</CardTitle>
+                <CardDescription>Live state of the billing lifecycle across all organizations.</CardDescription>
               </CardHeader>
               <CardContent>
-                {subLoading ? (
-                  <Skeleton className="h-64 w-full rounded-lg" />
-                ) : !subBreakdown ? (
-                  <div className="h-64 flex items-center justify-center text-gray-400">No data</div>
+                {breakdownQuery.isLoading ? (
+                  <Skeleton className="h-[320px] w-full rounded-lg" />
+                ) : !statusRows.length ? (
+                  <EmptyState icon={PieIcon} message="No subscription status data is available." />
                 ) : (
-                  <div className="space-y-3 pt-2">
-                    {(Object.entries(subBreakdown.byStatus) as [string, number][]).map(([status, count], i) => {
-                      const pct = subBreakdown.total > 0 ? Math.round((count / subBreakdown.total) * 100) : 0
-                      return (
-                        <div key={status}>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-600 capitalize">{status.replace(/_/g, " ")}</span>
-                            <span className="font-medium">{count} ({pct}%)</span>
-                          </div>
-                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{ width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }}
-                            />
-                          </div>
+                  <div className="space-y-4 pt-1">
+                    {statusRows.map((row) => (
+                      <div key={row.status} className="space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-sm font-medium text-foreground">{row.label}</span>
+                          <span className="text-sm text-muted-foreground">{row.value.toLocaleString()} ({row.percent}%)</span>
                         </div>
-                      )
-                    })}
-                    <p className="text-xs text-gray-400 pt-2">Total: {subBreakdown.total} organizations</p>
+                        <div className="h-2.5 rounded-full bg-muted">
+                          <div className="h-full rounded-full" style={{ width: `${row.percent}%`, backgroundColor: row.color }} />
+                        </div>
+                      </div>
+                    ))}
+                    <p className="pt-2 text-xs text-muted-foreground">All subscription analytics sync automatically every 10 seconds.</p>
                   </div>
                 )}
               </CardContent>

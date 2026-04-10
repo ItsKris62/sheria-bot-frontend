@@ -217,7 +217,6 @@ export default function OrgDetailPage() {
               )}
             </CardContent>
           </Card>
-        </div>
 
           {/* Members Table */}
           <Card>
