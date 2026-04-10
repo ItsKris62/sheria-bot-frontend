@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
@@ -33,6 +32,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
   ChevronLeft,
   Building2,
   Users,
@@ -41,27 +48,56 @@ import {
   Phone,
   Globe,
   Ban,
-  CheckCircle,
+  CheckCircle2,
   CreditCard,
   AlertTriangle,
+  ShieldCheck,
+  Radio,
+  CalendarClock,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 
-const PLAN_COLORS: Record<string, string> = {
-  REGULATOR: "bg-slate-100 text-slate-700",
-  STARTUP: "bg-blue-100 text-blue-700",
-  BUSINESS: "bg-purple-100 text-purple-700",
-  ENTERPRISE: "bg-emerald-100 text-emerald-700",
+const REFRESH_INTERVAL_MS = 10_000
+
+const PLAN_TOKENS: Record<string, number> = {
+  REGULATOR: 1,
+  STARTUP: 2,
+  BUSINESS: 3,
+  ENTERPRISE: 4,
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-700",
-  GRACE_PERIOD: "bg-yellow-100 text-yellow-700",
-  PAST_DUE: "bg-orange-100 text-orange-700",
-  TRIALING: "bg-blue-100 text-blue-700",
-  EXPIRED: "bg-gray-100 text-gray-500",
+const STATUS_TOKENS: Record<string, number> = {
+  ACTIVE: 2,
+  TRIALING: 1,
+  GRACE_PERIOD: 3,
+  PAST_DUE: 4,
+  CANCELLED: 5,
+  EXPIRED: 5,
+}
+
+function getToneStyle(token: number) {
+  return {
+    color: `hsl(var(--chart-${token}))`,
+    backgroundColor: `hsl(var(--chart-${token}) / 0.14)`,
+    borderColor: `hsl(var(--chart-${token}) / 0.26)`,
+  }
+}
+
+function formatLabel(value: string) {
+  return value.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+function formatDate(value: string | Date | null | undefined, withLongMonth = false) {
+  if (!value) {
+    return "—"
+  }
+
+  return new Date(value).toLocaleDateString("en-KE", {
+    year: "numeric",
+    month: withLongMonth ? "long" : "short",
+    day: "numeric",
+  })
 }
 
 export default function OrgDetailPage() {
@@ -74,46 +110,70 @@ export default function OrgDetailPage() {
 
   const utils = trpc.useUtils()
 
-  const { data: org, isLoading, isError } = trpc.admin.getOrgDetails.useQuery({ orgId })
-  const { data: membersData, isLoading: membersLoading } = trpc.admin.getOrgMembers.useQuery({ orgId })
+  const { data: org, isLoading, isError, isFetching } = trpc.admin.getOrgDetails.useQuery(
+    { orgId },
+    { refetchInterval: REFRESH_INTERVAL_MS }
+  )
 
   const suspendMutation = trpc.admin.suspendOrganization.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Organization suspended")
-      void utils.admin.getOrgDetails.invalidate({ orgId })
+      await Promise.all([
+        utils.admin.getOrgDetails.invalidate({ orgId }),
+        utils.admin.getAllOrganizations.invalidate(),
+        utils.admin.getOrganizationStats.invalidate(),
+      ])
     },
     onError: (err) => toast.error(err.message),
   })
 
   const reactivateMutation = trpc.admin.reactivateOrganization.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Organization reactivated")
-      void utils.admin.getOrgDetails.invalidate({ orgId })
+      await Promise.all([
+        utils.admin.getOrgDetails.invalidate({ orgId }),
+        utils.admin.getAllOrganizations.invalidate(),
+        utils.admin.getOrganizationStats.invalidate(),
+      ])
     },
     onError: (err) => toast.error(err.message),
   })
 
   const updatePlanMutation = trpc.admin.updateOrganizationPlan.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Plan updated successfully")
       setPlanDialogOpen(false)
-      void utils.admin.getOrgDetails.invalidate({ orgId })
+      await Promise.all([
+        utils.admin.getOrgDetails.invalidate({ orgId }),
+        utils.admin.getAllOrganizations.invalidate(),
+        utils.admin.getOrganizationStats.invalidate(),
+      ])
     },
     onError: (err) => toast.error(err.message),
   })
 
+  const overviewCards = useMemo(
+    () => [
+      { label: "Registered users", value: org?.memberCount ?? 0, icon: Users, token: 2 },
+      { label: "Documents", value: org?.documentCount ?? 0, icon: FileText, token: 3 },
+      { label: "Policies", value: org?.policyCount ?? 0, icon: ShieldCheck, token: 4 },
+      { label: "Seat capacity", value: org?.maxSeats ?? 0, icon: CreditCard, token: 1 },
+    ],
+    [org]
+  )
+
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            <Skeleton className="h-48 w-full rounded-xl" />
-            <Skeleton className="h-64 w-full rounded-xl" />
+      <div className="space-y-6 p-6">
+        <Skeleton className="h-8 w-52" />
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <Skeleton className="h-56 w-full rounded-2xl" />
+            <Skeleton className="h-80 w-full rounded-2xl" />
           </div>
-          <div className="space-y-4">
-            <Skeleton className="h-48 w-full rounded-xl" />
-            <Skeleton className="h-32 w-full rounded-xl" />
+          <div className="space-y-6">
+            <Skeleton className="h-52 w-full rounded-2xl" />
+            <Skeleton className="h-48 w-full rounded-2xl" />
           </div>
         </div>
       </div>
@@ -123,247 +183,293 @@ export default function OrgDetailPage() {
   if (isError || !org) {
     return (
       <div className="p-6">
-        <div className="text-center py-16 text-red-500">
-          <AlertTriangle className="w-10 h-10 mx-auto mb-2" />
-          <p>Failed to load organization. <Link href="/admin/organizations" className="underline">Go back</Link></p>
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-16 text-center text-destructive">
+          <AlertTriangle className="mx-auto h-10 w-10" />
+          <p className="mt-3 text-sm">
+            Failed to load organization details. <Link href="/admin/organizations" className="underline">Return to organizations</Link>
+          </p>
         </div>
       </div>
     )
   }
 
-  const isSuspended = org.subscriptionStatus === "CANCELLED" || org.subscriptionStatus === "EXPIRED"
+  const planStyle = getToneStyle(PLAN_TOKENS[org.plan ?? org.subscriptionTier] ?? 1)
+  const statusStyle = getToneStyle(STATUS_TOKENS[org.subscriptionStatus] ?? 5)
+  const isSuspended = org.subscriptionStatus !== "ACTIVE"
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/organizations">
-            <ChevronLeft className="w-4 h-4 mr-1" /> Organizations
-          </Link>
-        </Button>
-      </div>
+    <div className="space-y-6 p-6">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="space-y-3">
+          <Button variant="ghost" size="sm" asChild className="w-fit px-0 text-muted-foreground hover:text-foreground">
+            <Link href="/admin/organizations">
+              <ChevronLeft className="mr-1 h-4 w-4" /> Organizations
+            </Link>
+          </Button>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{org.name}</h1>
-          <p className="text-sm text-gray-500 capitalize">{org.type} &middot; Reg: {org.registrationNumber ?? "N/A"}</p>
-        </div>
-        <div className="flex gap-2">
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${PLAN_COLORS[org.subscriptionTier] ?? "bg-gray-100 text-gray-600"}`}>
-            {org.subscriptionTier}
-          </span>
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${STATUS_COLORS[org.subscriptionStatus] ?? "bg-gray-100 text-gray-600"}`}>
-            {org.subscriptionStatus}
-          </span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: "Members", value: org.memberCount, icon: Users },
-              { label: "Documents", value: org.documentCount, icon: FileText },
-              { label: "Policies", value: org.policyCount, icon: FileText },
-            ].map((s) => (
-              <Card key={s.label}>
-                <CardContent className="pt-4 pb-3 text-center">
-                  <s.icon className="w-6 h-6 mx-auto text-foreground mb-1 opacity-70" />
-                  <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                  <p className="text-xs text-gray-500">{s.label}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{org.name}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {(org.organizationType ?? org.type).toString()} · {org.registrationNumber ?? "Registration pending"}
+            </p>
           </div>
+        </div>
 
-          {/* Organization Info */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Building2 className="w-4 h-4" /> Organization Details
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground">
+            <Radio className={`h-3.5 w-3.5 ${isFetching ? "animate-pulse text-primary" : "text-primary"}`} />
+            Live refresh every 10 seconds
+          </span>
+          <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium" style={planStyle}>
+            {formatLabel(org.plan ?? org.subscriptionTier)}
+          </span>
+          <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium" style={statusStyle}>
+            {formatLabel(org.subscriptionStatus)}
+          </span>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {overviewCards.map((card) => {
+          const toneStyle = getToneStyle(card.token)
+
+          return (
+            <Card key={card.label} className="border-border/70 shadow-sm">
+              <CardContent className="flex items-center justify-between p-5">
+                <div>
+                  <p className="text-sm text-muted-foreground">{card.label}</p>
+                  <p className="mt-2 text-3xl font-semibold text-foreground">{card.value.toLocaleString()}</p>
+                </div>
+                <div className="rounded-2xl border p-3" style={toneStyle}>
+                  <card.icon className="h-5 w-5" />
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Card className="border-border/70 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <Building2 className="h-4 w-4" /> Organization profile
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Type</p>
-                <p className="font-medium capitalize">{org.type}</p>
-              </div>
-              <div>
-                <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Registration</p>
-                <p className="font-medium">{org.registrationNumber ?? "—"}</p>
-              </div>
-              <div>
-                <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Created</p>
-                <p className="font-medium">{new Date(org.createdAt).toLocaleDateString("en-KE", { year: "numeric", month: "long", day: "numeric" })}</p>
-              </div>
-              <div>
-                <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Last Updated</p>
-                <p className="font-medium">{new Date(org.updatedAt).toLocaleDateString("en-KE", { year: "numeric", month: "long", day: "numeric" })}</p>
-              </div>
-              {org.trialEndsAt && (
-                <div>
-                  <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Trial Ends</p>
-                  <p className="font-medium">{new Date(org.trialEndsAt).toLocaleDateString("en-KE")}</p>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              {[
+                { label: "Organization type", value: formatLabel(org.organizationType ?? org.type) },
+                { label: "Verification", value: formatLabel(org.verificationStatus) },
+                { label: "CBK license", value: org.cbkLicenseNumber ?? "—" },
+                { label: "Industry", value: org.industry ?? "—" },
+                { label: "Company size", value: org.size ?? "—" },
+                { label: "Website", value: org.website ?? "—" },
+                { label: "Created", value: formatDate(org.createdAt, true) },
+                { label: "Last updated", value: formatDate(org.updatedAt, true) },
+                { label: "Plan start", value: formatDate(org.planStartDate) },
+                { label: "Plan end", value: formatDate(org.planEndDate ?? org.subscriptionEndsAt) },
+              ].map((item) => (
+                <div key={item.label} className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{item.label}</p>
+                  <p className="mt-2 text-sm font-medium text-foreground break-words">{item.value}</p>
                 </div>
-              )}
-              {org.subscriptionEndsAt && (
-                <div>
-                  <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Subscription Ends</p>
-                  <p className="font-medium">{new Date(org.subscriptionEndsAt).toLocaleDateString("en-KE")}</p>
-                </div>
-              )}
+              ))}
             </CardContent>
           </Card>
 
-          {/* Members Table */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Users className="w-4 h-4" /> Members
+          <Card className="border-border/70 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <Users className="h-4 w-4" /> Registered users
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {membersLoading ? (
-                <div className="space-y-2">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex items-center justify-between py-2">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-7 w-7 rounded-full" />
-                        <Skeleton className="h-4 w-40" />
-                      </div>
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                  ))}
+              {!org.users.length ? (
+                <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                  No users are currently linked to this organization.
                 </div>
-              ) : !membersData?.length ? (
-                <p className="text-sm text-gray-400 text-center py-4">No members yet</p>
               ) : (
-                <div className="divide-y">
-                  {(membersData as { id: string; fullName: string; email: string; role: string; status: string; createdAt: string | Date }[]).map((member) => (
-                    <div key={member.id} className="flex items-center justify-between py-2.5">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-foreground text-xs font-bold">
-                            {(member.fullName || member.email).charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{member.fullName || "—"}</p>
-                          <p className="text-xs text-gray-400 truncate">{member.email}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                        <span className="text-xs text-gray-500 hidden sm:block">
-                          {new Date(member.createdAt).toLocaleDateString("en-KE")}
-                        </span>
-                        <Badge className={
-                          member.role === "ADMIN" ? "bg-red-100 text-red-700" :
-                          member.role === "REGULATOR" ? "bg-slate-100 text-slate-700" :
-                          "bg-blue-100 text-blue-700"
-                        }>
-                          {member.role}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
+                <div className="rounded-2xl border border-border/70">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead>User</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="hidden xl:table-cell">Joined</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {org.users.map((member) => {
+                        const roleStyle = getToneStyle(PLAN_TOKENS[member.role] ?? 1)
+                        const memberStatusStyle = getToneStyle(member.status === "ACTIVE" ? 2 : 5)
+
+                        return (
+                          <TableRow key={member.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
+                                  {(member.fullName || member.email).charAt(0).toUpperCase()}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="truncate font-medium text-foreground">{member.fullName || "Unnamed user"}</p>
+                                  <p className="truncate text-xs text-muted-foreground">{member.id}</p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">{member.email}</TableCell>
+                            <TableCell>
+                              <span className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium" style={roleStyle}>
+                                {formatLabel(member.role)}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <span className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium" style={memberStatusStyle}>
+                                {formatLabel(member.status)}
+                              </span>
+                            </TableCell>
+                            <TableCell className="hidden xl:table-cell text-muted-foreground">
+                              {formatDate(member.createdAt)}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Right column — Actions */}
-        <div className="space-y-4">
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Quick Actions</CardTitle>
+        <div className="space-y-6">
+          <Card className="border-border/70 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold">Quick actions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-3">
               <Button
                 variant="outline"
                 className="w-full justify-start gap-2"
-                onClick={() => { setSelectedPlan(org.subscriptionTier); setPlanDialogOpen(true) }}
+                onClick={() => {
+                  setSelectedPlan(org.plan ?? org.subscriptionTier)
+                  setPlanDialogOpen(true)
+                }}
               >
-                <CreditCard className="w-4 h-4" /> Change Plan
+                <CreditCard className="h-4 w-4" /> Change plan
               </Button>
+
               {isSuspended ? (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2 text-green-600 border-green-200 hover:bg-green-50"
-                  onClick={() => setConfirmAction("reactivate")}
-                >
-                  <CheckCircle className="w-4 h-4" /> Reactivate Organization
+                <Button variant="outline" className="w-full justify-start gap-2" onClick={() => setConfirmAction("reactivate") }>
+                  <CheckCircle2 className="h-4 w-4" /> Reactivate organization
                 </Button>
               ) : (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2 text-red-600 border-red-200 hover:bg-red-50"
-                  onClick={() => setConfirmAction("suspend")}
-                >
-                  <Ban className="w-4 h-4" /> Suspend Organization
+                <Button variant="outline" className="w-full justify-start gap-2" onClick={() => setConfirmAction("suspend") }>
+                  <Ban className="h-4 w-4" /> Suspend organization
                 </Button>
               )}
             </CardContent>
           </Card>
 
-          {/* Subscription Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <CreditCard className="w-4 h-4" /> Subscription
+          <Card className="border-border/70 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <CreditCard className="h-4 w-4" /> Subscription health
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-muted-foreground">Current plan</span>
+                <span className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium" style={planStyle}>
+                  {formatLabel(org.plan ?? org.subscriptionTier)}
+                </span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-muted-foreground">Lifecycle status</span>
+                <span className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium" style={statusStyle}>
+                  {formatLabel(org.subscriptionStatus)}
+                </span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-muted-foreground">Trial ends</span>
+                <span className="text-right text-foreground">{formatDate(org.trialEndsAt)}</span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-muted-foreground">Grace period ends</span>
+                <span className="text-right text-foreground">{formatDate(org.gracePeriodEndsAt)}</span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-muted-foreground">Cancelled at</span>
+                <span className="text-right text-foreground">{formatDate(org.cancelledAt)}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/70 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <CalendarClock className="h-4 w-4" /> Contact points
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Plan</span>
-                <span className={`px-2 py-0.5 rounded text-xs font-medium ${PLAN_COLORS[org.subscriptionTier] ?? "bg-gray-100 text-gray-600"}`}>
-                  {org.subscriptionTier}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Status</span>
-                <span className={`px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[org.subscriptionStatus] ?? "bg-gray-100 text-gray-600"}`}>
-                  {org.subscriptionStatus}
-                </span>
-              </div>
-              {org.trialEndsAt && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Trial ends</span>
-                  <span>{new Date(org.trialEndsAt).toLocaleDateString("en-KE")}</span>
+              <div className="flex items-start gap-3">
+                <Mail className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-muted-foreground">Contact email</p>
+                  <p className="font-medium text-foreground break-all">{org.contactEmail ?? "—"}</p>
                 </div>
-              )}
+              </div>
+              <div className="flex items-start gap-3">
+                <Phone className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-muted-foreground">Contact phone</p>
+                  <p className="font-medium text-foreground">{org.contactPhone ?? "—"}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Globe className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-muted-foreground">Website</p>
+                  <p className="font-medium text-foreground break-all">{org.website ?? "—"}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Users className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-muted-foreground">Primary contact</p>
+                  <p className="font-medium text-foreground">{org.contactPerson ?? "—"}</p>
+                  <p className="text-xs text-muted-foreground">{org.contactPosition ?? "No role recorded"}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Confirm suspend/reactivate */}
       <AlertDialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmAction === "suspend" ? "Suspend Organization" : "Reactivate Organization"}
+              {confirmAction === "suspend" ? "Suspend organization" : "Reactivate organization"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmAction === "suspend"
-                ? `This will suspend "${org.name}" and all its members immediately.`
-                : `This will restore access for "${org.name}" and all its members.`}
+                ? `This action will immediately suspend ${org.name} and revoke access for all associated users.`
+                : `This action will restore ${org.name} and allow associated users back into the system.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className={confirmAction === "suspend" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
               onClick={() => {
                 if (confirmAction === "suspend") {
                   suspendMutation.mutate({ orgId, reason: "Suspended by administrator" })
                 } else {
                   reactivateMutation.mutate({ orgId })
                 }
+
                 setConfirmAction(null)
               }}
             >
@@ -373,39 +479,47 @@ export default function OrgDetailPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Change Plan Dialog */}
       <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Change Subscription Plan</DialogTitle>
+            <DialogTitle>Change subscription plan</DialogTitle>
             <DialogDescription>
-              Changing the plan takes effect immediately and invalidates the org&apos;s plan cache.
+              Plan changes update the organization immediately and refresh the live admin view.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
+
+          <div className="py-2">
             <Select value={selectedPlan} onValueChange={setSelectedPlan}>
               <SelectTrigger>
                 <SelectValue placeholder="Select plan" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="REGULATOR">Regulator (Free)</SelectItem>
+                <SelectItem value="REGULATOR">Regulator</SelectItem>
                 <SelectItem value="STARTUP">Startup</SelectItem>
                 <SelectItem value="BUSINESS">Business</SelectItem>
                 <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPlanDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setPlanDialogOpen(false)}>
+              Cancel
+            </Button>
             <Button
-              className="bg-secondary hover:bg-[#007a50]"
               disabled={!selectedPlan || updatePlanMutation.isPending}
               onClick={() => {
-                if (!selectedPlan) return
-                updatePlanMutation.mutate({ orgId, plan: selectedPlan as "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE" })
+                if (!selectedPlan) {
+                  return
+                }
+
+                updatePlanMutation.mutate({
+                  orgId,
+                  plan: selectedPlan as "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE",
+                })
               }}
             >
-              {updatePlanMutation.isPending ? "Updating..." : "Update Plan"}
+              {updatePlanMutation.isPending ? "Updating..." : "Update plan"}
             </Button>
           </DialogFooter>
         </DialogContent>

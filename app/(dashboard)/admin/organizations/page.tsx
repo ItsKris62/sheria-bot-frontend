@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -31,136 +30,274 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
   Search,
   MoreVertical,
   Building2,
   Users,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   Eye,
   Ban,
-  CheckCircle,
-  TrendingUp,
+  CheckCircle2,
+  Radio,
+  Layers3,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 
-const PLAN_COLORS: Record<string, string> = {
-  REGULATOR: "bg-slate-100 text-slate-700",
-  STARTUP: "bg-blue-100 text-blue-700",
-  BUSINESS: "bg-purple-100 text-purple-700",
-  ENTERPRISE: "bg-emerald-100 text-emerald-700",
+const PAGE_SIZE = 20
+const REFRESH_INTERVAL_MS = 10_000
+
+const PLAN_TOKENS: Record<string, number> = {
+  REGULATOR: 1,
+  STARTUP: 2,
+  BUSINESS: 3,
+  ENTERPRISE: 4,
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-700",
-  GRACE_PERIOD: "bg-yellow-100 text-yellow-700",
-  PAST_DUE: "bg-orange-100 text-orange-700",
-  TRIALING: "bg-blue-100 text-blue-700",
-  EXPIRED: "bg-gray-100 text-gray-500",
+const STATUS_TOKENS: Record<string, number> = {
+  ACTIVE: 2,
+  TRIALING: 1,
+  GRACE_PERIOD: 3,
+  PAST_DUE: 4,
+  CANCELLED: 5,
+  EXPIRED: 5,
+}
+
+function getToneStyle(token: number) {
+  return {
+    color: `hsl(var(--chart-${token}))`,
+    backgroundColor: `hsl(var(--chart-${token}) / 0.14)`,
+    borderColor: `hsl(var(--chart-${token}) / 0.26)`,
+  }
+}
+
+function formatPlanLabel(plan: string) {
+  return plan.charAt(0) + plan.slice(1).toLowerCase()
+}
+
+function formatLabel(value: string) {
+  return value
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+type OrgSortField = "name" | "organizationType" | "subscriptionTier" | "subscriptionStatus" | "memberCount" | "createdAt"
+
+const DEFAULT_SORT_ORDER: Record<OrgSortField, "asc" | "desc"> = {
+  name: "asc",
+  organizationType: "asc",
+  subscriptionTier: "asc",
+  subscriptionStatus: "asc",
+  memberCount: "desc",
+  createdAt: "desc",
 }
 
 export default function AdminOrganizationsPage() {
   const [page, setPage] = useState(1)
-  const [search, setSearch] = useState("")
   const [searchInput, setSearchInput] = useState("")
+  const [search, setSearch] = useState("")
   const [tierFilter, setTierFilter] = useState<string>("all")
+  const [sorting, setSorting] = useState<{ field: OrgSortField; order: "asc" | "desc" }>({
+    field: "createdAt",
+    order: "desc",
+  })
   const [confirmOrg, setConfirmOrg] = useState<{ id: string; name: string; action: "suspend" | "reactivate" } | null>(null)
 
   const utils = trpc.useUtils()
 
-  const { data: orgStats } = trpc.admin.getOrganizationStats.useQuery()
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setSearch(searchInput.trim())
+      setPage(1)
+    }, 350)
 
-  const { data, isLoading, isError } = trpc.admin.getAllOrganizations.useQuery({
-    page,
-    limit: 20,
-    search: search || undefined,
-    tier: tierFilter !== "all" ? tierFilter : undefined,
+    return () => window.clearTimeout(timeoutId)
+  }, [searchInput])
+
+  const { data: orgStats } = trpc.admin.getOrganizationStats.useQuery(undefined, {
+    refetchInterval: REFRESH_INTERVAL_MS,
   })
 
+  const { data, isLoading, isError, isFetching } = trpc.admin.getAllOrganizations.useQuery(
+    {
+      page,
+      limit: PAGE_SIZE,
+      search: search || undefined,
+      tier: tierFilter !== "all" ? tierFilter : undefined,
+      sortBy: sorting.field,
+      sortOrder: sorting.order,
+    },
+    { refetchInterval: REFRESH_INTERVAL_MS }
+  )
+
   const suspendMutation = trpc.admin.suspendOrganization.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Organization suspended")
-      void utils.admin.getAllOrganizations.invalidate()
-      void utils.admin.getOrganizationStats.invalidate()
+      await Promise.all([
+        utils.admin.getAllOrganizations.invalidate(),
+        utils.admin.getOrganizationStats.invalidate(),
+      ])
     },
     onError: (err) => toast.error(err.message),
   })
 
   const reactivateMutation = trpc.admin.reactivateOrganization.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Organization reactivated")
-      void utils.admin.getAllOrganizations.invalidate()
-      void utils.admin.getOrganizationStats.invalidate()
+      await Promise.all([
+        utils.admin.getAllOrganizations.invalidate(),
+        utils.admin.getOrganizationStats.invalidate(),
+      ])
     },
     onError: (err) => toast.error(err.message),
   })
 
-  const handleSearch = () => {
-    setSearch(searchInput)
+  const totalPages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1
+  const hasActiveFilters = Boolean(search || tierFilter !== "all")
+
+  const cards = useMemo(
+    () => [
+      { label: "Total organizations", value: orgStats?.total ?? 0, icon: Building2, token: 1 },
+      { label: "Active subscriptions", value: orgStats?.active ?? 0, icon: CheckCircle2, token: 2 },
+      { label: "Startup accounts", value: orgStats?.byTier?.STARTUP ?? 0, icon: Layers3, token: 3 },
+      { label: "Enterprise accounts", value: orgStats?.byTier?.ENTERPRISE ?? 0, icon: Users, token: 4 },
+    ],
+    [orgStats]
+  )
+
+  function toggleSort(field: OrgSortField) {
+    setSorting((current) => {
+      if (current.field === field) {
+        return {
+          field,
+          order: current.order === "asc" ? "desc" : "asc",
+        }
+      }
+
+      return {
+        field,
+        order: DEFAULT_SORT_ORDER[field],
+      }
+    })
     setPage(1)
   }
 
-  const totalPages = data ? Math.ceil(data.total / 20) : 1
+  function resetFilters() {
+    setSearchInput("")
+    setSearch("")
+    setTierFilter("all")
+    setSorting({ field: "createdAt", order: "desc" })
+    setPage(1)
+  }
 
-  type OrgStats = { total: number; active: number; byTier: { REGULATOR: number; STARTUP: number; BUSINESS: number; ENTERPRISE: number } }
-  const s = orgStats as OrgStats | undefined
+  function renderSortIcon(field: OrgSortField) {
+    if (sorting.field !== field) {
+      return <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+    }
+
+    return sorting.order === "asc" ? <ArrowUp className="h-3.5 w-3.5 text-primary" /> : <ArrowDown className="h-3.5 w-3.5 text-primary" />
+  }
+
+  function renderSortableHead(label: string, field: OrgSortField, className?: string) {
+    return (
+      <TableHead
+        className={className}
+        aria-sort={sorting.field === field ? (sorting.order === "asc" ? "ascending" : "descending") : "none"}
+      >
+        <button
+          type="button"
+          onClick={() => toggleSort(field)}
+          className="inline-flex items-center gap-2 font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <span>{label}</span>
+          {renderSortIcon(field)}
+        </button>
+      </TableHead>
+    )
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Organizations</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage all organizations on the platform</p>
+    <div className="space-y-6 p-6">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Organizations</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Live oversight of customer organizations, membership health, and plan distribution.
+          </p>
+        </div>
+
+        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground">
+          <Radio className={`h-3.5 w-3.5 ${isFetching ? "animate-pulse text-primary" : "text-primary"}`} />
+          Auto-refreshing every 10 seconds
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Total", value: s?.total?.toLocaleString() ?? "—", icon: Building2, color: "text-blue-600" },
-          { label: "Active", value: s?.active?.toLocaleString() ?? "—", icon: CheckCircle, color: "text-green-600" },
-          { label: "Startups", value: s?.byTier?.STARTUP?.toLocaleString() ?? "—", icon: TrendingUp, color: "text-purple-600" },
-          { label: "Enterprise", value: s?.byTier?.ENTERPRISE?.toLocaleString() ?? "—", icon: Users, color: "text-emerald-600" },
-        ].map((card) => (
-          <Card key={card.label}>
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center justify-between">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {cards.map((card) => {
+          const toneStyle = getToneStyle(card.token)
+
+          return (
+            <Card key={card.label} className="border-border/70 shadow-sm">
+              <CardContent className="flex items-center justify-between p-5">
                 <div>
-                  <p className="text-xs text-gray-500">{card.label}</p>
-                  <p className="text-2xl font-bold text-foreground">{card.value}</p>
+                  <p className="text-sm text-muted-foreground">{card.label}</p>
+                  <p className="mt-2 text-3xl font-semibold text-foreground">{card.value.toLocaleString()}</p>
                 </div>
-                <card.icon className={`w-8 h-8 ${card.color} opacity-80`} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="rounded-2xl border p-3" style={toneStyle}>
+                  <card.icon className="h-5 w-5" />
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">All Organizations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <div className="flex gap-2 flex-1">
+      <Card className="border-border/70 shadow-sm">
+        <CardHeader className="gap-4 pb-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold">All organizations</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Search, sort, and filter organizations from the server in real time.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative min-w-[260px]">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by name..."
                 value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="max-w-xs"
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder="Search organization name"
+                className="pl-9"
               />
-              <Button variant="outline" size="icon" onClick={handleSearch}>
-                <Search className="w-4 h-4" />
-              </Button>
             </div>
-            <Select value={tierFilter} onValueChange={(v) => { setTierFilter(v); setPage(1) }}>
-              <SelectTrigger className="w-40">
+
+            <Select
+              value={tierFilter}
+              onValueChange={(value) => {
+                setTierFilter(value)
+                setPage(1)
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Plan" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Plans</SelectItem>
+                <SelectItem value="all">All plans</SelectItem>
                 <SelectItem value="REGULATOR">Regulator</SelectItem>
                 <SelectItem value="STARTUP">Startup</SelectItem>
                 <SelectItem value="BUSINESS">Business</SelectItem>
@@ -168,153 +305,190 @@ export default function AdminOrganizationsPage() {
               </SelectContent>
             </Select>
           </div>
+        </CardHeader>
 
-          {/* Table */}
+        <CardContent className="space-y-4">
           {isLoading ? (
             <div className="space-y-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-14 w-full rounded-lg" />
+              {Array.from({ length: 8 }).map((_, index) => (
+                <Skeleton key={index} className="h-14 w-full rounded-xl" />
               ))}
             </div>
           ) : isError ? (
-            <div className="text-center py-12 text-red-500">Failed to load organizations. Please refresh.</div>
+            <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-12 text-center text-sm text-destructive">
+              Failed to load organizations. Please retry.
+            </div>
           ) : !data?.items.length ? (
-            <div className="text-center py-12 text-gray-400">
-              <Building2 className="w-10 h-10 mx-auto mb-2 opacity-30" />
-              <p>No organizations found</p>
+            <div className="rounded-2xl border border-dashed border-border bg-muted/10 px-6 py-14 text-center">
+              <Building2 className="mx-auto h-10 w-10 text-muted-foreground/40" />
+              <h3 className="mt-4 text-base font-semibold text-foreground">
+                {hasActiveFilters ? "No organizations matched your view" : "No organizations yet"}
+              </h3>
+              <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+                {hasActiveFilters
+                  ? "Try adjusting your search, plan filter, or sorting preference. Live refresh remains active and new matches will appear automatically."
+                  : "Organizations will appear here as customers onboard to the platform. This live table will start populating automatically once records are available."}
+              </p>
+              {hasActiveFilters ? (
+                <div className="mt-5 flex justify-center">
+                  <Button variant="outline" onClick={resetFilters}>
+                    Clear filters and reset sorting
+                  </Button>
+                </div>
+              ) : null}
             </div>
           ) : (
-            <div className="rounded-md border overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Organization</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Type</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Plan</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">Members</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">Status</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden xl:table-cell">Created</th>
-                    <th className="px-4 py-3" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {data.items.map((org) => (
-                      <tr key={org.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                              <span className="text-white text-xs font-bold">
-                                {org.name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                            <div>
-                              <p className="font-medium text-foreground truncate max-w-[200px]">{org.name}</p>
-                              {org.registrationNumber && (
-                                <p className="text-xs text-gray-400">Reg: {org.registrationNumber}</p>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 hidden md:table-cell text-gray-600 capitalize">
-                          {org.type}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${PLAN_COLORS[org.subscriptionTier] ?? "bg-gray-100 text-gray-600"}`}>
-                            {org.subscriptionTier}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 hidden lg:table-cell text-gray-600">
-                          {org.memberCount}
-                        </td>
-                        <td className="px-4 py-3 hidden lg:table-cell">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[org.subscriptionStatus] ?? "bg-gray-100 text-gray-600"}`}>
-                            {org.subscriptionStatus}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 hidden xl:table-cell text-gray-500 text-xs">
-                          {new Date(org.createdAt).toLocaleDateString("en-KE")}
-                        </td>
-                        <td className="px-4 py-3">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/admin/organizations/${org.id}`}>
-                                  <Eye className="w-4 h-4 mr-2" /> View Details
-                                </Link>
-                              </DropdownMenuItem>
-                              {org.subscriptionStatus === "ACTIVE" ? (
-                                <DropdownMenuItem
-                                  className="text-red-600"
-                                  onClick={() => setConfirmOrg({ id: org.id, name: org.name, action: "suspend" })}
-                                >
-                                  <Ban className="w-4 h-4 mr-2" /> Suspend
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem
-                                  className="text-green-600"
-                                  onClick={() => setConfirmOrg({ id: org.id, name: org.name, action: "reactivate" })}
-                                >
-                                  <CheckCircle className="w-4 h-4 mr-2" /> Reactivate
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+            <>
+              <div className="rounded-2xl border border-border/70">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      {renderSortableHead("Organization", "name")}
+                      {renderSortableHead("Type", "organizationType", "hidden md:table-cell")}
+                      {renderSortableHead("Plan", "subscriptionTier")}
+                      {renderSortableHead("Members", "memberCount", "hidden lg:table-cell")}
+                      {renderSortableHead("Status", "subscriptionStatus")}
+                      {renderSortableHead("Created", "createdAt", "hidden xl:table-cell")}
+                      <TableHead className="w-[56px]" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.items.map((org) => {
+                      const planStyle = getToneStyle(PLAN_TOKENS[org.subscriptionTier] ?? 1)
+                      const statusStyle = getToneStyle(STATUS_TOKENS[org.subscriptionStatus] ?? 5)
 
-          {/* Pagination */}
-          {data && data.total > 20 && (
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-gray-500">
-                Page {page} of {totalPages} ({data.total} total)
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
+                      return (
+                        <TableRow key={org.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
+                                {org.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="truncate font-medium text-foreground">{org.name}</p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {org.registrationNumber ? `Reg. ${org.registrationNumber}` : "Registration not provided"}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell capitalize text-muted-foreground">
+                            {formatLabel(org.organizationType ?? org.type)}
+                          </TableCell>
+                          <TableCell>
+                            <span className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium" style={planStyle}>
+                              {formatPlanLabel(org.subscriptionTier)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell text-muted-foreground">
+                            {org.memberCount.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <span className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium" style={statusStyle}>
+                              {formatLabel(org.subscriptionStatus)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="hidden xl:table-cell text-muted-foreground">
+                            {new Date(org.createdAt).toLocaleDateString("en-KE", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/admin/organizations/${org.id}`}>
+                                    <Eye className="mr-2 h-4 w-4" /> View details
+                                  </Link>
+                                </DropdownMenuItem>
+
+                                {org.subscriptionStatus === "ACTIVE" ? (
+                                  <DropdownMenuItem
+                                    onClick={() => setConfirmOrg({ id: org.id, name: org.name, action: "suspend" })}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Ban className="mr-2 h-4 w-4" /> Suspend
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem
+                                    onClick={() => setConfirmOrg({ id: org.id, name: org.name, action: "reactivate" })}
+                                    className="text-primary focus:text-primary"
+                                  >
+                                    <CheckCircle2 className="mr-2 h-4 w-4" /> Reactivate
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
               </div>
-            </div>
+
+              <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Showing page {page} of {totalPages} · {data.total.toLocaleString()} organizations · Sorted by {formatLabel(sorting.field)} ({sorting.order})
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((current) => Math.max(1, current - 1))}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="mr-1 h-4 w-4" /> Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                    disabled={page === totalPages}
+                  >
+                    Next <ChevronRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
-      {/* Confirm Dialog */}
       <AlertDialog open={!!confirmOrg} onOpenChange={() => setConfirmOrg(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmOrg?.action === "suspend" ? "Suspend Organization" : "Reactivate Organization"}
+              {confirmOrg?.action === "suspend" ? "Suspend organization" : "Reactivate organization"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmOrg?.action === "suspend"
-                ? `This will suspend "${confirmOrg?.name}" and all its members. They will lose access immediately.`
-                : `This will reactivate "${confirmOrg?.name}" and restore member access.`}
+                ? `This will immediately suspend ${confirmOrg.name} and block member access.`
+                : `This will restore access for ${confirmOrg?.name} and its members.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className={confirmOrg?.action === "suspend" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
               onClick={() => {
-                if (!confirmOrg) return
+                if (!confirmOrg) {
+                  return
+                }
+
                 if (confirmOrg.action === "suspend") {
                   suspendMutation.mutate({ orgId: confirmOrg.id, reason: "Suspended by administrator" })
                 } else {
                   reactivateMutation.mutate({ orgId: confirmOrg.id })
                 }
+
                 setConfirmOrg(null)
               }}
             >
