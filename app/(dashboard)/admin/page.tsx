@@ -25,10 +25,10 @@ const quickActions = [
 ]
 
 function ServiceBadge({ status }: { status: string | undefined }) {
-  if (!status) return <Badge variant="outline" className="text-gray-400">Checking...</Badge>
-  if (status === "healthy") return <Badge className="bg-green-100 text-green-700 border-0">Healthy</Badge>
-  if (status === "degraded") return <Badge className="bg-yellow-100 text-yellow-700 border-0">Degraded</Badge>
-  return <Badge className="bg-red-100 text-red-700 border-0">Down</Badge>
+  if (!status) return <Badge variant="outline" className="text-muted-foreground">Checking...</Badge>
+  if (status === "healthy") return <Badge className="bg-primary/15 text-primary border-0">Healthy</Badge>
+  if (status === "degraded") return <Badge className="bg-warning/15 text-warning border-0">Degraded</Badge>
+  return <Badge className="bg-destructive/15 text-destructive border-0">Down</Badge>
 }
 
 export default function AdminDashboard() {
@@ -87,7 +87,7 @@ export default function AdminDashboard() {
               <CardContent className="pt-5 pb-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">{stat.label}</p>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
                     {statsLoading
                       ? <Skeleton className="h-8 w-20 mt-1" />
                       : <p className="text-2xl font-bold text-foreground mt-1">{stat.value ?? "—"}</p>
@@ -107,11 +107,11 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">User Signups (last 30 days)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">User Signups (last 30 days)</CardTitle>
           </CardHeader>
           <CardContent>
             {!growth?.series.length ? (
-              <div className="h-36 flex items-center justify-center text-gray-300">
+              <div className="h-36 flex items-center justify-center text-muted-foreground/40">
                 <Users className="w-8 h-8" />
               </div>
             ) : (
@@ -130,11 +130,11 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">AI Queries (last 30 days)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">AI Queries (last 30 days)</CardTitle>
           </CardHeader>
           <CardContent>
             {!aiUsage?.series.length ? (
-              <div className="h-36 flex items-center justify-center text-gray-300">
+              <div className="h-36 flex items-center justify-center text-muted-foreground/40">
                 <Zap className="w-8 h-8" />
               </div>
             ) : (
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
                           <p className="font-medium text-foreground text-sm">{action.label}</p>
                           <p className="text-xs text-muted-foreground truncate">{action.description}</p>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-gray-300 flex-shrink-0" />
+                        <ArrowRight className="h-4 w-4 text-muted-foreground/40 flex-shrink-0" />
                       </div>
                     </Link>
                   )
@@ -190,18 +190,18 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               {recentLogs.length === 0 ? (
-                <p className="text-sm text-gray-400 py-4 text-center">No recent activity</p>
+                <p className="text-sm text-muted-foreground py-4 text-center">No recent activity</p>
               ) : (
                 <div className="space-y-3">
                   {recentLogs.map((log) => (
-                    <div key={log.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                    <div key={log.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
                       <div>
                         <p className="text-sm font-medium text-foreground">{log.action}</p>
                         <p className="text-xs text-muted-foreground">
                           {log.userId ?? "System"}{log.entityType ? ` · ${log.entityType}` : ""}
                         </p>
                       </div>
-                      <span className="text-xs text-gray-400 flex-shrink-0 ml-4">
+                      <span className="text-xs text-muted-foreground flex-shrink-0 ml-4">
                         {new Date(log.createdAt).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" })}
                       </span>
                     </div>
@@ -225,23 +225,23 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Overall</span>
+                <span className="text-sm text-muted-foreground">Overall</span>
                 <ServiceBadge status={typedHealth?.status} />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Database</span>
+                <span className="text-sm text-muted-foreground">Database</span>
                 <ServiceBadge status={typedHealth?.services?.database?.status} />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Redis Cache</span>
+                <span className="text-sm text-muted-foreground">Redis Cache</span>
                 <ServiceBadge status={typedHealth?.services?.redis?.status} />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Storage (R2)</span>
+                <span className="text-sm text-muted-foreground">Storage (R2)</span>
                 <ServiceBadge status={typedHealth?.services?.storage?.status} />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Pinecone</span>
+                <span className="text-sm text-muted-foreground">Pinecone</span>
                 <ServiceBadge status={typedHealth?.services?.pinecone?.status} />
               </div>
               {typedHealth?.uptime && (
@@ -261,24 +261,24 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-500" /> Pending Actions
+                <AlertTriangle className="h-4 w-4 text-warning" /> Pending Actions
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <Link href="/admin/users?status=pending" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
-                <Users className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Pending user approvals</span>
-                <ArrowRight className="w-3 h-3 text-gray-300 ml-auto" />
+              <Link href="/admin/users?status=pending" className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
+                <Users className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Pending user approvals</span>
+                <ArrowRight className="w-3 h-3 text-muted-foreground/40 ml-auto" />
               </Link>
-              <Link href="/admin/support" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
-                <CheckCircle2 className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Open support tickets</span>
-                <ArrowRight className="w-3 h-3 text-gray-300 ml-auto" />
+              <Link href="/admin/support" className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
+                <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Open support tickets</span>
+                <ArrowRight className="w-3 h-3 text-muted-foreground/40 ml-auto" />
               </Link>
-              <Link href="/admin/security" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
-                <XCircle className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Failed login attempts</span>
-                <ArrowRight className="w-3 h-3 text-gray-300 ml-auto" />
+              <Link href="/admin/security" className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
+                <XCircle className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Failed login attempts</span>
+                <ArrowRight className="w-3 h-3 text-muted-foreground/40 ml-auto" />
               </Link>
             </CardContent>
           </Card>
