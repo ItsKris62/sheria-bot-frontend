@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Activity, User, Settings, FileText, Shield, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Download } from "lucide-react"
 import { trpc } from "@/lib/trpc"
+import { toast } from "sonner"
 
 type TypeConfigEntry = { label: string; icon: React.ElementType; color: string }
 const typeConfig: Record<string, TypeConfigEntry> = {
@@ -38,44 +39,45 @@ interface LogEntry {
 export default function AuditLogsPage() {
   const [page, setPage] = useState(1)
   const [entityTypeFilter, setEntityTypeFilter] = useState("all")
+  const [actionFilter, setActionFilter] = useState("")
   const [userIdFilter, setUserIdFilter] = useState("")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const limit = 50
+  const limit = 200
 
   const { data, isLoading } = trpc.admin.getLogs.useQuery({
     page,
     limit,
     ...(entityTypeFilter !== "all" ? { entityType: entityTypeFilter } : {}),
+    ...(actionFilter ? { action: actionFilter } : {}),
     ...(userIdFilter ? { userId: userIdFilter } : {}),
     ...(dateFrom ? { dateFrom: new Date(dateFrom).toISOString() } : {}),
     ...(dateTo ? { dateTo: new Date(dateTo).toISOString() } : {}),
+  })
+
+  const exportMutation = trpc.admin.exportAuditLogs.useMutation({
+    onSuccess: (result) => {
+      const a = document.createElement("a")
+      a.href = result.url
+      a.click()
+    },
+    onError: (err) => toast.error(err.message),
   })
 
   const logs: LogEntry[] = (data as { items?: LogEntry[] })?.items ?? []
   const total: number = (data as { total?: number })?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / limit))
 
-  function exportCSV() {
-    const header = ["ID", "Action", "Entity Type", "Entity ID", "User ID", "IP Address", "Date"]
-    const rows = logs.map((l) => [
-      l.id,
-      l.action,
-      l.entityType ?? "",
-      l.entityId ?? "",
-      l.userId ?? "",
-      l.ipAddress ?? "",
-      new Date(l.createdAt).toISOString(),
-    ])
-    const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n")
-    const blob = new Blob([csv], { type: "text/csv" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+  function triggerExport(format: "csv" | "docx") {
+    exportMutation.mutate({
+      format,
+      ...(entityTypeFilter !== "all" ? { entityType: entityTypeFilter } : {}),
+      ...(actionFilter ? { action: actionFilter } : {}),
+      ...(userIdFilter ? { userId: userIdFilter } : {}),
+      ...(dateFrom ? { dateFrom: new Date(dateFrom) } : {}),
+      ...(dateTo ? { dateTo: new Date(dateTo) } : {}),
+    })
   }
 
   return (
@@ -85,16 +87,28 @@ export default function AuditLogsPage() {
           <h1 className="text-2xl font-bold text-foreground">Audit Logs</h1>
           <p className="text-gray-500 mt-1">Track all system activity and administrative actions</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={exportCSV}
-          disabled={logs.length === 0}
-          className="gap-2"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => triggerExport("csv")}
+            disabled={exportMutation.isPending}
+            className="gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => triggerExport("docx")}
+            disabled={exportMutation.isPending}
+            className="gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Export DOCX
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -104,7 +118,7 @@ export default function AuditLogsPage() {
         </CardHeader>
         <CardContent>
           {/* Filters */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
             <Select value={entityTypeFilter} onValueChange={(v) => { setEntityTypeFilter(v); setPage(1) }}>
               <SelectTrigger><SelectValue placeholder="Entity Type" /></SelectTrigger>
               <SelectContent>
@@ -116,6 +130,11 @@ export default function AuditLogsPage() {
                 <SelectItem value="System">System</SelectItem>
               </SelectContent>
             </Select>
+            <Input
+              placeholder="Action filter..."
+              value={actionFilter}
+              onChange={(e) => { setActionFilter(e.target.value); setPage(1) }}
+            />
             <Input
               placeholder="User ID filter..."
               value={userIdFilter}

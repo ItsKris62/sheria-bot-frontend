@@ -54,6 +54,9 @@ import {
   ShieldCheck,
   Radio,
   CalendarClock,
+  DollarSign,
+  ScrollText,
+  ChevronRight,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
@@ -107,6 +110,7 @@ export default function OrgDetailPage() {
   const [confirmAction, setConfirmAction] = useState<"suspend" | "reactivate" | null>(null)
   const [planDialogOpen, setPlanDialogOpen] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<string>("")
+  const [paymentPage, setPaymentPage] = useState(1)
 
   const utils = trpc.useUtils()
 
@@ -138,6 +142,16 @@ export default function OrgDetailPage() {
     },
     onError: (err) => toast.error(err.message),
   })
+
+  const paymentHistoryQuery = trpc.admin.getOrgPaymentHistory.useQuery(
+    { orgId, page: paymentPage, limit: 10 },
+    { enabled: Boolean(orgId) }
+  )
+
+  const orgAuditLogQuery = trpc.admin.getOrgAuditLog.useQuery(
+    { orgId },
+    { enabled: Boolean(orgId) }
+  )
 
   const updatePlanMutation = trpc.admin.updateOrganizationPlan.useMutation({
     onSuccess: async () => {
@@ -195,7 +209,9 @@ export default function OrgDetailPage() {
 
   const planStyle = getToneStyle(PLAN_TOKENS[org.plan ?? org.subscriptionTier] ?? 1)
   const statusStyle = getToneStyle(STATUS_TOKENS[org.subscriptionStatus] ?? 5)
-  const isSuspended = org.subscriptionStatus !== "ACTIVE"
+  const isSuspended =
+    org.subscriptionStatus === "SUSPENDED" ||
+    org.subscriptionStatus === "CANCELLED"
 
   return (
     <div className="space-y-6 p-6">
@@ -338,6 +354,139 @@ export default function OrgDetailPage() {
                       })}
                     </TableBody>
                   </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          {/* Payment history */}
+          <Card className="border-border/70 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <DollarSign className="h-4 w-4" /> Payment history
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {paymentHistoryQuery.isLoading ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
+                </div>
+              ) : !paymentHistoryQuery.data?.items.length ? (
+                <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                  No payment records found for this organization.
+                </div>
+              ) : (
+                <>
+                  <div className="rounded-2xl border border-border/70">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead>Date</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead className="hidden sm:table-cell">Provider</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="hidden xl:table-cell">Invoice</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {paymentHistoryQuery.data.items.map((payment) => {
+                          const statusToken = payment.status === "COMPLETED" ? 2 : payment.status === "PENDING" ? 1 : 5
+                          return (
+                            <TableRow key={payment.id}>
+                              <TableCell className="text-muted-foreground text-sm">
+                                {formatDate(payment.paidAt ?? payment.createdAt)}
+                              </TableCell>
+                              <TableCell className="font-medium text-foreground">
+                                KES {payment.amount.toLocaleString("en-KE", { minimumFractionDigits: 2 })}
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
+                                {payment.provider}
+                              </TableCell>
+                              <TableCell>
+                                <span
+                                  className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium"
+                                  style={getToneStyle(statusToken)}
+                                >
+                                  {formatLabel(payment.status)}
+                                </span>
+                              </TableCell>
+                              <TableCell className="hidden xl:table-cell text-muted-foreground text-sm">
+                                {payment.invoiceNumber ?? "—"}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {paymentHistoryQuery.data.total > 10 && (
+                    <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+                      <span>
+                        Page {paymentPage} of {Math.max(1, Math.ceil(paymentHistoryQuery.data.total / 10))} &middot; {paymentHistoryQuery.data.total} payments
+                      </span>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setPaymentPage((p) => Math.max(1, p - 1))} disabled={paymentPage === 1}>Previous</Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPaymentPage((p) => p + 1)}
+                          disabled={paymentPage >= Math.ceil(paymentHistoryQuery.data.total / 10)}
+                        >
+                          Next <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Org-scoped audit log */}
+          <Card className="border-border/70 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <ScrollText className="h-4 w-4" /> Member activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {orgAuditLogQuery.isLoading ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)}
+                </div>
+              ) : !orgAuditLogQuery.data?.length ? (
+                <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                  No audit log entries found for this organization.
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-border/70">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead>Timestamp</TableHead>
+                        <TableHead>Action</TableHead>
+                        <TableHead className="hidden lg:table-cell">Entity</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {orgAuditLogQuery.data.slice(0, 50).map((entry) => (
+                        <TableRow key={entry.id}>
+                          <TableCell className="text-muted-foreground text-xs">
+                            {new Date(entry.createdAt).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" })}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-foreground">{entry.action}</TableCell>
+                          <TableCell className="hidden lg:table-cell text-muted-foreground text-xs">
+                            {entry.entityType ?? "—"}{entry.entityId ? ` · ${entry.entityId.slice(0, 8)}` : ""}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  {orgAuditLogQuery.data.length > 50 && (
+                    <p className="border-t border-border/60 px-4 py-2.5 text-xs text-muted-foreground">
+                      Showing 50 of {orgAuditLogQuery.data.length} entries. Use the audit logs page for full history.
+                    </p>
+                  )}
                 </div>
               )}
             </CardContent>

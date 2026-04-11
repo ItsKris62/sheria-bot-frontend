@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, type ElementType } from "react"
-import { Activity, BarChart2, DollarSign, PieChart as PieIcon, TrendingUp, Users, Zap } from "lucide-react"
+import { Activity, BarChart2, DollarSign, Download, PieChart as PieIcon, TrendingUp, Users, Zap } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, XAxis, YAxis } from "recharts"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import {
@@ -193,6 +194,46 @@ export default function AdminAnalyticsPage() {
   const peakRevenueMonth = getPeakPoint(revenueSeries, (item) => item.amount)
   const peakUsageDay = getPeakPoint(aiSeries, (item) => item.count)
 
+  function handleExportCSV() {
+    const esc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`
+    const rows: string[] = ["Section,Label,Value"]
+
+    if (subBreakdown) {
+      Object.entries(subBreakdown.byPlan).forEach(([plan, count]) => {
+        rows.push([esc("Plan breakdown"), esc(PLAN_DISPLAY[plan] ?? plan), count].join(","))
+      })
+      Object.entries(subBreakdown.byStatus).forEach(([status, count]) => {
+        rows.push([esc("Status breakdown"), esc(formatStatusLabel(status)), count].join(","))
+      })
+      rows.push([esc("Totals"), esc("All organizations"), subBreakdown.total].join(","))
+    }
+
+    if (revenue) {
+      rows.push([esc("Revenue"), esc("Total all-time (KES)"), revenue.totalRevenue].join(","))
+      rows.push([esc("Revenue"), esc("This month (KES)"), revenue.currentMonthRevenue].join(","))
+      rows.push([esc("Revenue"), esc("Last month (KES)"), revenue.lastMonthRevenue].join(","))
+      rows.push([esc("Revenue"), esc("Stripe volume (KES)"), revenue.byProvider.STRIPE].join(","))
+      rows.push([esc("Revenue"), esc("M-Pesa volume (KES)"), revenue.byProvider.MPESA].join(","))
+      rows.push([esc("Revenue"), esc("Payment success rate (%)"), revenue.successRate].join(","))
+    }
+
+    if (aiUsage) {
+      rows.push([esc("AI usage"), esc("Queries in range"), aiUsage.totalQueries].join(","))
+      rows.push([esc("AI usage"), esc("Policies completed"), aiUsage.totalPolicies].join(","))
+      rows.push([esc("AI usage"), esc("Checklists generated"), aiUsage.totalChecklists].join(","))
+      rows.push([esc("AI usage"), esc("Gap analyses"), aiUsage.totalGapAnalyses].join(","))
+    }
+
+    const csv = rows.join("\r\n")
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement("a")
+    anchor.href = url
+    anchor.download = `sheriabot-analytics-${new Date().toISOString().slice(0, 10)}.csv`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
@@ -209,17 +250,29 @@ export default function AdminAnalyticsPage() {
           </p>
         </div>
 
-        <Select value={dateRange} onValueChange={(value) => setDateRange(value as DateRange)}>
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7d">Last 7 days</SelectItem>
-            <SelectItem value="30d">Last 30 days</SelectItem>
-            <SelectItem value="90d">Last 3 months</SelectItem>
-            <SelectItem value="1y">Last 12 months</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            disabled={!subBreakdown && !revenue && !aiUsage}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
+
+          <Select value={dateRange} onValueChange={(value) => setDateRange(value as DateRange)}>
+            <SelectTrigger className="w-full sm:w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 3 months</SelectItem>
+              <SelectItem value="1y">Last 12 months</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">

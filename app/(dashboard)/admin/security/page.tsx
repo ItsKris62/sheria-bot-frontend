@@ -11,10 +11,22 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Shield, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight,
-  Monitor, Globe, Clock,
+  Monitor, Globe, Clock, LogOut, Laptop, Loader2,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { format } from "date-fns"
+import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface LoginHistoryEntry {
   id: string
@@ -26,6 +38,16 @@ interface LoginHistoryEntry {
   failureReason: string | null
   location: string | null
   createdAt: Date | string
+}
+
+interface SessionSummary {
+  id: string
+  userId: string
+  device: string | null
+  ipAddress: string | null
+  userAgent: string | null
+  createdAt: Date | string
+  expiresAt: Date | string
 }
 
 const PAGE_SIZE = 50
@@ -51,6 +73,26 @@ export default function SecurityPage() {
   const [appliedSuccess, setAppliedSuccess] = useState<"all" | "success" | "failed">("all")
   const [appliedDateFrom, setAppliedDateFrom] = useState("")
   const [appliedDateTo, setAppliedDateTo] = useState("")
+
+  const [userIdInput, setUserIdInput] = useState("")
+  const [lookedUpUserId, setLookedUpUserId] = useState("")
+  const [showConfirmSignOut, setShowConfirmSignOut] = useState(false)
+
+  const sessionQuery = trpc.admin.listUserActiveSessions.useQuery(
+    { userId: lookedUpUserId },
+    { enabled: !!lookedUpUserId }
+  )
+  const sessions: SessionSummary[] = (sessionQuery.data ?? []) as SessionSummary[]
+
+  const signOutMutation = trpc.admin.signOutUserEverywhere.useMutation({
+    onSuccess: () => {
+      setShowConfirmSignOut(false)
+      toast.success("User signed out from all devices")
+      setLookedUpUserId("")
+      setUserIdInput("")
+    },
+    onError: (err) => toast.error(err.message),
+  })
 
   const successBool =
     appliedSuccess === "success" ? true : appliedSuccess === "failed" ? false : undefined
@@ -176,6 +218,125 @@ export default function SecurityPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* User Session Management */}
+      <Card className="border-border/50 bg-card/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Laptop className="h-5 w-5 text-primary" />
+            User Session Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Input
+              placeholder="Enter user ID..."
+              value={userIdInput}
+              onChange={(e) => setUserIdInput(e.target.value)}
+              className="h-9 text-sm bg-muted/50 max-w-sm"
+              onKeyDown={(e) => { if (e.key === "Enter" && userIdInput.trim()) setLookedUpUserId(userIdInput.trim()) }}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-9"
+              onClick={() => setLookedUpUserId(userIdInput.trim())}
+              disabled={!userIdInput.trim()}
+            >
+              Look Up
+            </Button>
+          </div>
+
+          {lookedUpUserId && (
+            <>
+              {sessionQuery.isLoading ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-10 w-full rounded" />
+                  ))}
+                </div>
+              ) : sessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">
+                  No active sessions found for this user
+                </p>
+              ) : (
+                <>
+                  <div className="rounded-md border overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border/50 bg-muted/30">
+                          <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Device</th>
+                          <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden md:table-cell">IP Address</th>
+                          <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Created</th>
+                          <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden lg:table-cell">Expires</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/30">
+                        {sessions.map((s) => (
+                          <tr key={s.id} className="hover:bg-muted/20">
+                            <td className="px-4 py-2.5 text-xs text-muted-foreground">
+                              {s.device ?? parseUA(s.userAgent)}
+                            </td>
+                            <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground hidden md:table-cell">
+                              {s.ipAddress ?? "—"}
+                            </td>
+                            <td className="px-4 py-2.5 text-xs text-muted-foreground">
+                              {format(new Date(s.createdAt), "dd MMM yyyy HH:mm")}
+                            </td>
+                            <td className="px-4 py-2.5 text-xs text-muted-foreground hidden lg:table-cell">
+                              {format(new Date(s.expiresAt), "dd MMM yyyy HH:mm")}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex items-center justify-between pt-1">
+                    <p className="text-xs text-muted-foreground">
+                      {sessions.length} active session{sessions.length !== 1 ? "s" : ""}
+                    </p>
+                    <AlertDialog open={showConfirmSignOut} onOpenChange={setShowConfirmSignOut}>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="gap-2"
+                          disabled={signOutMutation.isPending}
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Sign out from all devices
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Sign out user everywhere?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will immediately revoke all active sessions and tokens for this user.
+                            They will be signed out from every device. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() => signOutMutation.mutate({ userId: lookedUpUserId })}
+                            disabled={signOutMutation.isPending}
+                          >
+                            {signOutMutation.isPending && (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            )}
+                            Sign Out Everywhere
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card className="border-border/50 bg-card/50">

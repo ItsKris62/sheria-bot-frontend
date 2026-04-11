@@ -25,6 +25,11 @@ interface SystemConfigValues {
   requireEmailVerification: boolean
   defaultSubscriptionTier: string
   supportEmail: string
+  securityAlertEmail: string
+  resourceUsageAlertThreshold: number
+  webhookFailureAlertThreshold: number
+  passwordMinLength: number
+  automatedBackupsEnabled: boolean
   [key: string]: unknown
 }
 
@@ -44,6 +49,16 @@ const CONFIG_GROUPS: { label: string; icon: React.ElementType; keys: (keyof Syst
     icon: Mail,
     keys: ["supportEmail"],
   },
+  {
+    label: "Security",
+    icon: Shield,
+    keys: ["securityAlertEmail", "passwordMinLength"],
+  },
+  {
+    label: "Alerts",
+    icon: AlertTriangle,
+    keys: ["resourceUsageAlertThreshold", "webhookFailureAlertThreshold", "automatedBackupsEnabled"],
+  },
 ]
 
 const CONFIG_LABELS: Record<string, string> = {
@@ -56,11 +71,16 @@ const CONFIG_LABELS: Record<string, string> = {
   requireEmailVerification: "Require Email Verification",
   defaultSubscriptionTier: "Default Subscription Tier",
   supportEmail: "Support Email",
+  securityAlertEmail: "Security Alert Email",
+  resourceUsageAlertThreshold: "Resource Alert Threshold (%)",
+  webhookFailureAlertThreshold: "Webhook Failure Threshold",
+  passwordMinLength: "Min Password Length",
+  automatedBackupsEnabled: "Automated Backups",
 }
 
 function configInputType(key: string): "boolean" | "number" | "text" {
-  if (["maintenanceMode", "allowNewRegistrations", "requireEmailVerification"].includes(key)) return "boolean"
-  if (["maxFileUploadMB", "maxQueriesPerHour", "maxPoliciesPerHour"].includes(key)) return "number"
+  if (["maintenanceMode", "allowNewRegistrations", "requireEmailVerification", "automatedBackupsEnabled"].includes(key)) return "boolean"
+  if (["maxFileUploadMB", "maxQueriesPerHour", "maxPoliciesPerHour", "resourceUsageAlertThreshold", "webhookFailureAlertThreshold", "passwordMinLength"].includes(key)) return "number"
   return "text"
 }
 
@@ -132,12 +152,21 @@ export default function SystemSettingsPage() {
     : []
 
   const h = health as {
-    api?: boolean
-    database?: boolean
-    ai?: boolean
-    cache?: boolean
+    status?: "healthy" | "degraded" | "down"
+    services?: {
+      database?: { status?: string }
+      redis?: { status?: string }
+      pinecone?: { status?: string }
+      storage?: { status?: string }
+    }
     uptime?: number
+    version?: string
   } | undefined
+
+  const dbOk = h?.services?.database?.status !== "down"
+  const redisOk = h?.services?.redis?.status !== "down"
+  const pineconeOk = h?.services?.pinecone?.status !== "down"
+  const storageOk = h?.services?.storage?.status !== "down"
 
   return (
     <div className="space-y-6">
@@ -167,24 +196,30 @@ export default function SystemSettingsPage() {
               <>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">API Server</span>
-                  <Badge className="bg-primary/10 text-primary">{h?.api !== false ? "Healthy" : "Degraded"}</Badge>
+                  <Badge className="bg-primary/10 text-primary">Healthy</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Database</span>
-                  <Badge className={h?.database !== false ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}>
-                    {h?.database !== false ? "Connected" : "Error"}
+                  <Badge className={dbOk ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}>
+                    {dbOk ? "Connected" : "Error"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">AI Service</span>
-                  <Badge className={h?.ai !== false ? "bg-primary/10 text-primary" : "bg-yellow-100 text-yellow-700"}>
-                    {h?.ai !== false ? "Operational" : "Degraded"}
+                  <span className="text-sm text-muted-foreground">AI / Vector DB</span>
+                  <Badge className={pineconeOk ? "bg-primary/10 text-primary" : "bg-yellow-100 text-yellow-700"}>
+                    {pineconeOk ? "Operational" : "Degraded"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Cache</span>
-                  <Badge className={h?.cache !== false ? "bg-primary/10 text-primary" : "bg-yellow-100 text-yellow-700"}>
-                    {h?.cache !== false ? "Connected" : "Disconnected"}
+                  <Badge className={redisOk ? "bg-primary/10 text-primary" : "bg-yellow-100 text-yellow-700"}>
+                    {redisOk ? "Connected" : "Disconnected"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Storage</span>
+                  <Badge className={storageOk ? "bg-primary/10 text-primary" : "bg-yellow-100 text-yellow-700"}>
+                    {storageOk ? "Online" : "Degraded"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
@@ -248,7 +283,7 @@ export default function SystemSettingsPage() {
                 )}
                 <Button
                   size="sm"
-                  className="bg-secondary hover:bg-[#007a50] text-white"
+                  className="bg-secondary hover:bg-secondary/90 text-white"
                   onClick={handleSave}
                   disabled={!dirty || updateConfigMutation.isPending}
                 >
@@ -352,8 +387,8 @@ export default function SystemSettingsPage() {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Status</span>
-              <Badge className={h?.database !== false ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}>
-                {h?.database !== false ? "Healthy" : "Error"}
+              <Badge className={dbOk ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}>
+                {dbOk ? "Healthy" : "Error"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
