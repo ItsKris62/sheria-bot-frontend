@@ -26,6 +26,7 @@ import {
   Shield,
   BarChart2,
   Lock,
+  Rocket,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -55,8 +56,9 @@ export const adminNav: AdminNavGroup[] = [
   {
     title: "Users",
     items: [
-      { title: "User Management", href: "/admin/users", icon: Users },
-      { title: "Organizations", href: "/admin/organizations", icon: Building2 },
+      { title: "User Management",  href: "/admin/users",         icon: Users },
+      { title: "Organizations",    href: "/admin/organizations",  icon: Building2 },
+      { title: "Pilot Programme",  href: "/admin/pilot",         icon: Rocket },
     ],
   },
   {
