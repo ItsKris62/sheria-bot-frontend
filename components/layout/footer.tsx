@@ -37,9 +37,9 @@ const footerLinks = {
 
 const socialLinks = [
   { name: "X (formerly Twitter)", href: "#", icon: Twitter },
-  { name: "Facebook", href: "#", icon: Facebook },
-  { name: "LinkedIn", href: "#", icon: Linkedin },
-  { name: "Instagram", href: "#", icon: Instagram },
+  { name: "Facebook", href: "https://www.facebook.com/share/17FPcrXGjo/?mibextid=wwXIfr", icon: Facebook },
+  { name: "LinkedIn", href: "https://www.linkedin.com/company/sheriabot-ai/", icon: Linkedin },
+  { name: "Instagram", href: "https://www.instagram.com/sheriabot_ai?igsh=MXJ0aXp6aWFzMDdmcQ%3D%3D&utm_source=qr", icon: Instagram },
 ]
 
 export function Footer() {
@@ -73,6 +73,8 @@ export function Footer() {
                     <TooltipTrigger asChild>
                       <Link
                         href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="group flex h-10 w-10 items-center justify-center rounded-xl border border-border/50 bg-card/50 text-muted-foreground transition-all duration-300 hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:scale-110"
                       >
                         <social.icon className="h-4 w-4" />
