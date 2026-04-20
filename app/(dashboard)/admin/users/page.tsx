@@ -56,7 +56,6 @@ const roleColorMap: Record<string, string> = {
   REGULATOR: "bg-warning/10 text-warning",
   ADMIN: "bg-destructive/10 text-destructive",
   ENTERPRISE: "bg-primary/10 text-primary",
-  FINTECH_USER: "bg-muted text-muted-foreground",
 }
 
 const roleLabel: Record<string, string> = {
@@ -64,7 +63,6 @@ const roleLabel: Record<string, string> = {
   REGULATOR: "Regulator",
   ADMIN: "Admin",
   ENTERPRISE: "Enterprise",
-  FINTECH_USER: "User",
 }
 
 function UserRowSkeleton() {

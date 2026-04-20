@@ -29,7 +29,6 @@ function getDashboardPath(role: UserRole): string {
       return "/admin"
     case "ENTERPRISE":
     case "STARTUP":
-    case "FINTECH_USER":
     default:
       return "/startup"
   }

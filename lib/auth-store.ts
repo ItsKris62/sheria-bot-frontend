@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { setAccessToken } from "./trpc";
 
-export type UserRole = "ADMIN" | "REGULATOR" | "STARTUP" | "ENTERPRISE" | "FINTECH_USER";
+export type UserRole = "ADMIN" | "REGULATOR" | "STARTUP" | "ENTERPRISE";
 
 export interface AuthUser {
   id: string;

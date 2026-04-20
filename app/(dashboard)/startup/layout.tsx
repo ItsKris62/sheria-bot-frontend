@@ -39,7 +39,7 @@ export default function StartupLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard allowedRoles={["STARTUP", "ENTERPRISE", "FINTECH_USER", "ADMIN"]}>
+    <AuthGuard allowedRoles={["STARTUP", "ENTERPRISE", "ADMIN"]}>
       <SidebarProvider>
         <div className="flex min-h-screen">
           <DashboardSidebar userType="startup" />
