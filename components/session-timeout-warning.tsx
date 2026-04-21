@@ -40,9 +40,9 @@ export function SessionTimeoutWarning({
   // Colour the countdown bar: green -> amber -> red as time runs out
   const barColour =
     remainingSeconds > 30
-      ? "#00875A"
+      ? "#22C55E"
       : remainingSeconds > 10
-        ? "#D4A843"
+        ? "#F59E0B"
         : "#EF4444";
 
   return (
@@ -61,12 +61,12 @@ export function SessionTimeoutWarning({
           <div className="flex flex-col items-center gap-3 text-center">
             <div
               className="flex h-14 w-14 items-center justify-center rounded-full"
-              style={{ backgroundColor: "#D4A84320" }}
+              style={{ backgroundColor: "#22C55E20" }}
             >
               {isSensitivePage ? (
-                <ShieldAlert className="h-7 w-7" style={{ color: "#D4A843" }} />
+                <ShieldAlert className="h-7 w-7" style={{ color: "#F59E0B" }} />
               ) : (
-                <Clock className="h-7 w-7" style={{ color: "#D4A843" }} />
+                <Clock className="h-7 w-7" style={{ color: "#F59E0B" }} />
               )}
             </div>
 
@@ -81,7 +81,7 @@ export function SessionTimeoutWarning({
                   protect your account.
                 </p>
                 {isSensitivePage && (
-                  <p className="text-xs" style={{ color: "#D4A843" }}>
+                  <p className="text-xs" style={{ color: "#F59E0B" }}>
                     You are on a protected page with an enhanced 5-minute
                     timeout for your security.
                   </p>
@@ -126,7 +126,7 @@ export function SessionTimeoutWarning({
             <Button
               onClick={onStayLoggedIn}
               className="font-semibold text-white hover:opacity-90"
-              style={{ backgroundColor: "#00875A" }}
+              style={{ backgroundColor: "#22C55E" }}
             >
               Stay Logged In
             </Button>

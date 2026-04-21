@@ -94,9 +94,9 @@ function formatDate(dateStr: string): string {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 75) return '#00875A';
-  if (score >= 50) return '#D4A843';
-  return '#DC2626';
+  if (score >= 75) return '#22C55E';
+  if (score >= 50) return '#F59E0B';
+  return '#EF4444';
 }
 
 function getScoreLabel(score: number): string {
@@ -214,21 +214,21 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
       font-size: 11pt; color: #4A5568; margin: 0; padding: 0; background: #F7F8FA;
     }
     .wrap { max-width: 860px; margin: 0 auto; background: #fff; }
-    h1 { font-size: 26pt; color: #1A2B4A; margin: 0 0 16px; line-height: 1.2; }
+    h1 { font-size: 26pt; color: #1F2937; margin: 0 0 16px; line-height: 1.2; }
     h2 {
-      font-size: 18pt; color: #1A2B4A; margin: 0 0 16px;
-      padding-bottom: 8px; border-bottom: 2px solid #1A2B4A;
+      font-size: 18pt; color: #1F2937; margin: 0 0 16px;
+      padding-bottom: 8px; border-bottom: 2px solid #1F2937;
     }
-    h3 { font-size: 14pt; color: #00875A; margin: 0 0 10px; }
-    h4 { font-size: 11pt; color: #1A2B4A; margin: 0 0 8px; font-weight: bold; }
+    h3 { font-size: 14pt; color: #22C55E; margin: 0 0 10px; }
+    h4 { font-size: 11pt; color: #1F2937; margin: 0 0 8px; font-weight: bold; }
     p  { margin: 0 0 10px; line-height: 1.65; color: #4A5568; }
     table { border-collapse: collapse; width: 100%; margin-bottom: 18px; font-size: 9pt; }
-    th { background: #1A2B4A; color: #fff; padding: 8px 10px; text-align: left; font-weight: bold; }
+    th { background: #1F2937; color: #fff; padding: 8px 10px; text-align: left; font-weight: bold; }
     td { padding: 7px 10px; border: 1px solid #E2E8F0; vertical-align: top; }
-    tr:nth-child(even) td { background: #F7F8FA; }
+    tr:nth-child(even) td { background: #F9FAFB; }
     ul { margin: 4px 0 0; padding-left: 18px; }
     li { margin-bottom: 3px; line-height: 1.5; }
-    code { font-family: monospace; font-size: 8.5pt; background: #F7F8FA; padding: 1px 4px; border-radius: 3px; }
+    code { font-family: monospace; font-size: 8.5pt; background: #F9FAFB; padding: 1px 4px; border-radius: 3px; }
 
     /* Layout */
     .section { padding: 40px 50px; }

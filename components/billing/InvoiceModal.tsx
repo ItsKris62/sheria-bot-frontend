@@ -78,15 +78,15 @@ function formatShortDate(iso: string | null): string {
 function statusBadgeStyle(status: string): { bg: string; text: string; label: string } {
   switch (status) {
     case "COMPLETED":
-      return { bg: "#00875A", text: "#fff", label: "PAID" }
+      return { bg: "#22C55E", text: "#000", label: "PAID" }
     case "PENDING":
-      return { bg: "#D4A843", text: "#1A2B4A", label: "PENDING" }
+      return { bg: "#F59E0B", text: "#000", label: "PENDING" }
     case "FAILED":
-      return { bg: "#DC2626", text: "#fff", label: "FAILED" }
+      return { bg: "#EF4444", text: "#fff", label: "FAILED" }
     case "REFUNDED":
-      return { bg: "#4A5568", text: "#fff", label: "REFUNDED" }
+      return { bg: "#6B7280", text: "#fff", label: "REFUNDED" }
     default:
-      return { bg: "#4A5568", text: "#fff", label: status }
+      return { bg: "#6B7280", text: "#fff", label: status }
   }
 }
 
@@ -116,11 +116,11 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
       id="sheriabot-invoice"
       style={{
         fontFamily:      "system-ui, -apple-system, sans-serif",
-        backgroundColor: "#F7F8FA",
+        backgroundColor: "#F9FAFB",
         padding:         "48px",
         maxWidth:        "760px",
         margin:          "0 auto",
-        color:           "#1A2B4A",
+        color:           "#1F2937",
       }}
     >
       {/* ── Header ── */}
@@ -134,10 +134,10 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
           />
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "0.08em", color: "#1A2B4A" }}>
+          <div style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "0.08em", color: "#1F2937" }}>
             INVOICE
           </div>
-          <div style={{ marginTop: "8px", fontSize: "13px", color: "#4A5568" }}>
+          <div style={{ marginTop: "8px", fontSize: "13px", color: "#6B7280" }}>
             <div><strong>Invoice:</strong> {data.invoiceNumber ?? "--"}</div>
             <div><strong>Date:</strong> {formatDate(data.paidAt ?? data.createdAt)}</div>
             <div><strong>Due:</strong> {formatDate(data.paidAt ?? data.createdAt)}</div>
@@ -146,15 +146,15 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
       </div>
 
       {/* ── Divider ── */}
-      <div style={{ height: "1px", backgroundColor: "#1A2B4A", marginBottom: "32px", opacity: 0.15 }} />
+      <div style={{ height: "1px", backgroundColor: "#1F2937", marginBottom: "32px", opacity: 0.15 }} />
 
       {/* ── From / To ── */}
       <div style={{ display: "flex", gap: "48px", marginBottom: "40px" }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", color: "#4A5568", marginBottom: "8px" }}>
+          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", color: "#6B7280", marginBottom: "8px" }}>
             FROM
           </div>
-          <div style={{ fontSize: "14px", lineHeight: 1.7, color: "#1A2B4A" }}>
+          <div style={{ fontSize: "14px", lineHeight: 1.7, color: "#1F2937" }}>
             <div style={{ fontWeight: 700 }}>SheriaBot Ltd</div>
             <div>Nairobi, Kenya</div>
             <div>support@sheriabot.com</div>
@@ -162,10 +162,10 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
           </div>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", color: "#4A5568", marginBottom: "8px" }}>
+          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", color: "#6B7280", marginBottom: "8px" }}>
             BILL TO
           </div>
-          <div style={{ fontSize: "14px", lineHeight: 1.7, color: "#1A2B4A" }}>
+          <div style={{ fontSize: "14px", lineHeight: 1.7, color: "#1F2937" }}>
             <div style={{ fontWeight: 700 }}>{data.organization.name}</div>
             {data.organization.address && <div>{data.organization.address}</div>}
             <div>{data.organization.contactEmail ?? data.user.email}</div>
@@ -178,18 +178,11 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
       <div style={{ marginBottom: "32px" }}>
         {/* Table header */}
         <div
-          style={{
-            display:         "grid",
-            gridTemplateColumns: "1fr auto auto auto",
-            gap:             "16px",
-            backgroundColor: "#1A2B4A",
-            color:           "#fff",
-            padding:         "10px 16px",
-            fontSize:        "11px",
-            fontWeight:      700,
-            letterSpacing:   "0.08em",
-            borderRadius:    "4px 4px 0 0",
-          }}
+        style={{
+          maxWidth:        "760px",
+          margin:          "0 auto",
+          color:           "#1F2937",
+        }}
         >
           <div>DESCRIPTION</div>
           <div style={{ textAlign: "center" }}>QTY</div>
@@ -213,8 +206,8 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
         >
           <div>
             <div style={{ fontWeight: 600 }}>{planLabel} Plan Subscription</div>
-            {data.billingPeriodStart && data.billingPeriodEnd && (
-              <div style={{ fontSize: "12px", color: "#4A5568", marginTop: "2px" }}>
+              {data.billingPeriodStart && data.billingPeriodEnd && (
+              <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "2px" }}>
                 {formatShortDate(data.billingPeriodStart)} to {formatShortDate(data.billingPeriodEnd)}
               </div>
             )}
@@ -237,7 +230,7 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
         >
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <div style={{ width: "280px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#4A5568", paddingBottom: "8px", borderBottom: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#6B7280", paddingBottom: "8px", borderBottom: "1px solid #e2e8f0" }}>
                 <span>Subtotal</span>
                 <span>{amount}</span>
               </div>
@@ -248,12 +241,12 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
                   justifyContent: "space-between",
                   fontSize:       "15px",
                   fontWeight:     800,
-                  color:          "#1A2B4A",
+                  color:          "#1F2937",
                   paddingTop:     "10px",
                 }}
               >
                 <span>TOTAL ({data.currency})</span>
-                <span style={{ color: "#00875A" }}>{amount}</span>
+                <span style={{ color: "#22C55E" }}>{amount}</span>
               </div>
             </div>
           </div>
@@ -270,16 +263,16 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
           marginBottom:    "32px",
         }}
       >
-        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: "#4A5568", marginBottom: "12px" }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: "#6B7280", marginBottom: "12px" }}>
           PAYMENT INFORMATION
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "13px" }}>
           <div>
-            <span style={{ color: "#4A5568" }}>Method: </span>
+            <span style={{ color: "#6B7280" }}>Method: </span>
             <span style={{ fontWeight: 600 }}>{data.paymentMethodDisplay}</span>
           </div>
           <div>
-            <span style={{ color: "#4A5568" }}>Status: </span>
+            <span style={{ color: "#6B7280" }}>Status: </span>
             <span
               style={{
                 backgroundColor: badge.bg,
@@ -296,7 +289,7 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
           </div>
           {data.providerTransactionId && (
             <div style={{ gridColumn: "1 / -1" }}>
-              <span style={{ color: "#4A5568" }}>Transaction ID: </span>
+              <span style={{ color: "#6B7280" }}>Transaction ID: </span>
               <span style={{ fontWeight: 600, fontFamily: "monospace", fontSize: "12px" }}>
                 {data.providerTransactionId}
               </span>
@@ -304,7 +297,7 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
           )}
           {data.paidAt && (
             <div>
-              <span style={{ color: "#4A5568" }}>Paid on: </span>
+              <span style={{ color: "#6B7280" }}>Paid on: </span>
               <span style={{ fontWeight: 600 }}>{formatDate(data.paidAt)}</span>
             </div>
           )}
@@ -313,10 +306,10 @@ function InvoiceContent({ data }: { data: InvoiceDetail }) {
 
       {/* ── Footer ── */}
       <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "24px", textAlign: "center" }}>
-        <div style={{ fontSize: "14px", fontWeight: 600, color: "#1A2B4A", marginBottom: "6px" }}>
+        <div style={{ fontSize: "14px", fontWeight: 600, color: "#1F2937", marginBottom: "6px" }}>
           Thank you for choosing SheriaBot.
         </div>
-        <div style={{ fontSize: "12px", color: "#4A5568" }}>
+        <div style={{ fontSize: "12px", color: "#6B7280" }}>
           www.sheriabot.com
         </div>
         <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "8px" }}>
