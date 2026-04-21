@@ -108,7 +108,10 @@
     text-wrap: balance;
   }
   .glass {
-    @apply bg-surface/50 backdrop-blur-xl border border-border/50;
+    background: rgba(10, 10, 10, 0.5);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(31, 41, 55, 0.5);
   }
   .shadow-glow-green {
     box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.15), 0 8px 24px -4px rgba(34, 197, 94, 0.35);
