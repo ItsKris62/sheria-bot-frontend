@@ -1,50 +1,19 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-/**
- * sessionStorage-backed storage adapter for Supabase.
- *
- * Tokens survive page refreshes within the same browser tab but are NOT
- * shared across tabs and are wiped when the tab is closed.  This limits
- * the XSS blast radius: a script injected in tab A cannot read the token
- * from tab B, and tokens do not persist in localStorage indefinitely.
- *
- * Trade-off: opening a new tab requires re-authentication.  For a compliance
- * platform handling regulated data this is an acceptable UX cost.
- *
- * SSR guard: sessionStorage is not available in Node.js (Next.js server
- * components / API routes).  We return null on every call when running
- * server-side so Supabase skips persistence gracefully.
- */
-const sessionStorageAdapter = {
-  getItem(key: string): string | null {
-    if (typeof window === "undefined") return null;
-    return window.sessionStorage.getItem(key);
-  },
-  setItem(key: string, value: string): void {
-    if (typeof window === "undefined") return;
-    window.sessionStorage.setItem(key, value);
-  },
-  removeItem(key: string): void {
-    if (typeof window === "undefined") return;
-    window.sessionStorage.removeItem(key);
-  },
-};
+import { createBrowserClient } from "@supabase/ssr";
 
 /**
  * Browser Supabase client.
- * Stores session tokens in sessionStorage (not localStorage) to reduce
- * the exposure window for XSS-based token theft.
+ *
+ * Uses @supabase/ssr's createBrowserClient which stores session tokens in
+ * httpOnly cookies instead of sessionStorage. This is strictly more secure:
+ * httpOnly cookies are completely inaccessible to JavaScript (including XSS
+ * payloads), whereas sessionStorage can be read by any script on the page.
+ *
+ * Cookie-based storage also enables server-side session verification in
+ * Next.js middleware without any additional token passing.
  */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: sessionStorageAdapter,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
-});
+export const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+);

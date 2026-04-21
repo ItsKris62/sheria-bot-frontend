@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select"
 import { trpc } from "@/lib/trpc"
 import { useAdminActions } from "@/hooks/use-admin"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useState } from "react"
 
 const roleColorMap: Record<string, string> = {
@@ -53,13 +53,13 @@ export default function UserDetailPage() {
   const { disableUser, enableUser } = useAdminActions()
 
   const forceResetMutation = trpc.admin.forcePasswordReset.useMutation({
-    onSuccess: () => toast({ title: "Password reset forced — user sessions cleared" }),
-    onError: (err) => toast({ title: "Failed", description: err.message, variant: "destructive" }),
+    onSuccess: () => toast.success("Password reset forced — user sessions cleared"),
+    onError: (err) => toast.error("Failed", { description: err.message }),
   })
 
   const updateRoleMutation = trpc.admin.updateUserRole.useMutation({
-    onSuccess: () => { toast({ title: "Role updated" }); void utils.admin.getUser.invalidate({ userId }) },
-    onError: (err) => toast({ title: "Failed", description: err.message, variant: "destructive" }),
+    onSuccess: () => { toast.success("Role updated"); void utils.admin.getUser.invalidate({ userId }) },
+    onError: (err) => toast.error("Failed", { description: err.message }),
   })
 
   type UserDetail = {
@@ -84,14 +84,14 @@ export default function UserDetailPage() {
     try {
       if (isSuspended) {
         await enableUser({ userId })
-        toast({ title: "User reactivated successfully" })
+        toast.success("User reactivated successfully")
       } else {
         await disableUser({ userId, reason: "Suspended by administrator" })
-        toast({ title: "User suspended" })
+        toast("User suspended")
       }
       refetch()
-    } catch (err: any) {
-      toast({ title: "Action failed", description: err.message, variant: "destructive" })
+    } catch (err: unknown) {
+      toast.error("Action failed", { description: (err as Error).message })
     } finally {
       setActionPending(false)
     }

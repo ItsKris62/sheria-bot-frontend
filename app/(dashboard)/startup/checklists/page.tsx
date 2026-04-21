@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
@@ -65,7 +65,7 @@ import {
 } from "lucide-react"
 import { LOGOS } from "@/lib/constants/logos"
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const PRODUCT_TYPES = [
   "Mobile Money Operator",
@@ -86,7 +86,7 @@ const PRODUCT_TYPES = [
 const BUSINESS_STAGES = [
   "Pre-launch / Licensing Phase",
   "Operational (less than 1 year)",
-  "Operational (1–3 years)",
+  "Operational (1â€“3 years)",
   "Scaling / Expanding Services",
 ]
 
@@ -135,8 +135,8 @@ const PRIORITY_CONFIG: Record<string, { label: string; color: string; badge: str
   },
 }
 
-// ─── Local Types ──────────────────────────────────────────────────────────────
-// Backend uses path aliases not resolvable in frontend tsconfig → cast via these types.
+// â”€â”€â”€ Local Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Backend uses path aliases not resolvable in frontend tsconfig â†’ cast via these types.
 
 type LegacyItemStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"
 type NormalizedItemStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "NOT_APPLICABLE"
@@ -237,11 +237,11 @@ type ChecklistSummaryLocal = {
   isNormalized: boolean
 }
 
-/** Polling budget: 80 polls × 3 s = 4 minutes */
+/** Polling budget: 80 polls Ã— 3 s = 4 minutes */
 const POLL_INTERVAL_MS  = 3_000
 const POLL_TIMEOUT_MS   = 4 * 60 * 1_000 // 4 minutes
 
-// ─── Multi-Select Component ───────────────────────────────────────────────────
+// â”€â”€â”€ Multi-Select Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function MultiSelect({
   options,
@@ -283,7 +283,7 @@ function MultiSelect({
   )
 }
 
-// ─── Generate Checklist Dialog ────────────────────────────────────────────────
+// â”€â”€â”€ Generate Checklist Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Fire-and-forget: submits async mutation, closes immediately, polls in detail view.
 
 type RetryDefaults = {
@@ -330,10 +330,10 @@ function GenerateChecklistDialog({
   }, [open, defaultValues])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const generateMutation = trpc.compliance.generateChecklistAsync.useMutation<any>({
+  const generateMutation = trpc.checklist.generateChecklistAsync.useMutation<any>({
     onSuccess: (data: { checklistId: string; status: string }) => {
       toast.success("Checklist generation started", {
-        description: "Your checklist is being built in the background — this typically takes 1-3 minutes.",
+        description: "Your checklist is being built in the background â€” this typically takes 1-3 minutes.",
       })
       setOpen(false)
       resetForm()
@@ -355,7 +355,7 @@ function GenerateChecklistDialog({
           description: err.message ?? "Please try again.",
         })
       }
-      // Do NOT reset the form or close the dialog on error — keep fields populated for retry
+      // Do NOT reset the form or close the dialog on error â€” keep fields populated for retry
     },
   })
 
@@ -510,8 +510,8 @@ function GenerateChecklistDialog({
               <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <p className="text-sm text-muted-foreground">
                 Our AI retrieves relevant passages from Kenyan regulatory documents (CBK, DPA, POCAMLA,
-                etc.) to ground your checklist in actual law — not generic guidance. Generation runs in
-                the background and typically takes 1–3 minutes.
+                etc.) to ground your checklist in actual law â€” not generic guidance. Generation runs in
+                the background and typically takes 1â€“3 minutes.
               </p>
             </div>
           </div>
@@ -539,7 +539,7 @@ function GenerateChecklistDialog({
   )
 }
 
-// ─── Checklist Card (Summary) ─────────────────────────────────────────────────
+// â”€â”€â”€ Checklist Card (Summary) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const MAX_CARD_RETRIES = 3
 
@@ -606,12 +606,12 @@ function ChecklistCard({
               <AlertCircle className="h-3 w-3 shrink-0" />
               {checklist.metadata?.errorMessage
                 ? checklist.metadata.errorMessage
-                : "Generation failed — click to view details and retry"}
+                : "Generation failed â€” click to view details and retry"}
             </p>
           ) : isGenerating ? (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />
-              Generating your checklist — click to view progress
+              Generating your checklist â€” click to view progress
             </p>
           ) : (
             <>
@@ -702,7 +702,7 @@ function ChecklistCard({
   )
 }
 
-// ─── Item Status Icon ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Item Status Icon â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function NormalizedStatusIcon({ status }: { status: NormalizedItemStatus }) {
   if (status === "COMPLETED")      return <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
@@ -717,7 +717,7 @@ function LegacyStatusIcon({ status }: { status: string }) {
   return <Circle className="h-5 w-5 text-muted-foreground/50 shrink-0" />
 }
 
-// ─── PDF Export (Legacy) ──────────────────────────────────────────────────────
+// â”€â”€â”€ PDF Export (Legacy) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // TODO: add a normalized-checklist PDF export when NormalizedChecklistDetailView
 // is stable. For now, this function is used only for legacy (isNormalized=false) checklists.
 
@@ -775,9 +775,9 @@ function buildPrintHtml(data: {
 
   const itemStatusBadge = (id: string) => {
     const s = itemProgress[id] ?? "NOT_STARTED"
-    if (s === "COMPLETED")  return `<span style="color:#16A34A;font-weight:600">✓ Completed</span>`
-    if (s === "IN_PROGRESS") return `<span style="color:#2563EB;font-weight:600">⟳ In Progress</span>`
-    return `<span style="color:#6B7280">○ Not Started</span>`
+    if (s === "COMPLETED")  return `<span style="color:#16A34A;font-weight:600">âœ“ Completed</span>`
+    if (s === "IN_PROGRESS") return `<span style="color:#2563EB;font-weight:600">âŸ³ In Progress</span>`
+    return `<span style="color:#6B7280">â—‹ Not Started</span>`
   }
 
   const categoryRows = categories.map((cat) => {
@@ -788,7 +788,7 @@ function buildPrintHtml(data: {
           <div>
             <span style="font-size:10px;color:#9CA3AF;font-family:monospace">${item.id}</span>
             <p style="font-weight:600;color:#1A2B4A;margin:2px 0;font-size:13px">${item.title}</p>
-            <p style="font-size:11px;color:#6B7280;font-style:italic;margin:2px 0">📋 ${item.regulatoryBasis}</p>
+            <p style="font-size:11px;color:#6B7280;font-style:italic;margin:2px 0">ðŸ“‹ ${item.regulatoryBasis}</p>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap">
             ${priorityBadge(item.priority)}
@@ -805,8 +805,8 @@ function buildPrintHtml(data: {
           </div>
         ` : ""}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">⏰ Deadline</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.deadline}</p></div>` : ""}
-          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">⚠️ Penalty</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.penalty}</p></div>` : ""}
+          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">â° Deadline</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.deadline}</p></div>` : ""}
+          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">âš ï¸ Penalty</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.penalty}</p></div>` : ""}
         </div>
       </div>
     `).join("")
@@ -831,7 +831,7 @@ function buildPrintHtml(data: {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>${title} — SheriaBot Compliance Checklist</title>
+  <title>${title} â€” SheriaBot Compliance Checklist</title>
   <style>
     @media print {
       @page { margin: 15mm; size: A4; }
@@ -847,7 +847,7 @@ function buildPrintHtml(data: {
 <body>
   <div class="print-footer">
     <img src="${EXPORT_LOGO_URL}" alt="SheriaBot" style="max-height:20px;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none';" />
-    <span>Powered by SheriaBot — AI-Powered Regulatory Compliance</span>
+    <span>Powered by SheriaBot â€” AI-Powered Regulatory Compliance</span>
     <span style="margin-left:12px;">Generated on ${dateStr}</span>
   </div>
   <div style="text-align:center;padding:40px 20px 32px;border-bottom:3px solid #1A2B4A;margin-bottom:32px">
@@ -867,10 +867,10 @@ function buildPrintHtml(data: {
     <p style="font-size:16px;color:#00875A;font-weight:600;margin:0 0 20px">${title}</p>
     <div style="display:inline-grid;grid-template-columns:auto auto;gap:4px 24px;text-align:left;background:#F7F8FA;padding:16px 24px;border-radius:8px;font-size:12px">
       <span style="color:#6B7280">Generated on:</span><span style="font-weight:600">${dateStr}</span>
-      <span style="color:#6B7280">Product Type:</span><span style="font-weight:600">${productType ?? "—"}</span>
-      <span style="color:#6B7280">Business Stage:</span><span style="font-weight:600">${businessStage ?? "—"}</span>
+      <span style="color:#6B7280">Product Type:</span><span style="font-weight:600">${productType ?? "â€”"}</span>
+      <span style="color:#6B7280">Business Stage:</span><span style="font-weight:600">${businessStage ?? "â€”"}</span>
     </div>
-    <p style="margin-top:24px;font-size:11px;color:#9CA3AF">Generated by SheriaBot — AI-Powered Regulatory Compliance for Kenya&apos;s Fintech Sector</p>
+    <p style="margin-top:24px;font-size:11px;color:#9CA3AF">Generated by SheriaBot â€” AI-Powered Regulatory Compliance for Kenya&apos;s Fintech Sector</p>
   </div>
   <div style="margin-bottom:32px;page-break-after:always">
     <h2 style="font-size:16px;font-weight:700;color:#1A2B4A;margin-bottom:16px;border-bottom:2px solid #00875A;padding-bottom:6px">Executive Summary</h2>
@@ -888,7 +888,7 @@ function buildPrintHtml(data: {
         <p style="font-size:11px;color:#6B7280;margin:4px 0 0">Est. Days to Compliance</p>
       </div>
     </div>
-    ${inProgressItems > 0 ? `<p style="margin-top:12px;font-size:12px;color:#2563EB">⟳ ${inProgressItems} items currently in progress</p>` : ""}
+    ${inProgressItems > 0 ? `<p style="margin-top:12px;font-size:12px;color:#2563EB">âŸ³ ${inProgressItems} items currently in progress</p>` : ""}
   </div>
   <div>
     <h2 style="font-size:16px;font-weight:700;color:#1A2B4A;margin-bottom:16px;border-bottom:2px solid #00875A;padding-bottom:6px">Compliance Requirements</h2>
@@ -932,7 +932,7 @@ function handleExportPdf(data: Parameters<typeof buildPrintHtml>[0]) {
   setTimeout(() => { printWindow.print() }, 500)
 }
 
-// ─── PDF Export (Normalized) ─────────────────────────────────────────────────
+// â”€â”€â”€ PDF Export (Normalized) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildNormalizedPrintHtml(data: {
   title: string
@@ -962,10 +962,10 @@ function buildNormalizedPrintHtml(data: {
   }
 
   const statusBadge = (s: string) => {
-    if (s === "COMPLETED")      return `<span style="color:#16A34A;font-weight:600">✓ Completed</span>`
-    if (s === "IN_PROGRESS")    return `<span style="color:#2563EB;font-weight:600">⟳ In Progress</span>`
-    if (s === "NOT_APPLICABLE") return `<span style="color:#9CA3AF;font-weight:600">— Not Applicable</span>`
-    return `<span style="color:#6B7280">○ Pending</span>`
+    if (s === "COMPLETED")      return `<span style="color:#16A34A;font-weight:600">âœ“ Completed</span>`
+    if (s === "IN_PROGRESS")    return `<span style="color:#2563EB;font-weight:600">âŸ³ In Progress</span>`
+    if (s === "NOT_APPLICABLE") return `<span style="color:#9CA3AF;font-weight:600">â€” Not Applicable</span>`
+    return `<span style="color:#6B7280">â—‹ Pending</span>`
   }
 
   const categoryRows = categories.map((cat) => {
@@ -976,7 +976,7 @@ function buildNormalizedPrintHtml(data: {
           <div style="min-width:0">
             ${item.itemCode ? `<span style="font-size:10px;color:#9CA3AF;font-family:monospace">${item.itemCode}</span><br>` : ""}
             <p style="font-weight:600;color:#1A2B4A;margin:2px 0;font-size:13px;${item.status === "COMPLETED" ? "text-decoration:line-through;color:#6B7280;" : ""}">${item.title}</p>
-            <p style="font-size:11px;color:#6B7280;font-style:italic;margin:2px 0">📋 ${item.regulatoryReference}</p>
+            <p style="font-size:11px;color:#6B7280;font-style:italic;margin:2px 0">ðŸ“‹ ${item.regulatoryReference}</p>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap">
             ${priorityBadge(item.priority)}
@@ -984,7 +984,7 @@ function buildNormalizedPrintHtml(data: {
           </div>
         </div>
         <p style="font-size:12px;color:#4A5568;margin:6px 0;line-height:1.5">${item.description}</p>
-        ${item.guidance ? `<p style="font-size:11px;color:#1D4ED8;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:4px;padding:6px 8px;margin:6px 0;line-height:1.5">💡 ${item.guidance}</p>` : ""}
+        ${item.guidance ? `<p style="font-size:11px;color:#1D4ED8;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:4px;padding:6px 8px;margin:6px 0;line-height:1.5">ðŸ’¡ ${item.guidance}</p>` : ""}
         ${item.actionItems?.length ? `
           <div style="margin-top:8px">
             <p style="font-size:11px;font-weight:600;color:#1A2B4A;margin-bottom:4px">Action Items:</p>
@@ -994,10 +994,10 @@ function buildNormalizedPrintHtml(data: {
           </div>
         ` : ""}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">⏰ Deadline</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.deadline}</p></div>` : ""}
-          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">⚠️ Penalty</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.penalty}</p></div>` : ""}
+          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">â° Deadline</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.deadline}</p></div>` : ""}
+          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">âš ï¸ Penalty</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.penalty}</p></div>` : ""}
         </div>
-        ${item.notes ? `<div style="margin-top:8px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#92400E">📝 Notes</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.notes}</p></div>` : ""}
+        ${item.notes ? `<div style="margin-top:8px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#92400E">ðŸ“ Notes</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.notes}</p></div>` : ""}
       </div>
     `).join("")
 
@@ -1020,7 +1020,7 @@ function buildNormalizedPrintHtml(data: {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>${title} — SheriaBot Compliance Checklist</title>
+  <title>${title} â€” SheriaBot Compliance Checklist</title>
   <style>
     @media print {
       @page { margin: 15mm; size: A4; }
@@ -1036,7 +1036,7 @@ function buildNormalizedPrintHtml(data: {
 <body>
   <div class="print-footer">
     <img src="${EXPORT_LOGO_URL}" alt="SheriaBot" style="max-height:20px;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none';" />
-    <span>Powered by SheriaBot — AI-Powered Regulatory Compliance</span>
+    <span>Powered by SheriaBot â€” AI-Powered Regulatory Compliance</span>
     <span style="margin-left:12px;">Generated on ${dateStr}</span>
   </div>
   <div style="text-align:center;padding:40px 20px 32px;border-bottom:3px solid #1A2B4A;margin-bottom:32px">
@@ -1056,10 +1056,10 @@ function buildNormalizedPrintHtml(data: {
     <p style="font-size:16px;color:#00875A;font-weight:600;margin:0 0 20px">${title}</p>
     <div style="display:inline-grid;grid-template-columns:auto auto;gap:4px 24px;text-align:left;background:#F7F8FA;padding:16px 24px;border-radius:8px;font-size:12px">
       <span style="color:#6B7280">Generated on:</span><span style="font-weight:600">${dateStr}</span>
-      <span style="color:#6B7280">Product Type:</span><span style="font-weight:600">${productType ?? "—"}</span>
-      <span style="color:#6B7280">Business Stage:</span><span style="font-weight:600">${businessStage ?? "—"}</span>
+      <span style="color:#6B7280">Product Type:</span><span style="font-weight:600">${productType ?? "â€”"}</span>
+      <span style="color:#6B7280">Business Stage:</span><span style="font-weight:600">${businessStage ?? "â€”"}</span>
     </div>
-    <p style="margin-top:24px;font-size:11px;color:#9CA3AF">Confidential — For Internal Use Only · Generated by SheriaBot</p>
+    <p style="margin-top:24px;font-size:11px;color:#9CA3AF">Confidential â€” For Internal Use Only Â· Generated by SheriaBot</p>
   </div>
 
   <div style="margin-bottom:32px;page-break-after:always">
@@ -1131,7 +1131,7 @@ function handleExportNormalizedPdf(data: Parameters<typeof buildNormalizedPrintH
   setTimeout(() => { printWindow.print() }, 500)
 }
 
-// ─── Normalized Checklist Detail View ────────────────────────────────────────
+// â”€â”€â”€ Normalized Checklist Detail View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function NormalizedChecklistDetailView({
   checklistId,
@@ -1149,7 +1149,7 @@ function NormalizedChecklistDetailView({
   const [isExporting, setIsExporting]         = useState(false)
   const [isExportingDocx, setIsExportingDocx] = useState(false)
 
-  const { data: rawDetail, isLoading } = trpc.compliance.getChecklistDetail.useQuery(
+  const { data: rawDetail, isLoading } = trpc.checklist.getChecklistDetail.useQuery(
     { checklistId },
     { enabled: true }
   )
@@ -1175,7 +1175,7 @@ function NormalizedChecklistDetailView({
     exportDocxMutation.mutate({ checklistId })
   }
 
-  const updateItemMutation = trpc.compliance.updateChecklistItem.useMutation({
+  const updateItemMutation = trpc.checklist.updateChecklistItem.useMutation({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onMutate: async (variables: any) => {
       await utils.compliance.getChecklistDetail.cancel({ checklistId })
@@ -1201,7 +1201,7 @@ function NormalizedChecklistDetailView({
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onSuccess: (data: any) => {
-      // Server response wins — apply authoritative server values
+      // Server response wins â€” apply authoritative server values
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       utils.compliance.getChecklistDetail.setData({ checklistId } as any, (old: any) => {
         if (!old) return old
@@ -1236,7 +1236,7 @@ function NormalizedChecklistDetailView({
     },
   })
 
-  // Cycle: PENDING → IN_PROGRESS → COMPLETED → PENDING
+  // Cycle: PENDING â†’ IN_PROGRESS â†’ COMPLETED â†’ PENDING
   const cycleStatus = (current: NormalizedItemStatus): NormalizedItemStatus => {
     if (current === "PENDING"      || current === "NOT_APPLICABLE") return "IN_PROGRESS"
     if (current === "IN_PROGRESS") return "COMPLETED"
@@ -1277,7 +1277,7 @@ function NormalizedChecklistDetailView({
           <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
           <p className="text-destructive font-medium">Failed to load checklist detail</p>
           <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>
-            ← Back
+            â† Back
           </Button>
         </CardContent>
       </Card>
@@ -1362,14 +1362,14 @@ function NormalizedChecklistDetailView({
             onClick={onBack}
             className="mb-2 -ml-2 text-muted-foreground"
           >
-            ← Back to Checklists
+            â† Back to Checklists
           </Button>
           <h2 className="text-xl font-bold text-foreground">{detailData.title}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {detailData.productType} · {detailData.businessStage}
+            {detailData.productType} Â· {detailData.businessStage}
             {detailData.generatedAt && (
               <span className="ml-2 text-xs">
-                · Generated {new Date(detailData.generatedAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
+                Â· Generated {new Date(detailData.generatedAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
               </span>
             )}
           </p>
@@ -1412,12 +1412,12 @@ function NormalizedChecklistDetailView({
         </div>
       </div>
 
-      {/* Tier quality banners — shown for non-full generation tiers */}
+      {/* Tier quality banners â€” shown for non-full generation tiers */}
       {generationTier === "simplified" && (
         <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700 p-3 flex items-start gap-3">
           <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div className="text-sm">
-            <span className="font-medium text-blue-800 dark:text-blue-300">Simplified generation — </span>
+            <span className="font-medium text-blue-800 dark:text-blue-300">Simplified generation â€” </span>
             <span className="text-blue-700 dark:text-blue-400">
               This checklist was generated with a reduced regulatory context due to a timeout on the first attempt.
               All items are validated and complete, but you may re-generate for a more comprehensive result.
@@ -1429,7 +1429,7 @@ function NormalizedChecklistDetailView({
         <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700 p-3 flex items-start gap-3">
           <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="text-sm">
-            <span className="font-medium text-amber-800 dark:text-amber-300">Minimal generation — </span>
+            <span className="font-medium text-amber-800 dark:text-amber-300">Minimal generation â€” </span>
             <span className="text-amber-700 dark:text-amber-400">
               This checklist was generated without live regulatory context (no RAG) after two prior timeouts.
               Items are based on training knowledge only. Re-generate when API response times improve for best results.
@@ -1441,7 +1441,7 @@ function NormalizedChecklistDetailView({
         <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700 p-3 flex items-start gap-3">
           <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div className="text-sm">
-            <span className="font-medium text-blue-800 dark:text-blue-300">Partial recovery — </span>
+            <span className="font-medium text-blue-800 dark:text-blue-300">Partial recovery â€” </span>
             <span className="text-blue-700 dark:text-blue-400">
               {tierNote ?? "Some checklist categories were recovered from a partial AI response. Review items carefully and re-generate if any categories appear incomplete."}
             </span>
@@ -1487,7 +1487,7 @@ function NormalizedChecklistDetailView({
       {/* Hint */}
       <p className="text-xs text-muted-foreground flex items-center gap-1">
         <ShieldCheck className="h-3 w-3" />
-        Click the status icon to cycle: Pending → In Progress → Completed. Use the dropdown for
+        Click the status icon to cycle: Pending â†’ In Progress â†’ Completed. Use the dropdown for
         &quot;Not Applicable&quot;.
       </p>
 
@@ -1608,7 +1608,7 @@ function NormalizedChecklistDetailView({
                                 {item.regulatoryReference}
                               </p>
 
-                              {/* Guidance pill — shown when present */}
+                              {/* Guidance pill â€” shown when present */}
                               {item.guidance && (
                                 <p className="text-xs text-primary/80 mt-1.5 bg-primary/5 rounded px-2 py-1 border border-primary/10">
                                   {item.guidance}
@@ -1643,7 +1643,7 @@ function NormalizedChecklistDetailView({
                                   }
                                   className="text-xs text-primary hover:underline"
                                 >
-                                  {isExpanded ? "Hide details ↑" : "View details ↓"}
+                                  {isExpanded ? "Hide details â†‘" : "View details â†“"}
                                 </button>
                               </div>
 
@@ -1677,7 +1677,7 @@ function NormalizedChecklistDetailView({
                                     {item.deadline && (
                                       <div className="rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-2">
                                         <p className="text-xs font-medium text-green-800 dark:text-green-400">
-                                          ⏰ Deadline
+                                          â° Deadline
                                         </p>
                                         <p className="text-xs text-muted-foreground mt-0.5">
                                           {item.deadline}
@@ -1687,7 +1687,7 @@ function NormalizedChecklistDetailView({
                                     {item.penalty && (
                                       <div className="rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-2">
                                         <p className="text-xs font-medium text-red-700 dark:text-red-400">
-                                          ⚠️ Penalty
+                                          âš ï¸ Penalty
                                         </p>
                                         <p className="text-xs text-muted-foreground mt-0.5">
                                           {item.penalty}
@@ -1739,7 +1739,7 @@ function NormalizedChecklistDetailView({
   )
 }
 
-// ─── Legacy Checklist Detail View ─────────────────────────────────────────────
+// â”€â”€â”€ Legacy Checklist Detail View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Handles pre-March 2026 checklists stored as JSON blob + itemProgress map.
 
 function LegacyChecklistDetailView({
@@ -1750,7 +1750,7 @@ function LegacyChecklistDetailView({
   onBack: () => void
 }) {
   const utils = trpc.useUtils()
-  const { data, isLoading, error } = trpc.compliance.getChecklist.useQuery({ id: checklistId })
+  const { data, isLoading, error } = trpc.checklist.getChecklist.useQuery({ id: checklistId })
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({})
   const [expandedItems, setExpandedItems]   = useState<Record<string, boolean>>({})
   const [isExporting, setIsExporting]       = useState(false)
@@ -1759,7 +1759,7 @@ function LegacyChecklistDetailView({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const itemProgress = localProgress ?? ((data?.itemProgress as Record<string, string>) ?? {})
 
-  const updateProgressMutation = trpc.compliance.updateChecklistProgress.useMutation({
+  const updateProgressMutation = trpc.checklist.updateChecklistProgress.useMutation({
     onSuccess: () => {
       utils.compliance.getChecklist.invalidate({ id: checklistId })
       utils.compliance.listChecklists.invalidate()
@@ -1819,7 +1819,7 @@ function LegacyChecklistDetailView({
           <p className="text-destructive font-medium">Failed to load checklist</p>
           <p className="text-sm text-muted-foreground mt-1">{error?.message ?? "Unknown error"}</p>
           <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>
-            ← Back
+            â† Back
           </Button>
         </CardContent>
       </Card>
@@ -1882,11 +1882,11 @@ function LegacyChecklistDetailView({
             onClick={onBack}
             className="mb-2 -ml-2 text-muted-foreground"
           >
-            ← Back to Checklists
+            â† Back to Checklists
           </Button>
           <h2 className="text-xl font-bold text-foreground">{data.title}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {data.productType} · {data.businessStage}
+            {data.productType} Â· {data.businessStage}
           </p>
         </div>
         <Button
@@ -1914,7 +1914,7 @@ function LegacyChecklistDetailView({
               <p className="text-4xl font-bold text-primary">{progressPct}%</p>
               <p className="text-sm text-muted-foreground mt-1">
                 {completedCount} of {totalItems} completed
-                {inProgressCount > 0 && ` · ${inProgressCount} in progress`}
+                {inProgressCount > 0 && ` Â· ${inProgressCount} in progress`}
               </p>
             </div>
           </div>
@@ -1944,7 +1944,7 @@ function LegacyChecklistDetailView({
         <div className="space-y-4">
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <ShieldCheck className="h-3 w-3" />
-            Click the status icon on each item to cycle: Not Started → In Progress → Completed
+            Click the status icon on each item to cycle: Not Started â†’ In Progress â†’ Completed
           </p>
           {checklistData.categories.map((category) => {
             const catItems      = category.items
@@ -2088,7 +2088,7 @@ function LegacyChecklistDetailView({
                                     }
                                     className="text-xs text-primary hover:underline"
                                   >
-                                    {isExpanded ? "Hide details ↑" : "View details ↓"}
+                                    {isExpanded ? "Hide details â†‘" : "View details â†“"}
                                   </button>
                                 </div>
                                 {isExpanded && (
@@ -2119,7 +2119,7 @@ function LegacyChecklistDetailView({
                                       {item.deadline && (
                                         <div className="rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-2">
                                           <p className="text-xs font-medium text-green-800 dark:text-green-400">
-                                            ⏰ Deadline
+                                            â° Deadline
                                           </p>
                                           <p className="text-xs text-muted-foreground mt-0.5">
                                             {item.deadline}
@@ -2129,7 +2129,7 @@ function LegacyChecklistDetailView({
                                       {item.penalty && (
                                         <div className="rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-2">
                                           <p className="text-xs font-medium text-red-700 dark:text-red-400">
-                                            ⚠️ Penalty
+                                            âš ï¸ Penalty
                                           </p>
                                           <p className="text-xs text-muted-foreground mt-0.5">
                                             {item.penalty}
@@ -2156,8 +2156,8 @@ function LegacyChecklistDetailView({
   )
 }
 
-// ─── Checklist Detail Router ──────────────────────────────────────────────────
-// Polls status → routes to NormalizedChecklistDetailView or LegacyChecklistDetailView.
+// â”€â”€â”€ Checklist Detail Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Polls status â†’ routes to NormalizedChecklistDetailView or LegacyChecklistDetailView.
 
 const MAX_DETAIL_RETRIES = 3
 
@@ -2173,10 +2173,10 @@ function ChecklistDetailView({
   const [newChecklistDialogOpen, setNewChecklistDialogOpen] = useState(false)
   const utils = trpc.useUtils()
 
-  // Always poll status — determines isNormalized + GENERATING state.
+  // Always poll status â€” determines isNormalized + GENERATING state.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: rawStatus, isLoading: statusLoading, error: statusError } =
-    trpc.compliance.getChecklistStatus.useQuery(
+    trpc.checklist.getChecklistStatus.useQuery(
       { checklistId },
       {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2217,12 +2217,12 @@ function ChecklistDetailView({
     return () => clearTimeout(timer)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Status error ──────────────────────────────────────────────────────────
+  // â”€â”€ Status error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (statusError) {
     return (
       <div className="space-y-4">
         <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2 text-muted-foreground">
-          ← Back to Checklists
+          â† Back to Checklists
         </Button>
         <Card className="border-destructive/50">
           <CardContent className="pt-6 text-center">
@@ -2235,7 +2235,7 @@ function ChecklistDetailView({
     )
   }
 
-  // ── Generating / polling state ────────────────────────────────────────────
+  // â”€â”€ Generating / polling state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const isGenerating = statusLoading || !statusData || statusData.status === "GENERATING"
   const isFailed     = statusData?.status === "FAILED"
 
@@ -2251,7 +2251,7 @@ function ChecklistDetailView({
             onClick={onBack}
             className="-ml-2 text-muted-foreground"
           >
-            ← Back to Checklists
+            â† Back to Checklists
           </Button>
           <Card className="border-yellow-500/50 bg-yellow-50/10">
             <CardContent className="pt-6 text-center space-y-3">
@@ -2262,7 +2262,7 @@ function ChecklistDetailView({
                 whether the checklist appeared, or delete it and try again.
               </p>
               <Button variant="outline" className="bg-transparent" onClick={onBack}>
-                ← Back to Checklists
+                â† Back to Checklists
               </Button>
             </CardContent>
           </Card>
@@ -2278,7 +2278,7 @@ function ChecklistDetailView({
           onClick={onBack}
           className="-ml-2 text-muted-foreground"
         >
-          ← Back to Checklists
+          â† Back to Checklists
         </Button>
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="pt-8 pb-8 text-center space-y-4">
@@ -2289,12 +2289,12 @@ function ChecklistDetailView({
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 Our AI is retrieving Kenyan regulatory context and building your checklist.
-                This typically takes 1–3 minutes.
+                This typically takes 1â€“3 minutes.
               </p>
             </div>
             {statusData && (
               <div className="text-xs text-muted-foreground space-y-1">
-                <p>⏱ {elapsed}s elapsed — checking every 3 seconds</p>
+                <p>â± {elapsed}s elapsed â€” checking every 3 seconds</p>
               </div>
             )}
             <div className="w-full max-w-xs mx-auto bg-muted rounded-full h-2 overflow-hidden">
@@ -2309,7 +2309,7 @@ function ChecklistDetailView({
     )
   }
 
-  // ── Failed state ──────────────────────────────────────────────────────────
+  // â”€â”€ Failed state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (isFailed) {
     const errorMessage = statusData?.metadata?.errorMessage
     const retryCount   = statusData?.metadata?.retryCount ?? 0
@@ -2323,7 +2323,7 @@ function ChecklistDetailView({
           onClick={onBack}
           className="-ml-2 text-muted-foreground"
         >
-          ← Back to Checklists
+          â† Back to Checklists
         </Button>
 
         {/* Error banner */}
@@ -2391,7 +2391,7 @@ function ChecklistDetailView({
             Generate New Checklist
           </Button>
           <Button variant="ghost" onClick={onBack} className="text-muted-foreground">
-            ← Back
+            â† Back
           </Button>
         </div>
 
@@ -2416,7 +2416,7 @@ function ChecklistDetailView({
     )
   }
 
-  // ── Route by isNormalized ─────────────────────────────────────────────────
+  // â”€â”€ Route by isNormalized â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (statusData.isNormalized) {
     return (
       <NormalizedChecklistDetailView
@@ -2430,7 +2430,7 @@ function ChecklistDetailView({
   return <LegacyChecklistDetailView checklistId={checklistId} onBack={onBack} />
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function ChecklistsPage() {
   const [activeChecklistId, setActiveChecklistId] = useState<string | null>(null)
@@ -2442,12 +2442,12 @@ export default function ChecklistsPage() {
   const prevGeneratingIdsRef = useRef<Set<string>>(new Set())
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: rawUsage } = trpc.compliance.getChecklistUsage.useQuery(undefined) as { data: any }
+  const { data: rawUsage } = trpc.checklist.getChecklistUsage.useQuery(undefined) as { data: any }
   const usageData = rawUsage as { used: number; limit: number; period: "month" | "lifetime"; planName: string } | undefined
 
   const { data: rawChecklists, isLoading, error, refetch } =
-    trpc.compliance.listChecklists.useQuery(undefined, {
-      // Auto-poll when any checklist is GENERATING — stops when all leave that state
+    trpc.checklist.listChecklists.useQuery(undefined, {
+      // Auto-poll when any checklist is GENERATING â€” stops when all leave that state
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       refetchInterval: (query: any) => {
         const data = query?.state?.data as ChecklistSummaryLocal[] | undefined
@@ -2457,7 +2457,7 @@ export default function ChecklistsPage() {
       onError: (err: { message?: string }) => {
         toast.error("Failed to load checklists", { description: err.message })
       },
-    } as Parameters<typeof trpc.compliance.listChecklists.useQuery>[1])
+    } as Parameters<typeof trpc.checklist.listChecklists.useQuery>[1])
 
   const checklists = rawChecklists as ChecklistSummaryLocal[] | undefined
 
@@ -2484,7 +2484,7 @@ export default function ChecklistsPage() {
     )
   }, [checklists])
 
-  const deleteMutation = trpc.compliance.deleteChecklist.useMutation({
+  const deleteMutation = trpc.checklist.deleteChecklist.useMutation({
     onSuccess: () => {
       toast.success("Checklist deleted")
       utils.compliance.listChecklists.invalidate()
@@ -2536,7 +2536,7 @@ export default function ChecklistsPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Compliance Checklists</h1>
           <p className="text-muted-foreground mt-1">
-            AI-generated checklists grounded in actual Kenyan regulations — cite laws, track
+            AI-generated checklists grounded in actual Kenyan regulations â€” cite laws, track
             progress.
           </p>
         </div>
@@ -2644,7 +2644,7 @@ export default function ChecklistsPage() {
                 <p className="text-2xl font-bold text-foreground">{checklists.length}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {completedChecklistCount > 0 && `${completedChecklistCount} completed`}
-                  {generatingChecklistCount > 0 && ` · ${generatingChecklistCount} generating`}
+                  {generatingChecklistCount > 0 && ` Â· ${generatingChecklistCount} generating`}
                 </p>
               </CardContent>
             </Card>
@@ -2713,3 +2713,4 @@ export default function ChecklistsPage() {
     </div>
   )
 }
+

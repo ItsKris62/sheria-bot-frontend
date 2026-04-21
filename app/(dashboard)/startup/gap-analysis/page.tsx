@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useRef, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -42,7 +42,7 @@ import {
 } from "lucide-react"
 import { LoadingScreen } from "@/components/loading-screen"
 
-// ─── Local Types ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Local Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type FrameworkOption = {
   slug: string
@@ -53,7 +53,7 @@ type FrameworkOption = {
   locked: boolean
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const FOCUS_AREAS = [
   "Data handling and privacy",
@@ -107,7 +107,7 @@ function getScoreLabel(score: number) {
   return "Critical Risk"
 }
 
-// ─── File Upload Section ─────────────────────────────────────────────────────
+// â”€â”€â”€ File Upload Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function FileUploadSection({
   file,
@@ -154,7 +154,7 @@ function FileUploadSection({
           <FileText className="h-8 w-8 text-secondary shrink-0" />
           <div>
             <p className="font-medium text-foreground text-sm">{file.name}</p>
-            <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB · {file.type.split("/").pop()?.toUpperCase()}</p>
+            <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB Â· {file.type.split("/").pop()?.toUpperCase()}</p>
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={onRemove} className="text-destructive hover:text-destructive hover:bg-destructive/10">
@@ -179,7 +179,7 @@ function FileUploadSection({
         <Upload className={`h-8 w-8 mx-auto mb-3 ${dragActive ? "text-primary" : "text-muted-foreground"}`} />
         <p className="text-sm font-medium text-foreground">Drop your policy document here</p>
         <p className="text-xs text-muted-foreground mt-1">or <span className="text-primary underline">browse files</span></p>
-        <p className="text-xs text-muted-foreground mt-3">PDF, DOCX, DOC, TXT · Max {maxMB}MB</p>
+        <p className="text-xs text-muted-foreground mt-3">PDF, DOCX, DOC, TXT Â· Max {maxMB}MB</p>
       </div>
       <input
         ref={inputRef}
@@ -192,7 +192,7 @@ function FileUploadSection({
   )
 }
 
-// ─── Score Gauge ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Score Gauge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ScoreGauge({ score }: { score: number }) {
   const { ring, text, bg } = getScoreColor(score)
@@ -204,7 +204,7 @@ function ScoreGauge({ score }: { score: number }) {
   )
 }
 
-// ─── Analysis Results View ────────────────────────────────────────────────────
+// â”€â”€â”€ Analysis Results View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type GapResult = {
   id: string
@@ -262,7 +262,7 @@ function AnalysisResultsView({
   documentName: string
   onBack: () => void
 }) {
-  const { data, isLoading, error } = trpc.compliance.getGapAnalysisResult.useQuery({ id: analysisId })
+  const { data, isLoading, error } = trpc.gapAnalysis.getGapAnalysisResult.useQuery({ id: analysisId })
   const [expandedGaps, setExpandedGaps] = useState<Record<string, boolean>>({})
 
   const logExportMutation = trpc.compliance.logExport.useMutation()
@@ -303,7 +303,7 @@ function AnalysisResultsView({
           <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
           <p className="text-destructive font-medium">Failed to load analysis</p>
           <p className="text-sm text-muted-foreground mt-1">{error?.message ?? "Unknown error"}</p>
-          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>← Back</Button>
+          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>â† Back</Button>
         </CardContent>
       </Card>
     )
@@ -320,7 +320,7 @@ function AnalysisResultsView({
           <XCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
           <p className="text-destructive font-medium">Analysis failed</p>
           <p className="text-sm text-muted-foreground mt-1">{data.errorMessage ?? "An unexpected error occurred"}</p>
-          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>← Run New Analysis</Button>
+          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>â† Run New Analysis</Button>
         </CardContent>
       </Card>
     )
@@ -375,10 +375,10 @@ function AnalysisResultsView({
       <div className="flex items-center justify-between">
         <div>
           <Button variant="ghost" size="sm" onClick={onBack} className="mb-2 -ml-2 text-muted-foreground">
-            ← Back to Gap Analysis
+            â† Back to Gap Analysis
           </Button>
           <h2 className="text-xl font-bold text-foreground">Gap Analysis Results</h2>
-          <p className="text-sm text-muted-foreground mt-1">{data.documentName} · {new Date(data.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}</p>
+          <p className="text-sm text-muted-foreground mt-1">{data.documentName} Â· {new Date(data.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}</p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -408,7 +408,7 @@ function AnalysisResultsView({
         </DropdownMenu>
       </div>
 
-      {/* RAG grounding warning — shown when Pinecone was unavailable during generation */}
+      {/* RAG grounding warning â€” shown when Pinecone was unavailable during generation */}
       {data.ragGrounded === false && (
         <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm dark:border-yellow-800/50 dark:bg-yellow-900/20">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-600 dark:text-yellow-400" />
@@ -516,7 +516,7 @@ function AnalysisResultsView({
                         <Badge variant="outline" className={`text-xs shrink-0 ${sc.badge}`}>{sc.label}</Badge>
                         <Badge variant="outline" className="text-xs shrink-0 bg-muted">{gap.frameworkName}</Badge>
                       </div>
-                      <p className="text-xs text-primary font-medium mt-1">📋 {gap.regulatoryBasis}</p>
+                      <p className="text-xs text-primary font-medium mt-1">ðŸ“‹ {gap.regulatoryBasis}</p>
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{gap.description}</p>
                     </div>
                     <button
@@ -581,7 +581,7 @@ function AnalysisResultsView({
                   <ul className="space-y-1">
                     {fw.strengths.map((s, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="text-secondary">✓</span>
+                        <span className="text-secondary">âœ“</span>
                         {s}
                       </li>
                     ))}
@@ -617,12 +617,12 @@ function AnalysisResultsView({
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       <Badge variant="outline" className="text-xs bg-muted">{item.framework}</Badge>
-                      <Badge variant="outline" className="text-xs text-warning border-warning/30">⏰ {item.deadline}</Badge>
+                      <Badge variant="outline" className="text-xs text-warning border-warning/30">â° {item.deadline}</Badge>
                     </div>
                     {item.resources?.length > 0 && (
                       <ul className="mt-2 space-y-0.5">
                         {item.resources.map((r, i) => (
-                          <li key={i} className="text-xs text-muted-foreground">→ {r}</li>
+                          <li key={i} className="text-xs text-muted-foreground">â†’ {r}</li>
                         ))}
                       </ul>
                     )}
@@ -637,7 +637,7 @@ function AnalysisResultsView({
   )
 }
 
-// ─── Analysis Progress View ───────────────────────────────────────────────────
+// â”€â”€â”€ Analysis Progress View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function AnalysisProgressView({
   documentName,
@@ -755,7 +755,7 @@ function AnalysisProgressView({
   )
 }
 
-// ─── Analysis History Item ────────────────────────────────────────────────────
+// â”€â”€â”€ Analysis History Item â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function AnalysisHistoryItem({
   analysis,
@@ -789,7 +789,7 @@ function AnalysisHistoryItem({
         <div>
           <p className="font-medium text-foreground text-sm">{analysis.documentName}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {analysis.analysisDepth} · {new Date(analysis.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
+            {analysis.analysisDepth} Â· {new Date(analysis.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
           </p>
           <Badge
             variant="outline"
@@ -842,7 +842,7 @@ function AnalysisHistoryItem({
   )
 }
 
-// ─── Main Page ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function GapAnalysisPage() {
   const [activeView, setActiveView] = useState<{ id: string; name: string } | null>(null)
@@ -862,13 +862,13 @@ export default function GapAnalysisPage() {
 
   const utils = trpc.useUtils()
 
-  const { data: analyses, isLoading: listLoading, error: listError } = trpc.compliance.getGapAnalyses.useQuery()
-  const { data: frameworksData, isLoading: frameworksLoading } = trpc.compliance.getFrameworks.useQuery()
-  const { data: gapLimits } = trpc.compliance.getGapAnalysisLimits.useQuery()
+  const { data: analyses, isLoading: listLoading, error: listError } = trpc.gapAnalysis.getGapAnalyses.useQuery()
+  const { data: frameworksData, isLoading: frameworksLoading } = trpc.gapAnalysis.getFrameworks.useQuery()
+  const { data: gapLimits } = trpc.gapAnalysis.getGapAnalysisLimits.useQuery()
   const maxFileSizeBytes = (gapLimits?.maxFileSizeMB ?? 10) * 1024 * 1024
 
-  // Polling query — active only while isAwaitingResult
-  const pollingQuery = trpc.compliance.getGapAnalysisResult.useQuery(
+  // Polling query â€” active only while isAwaitingResult
+  const pollingQuery = trpc.gapAnalysis.getGapAnalysisResult.useQuery(
     { id: activeAnalysisId! },
     {
       enabled: isAwaitingResult && activeAnalysisId !== null,
@@ -891,10 +891,10 @@ export default function GapAnalysisPage() {
       resetForm()
       toast.success("Analysis complete", { description: `Overall score: ${d.overallScore ?? "N/A"}/100` })
     }
-    // FAILED: stay on progress view — AnalysisProgressView renders the error + retry UI
+    // FAILED: stay on progress view â€” AnalysisProgressView renders the error + retry UI
   }, [pollingQuery.data?.status, isAwaitingResult]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Page-refresh resumption — detect in-progress analyses on first load
+  // Page-refresh resumption â€” detect in-progress analyses on first load
   useEffect(() => {
     if (hasCheckedResumption.current || isAwaitingResult || activeView || !analyses) return
     hasCheckedResumption.current = true
@@ -907,7 +907,7 @@ export default function GapAnalysisPage() {
     }
   }, [analyses, isAwaitingResult, activeView])
 
-  const runMutation = trpc.compliance.runGapAnalysis.useMutation({
+  const runMutation = trpc.gapAnalysis.runGapAnalysis.useMutation({
     onSuccess: (data) => {
       setActiveAnalysisId(data.id)
       setIsAwaitingResult(true)
@@ -915,7 +915,7 @@ export default function GapAnalysisPage() {
       setPendingDocName(selectedFile?.name ?? "")
       setPendingFrameworks([...selectedFrameworks])
       utils.compliance.getGapAnalyses.invalidate()
-      toast.success("Analysis queued", { description: "Your document is being processed. This may take 1–3 minutes." })
+      toast.success("Analysis queued", { description: "Your document is being processed. This may take 1â€“3 minutes." })
     },
     onError: (err) => {
       toast.error("Analysis failed", {
@@ -924,7 +924,7 @@ export default function GapAnalysisPage() {
     },
   })
 
-  const deleteMutation = trpc.compliance.deleteGapAnalysis.useMutation({
+  const deleteMutation = trpc.gapAnalysis.deleteGapAnalysis.useMutation({
     onSuccess: () => {
       toast.success("Analysis deleted")
       utils.compliance.getGapAnalyses.invalidate()
@@ -1210,7 +1210,7 @@ export default function GapAnalysisPage() {
                 {canRun && (
                   <div className="flex items-center gap-2 text-sm text-secondary">
                     <CheckCircle2 className="h-4 w-4" />
-                    Ready — {selectedFile?.name} against {selectedFrameworks.length} framework{selectedFrameworks.length > 1 ? "s" : ""}
+                    Ready â€” {selectedFile?.name} against {selectedFrameworks.length} framework{selectedFrameworks.length > 1 ? "s" : ""}
                   </div>
                 )}
               </div>
@@ -1304,3 +1304,4 @@ export default function GapAnalysisPage() {
     </FeatureGate>
   )
 }
+

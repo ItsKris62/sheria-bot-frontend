@@ -17,6 +17,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { trpc } from "@/lib/trpc"
+import { toast } from "sonner"
 
 type DateRange = "7d" | "30d" | "90d" | "1y"
 
@@ -139,6 +140,16 @@ export default function AdminAnalyticsPage() {
   const [growthPeriod, setGrowthPeriod] = useState<"daily" | "weekly" | "monthly">("daily")
   const [dateRange, setDateRange] = useState<DateRange>("30d")
 
+  const exportMutation = trpc.admin.exportAnalyticsCsv.useMutation({
+    onSuccess: (data) => {
+      window.open(data.url, "_blank")
+      toast.success("Analytics export ready")
+    },
+    onError: (error) => {
+      toast.error("Export failed", { description: error.message })
+    },
+  })
+
   const dateFrom = new Date(Date.now() - RANGE_DAYS[dateRange] * 24 * 60 * 60 * 1000).toISOString()
   const rangeLabel = RANGE_LABELS[dateRange]
 
@@ -195,43 +206,7 @@ export default function AdminAnalyticsPage() {
   const peakUsageDay = getPeakPoint(aiSeries, (item) => item.count)
 
   function handleExportCSV() {
-    const esc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`
-    const rows: string[] = ["Section,Label,Value"]
-
-    if (subBreakdown) {
-      Object.entries(subBreakdown.byPlan).forEach(([plan, count]) => {
-        rows.push([esc("Plan breakdown"), esc(PLAN_DISPLAY[plan] ?? plan), count].join(","))
-      })
-      Object.entries(subBreakdown.byStatus).forEach(([status, count]) => {
-        rows.push([esc("Status breakdown"), esc(formatStatusLabel(status)), count].join(","))
-      })
-      rows.push([esc("Totals"), esc("All organizations"), subBreakdown.total].join(","))
-    }
-
-    if (revenue) {
-      rows.push([esc("Revenue"), esc("Total all-time (KES)"), revenue.totalRevenue].join(","))
-      rows.push([esc("Revenue"), esc("This month (KES)"), revenue.currentMonthRevenue].join(","))
-      rows.push([esc("Revenue"), esc("Last month (KES)"), revenue.lastMonthRevenue].join(","))
-      rows.push([esc("Revenue"), esc("Stripe volume (KES)"), revenue.byProvider.STRIPE].join(","))
-      rows.push([esc("Revenue"), esc("M-Pesa volume (KES)"), revenue.byProvider.MPESA].join(","))
-      rows.push([esc("Revenue"), esc("Payment success rate (%)"), revenue.successRate].join(","))
-    }
-
-    if (aiUsage) {
-      rows.push([esc("AI usage"), esc("Queries in range"), aiUsage.totalQueries].join(","))
-      rows.push([esc("AI usage"), esc("Policies completed"), aiUsage.totalPolicies].join(","))
-      rows.push([esc("AI usage"), esc("Checklists generated"), aiUsage.totalChecklists].join(","))
-      rows.push([esc("AI usage"), esc("Gap analyses"), aiUsage.totalGapAnalyses].join(","))
-    }
-
-    const csv = rows.join("\r\n")
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement("a")
-    anchor.href = url
-    anchor.download = `sheriabot-analytics-${new Date().toISOString().slice(0, 10)}.csv`
-    anchor.click()
-    URL.revokeObjectURL(url)
+    exportMutation.mutate({ dateFrom })
   }
 
   return (
@@ -255,10 +230,10 @@ export default function AdminAnalyticsPage() {
             variant="outline"
             size="sm"
             onClick={handleExportCSV}
-            disabled={!subBreakdown && !revenue && !aiUsage}
+            disabled={exportMutation.isPending || (!subBreakdown && !revenue && !aiUsage)}
           >
             <Download className="mr-2 h-4 w-4" />
-            Export CSV
+            {exportMutation.isPending ? "Generating…" : "Export CSV"}
           </Button>
 
           <Select value={dateRange} onValueChange={(value) => setDateRange(value as DateRange)}>

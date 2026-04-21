@@ -3,12 +3,10 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { trpc } from "@/lib/trpc"
 import { getErrorMessage } from "@/lib/trpc"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -38,32 +36,37 @@ type CreateTicketForm = z.infer<typeof createTicketSchema>
 
 export default function NewTicketPage() {
   const router = useRouter()
-  const { toast } = useToast()
 
-  const form = useForm<CreateTicketForm>({
-    resolver: zodResolver(createTicketSchema),
-    defaultValues: { priority: "MEDIUM" },
-  })
+  const [subject, setSubject] = useState("")
+  const [description, setDescription] = useState("")
+  const [category, setCategory] = useState<CreateTicketForm["category"] | "">("")
+  const [priority, setPriority] = useState<CreateTicketForm["priority"]>("MEDIUM")
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const createTicket = trpc.support.create.useMutation({
     onSuccess: (ticket: any) => {
-      toast({
-        title: "Ticket submitted",
+      toast.success("Ticket submitted", {
         description: `Your ticket ${ticket.ticketNumber} has been received.`,
       })
       router.push(`/support/${ticket.ticketNumber}`)
     },
     onError: (err) => {
-      toast({
-        variant: "destructive",
-        title: "Failed to submit ticket",
-        description: getErrorMessage(err),
-      })
+      toast.error("Failed to submit ticket", { description: getErrorMessage(err) })
     },
   })
 
-  function onSubmit(values: CreateTicketForm) {
-    createTicket.mutate(values)
+  function handleSubmit() {
+    const result = createTicketSchema.safeParse({ subject, description, category, priority })
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) fieldErrors[String(err.path[0])] = err.message
+      })
+      setErrors(fieldErrors)
+      return
+    }
+    setErrors({})
+    createTicket.mutate(result.data)
   }
 
   return (
@@ -100,7 +103,7 @@ export default function NewTicketPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <div className="space-y-5">
             {/* Subject */}
             <div className="space-y-1.5">
               <Label htmlFor="subject">
@@ -110,10 +113,14 @@ export default function NewTicketPage() {
                 id="subject"
                 placeholder="Brief summary of your issue"
                 className="bg-background"
-                {...form.register("subject")}
+                value={subject}
+                onChange={(e) => {
+                  setSubject(e.target.value)
+                  if (errors.subject) setErrors((prev) => ({ ...prev, subject: "" }))
+                }}
               />
-              {form.formState.errors.subject && (
-                <p className="text-xs text-destructive">{form.formState.errors.subject.message}</p>
+              {errors.subject && (
+                <p className="text-xs text-destructive">{errors.subject}</p>
               )}
             </div>
 
@@ -124,7 +131,10 @@ export default function NewTicketPage() {
                   Category <span className="text-destructive">*</span>
                 </Label>
                 <Select
-                  onValueChange={(v) => form.setValue("category", v as CreateTicketForm["category"])}
+                  onValueChange={(v) => {
+                    setCategory(v as CreateTicketForm["category"])
+                    if (errors.category) setErrors((prev) => ({ ...prev, category: "" }))
+                  }}
                 >
                   <SelectTrigger id="category" className="bg-background">
                     <SelectValue placeholder="Select category" />
@@ -138,8 +148,8 @@ export default function NewTicketPage() {
                     <SelectItem value="OTHER">Other</SelectItem>
                   </SelectContent>
                 </Select>
-                {form.formState.errors.category && (
-                  <p className="text-xs text-destructive">{form.formState.errors.category.message}</p>
+                {errors.category && (
+                  <p className="text-xs text-destructive">{errors.category}</p>
                 )}
               </div>
 
@@ -147,7 +157,7 @@ export default function NewTicketPage() {
                 <Label htmlFor="priority">Priority</Label>
                 <Select
                   defaultValue="MEDIUM"
-                  onValueChange={(v) => form.setValue("priority", v as CreateTicketForm["priority"])}
+                  onValueChange={(v) => setPriority(v as CreateTicketForm["priority"])}
                 >
                   <SelectTrigger id="priority" className="bg-background">
                     <SelectValue />
@@ -174,19 +184,23 @@ export default function NewTicketPage() {
                 id="description"
                 placeholder="Describe your issue in detail. Include any error messages, steps to reproduce, or relevant context."
                 className="min-h-[200px] bg-background resize-y"
-                {...form.register("description")}
+                value={description}
+                onChange={(e) => {
+                  setDescription(e.target.value)
+                  if (errors.description) setErrors((prev) => ({ ...prev, description: "" }))
+                }}
               />
-              {form.formState.errors.description && (
-                <p className="text-xs text-destructive">{form.formState.errors.description.message}</p>
+              {errors.description && (
+                <p className="text-xs text-destructive">{errors.description}</p>
               )}
             </div>
 
             {/* Actions */}
             <div className="flex items-center gap-3 pt-2">
               <Button
-                type="submit"
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
                 disabled={createTicket.isPending}
+                onClick={handleSubmit}
               >
                 {createTicket.isPending ? (
                   <>
@@ -204,7 +218,7 @@ export default function NewTicketPage() {
                 <Link href="/support">Cancel</Link>
               </Button>
             </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
     </div>

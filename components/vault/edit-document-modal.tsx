@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { trpc } from "@/lib/trpc"
 import { getErrorMessage } from "@/lib/trpc"
 import { Loader2, Save } from "lucide-react"
@@ -108,17 +108,13 @@ export function EditDocumentModal({ open, onOpenChange, document, onSuccess }: E
         notes: notes.trim() || null,
       })
 
-      toast({ title: "Document updated", description: `"${name.trim()}" has been updated.` })
+      toast.success("Document updated", { description: `"${name.trim()}" has been updated.` })
       await utils.vault.list.invalidate()
       await utils.vault.getStats.invalidate()
       onSuccess()
       onOpenChange(false)
     } catch (err) {
-      toast({
-        title: "Update failed",
-        description: getErrorMessage(err),
-        variant: "destructive",
-      })
+      toast.error("Update failed", { description: getErrorMessage(err) })
     }
   }
 

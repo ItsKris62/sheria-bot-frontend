@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { trpc } from "@/lib/trpc"
 import { getErrorMessage } from "@/lib/trpc"
 import {
@@ -199,7 +199,7 @@ export function DocumentDetailPanel({
       const { downloadUrl } = await getDownloadUrl.mutateAsync({ id: document.id })
       window.open(downloadUrl, "_blank", "noopener,noreferrer")
     } catch (err) {
-      toast({ title: "Download failed", description: getErrorMessage(err), variant: "destructive" })
+      toast.error("Download failed", { description: getErrorMessage(err) })
     }
   }
 

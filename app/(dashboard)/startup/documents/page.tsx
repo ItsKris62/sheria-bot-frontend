@@ -29,7 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { trpc } from "@/lib/trpc"
 import { getErrorMessage } from "@/lib/trpc"
 import { FeatureGate } from "@/components/plan/feature-gate"
@@ -255,17 +255,17 @@ export default function DocumentsPage() {
       const { downloadUrl } = await getDownloadUrl.mutateAsync({ id: doc.id })
       window.open(downloadUrl, "_blank", "noopener,noreferrer")
     } catch (err) {
-      toast({ title: "Download failed", description: getErrorMessage(err), variant: "destructive" })
+      toast.error("Download failed", { description: getErrorMessage(err) })
     }
   }
 
   async function handleVerify(doc: VaultDoc) {
     try {
       await updateStatus.mutateAsync({ id: doc.id, status: "VERIFIED" })
-      toast({ title: "Document verified", description: `"${doc.name}" has been marked as verified.` })
+      toast.success("Document verified", { description: `"${doc.name}" has been marked as verified.` })
       invalidateAll()
     } catch (err) {
-      toast({ title: "Verification failed", description: getErrorMessage(err), variant: "destructive" })
+      toast.error("Verification failed", { description: getErrorMessage(err) })
     } finally {
       setVerifyConfirmDoc(null)
     }
@@ -274,10 +274,10 @@ export default function DocumentsPage() {
   async function handleMarkExpired(doc: VaultDoc) {
     try {
       await updateStatus.mutateAsync({ id: doc.id, status: "EXPIRED" })
-      toast({ title: "Document marked expired", description: `"${doc.name}" has been marked as expired.` })
+      toast.success("Document marked expired", { description: `"${doc.name}" has been marked as expired.` })
       invalidateAll()
     } catch (err) {
-      toast({ title: "Update failed", description: getErrorMessage(err), variant: "destructive" })
+      toast.error("Update failed", { description: getErrorMessage(err) })
     } finally {
       setExpireConfirmDoc(null)
     }
@@ -286,10 +286,10 @@ export default function DocumentsPage() {
   async function handleDelete(doc: VaultDoc) {
     try {
       await deleteMutation.mutateAsync({ id: doc.id })
-      toast({ title: "Document deleted", description: `"${doc.name}" has been removed from your vault.` })
+      toast.success("Document deleted", { description: `"${doc.name}" has been removed from your vault.` })
       invalidateAll()
     } catch (err) {
-      toast({ title: "Delete failed", description: getErrorMessage(err), variant: "destructive" })
+      toast.error("Delete failed", { description: getErrorMessage(err) })
     } finally {
       setDeleteConfirmDoc(null)
     }

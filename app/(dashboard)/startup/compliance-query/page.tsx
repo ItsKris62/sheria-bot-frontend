@@ -29,7 +29,7 @@ import { formatDistanceToNow } from "date-fns"
 import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
 import { ThinkingIndicator } from "@/components/compliance/thinking-indicator"
 import { trpc } from "@/lib/trpc"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -287,11 +287,7 @@ export default function ComplianceQueryPage() {
     } catch {
       // Revert on error
       setFeedbackState((prev) => ({ ...prev, [queryId]: previous }))
-      toast({
-        title: "Couldn't save feedback",
-        description: "Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Couldn't save feedback", { description: "Please try again." })
     } finally {
       setFeedbackLoading((prev) => ({ ...prev, [queryId]: false }))
     }
@@ -310,15 +306,11 @@ export default function ComplianceQueryPage() {
       const result = await saveMutation.mutateAsync({ queryId })
       // Confirm with server state
       setSavedState((prev) => ({ ...prev, [queryId]: result.saved }))
-      toast({ title: result.saved ? "Response saved" : "Removed from saved" })
+      toast(result.saved ? "Response saved" : "Removed from saved")
     } catch {
       // Revert on error
       setSavedState((prev) => ({ ...prev, [queryId]: previous }))
-      toast({
-        title: "Couldn't save response",
-        description: "Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Couldn't save response", { description: "Please try again." })
     } finally {
       setSaveLoading((prev) => ({ ...prev, [queryId]: false }))
     }

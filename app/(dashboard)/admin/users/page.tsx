@@ -39,8 +39,7 @@ import {
 } from "lucide-react"
 import { useAdminUsers, useAdminActions, useAdminStats } from "@/hooks/use-admin"
 import { trpc } from "@/lib/trpc"
-import { toast } from "@/hooks/use-toast"
-import { toast as sonnerToast } from "sonner"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -107,21 +106,21 @@ export default function UsersPage() {
 
   const createUserMutation = trpc.admin.createUser.useMutation({
     onSuccess: () => {
-      sonnerToast.success("User created successfully")
+      toast.success("User created successfully")
       setCreateOpen(false)
       setCreateForm({ email: "", fullName: "", password: "", role: "STARTUP" })
       void utils.admin.listUsers.invalidate()
     },
-    onError: (err) => sonnerToast.error(err.message),
+    onError: (err) => toast.error(err.message),
   })
 
   const deleteUserMutation = trpc.admin.deleteUser.useMutation({
     onSuccess: () => {
       utils.admin.listUsers.invalidate()
       utils.admin.getStats.invalidate()
-      toast({ title: "User deleted" })
+      toast.success("User deleted")
     },
-    onError: (err) => toast({ title: "Delete failed", description: err.message, variant: "destructive" }),
+    onError: (err) => toast.error("Delete failed", { description: err.message }),
   })
 
   type StatsShape = { users?: { total?: number; active?: number }; organizations?: { total?: number } }
@@ -141,13 +140,13 @@ export default function UsersPage() {
     try {
       if (isSuspended) {
         await enableUser({ userId })
-        toast({ title: "User reactivated" })
+        toast.success("User reactivated")
       } else {
         await disableUser({ userId, reason: "Suspended by administrator" })
-        toast({ title: "User suspended" })
+        toast("User suspended")
       }
-    } catch (err: any) {
-      toast({ title: "Action failed", description: err.message, variant: "destructive" })
+    } catch (err: unknown) {
+      toast.error("Action failed", { description: (err as Error).message })
     } finally {
       setPendingUserId(null)
     }

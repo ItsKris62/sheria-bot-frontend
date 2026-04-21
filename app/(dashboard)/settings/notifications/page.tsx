@@ -26,7 +26,7 @@ import {
   Megaphone,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useCategoryPreferences, useUpdateCategoryPreference } from "@/hooks/use-notifications"
 
 type CategoryName = "SECURITY" | "COMPLIANCE" | "DOCUMENTS" | "ACCOUNT" | "SUPPORT" | "SYSTEM"
@@ -59,8 +59,8 @@ export default function NotificationSettingsPage() {
   const updateCategoryPref = useUpdateCategoryPreference()
 
   const updateMutation = trpc.user.updateNotificationPreferences.useMutation({
-    onSuccess: () => toast({ title: "Preferences saved" }),
-    onError: (error) => toast({ title: error.message || "Failed to save preferences", variant: "destructive" }),
+    onSuccess: () => toast.success("Preferences saved"),
+    onError: (error) => toast.error(error.message || "Failed to save preferences"),
   })
 
   function toggle(field: string, value: boolean | string) {
@@ -331,7 +331,7 @@ export default function NotificationSettingsPage() {
                       onCheckedChange={(v) => {
                         updateCategoryPref.mutate(
                           { category: cat, inAppEnabled: v },
-                          { onError: (e) => toast({ title: e.message || "Failed to save", variant: "destructive" }) }
+                          { onError: (e) => toast.error(e.message || "Failed to save") }
                         )
                       }}
                     />
@@ -395,7 +395,7 @@ export default function NotificationSettingsPage() {
                         onCheckedChange={(v) => {
                           updateCategoryPref.mutate(
                             { category: cat, emailEnabled: v },
-                            { onError: (e) => toast({ title: e.message || "Failed to save", variant: "destructive" }) }
+                            { onError: (e) => toast.error(e.message || "Failed to save") }
                           )
                         }}
                       />

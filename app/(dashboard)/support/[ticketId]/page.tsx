@@ -5,7 +5,7 @@ import { useParams } from "next/navigation"
 import Link from "next/link"
 import { trpc } from "@/lib/trpc"
 import { getErrorMessage } from "@/lib/trpc"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useAuthStore } from "@/lib/auth-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -53,7 +53,6 @@ function formatDate(dateStr: string | Date): string {
 export default function TicketDetailPage() {
   const params = useParams()
   const ticketNumber = params.ticketId as string
-  const { toast } = useToast()
   const authUser = useAuthStore((s) => s.user)
   const utils = trpc.useUtils()
 
@@ -68,10 +67,10 @@ export default function TicketDetailPage() {
     onSuccess: () => {
       setReplyText("")
       utils.support.getByTicketNumber.invalidate({ ticketNumber })
-      toast({ title: "Reply sent", description: "Your reply has been added." })
+      toast.success("Reply sent", { description: "Your reply has been added." })
     },
     onError: (err) => {
-      toast({ variant: "destructive", title: "Failed to send reply", description: getErrorMessage(err) })
+      toast.error("Failed to send reply", { description: getErrorMessage(err) })
     },
   })
 

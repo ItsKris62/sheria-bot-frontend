@@ -157,7 +157,7 @@ export default function StartupDashboard() {
     data: dashboardData,
     isLoading: isDashboardLoading,
     error: dashboardError,
-  } = trpc.compliance.getComplianceDashboard.useQuery(undefined, {
+  } = trpc.complianceDashboard.getComplianceDashboard.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
     retry: 1,
   })

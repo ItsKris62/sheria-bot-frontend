@@ -25,7 +25,7 @@ import {
   PieChart,
 } from "lucide-react"
 import { useOrgDashboard, useComplianceTrends, useExportAnalytics } from "@/hooks/use-analytics"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 const colors = ["bg-primary", "bg-secondary", "bg-accent", "bg-chart-4", "bg-chart-5"]
 
@@ -66,9 +66,9 @@ export default function RegulatorAnalyticsPage() {
   async function handleExport() {
     try {
       await exportMutation.mutateAsync({ format: "json", type: "queries" } as any)
-      toast({ title: "Export started", description: "Your data export is being prepared." })
+      toast.success("Export started", { description: "Your data export is being prepared." })
     } catch {
-      toast({ title: "Export failed", variant: "destructive" })
+      toast.error("Export failed")
     }
   }
 

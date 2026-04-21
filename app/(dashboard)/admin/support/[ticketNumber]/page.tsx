@@ -5,7 +5,7 @@ import { useParams } from "next/navigation"
 import Link from "next/link"
 import { trpc } from "@/lib/trpc"
 import { getErrorMessage } from "@/lib/trpc"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -59,7 +59,6 @@ function formatDate(dateStr: string | Date): string {
 export default function AdminTicketDetailPage() {
   const params = useParams()
   const ticketNumber = params.ticketNumber as string
-  const { toast } = useToast()
   const utils = trpc.useUtils()
 
   const [responseText, setResponseText] = useState("")
@@ -75,10 +74,10 @@ export default function AdminTicketDetailPage() {
     onSuccess: () => {
       setNewStatus("")
       utils.adminSupport.getByTicketNumber.invalidate({ ticketNumber })
-      toast({ title: "Status updated", description: "Ticket status has been updated." })
+      toast.success("Status updated", { description: "Ticket status has been updated." })
     },
     onError: (err) => {
-      toast({ variant: "destructive", title: "Failed to update status", description: getErrorMessage(err) })
+      toast.error("Failed to update status", { description: getErrorMessage(err) })
     },
   })
 
@@ -86,10 +85,10 @@ export default function AdminTicketDetailPage() {
     onSuccess: () => {
       setResponseText("")
       utils.adminSupport.getByTicketNumber.invalidate({ ticketNumber })
-      toast({ title: "Response sent", description: "Your response has been sent to the user." })
+      toast.success("Response sent", { description: "Your response has been sent to the user." })
     },
     onError: (err) => {
-      toast({ variant: "destructive", title: "Failed to send response", description: getErrorMessage(err) })
+      toast.error("Failed to send response", { description: getErrorMessage(err) })
     },
   })
 
