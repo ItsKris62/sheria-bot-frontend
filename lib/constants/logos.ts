@@ -37,3 +37,22 @@ export const LOGOS = {
    */
   exportLogo: `${R2}/branding/hero-logo.png`,
 } as const
+
+/**
+ * Regulator logos for marquee display.
+ * These match the structure expected by the LogoMarquee component.
+ */
+export const REGULATOR_LOGOS = [
+  { name: "Central Bank of Kenya", abbreviation: "CBK" },
+  { name: "Capital Markets Authority", abbreviation: "CMA" },
+  { name: "Office of the Data Protection Commissioner", abbreviation: "ODPC" },
+  { name: "Communications Authority of Kenya", abbreviation: "CA" },
+  { name: "Insurance Regulatory Authority", abbreviation: "IRA" },
+  { name: "Financial Reporting Centre", abbreviation: "FRC" },
+  { name: "Kenya Revenue Authority", abbreviation: "KRA" },
+  { name: "Retirement Benefits Authority", abbreviation: "RBA" },
+  { name: "Competition Authority of Kenya", abbreviation: "CAK" },
+  { name: "National Treasury", abbreviation: "NT" },
+  { name: "Kenya Bankers Association", abbreviation: "KBA" },
+  { name: "Fintech Association of Kenya", abbreviation: "FAK" },
+] as const
