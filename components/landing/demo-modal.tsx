@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { X, Play, Shield, FileText, BarChart3, Scale, Bell, ChevronRight, Ticket } from "lucide-react"
 
 const R2_BASE = "https://pub-724936356a15494f9ce61480c5225e6f.r2.dev/demos"
@@ -72,7 +72,13 @@ interface DemoModalProps {
 
 export function DemoModal({ open, onClose }: DemoModalProps) {
   const [activeSection, setActiveSection] = useState(DEMO_SECTIONS[0])
+  const [videoError, setVideoError] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  const handleSectionChange = useCallback((section: DemoSection) => {
+    setActiveSection(section)
+    setVideoError(false)
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -86,14 +92,6 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
       document.body.style.overflow = ""
     }
   }, [open, onClose])
-
-  // Reload video when section changes
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.load()
-      videoRef.current.play().catch(() => {})
-    }
-  }, [activeSection.id])
 
   if (!open) return null
 
@@ -137,7 +135,7 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
                 return (
                   <button
                     key={section.id}
-                    onClick={() => setActiveSection(section)}
+                    onClick={() => handleSectionChange(section)}
                     className={`w-full text-left rounded-xl px-3 py-3 mb-1 transition-all duration-200 group ${
                       isActive
                         ? "bg-brand-green/10 border border-brand-green/30 text-brand-green"
@@ -168,17 +166,38 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
           {/* Video panel */}
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 bg-black flex items-center justify-center relative min-h-0">
-              {activeSection.videoUrl ? (
+              {activeSection.videoUrl && !videoError ? (
                 <video
                   ref={videoRef}
                   key={activeSection.id}
                   controls
                   autoPlay
+                  muted
+                  playsInline
                   className="w-full h-full object-contain"
-                  preload="metadata"
+                  preload="auto"
+                  onError={() => setVideoError(true)}
                 >
                   <source src={activeSection.videoUrl} type="video/mp4" />
                 </video>
+              ) : activeSection.videoUrl && videoError ? (
+                <div className="flex flex-col items-center gap-4 text-center px-8">
+                  <div className="rounded-full bg-red-500/10 border border-red-500/20 p-6">
+                    <Play className="h-10 w-10 text-red-400" />
+                  </div>
+                  <div>
+                    <p className="text-foreground font-medium">Unable to load video</p>
+                    <p className="text-foreground-muted text-sm mt-1">The video could not be played from storage.</p>
+                    <a
+                      href={activeSection.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block mt-3 text-xs text-brand-green underline underline-offset-2"
+                    >
+                      Open video directly →
+                    </a>
+                  </div>
+                </div>
               ) : (
                 <div className="flex flex-col items-center gap-4 text-center px-8">
                   <div className="rounded-full bg-brand-green/10 border border-brand-green/20 p-6">
