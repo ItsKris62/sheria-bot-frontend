@@ -185,15 +185,6 @@ export default function LandingPage() {
         
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
           <div className="mx-auto max-w-4xl text-center">
-            {/* Pill badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-brand-green/20 bg-brand-green/5 px-4 py-1.5 text-sm text-brand-green mb-8">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-green" />
-              </span>
-              <span>Now serving 100+ Kenyan fintechs</span>
-            </div>
-
             {/* Main headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
               <span className="text-balance">
