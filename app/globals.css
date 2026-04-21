@@ -10,49 +10,83 @@
 
 @layer base {
   :root {
-    --background: 0 0% 2%;
-    --foreground: 0 0% 95%;
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 4%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 142 71% 45%;
-    --primary-foreground: 0 0% 2%;
-    --secondary: 142 50% 25%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 142 76% 36%;
-    --accent-foreground: 0 0% 2%;
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 14%;
-    --input: 0 0% 14%;
-    --ring: 142 71% 45%;
-    --chart-1: 142 71% 45%;
-    --chart-2: 142 50% 35%;
-    --chart-3: 160 60% 45%;
-    --chart-4: 120 40% 40%;
-    --chart-5: 80 45% 50%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 3%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 142 71% 45%;
-    --sidebar-primary-foreground: 0 0% 2%;
-    --sidebar-accent: 0 0% 10%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 14%;
-    --sidebar-ring: 142 71% 45%;
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 2%;
+    /* ── Neutrals (Light Mode) */
+    --background: 210 20% 98%;
+    --foreground: 210 20% 8%;
+    --card: 210 15% 100%;
+    --card-foreground: 210 20% 8%;
+    --popover: 210 15% 100%;
+    --popover-foreground: 210 20% 8%;
+    --muted: 210 15% 88%;
+    --muted-foreground: 210 10% 40%;
+    --border: 210 15% 88%;
+    --input: 210 15% 95%;
+
+    /* ── Primary Brand Color (Navy #1A2B4A) */
+    --primary: 210 45% 22%;
+    --primary-foreground: 210 15% 100%;
+
+    /* ── Secondary (Emerald #00875A) */
+    --secondary: 160 100% 26%;
+    --secondary-foreground: 210 15% 100%;
+
+    /* ── Accent (Gold #D4A843) */
+    --accent: 45 73% 58%;
+    --accent-foreground: 210 20% 8%;
+
+    /* ── Status Colors */
+    --success: 160 100% 26%;
+    --success-foreground: 210 15% 100%;
     --warning: 45 93% 47%;
-    --warning-foreground: 0 0% 2%;
+    --warning-foreground: 210 20% 8%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 15% 100%;
+
+    /* ── Ring & Utilities */
+    --ring: 210 45% 22%;
+
+    /* ── Chart Palette */
+    --chart-1: 160 100% 26%;
+    --chart-2: 210 45% 22%;
+    --chart-3: 45 73% 58%;
+    --chart-4: 30 100% 50%;
+    --chart-5: 200 100% 50%;
+
+    /* ── Radius */
+    --radius: 0.5rem;
+
+    /* ── Sidebar */
+    --sidebar-background: 210 20% 8%;
+    --sidebar-foreground: 210 15% 100%;
+    --sidebar-primary: 210 45% 22%;
+    --sidebar-primary-foreground: 210 15% 100%;
+    --sidebar-accent: 45 73% 58%;
+    --sidebar-accent-foreground: 210 20% 8%;
+    --sidebar-border: 210 20% 20%;
+    --sidebar-ring: 210 45% 22%;
+  }
+
+  /* ── Dark Mode Overrides */
+  .dark {
+    --background: 210 20% 8%;
+    --foreground: 210 15% 100%;
+    --card: 210 20% 12%;
+    --card-foreground: 210 15% 100%;
+    --popover: 210 20% 12%;
+    --popover-foreground: 210 15% 100%;
+    --muted: 210 15% 25%;
+    --muted-foreground: 210 10% 70%;
+    --border: 210 20% 20%;
+    --input: 210 20% 15%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+  }
+  html {
+    @apply bg-background;
   }
   body {
     @apply bg-background text-foreground;
