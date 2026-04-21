@@ -249,7 +249,7 @@ function TrendChart({ categoryKey, categoryLabel, history, current }: TrendChart
             {chartData.map((entry, i) => (
               <Cell
                 key={i}
-                fill={entry.isCurrent ? "#D4A843" : "#00875A"}
+                fill={entry.isCurrent ? "#F59E0B" : "#22C55E"}
                 opacity={entry.isCurrent ? 1 : 0.7}
               />
             ))}
@@ -258,11 +258,11 @@ function TrendChart({ categoryKey, categoryLabel, history, current }: TrendChart
       </ResponsiveContainer>
       <div className="flex items-center gap-3 mt-1">
         <div className="flex items-center gap-1">
-          <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "#00875A" }} />
+          <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "#22C55E" }} />
           <span className="text-[10px] text-muted-foreground">Previous months</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "#D4A843" }} />
+          <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "#F59E0B" }} />
           <span className="text-[10px] text-muted-foreground">This month</span>
         </div>
       </div>

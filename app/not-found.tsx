@@ -44,7 +44,7 @@ export default function NotFound() {
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
         <button
           onClick={() => router.back()}
-          className="rounded-lg bg-[#00875A] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#006644] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00875A] focus-visible:ring-offset-2"
+          className="rounded-lg bg-brand-green px-6 py-2.5 text-sm font-medium text-foreground-on-green transition-colors hover:bg-brand-green-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           Go Back
         </button>

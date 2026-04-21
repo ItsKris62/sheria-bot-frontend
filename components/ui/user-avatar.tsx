@@ -77,8 +77,8 @@ export function UserAvatar({ user, size = 'md', className }: UserAvatarProps) {
         className={cn(
           'font-semibold text-white',
           TEXT_SIZE_CLASSES[size],
-          // Deep Navy — matches SheriaBot brand
-          'bg-[#1A2B4A]',
+          // Primary green background for initials
+          'bg-brand-green text-foreground-on-green',
         )}
       >
         {initials}

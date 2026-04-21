@@ -64,12 +64,12 @@ export default function LoginPage() {
           <div
             className="mb-4 flex items-start gap-3 rounded-lg p-3 text-sm"
             style={{
-              borderLeft: "3px solid #D4A843",
-              backgroundColor: "#F7F8FA",
-              color: "#4A5568",
+              borderLeft: "3px solid #F59E0B",
+              backgroundColor: "#F9FAFB",
+              color: "#6B7280",
             }}
           >
-            <Clock className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "#D4A843" }} />
+            <Clock className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "#F59E0B" }} />
             <p>
               Your session expired due to inactivity. Please sign in to
               continue.

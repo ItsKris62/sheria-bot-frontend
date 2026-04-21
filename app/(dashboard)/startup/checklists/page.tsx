@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
@@ -787,7 +787,7 @@ function buildPrintHtml(data: {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
           <div>
             <span style="font-size:10px;color:#9CA3AF;font-family:monospace">${item.id}</span>
-            <p style="font-weight:600;color:#1A2B4A;margin:2px 0;font-size:13px">${item.title}</p>
+            <p style="font-weight:600;color:#1F2937;margin:2px 0;font-size:13px">${item.title}</p>
             <p style="font-size:11px;color:#6B7280;font-style:italic;margin:2px 0">ðŸ“‹ ${item.regulatoryBasis}</p>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap">
@@ -795,18 +795,18 @@ function buildPrintHtml(data: {
             <span style="font-size:10px">${itemStatusBadge(item.id)}</span>
           </div>
         </div>
-        <p style="font-size:12px;color:#4A5568;margin:6px 0;line-height:1.5">${item.description}</p>
+        <p style="font-size:12px;color:#6B7280;margin:6px 0;line-height:1.5">${item.description}</p>
         ${item.actionItems?.length ? `
           <div style="margin-top:8px">
-            <p style="font-size:11px;font-weight:600;color:#1A2B4A;margin-bottom:4px">Action Items:</p>
+            <p style="font-size:11px;font-weight:600;color:#1F2937;margin-bottom:4px">Action Items:</p>
             <ol style="margin:0;padding-left:16px">
-              ${item.actionItems.map((a) => `<li style="font-size:11px;color:#4A5568;margin-bottom:2px">${a}</li>`).join("")}
+              ${item.actionItems.map((a) => `<li style="font-size:11px;color:#6B7280;margin-bottom:2px">${a}</li>`).join("")}
             </ol>
           </div>
         ` : ""}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">â° Deadline</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.deadline}</p></div>` : ""}
-          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">âš ï¸ Penalty</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.penalty}</p></div>` : ""}
+          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">â° Deadline</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.deadline}</p></div>` : ""}
+          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">âš ï¸ Penalty</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.penalty}</p></div>` : ""}
         </div>
       </div>
     `).join("")
@@ -859,13 +859,13 @@ function buildPrintHtml(data: {
         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';"
       />
       <div style="display:none;align-items:center;gap:10px;justify-content:center">
-        <div style="background:#1A2B4A;color:#00875A;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">S</div>
-        <span style="font-size:26px;font-weight:800;color:#1A2B4A;letter-spacing:-0.5px">SheriaBot</span>
+        <div style="background:#1A2B4A;color:#22C55E;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">S</div>
+        <span style="font-size:26px;font-weight:800;color:#1F2937;letter-spacing:-0.5px">SheriaBot</span>
       </div>
     </div>
-    <h1 style="font-size:22px;font-weight:700;color:#1A2B4A;margin:0 0 6px">Compliance Checklist Report</h1>
-    <p style="font-size:16px;color:#00875A;font-weight:600;margin:0 0 20px">${title}</p>
-    <div style="display:inline-grid;grid-template-columns:auto auto;gap:4px 24px;text-align:left;background:#F7F8FA;padding:16px 24px;border-radius:8px;font-size:12px">
+    <h1 style="font-size:22px;font-weight:700;color:#1F2937;margin:0 0 6px">Compliance Checklist Report</h1>
+    <p style="font-size:16px;color:#22C55E;font-weight:600;margin:0 0 20px">${title}</p>
+    <div style="display:inline-grid;grid-template-columns:auto auto;gap:4px 24px;text-align:left;background:#F9FAFB;padding:16px 24px;border-radius:8px;font-size:12px">
       <span style="color:#6B7280">Generated on:</span><span style="font-weight:600">${dateStr}</span>
       <span style="color:#6B7280">Product Type:</span><span style="font-weight:600">${productType ?? "â€”"}</span>
       <span style="color:#6B7280">Business Stage:</span><span style="font-weight:600">${businessStage ?? "â€”"}</span>
@@ -873,30 +873,30 @@ function buildPrintHtml(data: {
     <p style="margin-top:24px;font-size:11px;color:#9CA3AF">Generated by SheriaBot â€” AI-Powered Regulatory Compliance for Kenya&apos;s Fintech Sector</p>
   </div>
   <div style="margin-bottom:32px;page-break-after:always">
-    <h2 style="font-size:16px;font-weight:700;color:#1A2B4A;margin-bottom:16px;border-bottom:2px solid #00875A;padding-bottom:6px">Executive Summary</h2>
+    <h2 style="font-size:16px;font-weight:700;color:#1F2937;margin-bottom:16px;border-bottom:2px solid #22C55E;padding-bottom:6px">Executive Summary</h2>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
-      <div style="background:#F7F8FA;border-radius:8px;padding:14px;text-align:center">
-        <p style="font-size:28px;font-weight:700;color:#1A2B4A;margin:0">${metadata.totalItems}</p>
+      <div style="background:#F9FAFB;border-radius:8px;padding:14px;text-align:center">
+        <p style="font-size:28px;font-weight:700;color:#1F2937;margin:0">${metadata.totalItems}</p>
         <p style="font-size:11px;color:#6B7280;margin:4px 0 0">Total Items</p>
       </div>
-      <div style="background:#F7F8FA;border-radius:8px;padding:14px;text-align:center">
-        <p style="font-size:28px;font-weight:700;color:#1A2B4A;margin:0">${progressPct}%</p>
+      <div style="background:#F9FAFB;border-radius:8px;padding:14px;text-align:center">
+        <p style="font-size:28px;font-weight:700;color:#1F2937;margin:0">${progressPct}%</p>
         <p style="font-size:11px;color:#6B7280;margin:4px 0 0">${completedItems} of ${metadata.totalItems} completed</p>
       </div>
-      <div style="background:#F7F8FA;border-radius:8px;padding:14px;text-align:center">
-        <p style="font-size:28px;font-weight:700;color:#1A2B4A;margin:0">${metadata.estimatedCompletionDays}</p>
+      <div style="background:#F9FAFB;border-radius:8px;padding:14px;text-align:center">
+        <p style="font-size:28px;font-weight:700;color:#1F2937;margin:0">${metadata.estimatedCompletionDays}</p>
         <p style="font-size:11px;color:#6B7280;margin:4px 0 0">Est. Days to Compliance</p>
       </div>
     </div>
     ${inProgressItems > 0 ? `<p style="margin-top:12px;font-size:12px;color:#2563EB">âŸ³ ${inProgressItems} items currently in progress</p>` : ""}
   </div>
   <div>
-    <h2 style="font-size:16px;font-weight:700;color:#1A2B4A;margin-bottom:16px;border-bottom:2px solid #00875A;padding-bottom:6px">Compliance Requirements</h2>
+    <h2 style="font-size:16px;font-weight:700;color:#1F2937;margin-bottom:16px;border-bottom:2px solid #22C55E;padding-bottom:6px">Compliance Requirements</h2>
     ${categoryRows}
   </div>
-  <div style="margin-top:40px;padding:20px;background:#F7F8FA;border-radius:8px;border-top:3px solid #D4A843;page-break-before:always">
-    <h2 style="font-size:14px;font-weight:700;color:#1A2B4A;margin-bottom:10px">Disclaimer</h2>
-    <p style="font-size:11px;color:#4A5568;line-height:1.6">
+  <div style="margin-top:40px;padding:20px;background:#F9FAFB;border-radius:8px;border-top:3px solid #F59E0B;page-break-before:always">
+    <h2 style="font-size:14px;font-weight:700;color:#1F2937;margin-bottom:10px">Disclaimer</h2>
+    <p style="font-size:11px;color:#6B7280;line-height:1.6">
       This compliance checklist was generated by SheriaBot using AI-powered analysis of Kenyan financial regulations.
       While every effort has been made to ensure accuracy, this document should not be considered legal advice.
       Organizations should consult with qualified legal and compliance professionals to verify all requirements.
@@ -906,8 +906,8 @@ function buildPrintHtml(data: {
       <div style="display:flex;align-items:center;gap:8px">
         <img src="${EXPORT_LOGO_URL}" alt="SheriaBot" style="max-height:28px;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';" />
         <div style="display:none;align-items:center;gap:6px">
-          <div style="background:#1A2B4A;color:#00875A;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900">S</div>
-          <span style="font-size:12px;font-weight:700;color:#1A2B4A">SheriaBot</span>
+          <div style="background:#1A2B4A;color:#22C55E;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900">S</div>
+          <span style="font-size:12px;font-weight:700;color:#1F2937">SheriaBot</span>
         </div>
       </div>
       <p style="font-size:10px;color:#9CA3AF">Generated: ${new Date(createdAt).toISOString()}</p>
@@ -975,7 +975,7 @@ function buildNormalizedPrintHtml(data: {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
           <div style="min-width:0">
             ${item.itemCode ? `<span style="font-size:10px;color:#9CA3AF;font-family:monospace">${item.itemCode}</span><br>` : ""}
-            <p style="font-weight:600;color:#1A2B4A;margin:2px 0;font-size:13px;${item.status === "COMPLETED" ? "text-decoration:line-through;color:#6B7280;" : ""}">${item.title}</p>
+            <p style="font-weight:600;color:#1F2937;margin:2px 0;font-size:13px;${item.status === "COMPLETED" ? "text-decoration:line-through;color:#6B7280;" : ""}">${item.title}</p>
             <p style="font-size:11px;color:#6B7280;font-style:italic;margin:2px 0">ðŸ“‹ ${item.regulatoryReference}</p>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap">
@@ -983,21 +983,21 @@ function buildNormalizedPrintHtml(data: {
             <span style="font-size:10px">${statusBadge(item.status)}</span>
           </div>
         </div>
-        <p style="font-size:12px;color:#4A5568;margin:6px 0;line-height:1.5">${item.description}</p>
+        <p style="font-size:12px;color:#6B7280;margin:6px 0;line-height:1.5">${item.description}</p>
         ${item.guidance ? `<p style="font-size:11px;color:#1D4ED8;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:4px;padding:6px 8px;margin:6px 0;line-height:1.5">ðŸ’¡ ${item.guidance}</p>` : ""}
         ${item.actionItems?.length ? `
           <div style="margin-top:8px">
-            <p style="font-size:11px;font-weight:600;color:#1A2B4A;margin-bottom:4px">Action Items:</p>
+            <p style="font-size:11px;font-weight:600;color:#1F2937;margin-bottom:4px">Action Items:</p>
             <ol style="margin:0;padding-left:16px">
-              ${item.actionItems.map((a) => `<li style="font-size:11px;color:#4A5568;margin-bottom:2px">${a}</li>`).join("")}
+              ${item.actionItems.map((a) => `<li style="font-size:11px;color:#6B7280;margin-bottom:2px">${a}</li>`).join("")}
             </ol>
           </div>
         ` : ""}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">â° Deadline</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.deadline}</p></div>` : ""}
-          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">âš ï¸ Penalty</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.penalty}</p></div>` : ""}
+          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">â° Deadline</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.deadline}</p></div>` : ""}
+          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">âš ï¸ Penalty</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.penalty}</p></div>` : ""}
         </div>
-        ${item.notes ? `<div style="margin-top:8px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#92400E">ðŸ“ Notes</p><p style="font-size:11px;color:#4A5568;margin-top:2px">${item.notes}</p></div>` : ""}
+        ${item.notes ? `<div style="margin-top:8px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#92400E">ðŸ“ Notes</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.notes}</p></div>` : ""}
       </div>
     `).join("")
 
@@ -1048,13 +1048,13 @@ function buildNormalizedPrintHtml(data: {
         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';"
       />
       <div style="display:none;align-items:center;gap:10px;justify-content:center">
-        <div style="background:#1A2B4A;color:#00875A;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">S</div>
-        <span style="font-size:26px;font-weight:800;color:#1A2B4A;letter-spacing:-0.5px">SheriaBot</span>
+        <div style="background:#1A2B4A;color:#22C55E;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">S</div>
+        <span style="font-size:26px;font-weight:800;color:#1F2937;letter-spacing:-0.5px">SheriaBot</span>
       </div>
     </div>
-    <h1 style="font-size:22px;font-weight:700;color:#1A2B4A;margin:0 0 6px">Compliance Checklist Report</h1>
-    <p style="font-size:16px;color:#00875A;font-weight:600;margin:0 0 20px">${title}</p>
-    <div style="display:inline-grid;grid-template-columns:auto auto;gap:4px 24px;text-align:left;background:#F7F8FA;padding:16px 24px;border-radius:8px;font-size:12px">
+    <h1 style="font-size:22px;font-weight:700;color:#1F2937;margin:0 0 6px">Compliance Checklist Report</h1>
+    <p style="font-size:16px;color:#22C55E;font-weight:600;margin:0 0 20px">${title}</p>
+    <div style="display:inline-grid;grid-template-columns:auto auto;gap:4px 24px;text-align:left;background:#F9FAFB;padding:16px 24px;border-radius:8px;font-size:12px">
       <span style="color:#6B7280">Generated on:</span><span style="font-weight:600">${dateStr}</span>
       <span style="color:#6B7280">Product Type:</span><span style="font-weight:600">${productType ?? "â€”"}</span>
       <span style="color:#6B7280">Business Stage:</span><span style="font-weight:600">${businessStage ?? "â€”"}</span>
@@ -1063,14 +1063,14 @@ function buildNormalizedPrintHtml(data: {
   </div>
 
   <div style="margin-bottom:32px;page-break-after:always">
-    <h2 style="font-size:16px;font-weight:700;color:#1A2B4A;margin-bottom:16px;border-bottom:2px solid #00875A;padding-bottom:6px">Executive Summary</h2>
+    <h2 style="font-size:16px;font-weight:700;color:#1F2937;margin-bottom:16px;border-bottom:2px solid #22C55E;padding-bottom:6px">Executive Summary</h2>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
-      <div style="background:#F7F8FA;border-radius:8px;padding:14px;text-align:center">
-        <p style="font-size:28px;font-weight:700;color:#1A2B4A;margin:0">${totalItems}</p>
+      <div style="background:#F9FAFB;border-radius:8px;padding:14px;text-align:center">
+        <p style="font-size:28px;font-weight:700;color:#1F2937;margin:0">${totalItems}</p>
         <p style="font-size:11px;color:#6B7280;margin:4px 0 0">Total Items</p>
       </div>
-      <div style="background:#F7F8FA;border-radius:8px;padding:14px;text-align:center">
-        <p style="font-size:28px;font-weight:700;color:#1A2B4A;margin:0">${progress}%</p>
+      <div style="background:#F9FAFB;border-radius:8px;padding:14px;text-align:center">
+        <p style="font-size:28px;font-weight:700;color:#1F2937;margin:0">${progress}%</p>
         <p style="font-size:11px;color:#6B7280;margin:4px 0 0">${completedItems} of ${totalItems} done</p>
       </div>
       <div style="background:#FFF1F2;border-radius:8px;padding:14px;text-align:center">
@@ -1082,20 +1082,20 @@ function buildNormalizedPrintHtml(data: {
         <p style="font-size:11px;color:#6B7280;margin:4px 0 0">High Priority</p>
       </div>
     </div>
-    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:14px;font-size:12px;color:#4A5568;line-height:1.6">
+    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:14px;font-size:12px;color:#6B7280;line-height:1.6">
       This checklist was generated by SheriaBot AI based on Kenyan regulatory requirements and international standards.
       It should be reviewed by qualified legal and compliance professionals before making regulatory decisions.
     </div>
   </div>
 
   <div>
-    <h2 style="font-size:16px;font-weight:700;color:#1A2B4A;margin-bottom:16px;border-bottom:2px solid #00875A;padding-bottom:6px">Compliance Requirements</h2>
+    <h2 style="font-size:16px;font-weight:700;color:#1F2937;margin-bottom:16px;border-bottom:2px solid #22C55E;padding-bottom:6px">Compliance Requirements</h2>
     ${categoryRows}
   </div>
 
-  <div style="margin-top:40px;padding:20px;background:#F7F8FA;border-radius:8px;border-top:3px solid #D4A843;page-break-before:always">
-    <h2 style="font-size:14px;font-weight:700;color:#1A2B4A;margin-bottom:10px">Disclaimer</h2>
-    <p style="font-size:11px;color:#4A5568;line-height:1.6">
+  <div style="margin-top:40px;padding:20px;background:#F9FAFB;border-radius:8px;border-top:3px solid #F59E0B;page-break-before:always">
+    <h2 style="font-size:14px;font-weight:700;color:#1F2937;margin-bottom:10px">Disclaimer</h2>
+    <p style="font-size:11px;color:#6B7280;line-height:1.6">
       This compliance checklist was generated by SheriaBot using AI-powered analysis of Kenyan financial regulations.
       While every effort has been made to ensure accuracy, this document should not be considered legal advice.
       Organizations should consult with qualified legal and compliance professionals to verify all requirements.
@@ -1105,8 +1105,8 @@ function buildNormalizedPrintHtml(data: {
       <div style="display:flex;align-items:center;gap:8px">
         <img src="${EXPORT_LOGO_URL}" alt="SheriaBot" style="max-height:28px;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';" />
         <div style="display:none;align-items:center;gap:6px">
-          <div style="background:#1A2B4A;color:#00875A;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900">S</div>
-          <span style="font-size:12px;font-weight:700;color:#1A2B4A">SheriaBot</span>
+          <div style="background:#1A2B4A;color:#22C55E;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900">S</div>
+          <span style="font-size:12px;font-weight:700;color:#1F2937">SheriaBot</span>
         </div>
       </div>
       <p style="font-size:10px;color:#9CA3AF">Generated: ${new Date().toISOString()}</p>
@@ -2416,7 +2416,7 @@ function ChecklistDetailView({
     )
   }
 
-  // â”€â”€ Route by isNormalized â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Route by isNormalized â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â��€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (statusData.isNormalized) {
     return (
       <NormalizedChecklistDetailView
