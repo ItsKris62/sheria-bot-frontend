@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import { DemoModal } from "@/components/landing/demo-modal"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -162,9 +163,11 @@ function useParallax() {
 
 export default function LandingPage() {
   const parallaxRef = useParallax()
+  const [demoOpen, setDemoOpen] = useState(false)
 
   return (
     <div ref={parallaxRef} className="relative overflow-hidden">
+      <DemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
       {/* Subtle grid background */}
       <div 
         className="pointer-events-none fixed inset-0 z-0"
@@ -217,13 +220,11 @@ export default function LandingPage() {
               <Button
                 size="lg"
                 variant="outline"
-                asChild
+                onClick={() => setDemoOpen(true)}
                 className="group w-full sm:w-auto rounded-xl border-border-strong bg-transparent hover:bg-surface hover:border-brand-green/30 transition-all duration-300 px-8 h-12 text-base"
               >
-                <Link href="#demo" className="flex items-center gap-2">
-                  <Play className="h-4 w-4" />
-                  Watch Demo
-                </Link>
+                <Play className="h-4 w-4" />
+                Watch Demo
               </Button>
             </div>
 
