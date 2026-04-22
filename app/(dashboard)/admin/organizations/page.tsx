@@ -52,12 +52,15 @@ import {
   CheckCircle2,
   Radio,
   Layers3,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
+import { TRPCClientError } from "@trpc/client"
 import { toast } from "sonner"
 
 const PAGE_SIZE = 20
-const REFRESH_INTERVAL_MS = 10_000
+const REFRESH_INTERVAL_MS = 30_000
 
 const PLAN_TOKENS: Record<string, number> = {
   REGULATOR: 1,
@@ -97,6 +100,19 @@ function formatLabel(value: string) {
 
 type OrgSortField = "name" | "organizationType" | "subscriptionTier" | "subscriptionStatus" | "memberCount" | "createdAt"
 
+interface OrgRow {
+  id: string
+  name: string
+  type: string
+  organizationType: string | null
+  registrationNumber: string | null
+  subscriptionTier: string
+  plan: string
+  subscriptionStatus: string
+  memberCount: number
+  createdAt: string | Date
+}
+
 const DEFAULT_SORT_ORDER: Record<OrgSortField, "asc" | "desc"> = {
   name: "asc",
   organizationType: "asc",
@@ -124,15 +140,16 @@ export default function AdminOrganizationsPage() {
       setSearch(searchInput.trim())
       setPage(1)
     }, 350)
-
     return () => window.clearTimeout(timeoutId)
   }, [searchInput])
 
-  const { data: orgStats } = trpc.admin.getOrganizationStats.useQuery(undefined, {
+  const { data: orgStats, isLoading: statsLoading } = trpc.admin.getOrganizationStats.useQuery(undefined, {
     refetchInterval: REFRESH_INTERVAL_MS,
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   })
 
-  const { data, isLoading, isError, isFetching } = trpc.admin.getAllOrganizations.useQuery(
+  const { data, isLoading, isError, error, isFetching, refetch } = trpc.admin.getAllOrganizations.useQuery(
     {
       page,
       limit: PAGE_SIZE,
@@ -141,7 +158,11 @@ export default function AdminOrganizationsPage() {
       sortBy: sorting.field,
       sortOrder: sorting.order,
     },
-    { refetchInterval: REFRESH_INTERVAL_MS }
+    {
+      refetchInterval: REFRESH_INTERVAL_MS,
+      retry: 3,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+    }
   )
 
   const suspendMutation = trpc.admin.suspendOrganization.useMutation({
@@ -182,16 +203,9 @@ export default function AdminOrganizationsPage() {
   function toggleSort(field: OrgSortField) {
     setSorting((current) => {
       if (current.field === field) {
-        return {
-          field,
-          order: current.order === "asc" ? "desc" : "asc",
-        }
+        return { field, order: current.order === "asc" ? "desc" : "asc" }
       }
-
-      return {
-        field,
-        order: DEFAULT_SORT_ORDER[field],
-      }
+      return { field, order: DEFAULT_SORT_ORDER[field] }
     })
     setPage(1)
   }
@@ -208,7 +222,6 @@ export default function AdminOrganizationsPage() {
     if (sorting.field !== field) {
       return <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
     }
-
     return sorting.order === "asc" ? <ArrowUp className="h-3.5 w-3.5 text-primary" /> : <ArrowDown className="h-3.5 w-3.5 text-primary" />
   }
 
@@ -240,30 +253,51 @@ export default function AdminOrganizationsPage() {
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground">
-          <Radio className={`h-3.5 w-3.5 ${isFetching ? "animate-pulse text-primary" : "text-primary"}`} />
-          Auto-refreshing every 10 seconds
+        <div className="flex items-center gap-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground">
+            <Radio className={`h-3.5 w-3.5 ${isFetching ? "animate-pulse text-primary" : "text-primary"}`} />
+            Auto-refreshing every 30s
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isLoading || isFetching}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
         </div>
       </div>
 
+      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {cards.map((card) => {
-          const toneStyle = getToneStyle(card.token)
-
-          return (
-            <Card key={card.label} className="border-border/70 shadow-sm">
-              <CardContent className="flex items-center justify-between p-5">
-                <div>
-                  <p className="text-sm text-muted-foreground">{card.label}</p>
-                  <p className="mt-2 text-3xl font-semibold text-foreground">{card.value.toLocaleString()}</p>
-                </div>
-                <div className="rounded-2xl border p-3" style={toneStyle}>
-                  <card.icon className="h-5 w-5" />
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+        {statsLoading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="border-border/70 shadow-sm">
+                <CardContent className="p-5">
+                  <Skeleton className="h-4 w-32 mb-3" />
+                  <Skeleton className="h-8 w-16" />
+                </CardContent>
+              </Card>
+            ))
+          : cards.map((card) => {
+              const toneStyle = getToneStyle(card.token)
+              return (
+                <Card key={card.label} className="border-border/70 shadow-sm">
+                  <CardContent className="flex items-center justify-between p-5">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{card.label}</p>
+                      <p className="mt-2 text-3xl font-semibold text-foreground">{card.value.toLocaleString()}</p>
+                    </div>
+                    <div className="rounded-2xl border p-3" style={toneStyle}>
+                      <card.icon className="h-5 w-5" />
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
       </div>
 
       <Card className="border-border/70 shadow-sm">
@@ -315,8 +349,16 @@ export default function AdminOrganizationsPage() {
               ))}
             </div>
           ) : isError ? (
-            <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-12 text-center text-sm text-destructive">
-              Failed to load organizations. Please retry.
+            <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-12 text-center">
+              <AlertCircle className="mx-auto h-10 w-10 text-destructive/60 mb-3" />
+              <p className="text-sm font-medium text-destructive mb-1">Failed to load organizations</p>
+              <p className="text-xs text-muted-foreground mb-4">
+                {error instanceof TRPCClientError ? error.message : "An error occurred while fetching organizations."}
+              </p>
+              <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Retry
+              </Button>
             </div>
           ) : !data?.items.length ? (
             <div className="rounded-2xl border border-dashed border-border bg-muted/10 px-6 py-14 text-center">
@@ -326,16 +368,16 @@ export default function AdminOrganizationsPage() {
               </h3>
               <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
                 {hasActiveFilters
-                  ? "Try adjusting your search, plan filter, or sorting preference. Live refresh remains active and new matches will appear automatically."
-                  : "Organizations will appear here as customers onboard to the platform. This live table will start populating automatically once records are available."}
+                  ? "Try adjusting your search, plan filter, or sorting preference."
+                  : "Organizations will appear here as customers onboard to the platform."}
               </p>
-              {hasActiveFilters ? (
+              {hasActiveFilters && (
                 <div className="mt-5 flex justify-center">
                   <Button variant="outline" onClick={resetFilters}>
                     Clear filters and reset sorting
                   </Button>
                 </div>
-              ) : null}
+              )}
             </div>
           ) : (
             <>
@@ -353,9 +395,11 @@ export default function AdminOrganizationsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.items.map((org) => {
-                      const planStyle = getToneStyle(PLAN_TOKENS[org.subscriptionTier] ?? 1)
-                      const statusStyle = getToneStyle(STATUS_TOKENS[org.subscriptionStatus] ?? 5)
+                    {(data.items as OrgRow[]).map((org) => {
+                      const planKey = (org.subscriptionTier || org.plan || "REGULATOR").toUpperCase()
+                      const statusKey = (org.subscriptionStatus || "ACTIVE").toUpperCase()
+                      const planStyle = getToneStyle(PLAN_TOKENS[planKey] ?? 1)
+                      const statusStyle = getToneStyle(STATUS_TOKENS[statusKey] ?? 5)
 
                       return (
                         <TableRow key={org.id}>
@@ -377,15 +421,15 @@ export default function AdminOrganizationsPage() {
                           </TableCell>
                           <TableCell>
                             <span className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium" style={planStyle}>
-                              {formatPlanLabel(org.subscriptionTier)}
+                              {formatPlanLabel(planKey)}
                             </span>
                           </TableCell>
                           <TableCell className="hidden lg:table-cell text-muted-foreground">
-                            {org.memberCount.toLocaleString()}
+                            {(org.memberCount ?? 0).toLocaleString()}
                           </TableCell>
                           <TableCell>
                             <span className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium" style={statusStyle}>
-                              {formatLabel(org.subscriptionStatus)}
+                              {formatLabel(statusKey)}
                             </span>
                           </TableCell>
                           <TableCell className="hidden xl:table-cell text-muted-foreground">
@@ -409,7 +453,7 @@ export default function AdminOrganizationsPage() {
                                   </Link>
                                 </DropdownMenuItem>
 
-                                {org.subscriptionStatus === "ACTIVE" ? (
+                                {statusKey === "ACTIVE" ? (
                                   <DropdownMenuItem
                                     onClick={() => setConfirmOrg({ id: org.id, name: org.name, action: "suspend" })}
                                     className="text-destructive focus:text-destructive"
@@ -479,16 +523,12 @@ export default function AdminOrganizationsPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                if (!confirmOrg) {
-                  return
-                }
-
+                if (!confirmOrg) return
                 if (confirmOrg.action === "suspend") {
                   suspendMutation.mutate({ orgId: confirmOrg.id, reason: "Suspended by administrator" })
                 } else {
                   reactivateMutation.mutate({ orgId: confirmOrg.id })
                 }
-
                 setConfirmOrg(null)
               }}
             >

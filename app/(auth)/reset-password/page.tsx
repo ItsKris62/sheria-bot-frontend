@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Scale, Eye, EyeOff, CheckCircle2, Loader2, ArrowRight, AlertCircle } from "lucide-react"
+import { Eye, EyeOff, CheckCircle2, Loader2, ArrowRight, AlertCircle } from "lucide-react"
+import Image from "next/image"
+import { LOGOS } from "@/lib/constants/logos"
 import { LoadingScreen } from "@/components/loading-screen"
 import { trpc } from "@/lib/trpc"
 import { getAuthErrorMessage } from "@/lib/auth-error-messages"
@@ -84,10 +86,14 @@ function ResetPasswordContent() {
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur">
       <CardHeader className="text-center">
-        <Link href="/" className="mx-auto mb-4 flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <Scale className="h-5 w-5 text-primary-foreground" aria-hidden="true" />
-          </div>
+        <Link href="/" className="mx-auto mb-4 flex items-center gap-2.5">
+          <Image
+            src={LOGOS.hero}
+            alt="SheriaBot"
+            width={40}
+            height={40}
+            className="h-10 w-10 object-contain"
+          />
           <span className="text-xl font-bold text-foreground">SheriaBot</span>
         </Link>
         <CardTitle className="text-2xl">Reset Password</CardTitle>

@@ -12,16 +12,15 @@ import {
   AlertTriangle, ArrowRight, Building2, Shield, TrendingUp,
   CheckCircle2, XCircle, Zap,
 } from "lucide-react"
-import { useAdminStats } from "@/hooks/use-admin"
 import { trpc } from "@/lib/trpc"
 
 const quickActions = [
-  { label: "User Management",   href: "/admin/users",                    icon: Users,    description: "Manage users and permissions" },
-  { label: "Organizations",     href: "/admin/organizations",            icon: Building2, description: "View and manage all organizations" },
-  { label: "Analytics",         href: "/admin/analytics",               icon: TrendingUp, description: "Platform metrics and revenue" },
-  { label: "AI Configuration",  href: "/admin/ai-config",               icon: Bot,      description: "Configure AI models and responses" },
-  { label: "Billing & Plans",   href: "/admin/billing",                 icon: CreditCard, description: "Manage subscriptions and payments" },
-  { label: "System Settings",   href: "/admin/system",                  icon: Settings, description: "Platform configuration" },
+  { label: "User Management",   href: "/admin/users",         icon: Users,      description: "Manage users and permissions" },
+  { label: "Organizations",     href: "/admin/organizations", icon: Building2,  description: "View and manage all organizations" },
+  { label: "Analytics",         href: "/admin/analytics",     icon: TrendingUp, description: "Platform metrics and revenue" },
+  { label: "AI Configuration",  href: "/admin/ai-config",     icon: Bot,        description: "Configure AI models and responses" },
+  { label: "Billing & Plans",   href: "/admin/billing",       icon: CreditCard, description: "Manage subscriptions and payments" },
+  { label: "System Settings",   href: "/admin/system",        icon: Settings,   description: "Platform configuration" },
 ]
 
 function ServiceBadge({ status }: { status: string | undefined }) {
@@ -31,8 +30,18 @@ function ServiceBadge({ status }: { status: string | undefined }) {
   return <Badge className="bg-destructive/15 text-destructive border-0">Down</Badge>
 }
 
+type StatsShape = {
+  users?: { total?: number; active?: number }
+  organizations?: { total?: number }
+  queries?: { total?: number }
+  policies?: { total?: number }
+}
+
 export default function AdminDashboard() {
-  const { data: stats, isLoading: statsLoading } = useAdminStats()
+  const { data: rawStats, isLoading: statsLoading } = trpc.admin.getStats.useQuery(undefined, {
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+  })
   const { data: health } = trpc.admin.getDetailedHealth.useQuery(undefined, { refetchInterval: 30000 })
   const { data: logsData } = trpc.admin.getLogs.useQuery({ page: 1, limit: 5 })
   const { data: growth } = trpc.admin.getUserGrowth.useQuery({
@@ -43,21 +52,15 @@ export default function AdminDashboard() {
     dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   })
 
+  const stats = rawStats as StatsShape | undefined
+
   const recentLogs = (logsData as { items?: Array<{ id: string; action: string; userId: string | null; entityType: string | null; createdAt: Date }> })?.items ?? []
 
-  type StatsShape = {
-    users?: { total?: number; active?: number }
-    organizations?: { total?: number }
-    queries?: { total?: number }
-    policies?: { total?: number }
-  }
-  const s = stats as StatsShape | undefined
-
   const statCards = [
-    { label: "Total Users",         value: s?.users?.total?.toLocaleString(),         icon: Users,     color: "bg-primary" },
-    { label: "Organizations",       value: s?.organizations?.total?.toLocaleString(), icon: Building2, color: "bg-secondary" },
-    { label: "AI Queries",          value: s?.queries?.total?.toLocaleString(),        icon: Bot,       color: "bg-warning" },
-    { label: "Total Policies",      value: s?.policies?.total?.toLocaleString(),       icon: FileText,  color: "bg-accent" },
+    { label: "Total Users",    value: stats?.users?.total?.toLocaleString(),         icon: Users,     color: "bg-primary" },
+    { label: "Active Users",   value: stats?.users?.active?.toLocaleString(),        icon: Activity,  color: "bg-emerald-500" },
+    { label: "Organizations",  value: stats?.organizations?.total?.toLocaleString(), icon: Building2, color: "bg-secondary" },
+    { label: "AI Queries",     value: stats?.queries?.total?.toLocaleString(),       icon: Bot,       color: "bg-warning" },
   ]
 
   const typedHealth = health as {
@@ -90,7 +93,7 @@ export default function AdminDashboard() {
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
                     {statsLoading
                       ? <Skeleton className="h-8 w-20 mt-1" />
-                      : <p className="text-2xl font-bold text-foreground mt-1">{stat.value ?? "—"}</p>
+                      : <p className="text-2xl font-bold text-foreground mt-1">{stat.value ?? "0"}</p>
                     }
                   </div>
                   <div className={`p-2.5 rounded-lg ${stat.color}`}>
@@ -110,7 +113,7 @@ export default function AdminDashboard() {
             <CardTitle className="text-sm font-medium text-muted-foreground">User Signups (last 30 days)</CardTitle>
           </CardHeader>
           <CardContent>
-            {!growth?.series.length ? (
+            {!growth?.series?.length ? (
               <div className="h-36 flex items-center justify-center text-muted-foreground/40">
                 <Users className="w-8 h-8" />
               </div>
@@ -133,7 +136,7 @@ export default function AdminDashboard() {
             <CardTitle className="text-sm font-medium text-muted-foreground">AI Queries (last 30 days)</CardTitle>
           </CardHeader>
           <CardContent>
-            {!aiUsage?.series.length ? (
+            {!aiUsage?.series?.length ? (
               <div className="h-36 flex items-center justify-center text-muted-foreground/40">
                 <Zap className="w-8 h-8" />
               </div>
@@ -278,6 +281,11 @@ export default function AdminDashboard() {
               <Link href="/admin/security" className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
                 <XCircle className="w-4 h-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Failed login attempts</span>
+                <ArrowRight className="w-3 h-3 text-muted-foreground/40 ml-auto" />
+              </Link>
+              <Link href="/admin/pilot" className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Pilot programme</span>
                 <ArrowRight className="w-3 h-3 text-muted-foreground/40 ml-auto" />
               </Link>
             </CardContent>
