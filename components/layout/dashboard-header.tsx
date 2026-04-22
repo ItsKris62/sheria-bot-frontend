@@ -594,7 +594,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
                 <button
                   key={tab.value}
                   onClick={() => setActiveCategory(tab.value)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     activeCategory === tab.value
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground hover:bg-muted/70"
@@ -742,7 +742,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
                 </span>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleClearRecent() }}
-                  className="text-[10px] font-normal text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                  className="rounded text-[10px] font-normal text-muted-foreground/60 hover:text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#22C55E] focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                 >
                   Clear
                 </button>

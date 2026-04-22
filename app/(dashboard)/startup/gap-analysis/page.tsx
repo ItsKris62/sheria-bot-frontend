@@ -408,7 +408,7 @@ function AnalysisResultsView({
         </DropdownMenu>
       </div>
 
-      {/* RAG grounding warning â€” shown when Pinecone was unavailable during generation */}
+      {/* RAG grounding warning   shown when Pinecone was unavailable during generation */}
       {data.ragGrounded === false && (
         <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm dark:border-yellow-800/50 dark:bg-yellow-900/20">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-600 dark:text-yellow-400" />
@@ -867,7 +867,7 @@ export default function GapAnalysisPage() {
   const { data: gapLimits } = trpc.gapAnalysis.getGapAnalysisLimits.useQuery()
   const maxFileSizeBytes = (gapLimits?.maxFileSizeMB ?? 10) * 1024 * 1024
 
-  // Polling query â€” active only while isAwaitingResult
+  // Polling query   active only while isAwaitingResult
   const pollingQuery = trpc.gapAnalysis.getGapAnalysisResult.useQuery(
     { id: activeAnalysisId! },
     {
@@ -891,10 +891,10 @@ export default function GapAnalysisPage() {
       resetForm()
       toast.success("Analysis complete", { description: `Overall score: ${d.overallScore ?? "N/A"}/100` })
     }
-    // FAILED: stay on progress view â€” AnalysisProgressView renders the error + retry UI
+    // FAILED: stay on progress view   AnalysisProgressView renders the error + retry UI
   }, [pollingQuery.data?.status, isAwaitingResult]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Page-refresh resumption â€” detect in-progress analyses on first load
+  // Page-refresh resumption   detect in-progress analyses on first load
   useEffect(() => {
     if (hasCheckedResumption.current || isAwaitingResult || activeView || !analyses) return
     hasCheckedResumption.current = true
@@ -1210,7 +1210,7 @@ export default function GapAnalysisPage() {
                 {canRun && (
                   <div className="flex items-center gap-2 text-sm text-secondary">
                     <CheckCircle2 className="h-4 w-4" />
-                    Ready â€” {selectedFile?.name} against {selectedFrameworks.length} framework{selectedFrameworks.length > 1 ? "s" : ""}
+                    Ready   {selectedFile?.name} against {selectedFrameworks.length} framework{selectedFrameworks.length > 1 ? "s" : ""}
                   </div>
                 )}
               </div>

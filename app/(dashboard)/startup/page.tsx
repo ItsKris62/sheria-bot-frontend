@@ -160,6 +160,10 @@ export default function StartupDashboard() {
   } = trpc.complianceDashboard.getComplianceDashboard.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
     retry: 1,
+    // Block until the auth store has hydrated. AuthGuard ensures the user is
+    // authenticated, but the Zustand store populates asynchronously from the
+    // persisted session, so !!user is the correct readiness signal here.
+    enabled: !!user,
   })
 
   const {
@@ -201,7 +205,7 @@ export default function StartupDashboard() {
             <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-3" />
             <p className="font-medium text-foreground">Failed to load compliance scores</p>
             <p className="text-sm text-muted-foreground mt-1">
-              {dashboardError.message ?? "Please try refreshing the page."}
+              Please try refreshing the page. If the problem persists, contact support.
             </p>
           </CardContent>
         </Card>

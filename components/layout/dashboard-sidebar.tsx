@@ -132,7 +132,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300",
+                  "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                   isLocked
                     ? "opacity-50 cursor-pointer"
                     : isActive
@@ -186,7 +186,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b border-border/50 px-4">
           {!collapsed && (
-            <Link href="/" className="group flex items-center gap-3 transition-all duration-300 hover:scale-105 hover:opacity-90">
+            <Link href="/" className="group flex items-center gap-3 rounded-xl transition-all duration-300 hover:scale-105 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black">
               <Image
                 src={LOGOS.hero}
                 alt="SheriaBot"
@@ -202,7 +202,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
             </Link>
           )}
           {collapsed && (
-            <Link href="/" className="group mx-auto">
+            <Link href="/" className="group mx-auto rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black">
               <Image
                 src={LOGOS.hero}
                 alt="SheriaBot"
@@ -227,7 +227,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
             <Link
               href="/settings"
               className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground",
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                 collapsed && "justify-center px-2",
                 pathname.startsWith("/settings") && "bg-primary/15 text-primary"
               )}
@@ -241,7 +241,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
             <Link
               href="/support"
               className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground",
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                 collapsed && "justify-center px-2",
                 pathname.startsWith("/support") && "bg-primary/15 text-primary"
               )}
@@ -280,7 +280,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
 
           {/* Logo */}
           <div className="flex h-16 items-center border-b border-border/50 px-4">
-            <Link href="/" className="group flex items-center gap-3 transition-all duration-300 hover:opacity-90">
+            <Link href="/" className="group flex items-center gap-3 rounded-xl transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black">
               <Image
                 src={LOGOS.hero}
                 alt="SheriaBot"
@@ -309,7 +309,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
               <Link
                 href="/settings"
                 className={cn(
-                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground",
+                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                   pathname.startsWith("/settings") && "bg-primary/15 text-primary"
                 )}
               >
@@ -322,7 +322,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
               <Link
                 href="/support"
                 className={cn(
-                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground",
+                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                   pathname.startsWith("/support") && "bg-primary/15 text-primary"
                 )}
               >
