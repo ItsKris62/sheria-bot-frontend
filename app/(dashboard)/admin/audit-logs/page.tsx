@@ -57,12 +57,17 @@ export default function AuditLogsPage() {
   })
 
   const exportMutation = trpc.admin.exportAuditLogs.useMutation({
-    onSuccess: (result) => {
+    onSuccess: (result, variables) => {
+      const dateStr = new Date().toISOString().split("T")[0]
       const a = document.createElement("a")
       a.href = result.url
+      a.download = `sheriabot-audit-log-${dateStr}.${variables.format}`
+      document.body.appendChild(a)
       a.click()
+      document.body.removeChild(a)
+      toast.success("Audit log exported successfully.")
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(err.message ?? "Export failed. Please try again."),
   })
 
   const logs: LogEntry[] = (data as { items?: LogEntry[] })?.items ?? []
@@ -75,8 +80,9 @@ export default function AuditLogsPage() {
       ...(entityTypeFilter !== "all" ? { entityType: entityTypeFilter } : {}),
       ...(actionFilter ? { action: actionFilter } : {}),
       ...(userIdFilter ? { userId: userIdFilter } : {}),
-      ...(dateFrom ? { dateFrom: new Date(dateFrom) } : {}),
-      ...(dateTo ? { dateTo: new Date(dateTo) } : {}),
+      // Zod schema expects ISO datetime strings, not Date objects
+      ...(dateFrom ? { dateFrom: new Date(dateFrom).toISOString() } : {}),
+      ...(dateTo ? { dateTo: new Date(dateTo).toISOString() } : {}),
     })
   }
 
@@ -187,7 +193,7 @@ export default function AuditLogsPage() {
                           <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5 flex-wrap">
                             <span>{log.userId ?? "System"}</span>
                             {log.entityId && <span className="font-mono">{log.entityId.slice(0, 8)}</span>}
-                            {log.ipAddress && <span>· {log.ipAddress}</span>}
+                            {log.ipAddress && <span>- {log.ipAddress}</span>}
                           </div>
                         </div>
                       </div>

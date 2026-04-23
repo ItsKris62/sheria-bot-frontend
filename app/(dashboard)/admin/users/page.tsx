@@ -25,7 +25,6 @@ import {
   Plus,
   Search,
   MoreVertical,
-  Mail,
   Ban,
   Trash2,
   Eye,
@@ -36,7 +35,18 @@ import {
   ChevronRight,
   CheckCircle2,
   Loader2,
+  X,
 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useAdminUsers, useAdminActions, useAdminStats } from "@/hooks/use-admin"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
@@ -82,6 +92,9 @@ function UserRowSkeleton() {
   )
 }
 
+type BulkAction = "suspend" | "activate" | "tier"
+type TierValue = "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE"
+
 export default function UsersPage() {
   const [search, setSearch] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
@@ -91,6 +104,11 @@ export default function UsersPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [createForm, setCreateForm] = useState({ email: "", fullName: "", password: "", role: "STARTUP" })
   const limit = 20
+
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkConfirmAction, setBulkConfirmAction] = useState<BulkAction | null>(null)
+  const [bulkTier, setBulkTier] = useState<TierValue>("STARTUP")
 
   const { data, isLoading } = useAdminUsers({
     page,
@@ -103,6 +121,26 @@ export default function UsersPage() {
   const { disableUser, enableUser, isDisabling, isEnabling } = useAdminActions()
 
   const utils = trpc.useUtils()
+
+  const bulkStatusMutation = trpc.admin.bulkUpdateUserStatus.useMutation({
+    onSuccess: (result) => {
+      toast.success(`${result.count} user${result.count !== 1 ? "s" : ""} updated`)
+      setSelectedIds(new Set())
+      setBulkConfirmAction(null)
+      void utils.admin.listUsers.invalidate()
+    },
+    onError: (err) => toast.error(err.message ?? "Bulk action failed"),
+  })
+
+  const bulkTierMutation = trpc.admin.bulkUpdateUserTier.useMutation({
+    onSuccess: (result) => {
+      toast.success(`Tier updated for ${result.count} user${result.count !== 1 ? "s" : ""}`)
+      setSelectedIds(new Set())
+      setBulkConfirmAction(null)
+      void utils.admin.listUsers.invalidate()
+    },
+    onError: (err) => toast.error(err.message ?? "Tier update failed"),
+  })
 
   const createUserMutation = trpc.admin.createUser.useMutation({
     onSuccess: () => {
@@ -134,6 +172,47 @@ export default function UsersPage() {
   const users = ((data as { users?: UserRow[] })?.users ?? []) as UserRow[]
   const total: number = (data as { pagination?: { total?: number } })?.pagination?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / limit))
+
+  const allPageIds = users.map((u) => u.id)
+  const allPageSelected = allPageIds.length > 0 && allPageIds.every((id) => selectedIds.has(id))
+
+  function toggleSelectAll() {
+    if (allPageSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        allPageIds.forEach((id) => next.delete(id))
+        return next
+      })
+    } else {
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        allPageIds.forEach((id) => next.add(id))
+        return next
+      })
+    }
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function executeBulkAction() {
+    const ids = [...selectedIds]
+    if (bulkConfirmAction === "suspend") {
+      bulkStatusMutation.mutate({ userIds: ids, status: "SUSPENDED" })
+    } else if (bulkConfirmAction === "activate") {
+      bulkStatusMutation.mutate({ userIds: ids, status: "ACTIVE" })
+    } else if (bulkConfirmAction === "tier") {
+      bulkTierMutation.mutate({ userIds: ids, tier: bulkTier })
+    }
+  }
+
+  const bulkIsPending = bulkStatusMutation.isPending || bulkTierMutation.isPending
 
   async function handleSuspend(userId: string, isSuspended: boolean) {
     setPendingUserId(userId)
@@ -221,6 +300,38 @@ export default function UsersPage() {
         )}
       </div>
 
+      {/* Bulk action toolbar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5">
+          <span className="text-sm font-medium text-foreground">{selectedIds.size} user{selectedIds.size !== 1 ? "s" : ""} selected</span>
+          <div className="flex items-center gap-2 ml-auto flex-wrap">
+            <Button size="sm" variant="outline" onClick={() => setBulkConfirmAction("activate")} disabled={bulkIsPending}>
+              <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />Activate
+            </Button>
+            <Button size="sm" variant="outline" className="text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => setBulkConfirmAction("suspend")} disabled={bulkIsPending}>
+              <Ban className="h-3.5 w-3.5 mr-1.5" />Suspend
+            </Button>
+            <div className="flex items-center gap-1.5">
+              <Select value={bulkTier} onValueChange={(v) => setBulkTier(v as TierValue)}>
+                <SelectTrigger className="h-8 w-[130px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="REGULATOR">Regulator</SelectItem>
+                  <SelectItem value="STARTUP">Startup</SelectItem>
+                  <SelectItem value="BUSINESS">Business</SelectItem>
+                  <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button size="sm" variant="outline" onClick={() => setBulkConfirmAction("tier")} disabled={bulkIsPending}>
+                Change Tier
+              </Button>
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())} disabled={bulkIsPending}>
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* User list */}
       <Card className="border-border/50 bg-card/50 backdrop-blur">
         <CardHeader>
@@ -261,6 +372,20 @@ export default function UsersPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Select-all header */}
+          {!isLoading && users.length > 0 && (
+            <div className="flex items-center gap-3 px-1 pb-2 border-b border-border/30">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-border accent-primary cursor-pointer"
+                checked={allPageSelected}
+                onChange={toggleSelectAll}
+                aria-label="Select all users on this page"
+              />
+              <span className="text-xs text-muted-foreground">Select all on this page</span>
+            </div>
+          )}
+
           <div className="space-y-3">
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => <UserRowSkeleton key={i} />)
@@ -272,13 +397,21 @@ export default function UsersPage() {
                 const isPending = pendingUserId === user.id || (deleteUserMutation.isPending && deleteUserMutation.variables?.userId === user.id)
                 const initials = (user.fullName ?? user.email ?? "?")
                   .split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+                const isSelected = selectedIds.has(user.id)
 
                 return (
                   <div
                     key={user.id}
-                    className={`flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors ${isSuspended ? "opacity-60" : ""}`}
+                    className={`flex items-center justify-between p-4 rounded-lg transition-colors ${isSelected ? "bg-primary/8 border border-primary/20" : "bg-muted/30 hover:bg-muted/50"} ${isSuspended ? "opacity-60" : ""}`}
                   >
                     <div className="flex items-center gap-4">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-border accent-primary cursor-pointer flex-shrink-0"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(user.id)}
+                        aria-label={`Select ${user.fullName ?? user.email}`}
+                      />
                       <Avatar>
                         <AvatarFallback className="bg-primary/10 text-primary">{initials}</AvatarFallback>
                       </Avatar>
@@ -344,7 +477,7 @@ export default function UsersPage() {
 
           {!isLoading && totalPages > 1 && (
             <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/50">
-              <p className="text-sm text-muted-foreground">Page {page} of {totalPages} · {total} users</p>
+              <p className="text-sm text-muted-foreground">Page {page} of {totalPages} - {total} users</p>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
                   <ChevronLeft className="h-4 w-4" />
@@ -357,6 +490,35 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Bulk Action Confirmation Dialog */}
+      <AlertDialog open={bulkConfirmAction !== null} onOpenChange={(open) => { if (!open) setBulkConfirmAction(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {bulkConfirmAction === "suspend" && "Suspend selected users?"}
+              {bulkConfirmAction === "activate" && "Activate selected users?"}
+              {bulkConfirmAction === "tier" && `Change tier to ${bulkTier}?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will affect {selectedIds.size} user{selectedIds.size !== 1 ? "s" : ""}.
+              {bulkConfirmAction === "tier" && " Their organizations' subscription tier will be updated and plan cache will be invalidated."}
+              {" "}This action is logged to the audit trail.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkIsPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={executeBulkAction}
+              disabled={bulkIsPending}
+              className={bulkConfirmAction === "suspend" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            >
+              {bulkIsPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Create User Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>

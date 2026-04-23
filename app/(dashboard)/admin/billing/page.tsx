@@ -19,7 +19,7 @@ import {
 } from "recharts"
 import {
   DollarSign, TrendingUp, CreditCard, CheckCircle2, AlertCircle, XCircle,
-  Save, Loader2, Package,
+  Save, Loader2, Package, AlertTriangle,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
@@ -81,17 +81,141 @@ function planToEdit(p: PlanEntry): PlanEdit {
   }
 }
 
+// ─── Failed Payments Panel (TD-006) ──────────────────────────────────────────
+
+interface FailedPaymentRow {
+  id: string
+  orgId: string
+  orgName: string
+  provider: string
+  amount: number
+  currency: string
+  status: string
+  invoiceNumber: string | null
+  subscriptionPlan: string | null
+  description: string | null
+  metadata: Record<string, unknown> | null
+  paidAt: Date | null
+  createdAt: Date
+}
+
+function FailedPaymentsPanel() {
+  const utils = trpc.useUtils()
+  const { data, isLoading } = trpc.admin.getFailedPayments.useQuery({ limit: 50 })
+
+  const items: FailedPaymentRow[] = (data?.items ?? []) as FailedPaymentRow[]
+  const total: number = data?.total ?? 0
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-500" />
+            Failed Payments
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}</div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {total > 0 && (
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-red-200 bg-red-50">
+          <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
+          <p className="text-sm font-medium text-red-800">
+            {total} failed payment{total !== 1 ? "s" : ""} require attention
+          </p>
+        </div>
+      )}
+
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-red-500" />
+                Failed Payments
+                {total > 0 && (
+                  <Badge className="bg-red-100 text-red-700 border-0 text-xs ml-1">{total}</Badge>
+                )}
+              </CardTitle>
+              <CardDescription className="mt-0.5">Payments with status FAILED across all organizations</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void utils.admin.getFailedPayments.invalidate()}
+            >
+              Refresh
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+              <CheckCircle2 className="w-10 h-10 mb-3 text-green-400" />
+              <p className="text-sm font-medium text-gray-600">No failed payments</p>
+              <p className="text-xs mt-1">All payments are processing normally</p>
+            </div>
+          ) : (
+            <div className="rounded-md border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Organization</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Invoice</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">Plan</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Amount</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Provider</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">Failed At</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">Reason</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {items.map((p) => {
+                    const failureMsg = typeof p.metadata?.hostedInvoiceUrl === "string"
+                      ? "Invoice available"
+                      : p.description ?? "Payment declined"
+                    return (
+                      <tr key={p.id} className="hover:bg-red-50/40">
+                        <td className="px-4 py-3 font-medium text-gray-800 max-w-[160px] truncate">{p.orgName}</td>
+                        <td className="px-4 py-3 hidden md:table-cell font-mono text-xs text-gray-500">{p.invoiceNumber ?? p.id.slice(0, 8)}</td>
+                        <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs">{p.subscriptionPlan ?? "—"}</td>
+                        <td className="px-4 py-3 font-semibold text-red-700">{formatKES(p.amount)}</td>
+                        <td className="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">{p.provider}</td>
+                        <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs">
+                          {new Date(p.createdAt).toLocaleDateString("en-KE", { dateStyle: "short" })}
+                        </td>
+                        <td className="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs max-w-[180px] truncate">{failureMsg}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 // ─── Page Component ───────────────────────────────────────────────────────────
 
 export default function AdminBillingPage() {
   const utils = trpc.useUtils()
-  const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
+  const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1_000).toISOString()
 
   const { data: revenue, isLoading: revLoading } = trpc.admin.getRevenueMetrics.useQuery({ dateFrom: sixMonthsAgo })
-  const { data: subOverview, isLoading: subLoading } = trpc.admin.getSubscriptionOverview.useQuery()
-  const { data: subBreakdown, isLoading: breakLoading } = trpc.admin.getSubscriptionBreakdown.useQuery()
+  const { data: subOverview, isLoading: subLoading } = trpc.admin.getSubscriptionOverview.useQuery(undefined)
+  const { data: subBreakdown, isLoading: breakLoading } = trpc.admin.getSubscriptionBreakdown.useQuery({})
   const { data: recentPayments, isLoading: paymentsLoading } = trpc.admin.getRecentPayments.useQuery({ limit: 15 })
-  const { data: catalogData, isLoading: catalogLoading } = trpc.admin.getBillingPlanCatalog.useQuery()
+  const { data: catalogData, isLoading: catalogLoading } = trpc.admin.getBillingPlanCatalog.useQuery(undefined)
 
   const updateCatalogMutation = trpc.admin.updateBillingPlanCatalog.useMutation({
     onSuccess: () => {
@@ -155,6 +279,7 @@ export default function AdminBillingPage() {
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="failed">Failed Payments</TabsTrigger>
           <TabsTrigger value="catalog">Plan Catalog</TabsTrigger>
         </TabsList>
 
@@ -264,7 +389,8 @@ export default function AdminBillingPage() {
                   <p className="text-sm text-gray-400 text-center py-8">No data</p>
                 ) : (
                   <div className="space-y-3">
-                    {Object.entries(subBreakdown.byPlan).map(([plan, count]) => {
+                    {Object.entries(subBreakdown.byPlan).map(([plan, rawCount]) => {
+                      const count = Number(rawCount)
                       const pct = subBreakdown.total > 0 ? Math.round((count / subBreakdown.total) * 100) : 0
                       const colors: Record<string, string> = { REGULATOR: "bg-slate-400", STARTUP: "bg-blue-500", BUSINESS: "bg-purple-500", ENTERPRISE: "bg-emerald-500" }
                       return (
@@ -318,7 +444,7 @@ export default function AdminBillingPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {recentPayments.map((p) => {
+                      {recentPayments.map((p: { id: string; invoiceNumber: string | null; orgName: string; subscriptionPlan: string | null; provider: string; amount: number; status: string; paidAt: Date | null }) => {
                         const style = STATUS_STYLES[p.status] ?? STATUS_STYLES.PENDING
                         const Icon = style.icon
                         return (
@@ -346,6 +472,11 @@ export default function AdminBillingPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* ─── Failed Payments Tab (TD-006) ─────────────────────────────── */}
+        <TabsContent value="failed" className="space-y-6 mt-6">
+          <FailedPaymentsPanel />
         </TabsContent>
 
         {/* ─── Plan Catalog Tab ─────────────────────────────────────────── */}
