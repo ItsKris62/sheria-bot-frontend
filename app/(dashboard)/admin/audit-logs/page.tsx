@@ -177,7 +177,7 @@ export default function AuditLogsPage() {
                 const config = getConfig(log.entityType)
                 const Icon = config.icon
                 const isExpanded = expandedId === log.id
-                const hasMetadata = log.metadata && typeof log.metadata === "object" && Object.keys(log.metadata as object).length > 0
+                const hasMetadata = !!log.metadata && typeof log.metadata === "object" && Object.keys(log.metadata as object).length > 0
                 return (
                   <div key={log.id} className="rounded-lg border border-gray-100 overflow-hidden">
                     <div
