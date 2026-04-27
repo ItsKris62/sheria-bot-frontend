@@ -28,6 +28,7 @@ import {
   Bell,
   Sparkles,
   Lock,
+  Megaphone,
 } from "lucide-react"
 import { usePlan } from "@/lib/plan-context"
 import type { FeatureKey } from "@/lib/plan-context"
@@ -70,6 +71,12 @@ export const regulatorNav: NavGroup[] = [
       { title: "Intelligence Feed", href: "/regulator/intelligence-feed", icon: Newspaper },
     ],
   },
+  {
+    title: "Alerts",
+    items: [
+      { title: "Regulatory Alerts", href: "/dashboard/alerts", icon: Megaphone },
+    ],
+  },
 ]
 
 export const startupNav: NavGroup[] = [
@@ -94,6 +101,7 @@ export const startupNav: NavGroup[] = [
       { title: "Calendar", href: "/startup/calendar", icon: Calendar },
       { title: "Documents", href: "/startup/documents", icon: Folder, lockedFeature: "documentRepository" },
       { title: "Monitor", href: "/startup/monitor", icon: Bell, badge: 3 },
+      { title: "Regulatory Alerts", href: "/dashboard/alerts", icon: Megaphone },
     ],
   },
 ]

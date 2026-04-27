@@ -27,6 +27,7 @@ import {
   BarChart2,
   Lock,
   Rocket,
+  Megaphone,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -72,6 +73,7 @@ export const adminNav: AdminNavGroup[] = [
     items: [
       { title: "Knowledge Base", href: "/admin/content/knowledge-base", icon: BookOpen },
       { title: "Blog", href: "/admin/content/blog", icon: Newspaper },
+      { title: "Regulatory Alerts", href: "/admin/alerts", icon: Megaphone },
     ],
   },
   {

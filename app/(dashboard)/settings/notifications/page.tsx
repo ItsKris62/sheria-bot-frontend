@@ -1,8 +1,20 @@
 "use client"
 
+import React, { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Tooltip,
   TooltipContent,
@@ -24,10 +36,12 @@ import {
   UserCircle,
   LifeBuoy,
   Megaphone,
+  Loader2,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import { useCategoryPreferences, useUpdateCategoryPreference } from "@/hooks/use-notifications"
+import { useAuthStore } from "@/lib/auth-store"
 
 type CategoryName = "SECURITY" | "COMPLIANCE" | "DOCUMENTS" | "ACCOUNT" | "SUPPORT" | "SYSTEM"
 
@@ -40,7 +54,257 @@ const CATEGORY_META: Record<CategoryName, { label: string; desc: string; Icon: R
   SYSTEM:     { label: "System",     desc: "Platform announcements and maintenance notices",                 Icon: Megaphone },
 }
 
-import React from "react"
+// --- Alert subscription constants --------------------------------------------
+
+const REGULATORY_BODIES = ["CBK", "CMA", "ODPC", "CA", "GAZETTE"] as const
+const ALERT_CATEGORIES = ["PRUDENTIAL", "DATA_PROTECTION", "AML_CFT", "LICENSING", "CAPITAL_MARKETS", "GENERAL"] as const
+const CATEGORY_LABELS: Record<string, string> = {
+  PRUDENTIAL: "Prudential",
+  DATA_PROTECTION: "Data Protection",
+  AML_CFT: "AML / CFT",
+  LICENSING: "Licensing",
+  CAPITAL_MARKETS: "Capital Markets",
+  GENERAL: "General",
+}
+
+type SubState = {
+  inAppEnabled: boolean
+  emailEnabled: boolean
+  emailFrequency: "REALTIME" | "DAILY" | "WEEKLY"
+  severityThreshold: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+  regulatoryBodies: string[]
+  categories: string[]
+}
+
+const DEFAULT_SUB: SubState = {
+  inAppEnabled: true,
+  emailEnabled: false,
+  emailFrequency: "DAILY",
+  severityThreshold: "LOW",
+  regulatoryBodies: [...REGULATORY_BODIES],
+  categories: [...ALERT_CATEGORIES],
+}
+
+function AlertSubscriptionSection() {
+  const orgId = useAuthStore((s) => s.user?.organizationId)
+  const [form, setForm] = useState<SubState>(DEFAULT_SUB)
+  const [isDirty, setIsDirty] = useState(false)
+
+  const { data: sub, isLoading } = trpc.alert.getSubscription.useQuery(undefined, {
+    enabled: !!orgId,
+  })
+
+  useEffect(() => {
+    if (!sub) return
+    const s = sub as SubState & { regulatoryBodies: string[]; categories: string[] }
+    setForm({
+      inAppEnabled: s.inAppEnabled,
+      emailEnabled: s.emailEnabled,
+      emailFrequency: s.emailFrequency as SubState["emailFrequency"],
+      severityThreshold: s.severityThreshold as SubState["severityThreshold"],
+      regulatoryBodies: s.regulatoryBodies ?? [...REGULATORY_BODIES],
+      categories: s.categories ?? [...ALERT_CATEGORIES],
+    })
+    setIsDirty(false)
+  }, [sub])
+
+  const utils = trpc.useUtils()
+  const saveMutation = trpc.alert.upsertSubscription.useMutation({
+    onSuccess: () => {
+      toast.success("Alert subscription saved")
+      utils.alert.getSubscription.invalidate()
+      setIsDirty(false)
+    },
+    onError: (e) => toast.error(e.message || "Failed to save subscription"),
+  })
+
+  function patch(updates: Partial<SubState>) {
+    setForm((prev) => ({ ...prev, ...updates }))
+    setIsDirty(true)
+  }
+
+  function toggleBody(body: string) {
+    const next = form.regulatoryBodies.includes(body)
+      ? form.regulatoryBodies.filter((b) => b !== body)
+      : [...form.regulatoryBodies, body]
+    patch({ regulatoryBodies: next })
+  }
+
+  function toggleCategory(cat: string) {
+    const next = form.categories.includes(cat)
+      ? form.categories.filter((c) => c !== cat)
+      : [...form.categories, cat]
+    patch({ categories: next })
+  }
+
+  if (!orgId) {
+    return (
+      <Card className="border-border/50 bg-card/50 backdrop-blur">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Megaphone className="h-5 w-5 text-primary" />
+            Regulatory Alert Subscriptions
+          </CardTitle>
+          <CardDescription>
+            An organisation account is required to configure alert subscriptions.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Megaphone className="h-5 w-5 text-primary" />
+          Regulatory Alert Subscriptions
+        </CardTitle>
+        <CardDescription>
+          Choose which regulatory bodies and categories notify your organisation, and how.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {isLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* Delivery toggles */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">Delivery channels</p>
+              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                <div>
+                  <p className="font-medium text-foreground text-sm">In-app notifications</p>
+                  <p className="text-xs text-muted-foreground">Show alerts in your notification bell</p>
+                </div>
+                <Switch
+                  checked={form.inAppEnabled}
+                  onCheckedChange={(v) => patch({ inAppEnabled: v })}
+                />
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                <div>
+                  <p className="font-medium text-foreground text-sm">Email notifications</p>
+                  <p className="text-xs text-muted-foreground">Receive regulatory alerts by email</p>
+                </div>
+                <Switch
+                  checked={form.emailEnabled}
+                  onCheckedChange={(v) => patch({ emailEnabled: v })}
+                />
+              </div>
+
+              {form.emailEnabled && (
+                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                  <div>
+                    <p className="font-medium text-foreground text-sm">Email frequency</p>
+                    <p className="text-xs text-muted-foreground">How often to batch alert emails</p>
+                  </div>
+                  <Select
+                    value={form.emailFrequency}
+                    onValueChange={(v) => patch({ emailFrequency: v as SubState["emailFrequency"] })}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="REALTIME">Realtime</SelectItem>
+                      <SelectItem value="DAILY">Daily</SelectItem>
+                      <SelectItem value="WEEKLY">Weekly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Severity threshold */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">Minimum severity</p>
+              <p className="text-xs text-muted-foreground">Only receive alerts at or above this severity level.</p>
+              <Select
+                value={form.severityThreshold}
+                onValueChange={(v) => patch({ severityThreshold: v as SubState["severityThreshold"] })}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LOW">Low</SelectItem>
+                  <SelectItem value="MEDIUM">Medium</SelectItem>
+                  <SelectItem value="HIGH">High</SelectItem>
+                  <SelectItem value="CRITICAL">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Separator />
+
+            {/* Regulatory bodies */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">Regulatory bodies</p>
+              <p className="text-xs text-muted-foreground">Receive alerts issued by these bodies.</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {REGULATORY_BODIES.map((body) => (
+                  <div key={body} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`body-${body}`}
+                      checked={form.regulatoryBodies.includes(body)}
+                      onCheckedChange={() => toggleBody(body)}
+                    />
+                    <Label htmlFor={`body-${body}`} className="text-sm font-normal cursor-pointer">
+                      {body}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Alert categories */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">Alert categories</p>
+              <p className="text-xs text-muted-foreground">Only notify me about alerts in these categories.</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {ALERT_CATEGORIES.map((cat) => (
+                  <div key={cat} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`cat-${cat}`}
+                      checked={form.categories.includes(cat)}
+                      onCheckedChange={() => toggleCategory(cat)}
+                    />
+                    <Label htmlFor={`cat-${cat}`} className="text-sm font-normal cursor-pointer">
+                      {CATEGORY_LABELS[cat]}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Save button */}
+            <div className="flex justify-end pt-2">
+              <Button
+                onClick={() => saveMutation.mutate(form)}
+                disabled={!isDirty || saveMutation.isPending}
+                size="sm"
+              >
+                {saveMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                Save changes
+              </Button>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// -----------------------------------------------------------------------------
 
 interface CategoryPref {
   id: string;
@@ -150,7 +414,7 @@ export default function NotificationSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Specific Email Alerts (DB-backed — unchanged) */}
+        {/* Specific Email Alerts (DB-backed - unchanged) */}
         <Card className="border-border/50 bg-card/50 backdrop-blur">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -274,7 +538,7 @@ export default function NotificationSettingsPage() {
                     />
                   </div>
 
-                  {/* Frequency options — greyed out when digest is disabled */}
+                  {/* Frequency options - greyed out when digest is disabled */}
                   {(["daily", "weekly", "monthly"] as const).map((freq) => {
                     const labels: Record<string, string> = {
                       daily: "Daily Digest",
@@ -404,6 +668,9 @@ export default function NotificationSettingsPage() {
                 })}
           </CardContent>
         </Card>
+
+        {/* Regulatory Alert Subscriptions */}
+        <AlertSubscriptionSection />
 
       </div>
     </div>

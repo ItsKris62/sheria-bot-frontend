@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
+import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -43,11 +43,12 @@ import {
   Hash,
   Sparkles,
   Zap,
-  X,
+  ExternalLink,
 } from "lucide-react"
 import { useAuthStore } from "@/lib/auth-store"
 import { useAuth } from "@/hooks/use-auth"
 import { useUnreadCount, useNotifications, useNotificationActions } from "@/hooks/use-notifications"
+import { useAlertNotifications } from "@/hooks/use-alert-notifications"
 import { useProfile } from "@/hooks/use-user"
 import { useSidebar } from "@/lib/sidebar-context"
 import { trpc } from "@/lib/trpc"
@@ -62,10 +63,9 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command"
 
-// ─── Enhanced Search Types & Helpers ────────────────────────────────────────
+// --- Enhanced Search Types & Helpers ----------------------------------------
 
 type SearchItemType = "page" | "action" | "setting" | "tool"
 
@@ -130,13 +130,11 @@ function buildSearchItems(
 ): SearchableItem[] {
   const items: SearchableItem[] = []
 
-  // ── Navigation pages from sidebar nav ──
   const navGroups =
     userType === "admin" ? adminNav :
     userType === "regulator" ? regulatorNav : startupNav
 
   const pageDescriptions: Record<string, string> = {
-    // Admin
     "/admin": "Overview of platform metrics and activity",
     "/admin/analytics": "Platform-wide analytics and usage statistics",
     "/admin/users": "Manage user accounts, roles, and permissions",
@@ -149,7 +147,6 @@ function buildSearchItems(
     "/admin/audit-logs": "View security and activity audit trail",
     "/admin/security": "Platform security settings and policies",
     "/admin/system": "System configuration and maintenance",
-    // Regulator
     "/regulator": "Regulatory dashboard overview",
     "/regulator/policy-generator": "Generate regulatory policies with AI",
     "/regulator/legal-corpus": "Browse and search legal documents",
@@ -157,7 +154,6 @@ function buildSearchItems(
     "/regulator/collaboration": "Team collaboration workspace",
     "/regulator/analytics": "Regulatory analytics and insights",
     "/regulator/intelligence-feed": "Latest regulatory news and updates",
-    // Startup
     "/startup": "Startup compliance dashboard overview",
     "/startup/compliance-query": "Ask AI compliance questions",
     "/startup/checklists": "Compliance checklists and progress tracking",
@@ -184,7 +180,6 @@ function buildSearchItems(
     }
   }
 
-  // ── Quick actions (role-specific) ──
   if (userType === "startup") {
     items.push(
       {
@@ -268,7 +263,6 @@ function buildSearchItems(
     )
   }
 
-  // ── Settings (common to all roles) ──
   items.push(
     {
       id: "setting-profile",
@@ -332,7 +326,6 @@ function buildSearchItems(
     }
   )
 
-  // ── System actions ──
   items.push(
     {
       id: "system-support",
@@ -359,6 +352,8 @@ function buildSearchItems(
   return items
 }
 
+// --- Notification types ------------------------------------------------------
+
 interface NotificationItem {
   id: string
   type: string
@@ -369,18 +364,6 @@ interface NotificationItem {
   read: boolean
   readAt: Date | null
   createdAt: Date | string
-}
-
-/** Format a date as a relative time string (e.g. "5 minutes ago") */
-function relativeTime(dateStr: string | Date): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const minutes = Math.floor(diff / 60_000)
-  if (minutes < 1) return "just now"
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`
-  const days = Math.floor(hours / 24)
-  return `${days} day${days === 1 ? "" : "s"} ago`
 }
 
 type NotificationCategoryName = "SECURITY" | "COMPLIANCE" | "DOCUMENTS" | "ACCOUNT" | "SUPPORT" | "SYSTEM"
@@ -404,6 +387,43 @@ const CATEGORY_TABS: Array<{ value: NotificationCategoryName | "ALL"; label: str
   { value: "SYSTEM",     label: "System" },
 ]
 
+// --- Alert types -------------------------------------------------------------
+
+type AlertSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+
+const ALERT_SEVERITY_CONFIG: Record<AlertSeverity, { iconCls: string; bgCls: string; pillCls: string }> = {
+  CRITICAL: { iconCls: "text-red-600",    bgCls: "bg-red-500/10",    pillCls: "bg-red-500/10 text-red-600 border border-red-500/20" },
+  HIGH:     { iconCls: "text-orange-600", bgCls: "bg-orange-500/10", pillCls: "bg-orange-500/10 text-orange-600 border border-orange-500/20" },
+  MEDIUM:   { iconCls: "text-yellow-600", bgCls: "bg-yellow-500/10", pillCls: "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20" },
+  LOW:      { iconCls: "text-emerald-600", bgCls: "bg-emerald-500/10", pillCls: "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" },
+}
+
+interface AlertItem {
+  id: string
+  title: string
+  summary: string
+  regulatoryBody: string
+  severity: string
+  publishedAt: string | Date
+  isRead: boolean
+  notificationId: string | null
+}
+
+// --- Helpers -----------------------------------------------------------------
+
+function relativeTime(dateStr: string | Date): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const minutes = Math.floor(diff / 60_000)
+  if (minutes < 1) return "just now"
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`
+  const days = Math.floor(hours / 24)
+  return `${days} day${days === 1 ? "" : "s"} ago`
+}
+
+// --- Component ---------------------------------------------------------------
+
 interface DashboardHeaderProps {
   userType: "regulator" | "startup" | "admin"
 }
@@ -415,6 +435,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
   const [recentSearches, setRecentSearches] = useState<string[]>([])
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<NotificationCategoryName | "ALL">("ALL")
+  const [activePanel, setActivePanel] = useState<"NOTIFICATIONS" | "ALERTS">("NOTIFICATIONS")
   const authUser = useAuthStore((s) => s.user)
   const { logout } = useAuth()
   const { setMobileOpen } = useSidebar()
@@ -429,7 +450,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
     role: authUser?.role || userType.toUpperCase(),
   }
 
-  // Real notification data from the backend
+  // Existing notification data
   const { data: unreadData } = useUnreadCount()
   const { data: notifData, isLoading: isLoadingNotifs } = useNotifications({
     limit: 20,
@@ -440,10 +461,20 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
   const unreadCount = unreadData?.count ?? 0
   const notificationList = (notifData?.items ?? []) as NotificationItem[]
 
-  // ── Enhanced search: build searchable items ──
+  // Alert data
+  const { alertUnreadCount, markAllAsRead: markAllAlertsAsRead, isMarkingAllAsRead: isMarkingAllAlertsAsRead } = useAlertNotifications()
+  const { data: alertsData, isLoading: isLoadingAlerts } = trpc.alert.getAlerts.useQuery(
+    { page: 1, limit: 20 },
+    { enabled: activePanel === "ALERTS" }
+  )
+  const alertList = ((alertsData as { alerts?: unknown[] } | undefined)?.alerts ?? []) as AlertItem[]
+
+  // Combined badge count
+  const totalUnreadCount = unreadCount + alertUnreadCount
+
+  // Search items
   const searchItems = useMemo(() => buildSearchItems(userType, logout), [userType, logout])
 
-  // Load recent searches on mount and when dialog opens
   useEffect(() => {
     if (searchOpen) {
       setRecentSearches(getRecentSearches())
@@ -483,10 +514,8 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
     setRecentSearches([])
   }, [])
 
-  // Group search items by their group for display
   const groupedItems = useMemo(() => {
     const groups = new Map<string, SearchableItem[]>()
-    // Ordering: Quick Actions first, then nav groups, then Settings, then System
     const order = ["Quick Actions", "Overview", "Compliance", "Policy Tools", "Management", "Collaboration", "Users", "Support", "Content", "System (Admin)", "Settings", "System"]
     for (const item of searchItems) {
       if (!groups.has(item.group)) groups.set(item.group, [])
@@ -496,7 +525,6 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
     for (const key of order) {
       if (groups.has(key)) sorted.set(key, groups.get(key)!)
     }
-    // Add any remaining groups not in the order
     for (const [key, value] of groups) {
       if (!sorted.has(key)) sorted.set(key, value)
     }
@@ -508,14 +536,21 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
     if (open) {
       utils.notification.list.invalidate()
       utils.notification.getUnreadCount.invalidate()
+      utils.alert.getUnreadCount.invalidate()
     }
+  }
+
+  function handleAlertClick(alertId: string) {
+    setNotificationsOpen(false)
+    utils.alert.getAlerts.invalidate()
+    utils.alert.getUnreadCount.invalidate()
+    router.push(`/dashboard/alerts/${alertId}`)
   }
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-xl">
-      {/* Left side - Hamburger (mobile) + Search */}
+      {/* Left side */}
       <div className="flex items-center gap-2">
-        {/* Mobile hamburger — opens sidebar drawer */}
         <Button
           variant="ghost"
           size="icon"
@@ -533,7 +568,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
           <Search className="h-4 w-4" />
           <span>Search...</span>
           <kbd className="ml-auto hidden rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground lg:inline-block">
-            <span className="text-xs">⌘</span>K
+            <span className="text-xs">-</span>K
           </kbd>
         </Button>
         <Button
@@ -547,16 +582,16 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
         </Button>
       </div>
 
-      {/* Right side - Actions */}
+      {/* Right side */}
       <div className="flex items-center gap-2">
-        {/* Notifications */}
+        {/* Notifications + Alerts Sheet */}
         <Sheet open={notificationsOpen} onOpenChange={handlePanelOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
+              {totalUnreadCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-[10px] font-medium text-primary-foreground">
-                  {unreadCount > 99 ? "99+" : unreadCount}
+                  {totalUnreadCount > 99 ? "99+" : totalUnreadCount}
                 </span>
               )}
               <span className="sr-only">Notifications</span>
@@ -564,96 +599,200 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
           </SheetTrigger>
           <SheetContent className="w-full sm:w-[28rem]">
             <SheetHeader>
-              <SheetTitle className="flex items-center justify-between">
-                Notifications
-                <div className="flex items-center gap-2">
+              <SheetTitle>Notifications</SheetTitle>
+            </SheetHeader>
+
+            {/* Panel switcher */}
+            <div className="mt-4 grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+              <button
+                onClick={() => setActivePanel("NOTIFICATIONS")}
+                className={`flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] ${
+                  activePanel === "NOTIFICATIONS"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Updates
+                {unreadCount > 0 && (
+                  <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setActivePanel("ALERTS")}
+                className={`flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] ${
+                  activePanel === "ALERTS"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Regulatory Alerts
+                {alertUnreadCount > 0 && (
+                  <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-medium text-destructive-foreground">
+                    {alertUnreadCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* -- NOTIFICATIONS PANEL -- */}
+            {activePanel === "NOTIFICATIONS" && (
+              <>
+                <div className="mt-3 flex items-center justify-between">
                   {unreadCount > 0 && (
-                    <Badge variant="secondary">{unreadCount} new</Badge>
+                    <>
+                      <Badge variant="secondary">{unreadCount} new</Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-muted-foreground"
+                        onClick={() => markAllAsRead()}
+                        disabled={isMarkingAllAsRead}
+                      >
+                        {isMarkingAllAsRead && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                        Mark all read
+                      </Button>
+                    </>
                   )}
-                  {unreadCount > 0 && (
+                </div>
+
+                {/* Category filter tabs */}
+                <div className="mt-3 flex flex-wrap gap-1 border-b border-border pb-3">
+                  {CATEGORY_TABS.map((tab) => (
+                    <button
+                      key={tab.value}
+                      onClick={() => setActiveCategory(tab.value)}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                        activeCategory === tab.value
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-muted/70"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <ScrollArea className="mt-4 h-[calc(100vh-16rem)]">
+                  <div className="flex flex-col gap-2">
+                    {isLoadingNotifs ? (
+                      <div className="flex items-center justify-center py-8 text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        Loading...
+                      </div>
+                    ) : notificationList.length === 0 ? (
+                      <p className="py-8 text-center text-sm text-muted-foreground">No notifications yet</p>
+                    ) : (
+                      notificationList.map((notification) => {
+                        const catName = (notification.category ?? "SYSTEM") as NotificationCategoryName
+                        const config = CATEGORY_CONFIG[catName] ?? CATEGORY_CONFIG.SYSTEM
+                        const isUnread = !notification.read
+                        const Icon = config.Icon
+                        return (
+                          <div
+                            key={notification.id}
+                            className={`flex gap-3 rounded-lg p-3 transition-colors ${isUnread ? "bg-muted/50" : "bg-transparent"}`}
+                          >
+                            <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${config.bgCls} ${config.iconCls}`}>
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-foreground text-sm">{notification.title}</p>
+                              <p className="text-sm text-muted-foreground truncate">{notification.message}</p>
+                              <p className="mt-1 text-xs text-muted-foreground">{relativeTime(notification.createdAt)}</p>
+                            </div>
+                            {isUnread && <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-2" />}
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </ScrollArea>
+              </>
+            )}
+
+            {/* -- ALERTS PANEL -- */}
+            {activePanel === "ALERTS" && (
+              <>
+                <div className="mt-3 flex items-center justify-between">
+                  {alertUnreadCount > 0 && (
+                    <>
+                      <Badge variant="secondary">{alertUnreadCount} unread</Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-muted-foreground"
+                        onClick={() => markAllAlertsAsRead()}
+                        disabled={isMarkingAllAlertsAsRead}
+                      >
+                        {isMarkingAllAlertsAsRead && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                        Mark all read
+                      </Button>
+                    </>
+                  )}
+                </div>
+
+                <ScrollArea className="mt-4 h-[calc(100vh-14rem)]">
+                  <div className="flex flex-col gap-2">
+                    {isLoadingAlerts ? (
+                      <div className="flex items-center justify-center py-8 text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        Loading...
+                      </div>
+                    ) : alertList.length === 0 ? (
+                      <p className="py-8 text-center text-sm text-muted-foreground">No regulatory alerts</p>
+                    ) : (
+                      alertList.map((alert) => {
+                        const severity = (alert.severity ?? "MEDIUM") as AlertSeverity
+                        const cfg = ALERT_SEVERITY_CONFIG[severity] ?? ALERT_SEVERITY_CONFIG.MEDIUM
+                        return (
+                          <button
+                            key={alert.id}
+                            onClick={() => handleAlertClick(alert.id)}
+                            className={`w-full text-left flex gap-3 rounded-lg p-3 transition-colors hover:bg-muted/60 ${!alert.isRead ? "bg-muted/40" : "bg-transparent"}`}
+                          >
+                            <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${cfg.bgCls} ${cfg.iconCls}`}>
+                              <Megaphone className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                                <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${cfg.pillCls}`}>
+                                  {severity}
+                                </span>
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                                  {alert.regulatoryBody}
+                                </span>
+                              </div>
+                              <p className="font-medium text-foreground text-sm leading-snug line-clamp-2">
+                                {alert.title}
+                              </p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {relativeTime(alert.publishedAt)}
+                              </p>
+                            </div>
+                            {!alert.isRead && <div className="h-2 w-2 rounded-full bg-destructive shrink-0 mt-2" />}
+                          </button>
+                        )
+                      })
+                    )}
+                  </div>
+
+                  {/* View all link */}
+                  <div className="mt-3 border-t border-border pt-3">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs text-muted-foreground"
-                      onClick={() => markAllAsRead()}
-                      disabled={isMarkingAllAsRead}
+                      className="w-full text-muted-foreground text-xs"
+                      onClick={() => { setNotificationsOpen(false); router.push("/dashboard/alerts") }}
                     >
-                      {isMarkingAllAsRead ? (
-                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                      ) : null}
-                      Mark all read
+                      <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                      View all regulatory alerts
                     </Button>
-                  )}
-                </div>
-              </SheetTitle>
-            </SheetHeader>
-
-            {/* Category filter tabs */}
-            <div className="mt-4 flex flex-wrap gap-1 border-b border-border pb-3">
-              {CATEGORY_TABS.map((tab) => (
-                <button
-                  key={tab.value}
-                  onClick={() => setActiveCategory(tab.value)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                    activeCategory === tab.value
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/70"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <ScrollArea className="mt-4 h-[calc(100vh-12rem)]">
-              <div className="flex flex-col gap-2">
-                {isLoadingNotifs ? (
-                  <div className="flex items-center justify-center py-8 text-muted-foreground">
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                    Loading…
                   </div>
-                ) : notificationList.length === 0 ? (
-                  <p className="py-8 text-center text-sm text-muted-foreground">
-                    No notifications yet
-                  </p>
-                ) : (
-                  notificationList.map((notification) => {
-                    const catName = (notification.category ?? "SYSTEM") as NotificationCategoryName
-                    const config = CATEGORY_CONFIG[catName] ?? CATEGORY_CONFIG.SYSTEM
-                    const isUnread = !notification.read
-                    const Icon = config.Icon
-                    return (
-                      <div
-                        key={notification.id}
-                        className={`flex gap-3 rounded-lg p-3 transition-colors ${
-                          isUnread ? "bg-muted/50" : "bg-transparent"
-                        }`}
-                      >
-                        <div
-                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${config.bgCls} ${config.iconCls}`}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground text-sm">
-                            {notification.title}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {notification.message}
-                          </p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {relativeTime(notification.createdAt)}
-                          </p>
-                        </div>
-                        {isUnread && (
-                          <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-2" />
-                        )}
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </ScrollArea>
+                </ScrollArea>
+              </>
+            )}
           </SheetContent>
         </Sheet>
 
@@ -717,7 +856,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
 
       <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
         <CommandInput
-          placeholder="Search pages, actions, settings…"
+          placeholder="Search pages, actions, settings..."
           value={searchQuery}
           onValueChange={setSearchQuery}
         />
@@ -726,13 +865,10 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
             <div className="flex flex-col items-center gap-2 py-4">
               <Search className="h-10 w-10 text-muted-foreground/40" />
               <p className="text-sm font-medium text-muted-foreground">No results found</p>
-              <p className="text-xs text-muted-foreground/70">
-                Try searching for pages, settings, or actions
-              </p>
+              <p className="text-xs text-muted-foreground/70">Try searching for pages, settings, or actions</p>
             </div>
           </CommandEmpty>
 
-          {/* Recent searches — shown only when query is empty */}
           {!searchQuery && recentSearches.length > 0 && (
             <CommandGroup heading={
               <span className="flex items-center justify-between w-full">
@@ -762,7 +898,6 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
             </CommandGroup>
           )}
 
-          {/* Suggested searches — shown when query is empty and no recents */}
           {!searchQuery && recentSearches.length === 0 && (
             <CommandGroup heading={
               <span className="flex items-center gap-1.5">
@@ -799,7 +934,6 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
             </CommandGroup>
           )}
 
-          {/* All searchable items — grouped */}
           {Array.from(groupedItems.entries()).map(([groupName, items], idx) => (
             <React.Fragment key={groupName}>
               {idx > 0 && <CommandSeparator />}
@@ -836,15 +970,14 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
             </React.Fragment>
           ))}
 
-          {/* Footer hint */}
           <div className="flex items-center justify-between border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
-                <kbd className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium">↑↓</kbd>
+                <kbd className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium">--</kbd>
                 navigate
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium">↵</kbd>
+                <kbd className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium">-</kbd>
                 select
               </span>
               <span className="flex items-center gap-1">
