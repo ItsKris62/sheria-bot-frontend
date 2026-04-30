@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,7 +49,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useAdminUsers, useAdminActions, useAdminStats } from "@/hooks/use-admin"
-import { trpc } from "@/lib/trpc"
+import { getErrorMessage, trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import {
   Dialog,
@@ -94,6 +95,19 @@ function UserRowSkeleton() {
 
 type BulkAction = "suspend" | "activate" | "tier"
 type TierValue = "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE"
+type CreateUserRole = "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN"
+
+const EMPTY_ORGANIZATION_VALUE = "__none__"
+
+const initialCreateForm = {
+  email: "",
+  fullName: "",
+  password: "",
+  role: "STARTUP" as CreateUserRole,
+  organizationId: "",
+  organizationName: "",
+  isPilot: false,
+}
 
 export default function UsersPage() {
   const [search, setSearch] = useState("")
@@ -102,7 +116,7 @@ export default function UsersPage() {
   const [page, setPage] = useState(1)
   const [pendingUserId, setPendingUserId] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
-  const [createForm, setCreateForm] = useState({ email: "", fullName: "", password: "", role: "STARTUP" })
+  const [createForm, setCreateForm] = useState(initialCreateForm)
   const limit = 20
 
   // Bulk selection state
@@ -121,6 +135,10 @@ export default function UsersPage() {
   const { disableUser, enableUser, isDisabling, isEnabling } = useAdminActions()
 
   const utils = trpc.useUtils()
+  const { data: organizationOptions, isLoading: organizationsLoading } = trpc.admin.listOrganizations.useQuery(
+    undefined,
+    { enabled: createOpen }
+  )
 
   const bulkStatusMutation = trpc.admin.bulkUpdateUserStatus.useMutation({
     onSuccess: (result) => {
@@ -146,10 +164,11 @@ export default function UsersPage() {
     onSuccess: () => {
       toast.success("User created successfully")
       setCreateOpen(false)
-      setCreateForm({ email: "", fullName: "", password: "", role: "STARTUP" })
+      setCreateForm(initialCreateForm)
       void utils.admin.listUsers.invalidate()
+      void utils.admin.listOrganizations.invalidate()
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   const deleteUserMutation = trpc.admin.deleteUser.useMutation({
@@ -175,6 +194,26 @@ export default function UsersPage() {
 
   const allPageIds = users.map((u) => u.id)
   const allPageSelected = allPageIds.length > 0 && allPageIds.every((id) => selectedIds.has(id))
+  const organizations = organizationOptions ?? []
+  const createUserDisabled =
+    !createForm.email ||
+    !createForm.fullName ||
+    createForm.password.length < 8 ||
+    (createForm.isPilot && createForm.organizationName.trim().length < 2) ||
+    createUserMutation.isPending
+
+  function submitCreateUser() {
+    createUserMutation.mutate({
+      email: createForm.email,
+      fullName: createForm.fullName,
+      password: createForm.password,
+      role: createForm.role,
+      organizationId: createForm.isPilot ? undefined : createForm.organizationId || undefined,
+      organizationName: createForm.isPilot ? createForm.organizationName.trim() || undefined : undefined,
+      isPilot: createForm.isPilot,
+      sendWelcomeEmail: false,
+    })
+  }
 
   function toggleSelectAll() {
     if (allPageSelected) {
@@ -556,7 +595,7 @@ export default function UsersPage() {
             </div>
             <div className="space-y-1">
               <Label>Role</Label>
-              <Select value={createForm.role} onValueChange={(v) => setCreateForm((f) => ({ ...f, role: v }))}>
+              <Select value={createForm.role} onValueChange={(v) => setCreateForm((f) => ({ ...f, role: v as CreateUserRole }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -568,16 +607,71 @@ export default function UsersPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="flex items-center justify-between rounded-md border p-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="pilotTester">Pilot tester</Label>
+                <p className="text-xs text-muted-foreground">Auto-create an organization for this pilot account.</p>
+              </div>
+              <Switch
+                id="pilotTester"
+                checked={createForm.isPilot}
+                onCheckedChange={(checked) =>
+                  setCreateForm((f) => ({
+                    ...f,
+                    isPilot: checked,
+                    organizationId: checked ? "" : f.organizationId,
+                    organizationName: checked ? f.organizationName : "",
+                  }))
+                }
+              />
+            </div>
+            {createForm.isPilot ? (
+              <div className="space-y-1">
+                <Label>Organization Name</Label>
+                <Input
+                  placeholder="Acme Pilot Org"
+                  value={createForm.organizationName}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, organizationName: e.target.value }))}
+                />
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <Label>Organization</Label>
+                <Select
+                  value={createForm.organizationId || EMPTY_ORGANIZATION_VALUE}
+                  onValueChange={(value) =>
+                    setCreateForm((f) => ({
+                      ...f,
+                      organizationId: value === EMPTY_ORGANIZATION_VALUE ? "" : value,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={organizationsLoading ? "Loading organizations..." : "Select organization"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={EMPTY_ORGANIZATION_VALUE}>No organization</SelectItem>
+                    {organizations.map((organization) => (
+                      <SelectItem key={organization.id} value={organization.id}>
+                        {organization.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {!organizationsLoading && organizations.length === 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    No organizations exist yet. Create one before adding a user, or toggle Pilot tester to auto-create.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
             <Button
               className="bg-secondary hover:bg-[#007a50]"
-              disabled={!createForm.email || !createForm.fullName || createForm.password.length < 8 || createUserMutation.isPending}
-              onClick={() => createUserMutation.mutate({
-                  ...createForm,
-                  role: createForm.role as "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN",
-                })}
+              disabled={createUserDisabled}
+              onClick={submitCreateUser}
             >
               {createUserMutation.isPending ? "Creating..." : "Create User"}
             </Button>

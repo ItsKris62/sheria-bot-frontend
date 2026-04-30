@@ -784,7 +784,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
                       variant="ghost"
                       size="sm"
                       className="w-full text-muted-foreground text-xs"
-                      onClick={() => { setNotificationsOpen(false); router.push("/dashboard/alerts") }}
+                      onClick={() => { setNotificationsOpen(false); router.push(userType === "admin" ? "/admin/alerts" : "/dashboard/alerts") }}
                     >
                       <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                       View all regulatory alerts

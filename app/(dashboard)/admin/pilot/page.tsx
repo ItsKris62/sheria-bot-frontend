@@ -38,7 +38,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react"
-import { trpc } from "@/lib/trpc"
+import { getErrorMessage, trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 
 // ─── Local types ──────────────────────────────────────────────────────────────
@@ -166,7 +166,10 @@ function StatCard({ title, value, icon: Icon, loading, sub, highlight }: StatCar
 
 // ─── Create User Profile Dialog ───────────────────────────────────────────────
 
+const NEW_ORGANIZATION_VALUE = "__new__"
+
 function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
+  const utils = trpc.useUtils()
   const [open, setOpen] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
@@ -175,18 +178,34 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
     password: "",
     role: "STARTUP" as "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN",
     organizationId: "",
+    organizationName: "",
     sendWelcomeEmail: true,
   })
+  const { data: organizationOptions, isLoading: organizationsLoading } = trpc.admin.listOrganizations.useQuery(
+    undefined,
+    { enabled: open }
+  )
+  const organizations = organizationOptions ?? []
+  const creatingNewOrganization = !form.organizationId
 
   const createUserMutation = trpc.admin.createUser.useMutation({
     onSuccess: () => {
       toast.success("User profile created successfully")
       setOpen(false)
-      setForm({ email: "", fullName: "", password: "", role: "STARTUP", organizationId: "", sendWelcomeEmail: true })
+      setForm({
+        email: "",
+        fullName: "",
+        password: "",
+        role: "STARTUP",
+        organizationId: "",
+        organizationName: "",
+        sendWelcomeEmail: true,
+      })
+      void utils.admin.listOrganizations.invalidate()
       onSuccess()
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to create user profile")
+      toast.error(getErrorMessage(err))
     },
   })
 
@@ -200,12 +219,18 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
       toast.error("Password must be at least 8 characters")
       return
     }
+    if (creatingNewOrganization && form.organizationName.trim().length < 2) {
+      toast.error("Organization name must be at least 2 characters")
+      return
+    }
     createUserMutation.mutate({
       email: form.email,
       fullName: form.fullName,
       password: form.password,
       role: form.role,
       organizationId: form.organizationId || undefined,
+      organizationName: creatingNewOrganization ? form.organizationName.trim() || undefined : undefined,
+      isPilot: true,
       sendWelcomeEmail: form.sendWelcomeEmail,
     })
   }
@@ -292,14 +317,46 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="orgId">Organization ID <span className="text-muted-foreground text-xs">(optional)</span></Label>
-              <Input
-                id="orgId"
-                placeholder="org_..."
-                value={form.organizationId}
-                onChange={(e) => setForm((f) => ({ ...f, organizationId: e.target.value }))}
-              />
+              <Label htmlFor="orgId">Organization</Label>
+              <Select
+                value={form.organizationId || NEW_ORGANIZATION_VALUE}
+                onValueChange={(value) =>
+                  setForm((f) => ({
+                    ...f,
+                    organizationId: value === NEW_ORGANIZATION_VALUE ? "" : value,
+                  }))
+                }
+              >
+                <SelectTrigger id="orgId">
+                  <SelectValue placeholder={organizationsLoading ? "Loading organizations..." : "Select organization"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NEW_ORGANIZATION_VALUE}>Create new organization</SelectItem>
+                  {organizations.map((organization) => (
+                    <SelectItem key={organization.id} value={organization.id}>
+                      {organization.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            {creatingNewOrganization && (
+              <div className="col-span-2 space-y-1.5">
+                <Label htmlFor="orgName">New Organization Name <span className="text-destructive">*</span></Label>
+                <Input
+                  id="orgName"
+                  placeholder="Acme Pilot Org"
+                  value={form.organizationName}
+                  onChange={(e) => setForm((f) => ({ ...f, organizationName: e.target.value }))}
+                />
+                {!organizationsLoading && organizations.length === 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    No organizations exist yet. Enter a name to auto-create one for this pilot tester.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2 pt-1">
@@ -319,7 +376,11 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={createUserMutation.isPending}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createUserMutation.isPending} className="gap-2">
+            <Button
+              type="submit"
+              disabled={createUserMutation.isPending || (creatingNewOrganization && form.organizationName.trim().length < 2)}
+              className="gap-2"
+            >
               {createUserMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {createUserMutation.isPending ? "Creating..." : "Create Profile"}
             </Button>

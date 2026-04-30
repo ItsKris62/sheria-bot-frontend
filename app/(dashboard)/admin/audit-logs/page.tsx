@@ -15,11 +15,19 @@ type TypeConfigEntry = { label: string; icon: React.ElementType; color: string }
 const typeConfig: Record<string, TypeConfigEntry> = {
   QUERY:     { label: "Query",    icon: Activity, color: "bg-blue-100 text-blue-700" },
   SETTINGS:  { label: "Settings", icon: Settings, color: "bg-yellow-100 text-yellow-700" },
+  SYSTEM:    { label: "System",   icon: Settings, color: "bg-yellow-100 text-yellow-700" },
   DOCUMENT:  { label: "Document", icon: FileText,  color: "bg-gray-100 text-gray-600" },
+  LEGALDOCUMENT: { label: "Legal Doc", icon: FileText, color: "bg-gray-100 text-gray-600" },
   AUTH:      { label: "Auth",     icon: Shield,    color: "bg-purple-100 text-purple-700" },
   POLICY:    { label: "Policy",   icon: FileText,  color: "bg-gray-100 text-gray-600" },
   USER:      { label: "User",     icon: User,      color: "bg-emerald-100 text-emerald-700" },
   ORGANIZATION: { label: "Org",  icon: Activity,  color: "bg-indigo-100 text-indigo-700" },
+  GAPANALYSIS: { label: "Gap Analysis", icon: Activity, color: "bg-teal-100 text-teal-700" },
+  CHECKLIST: { label: "Checklist", icon: FileText, color: "bg-orange-100 text-orange-700" },
+  CONTACT:   { label: "Contact",  icon: User,      color: "bg-pink-100 text-pink-700" },
+  FEATUREFLAG: { label: "Feature", icon: Settings, color: "bg-rose-100 text-rose-700" },
+  INVITATION: { label: "Invitation", icon: User, color: "bg-cyan-100 text-cyan-700" },
+  RESOURCE:  { label: "Resource", icon: FileText, color: "bg-blue-100 text-blue-700" },
 }
 function getConfig(entityType?: string | null): TypeConfigEntry {
   return typeConfig[(entityType ?? "").toUpperCase()] ?? { label: entityType ?? "Other", icon: Activity, color: "bg-gray-100 text-gray-600" }
@@ -52,8 +60,8 @@ export default function AuditLogsPage() {
     ...(entityTypeFilter !== "all" ? { entityType: entityTypeFilter } : {}),
     ...(actionFilter ? { action: actionFilter } : {}),
     ...(userIdFilter ? { userId: userIdFilter } : {}),
-    ...(dateFrom ? { dateFrom: new Date(dateFrom).toISOString() } : {}),
-    ...(dateTo ? { dateTo: new Date(dateTo).toISOString() } : {}),
+    ...(dateFrom ? { dateFrom: new Date(`${dateFrom}T00:00:00.000Z`).toISOString() } : {}),
+    ...(dateTo ? { dateTo: new Date(`${dateTo}T23:59:59.999Z`).toISOString() } : {}),
   })
 
   const exportMutation = trpc.admin.exportAuditLogs.useMutation({
@@ -81,8 +89,8 @@ export default function AuditLogsPage() {
       ...(actionFilter ? { action: actionFilter } : {}),
       ...(userIdFilter ? { userId: userIdFilter } : {}),
       // Zod schema expects ISO datetime strings, not Date objects
-      ...(dateFrom ? { dateFrom: new Date(dateFrom).toISOString() } : {}),
-      ...(dateTo ? { dateTo: new Date(dateTo).toISOString() } : {}),
+      ...(dateFrom ? { dateFrom: new Date(`${dateFrom}T00:00:00.000Z`).toISOString() } : {}),
+      ...(dateTo ? { dateTo: new Date(`${dateTo}T23:59:59.999Z`).toISOString() } : {}),
     })
   }
 
@@ -132,8 +140,15 @@ export default function AuditLogsPage() {
                 <SelectItem value="User">User</SelectItem>
                 <SelectItem value="Organization">Organization</SelectItem>
                 <SelectItem value="Document">Document</SelectItem>
+                <SelectItem value="LegalDocument">Legal Document</SelectItem>
                 <SelectItem value="Policy">Policy</SelectItem>
                 <SelectItem value="System">System</SelectItem>
+                <SelectItem value="GapAnalysis">Gap Analysis</SelectItem>
+                <SelectItem value="Checklist">Checklist</SelectItem>
+                <SelectItem value="Contact">Contact</SelectItem>
+                <SelectItem value="FeatureFlag">Feature Flag</SelectItem>
+                <SelectItem value="Invitation">Invitation</SelectItem>
+                <SelectItem value="Resource">Resource</SelectItem>
               </SelectContent>
             </Select>
             <Input

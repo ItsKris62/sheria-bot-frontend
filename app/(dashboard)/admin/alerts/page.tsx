@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -97,6 +97,31 @@ export default function AdminAlertsPage() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [errors, setErrors] = useState<FormErrors>({})
   const [page, setPage] = useState(1)
+
+  // Load draft on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("admin-alert-draft")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed && Object.keys(parsed).length > 0) {
+          setForm(parsed)
+          setShowForm(true)
+        }
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+  }, [])
+
+  // Save draft on form changes
+  useEffect(() => {
+    if (form === EMPTY_FORM) {
+      localStorage.removeItem("admin-alert-draft")
+    } else {
+      localStorage.setItem("admin-alert-draft", JSON.stringify(form))
+    }
+  }, [form])
 
   const utils = trpc.useUtils()
 

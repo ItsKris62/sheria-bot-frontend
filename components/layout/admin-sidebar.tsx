@@ -28,6 +28,7 @@ import {
   Lock,
   Rocket,
   Megaphone,
+  Mail,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -74,6 +75,12 @@ export const adminNav: AdminNavGroup[] = [
       { title: "Knowledge Base", href: "/admin/content/knowledge-base", icon: BookOpen },
       { title: "Blog", href: "/admin/content/blog", icon: Newspaper },
       { title: "Regulatory Alerts", href: "/admin/alerts", icon: Megaphone },
+    ],
+  },
+  {
+    title: "Marketing",
+    items: [
+      { title: "Campaigns", href: "/admin/marketing/campaigns", icon: Mail },
     ],
   },
   {
