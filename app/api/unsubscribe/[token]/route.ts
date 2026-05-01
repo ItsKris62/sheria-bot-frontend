@@ -5,7 +5,7 @@
  * clicks the native "Unsubscribe" button in the email header.
  *
  * The email must include:
- *   List-Unsubscribe: <https://app.sheriabot.com/unsubscribe/{token}>
+ *   List-Unsubscribe: <https://app.sheriabot.com/api/unsubscribe/{token}>
  *   List-Unsubscribe-Post: List-Unsubscribe=One-Click
  */
 
