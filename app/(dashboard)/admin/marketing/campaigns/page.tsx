@@ -72,6 +72,22 @@ interface FieldDef {
   default?: string | number;
 }
 
+interface CampaignListItem {
+  id: string;
+  name: string;
+  templateKey: string;
+  status: string;
+  totalRecipients: number;
+  totalSent: number;
+  createdAt: string | Date;
+}
+
+interface ContactListSummary {
+  id: string;
+  name: string;
+  _count: { memberships: number };
+}
+
 // ---------------------------------------------------------------------------
 // Template variable field definitions
 // ---------------------------------------------------------------------------
@@ -261,7 +277,8 @@ function NewCampaignDialog({
   }
 
   const fields = templateKey ? TEMPLATE_VARIABLE_FIELDS[templateKey as TemplateKey] : [];
-  const selectedList = listsData?.items.find((l) => l.id === listId);
+  const listItems = (listsData?.items ?? []) as ContactListSummary[];
+  const selectedList = listItems.find((l) => l.id === listId);
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
@@ -335,7 +352,7 @@ function NewCampaignDialog({
                   <SelectValue placeholder="Select a list" />
                 </SelectTrigger>
                 <SelectContent>
-                  {listsData?.items.map((l) => (
+                  {listItems.map((l) => (
                     <SelectItem key={l.id} value={l.id}>
                       {l.name} ({l._count.memberships} members)
                     </SelectItem>
@@ -419,7 +436,7 @@ export default function CampaignsPage() {
     onError: (err) => toast.error(err.message),
   });
 
-  const campaigns = data?.items ?? [];
+  const campaigns = (data?.items ?? []) as CampaignListItem[];
   const total     = data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 

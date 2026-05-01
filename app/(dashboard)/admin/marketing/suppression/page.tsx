@@ -33,6 +33,13 @@ const REASON_COLORS: Record<SuppressionReason, string> = {
   MANUAL:       "bg-gray-100 text-gray-700",
 };
 
+interface SuppressionItem {
+  id: string;
+  email: string;
+  reason: string;
+  addedAt: string | Date;
+}
+
 // ---------------------------------------------------------------------------
 // Add Suppression Dialog
 // ---------------------------------------------------------------------------
@@ -108,7 +115,7 @@ export default function SuppressionPage() {
     onError: (err) => toast.error(err.message),
   });
 
-  const items      = data?.items ?? [];
+  const items      = (data?.items ?? []) as SuppressionItem[];
   const total      = data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 

@@ -35,6 +35,33 @@ const CONSENT_COLORS: Record<ConsentStatus, string> = {
   REVOKED: "bg-red-100 text-red-700",
 };
 
+interface ContactItem {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  company?: { name: string } | null;
+  consentStatus: string;
+  suppressedAt?: string | Date | null;
+  lastEmailedAt?: string | Date | null;
+  phone?: string | null;
+  role?: string | null;
+  companyId?: string | null;
+}
+
+interface ConsentRecord {
+  id: string;
+  action: string;
+  source: string;
+  occurredAt: string | Date;
+}
+
+interface EmailHistoryItem {
+  id: string;
+  eventType: string;
+  occurredAt: string | Date;
+}
+
 // ---------------------------------------------------------------------------
 // CSV Import Dialog
 // ---------------------------------------------------------------------------
@@ -248,7 +275,7 @@ function ContactSheet({ contactId, onClose }: { contactId: string | null; onClos
               <div>
                 <p className="text-sm font-medium mb-2">Consent History</p>
                 <div className="space-y-1">
-                  {data.consentRecords.map((r) => (
+                  {(data.consentRecords as ConsentRecord[]).map((r) => (
                     <div key={r.id} className="text-xs text-muted-foreground flex justify-between">
                       <span>{r.action} via {r.source}</span>
                       <span>{new Date(r.occurredAt).toLocaleDateString()}</span>
@@ -261,7 +288,7 @@ function ContactSheet({ contactId, onClose }: { contactId: string | null; onClos
               <div>
                 <p className="text-sm font-medium mb-2">Email History</p>
                 <div className="space-y-1">
-                  {history.items.map((e) => (
+                  {(history.items as EmailHistoryItem[]).map((e) => (
                     <div key={e.id} className="text-xs text-muted-foreground flex justify-between">
                       <span>{e.eventType}</span>
                       <span>{new Date(e.occurredAt).toLocaleDateString()}</span>
@@ -308,7 +335,7 @@ export default function ContactsPage() {
     onError: (err) => toast.error(err.message),
   });
 
-  const contacts   = data?.items ?? [];
+  const contacts   = (data?.items ?? []) as ContactItem[];
   const total      = data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 

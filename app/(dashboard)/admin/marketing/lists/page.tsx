@@ -22,6 +22,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Eye, Edit2, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 
+interface ContactListItem {
+  id: string;
+  name: string;
+  isDynamic: boolean;
+  createdAt: string | Date;
+  _count: { memberships: number };
+}
+
 // ---------------------------------------------------------------------------
 // New List Dialog
 // ---------------------------------------------------------------------------
@@ -159,7 +167,7 @@ export default function ListsPage() {
     onError: (err) => toast.error(err.message),
   });
 
-  const lists      = data?.items ?? [];
+  const lists      = (data?.items ?? []) as ContactListItem[];
   const total      = data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
