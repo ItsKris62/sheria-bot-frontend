@@ -31,6 +31,7 @@ import {
   Mail,
   Loader2,
   Ban,
+  Copy,
 } from "lucide-react"
 
 // ---------------------------------------------------------------------------
@@ -56,7 +57,7 @@ type SendStatus =
 // Helpers
 // ---------------------------------------------------------------------------
 
-const RECIPIENT_LIMIT = 25
+const ASYNC_THRESHOLD = 25
 
 function statusBadge(status: CampaignStatus) {
   const map: Record<CampaignStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -150,7 +151,8 @@ function SendConfirmationDialog({ open, onClose, campaignId, onSuccess }: SendDi
     onClose()
   }
 
-  const overLimit = recipientCount > RECIPIENT_LIMIT
+  const isAsync   = recipientCount > ASYNC_THRESHOLD
+  const overLimit = false // B3: no hard cap — async handles large lists
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
@@ -213,12 +215,11 @@ function SendConfirmationDialog({ open, onClose, campaignId, onSuccess }: SendDi
               )}
             </div>
 
-            {overLimit && (
-              <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+            {isAsync && (
+              <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
                 <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>
-                  This list resolves to {recipientCount} contacts, but the B2 limit is {RECIPIENT_LIMIT}.
-                  Use a smaller list or split into segments.
+                  This campaign will be sent asynchronously to {recipientCount} contacts. Sends will be processed in batches over the next few minutes. You can monitor progress on this page.
                 </span>
               </div>
             )}
@@ -254,6 +255,100 @@ function SendConfirmationDialog({ open, onClose, campaignId, onSuccess }: SendDi
 }
 
 // ---------------------------------------------------------------------------
+// Async Progress Card (B3-7)
+// ---------------------------------------------------------------------------
+
+type JobStatus = "QUEUED" | "RUNNING" | "COMPLETED" | "PARTIALLY_COMPLETED" | "FAILED" | "CANCELLED"
+
+const TERMINAL_JOB_STATUSES: JobStatus[] = ["COMPLETED", "PARTIALLY_COMPLETED", "FAILED", "CANCELLED"]
+
+function AsyncProgressCard({ campaignId }: { campaignId: string }) {
+  const utils = trpc.useUtils()
+
+  const { data: job } = trpc.adminMarketing.campaigns.getJobStatus.useQuery(
+    { campaignId },
+    {
+      refetchInterval: (query) => {
+        const status = query.state.data?.status as JobStatus | undefined
+        if (status && TERMINAL_JOB_STATUSES.includes(status)) return false
+        return 5000
+      },
+    },
+  )
+
+  // When job reaches terminal state, refresh campaign data
+  if (job && TERMINAL_JOB_STATUSES.includes(job.status as JobStatus)) {
+    void utils.adminMarketing.campaigns.getById.invalidate({ id: campaignId })
+    void utils.adminMarketing.campaigns.getStats.invalidate({ campaignId })
+  }
+
+  if (!job) return null
+
+  const pct = job.totalContacts > 0
+    ? Math.round((job.processed / job.totalContacts) * 100)
+    : 0
+
+  const isTerminal = TERMINAL_JOB_STATUSES.includes(job.status as JobStatus)
+
+  return (
+    <Card className="border-blue-200 bg-blue-50/50">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2">
+          {isTerminal ? (
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          ) : (
+            <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+          )}
+          Async Send Progress
+          <span className={`ml-auto inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+            job.status === "COMPLETED" ? "bg-green-100 text-green-700" :
+            job.status === "PARTIALLY_COMPLETED" ? "bg-orange-100 text-orange-700" :
+            job.status === "FAILED" ? "bg-red-100 text-red-700" :
+            "bg-blue-100 text-blue-700"
+          }`}>{job.status.replace("_", " ")}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {/* Progress bar */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{job.processed} / {job.totalContacts} processed</span>
+            <span>{pct}%</span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-blue-100 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-blue-500 transition-all duration-500"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+        {/* Counts */}
+        <div className="grid grid-cols-3 gap-3 text-sm">
+          <div className="text-center">
+            <p className="text-lg font-bold text-green-600">{job.succeeded}</p>
+            <p className="text-xs text-muted-foreground">Succeeded</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold text-orange-500">{job.skipped}</p>
+            <p className="text-xs text-muted-foreground">Skipped</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold text-red-500">{job.failed}</p>
+            <p className="text-xs text-muted-foreground">Failed</p>
+          </div>
+        </div>
+        {job.errorMessage && (
+          <p className="text-xs text-red-600 bg-red-50 rounded p-2">{job.errorMessage}</p>
+        )}
+        {!isTerminal && (
+          <p className="text-xs text-muted-foreground">Refreshing every 5 seconds…</p>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main Page
 // ---------------------------------------------------------------------------
 
@@ -264,6 +359,15 @@ export default function CampaignDetailPage() {
   const utils    = trpc.useUtils()
 
   const [sendDialogOpen, setSendDialogOpen] = useState(false)
+
+  // ── Duplicate mutation ────────────────────────────────────────────────────
+  const duplicateMutation = trpc.adminMarketing.campaigns.duplicate.useMutation({
+    onSuccess: (data) => {
+      toast.success("Campaign duplicated as DRAFT")
+      router.push(`/admin/marketing/campaigns/${data.id}`)
+    },
+    onError: (err) => toast.error(err.message),
+  })
 
   // ── Queries ──────────────────────────────────────────────────────────────
   const { data: campaign, isLoading: campaignLoading } =
@@ -340,6 +444,18 @@ export default function CampaignDetailPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => duplicateMutation.mutate({ campaignId: id })}
+            disabled={duplicateMutation.isPending}
+          >
+            {duplicateMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <><Copy className="h-4 w-4 mr-1.5" />Duplicate</>
+            )}
+          </Button>
           {canCancel && (
             <Button
               variant="outline"
@@ -421,6 +537,11 @@ export default function CampaignDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Async send progress card (shown when SENDING) ──────────────── */}
+      {campaign.status === "SENDING" && (
+        <AsyncProgressCard campaignId={id} />
+      )}
 
       {/* ── Two-column layout ───────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

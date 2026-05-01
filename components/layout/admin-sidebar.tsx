@@ -29,6 +29,8 @@ import {
   Rocket,
   Megaphone,
   Mail,
+  ListFilter,
+  Ban,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -80,7 +82,10 @@ export const adminNav: AdminNavGroup[] = [
   {
     title: "Marketing",
     items: [
-      { title: "Campaigns", href: "/admin/marketing/campaigns", icon: Mail },
+      { title: "Campaigns",   href: "/admin/marketing/campaigns",   icon: Mail       },
+      { title: "Contacts",    href: "/admin/marketing/contacts",    icon: Users      },
+      { title: "Lists",       href: "/admin/marketing/lists",       icon: ListFilter },
+      { title: "Suppression", href: "/admin/marketing/suppression", icon: Ban        },
     ],
   },
   {
