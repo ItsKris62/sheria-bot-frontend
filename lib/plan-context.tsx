@@ -33,7 +33,7 @@ export interface PlanEntitlements {
   complianceQueries:    QuotaEntitlement;
   checklistGenerations: QuotaEntitlement;
   apiAccess:            ApiAccessEntitlement;
-  gapAnalysis:          boolean;
+  gapAnalysis:          QuotaEntitlement;
   policyGeneration:     boolean;
   customIntegrations:   boolean;
   teamCollaboration:    boolean;
