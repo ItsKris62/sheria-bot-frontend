@@ -967,7 +967,7 @@ export default function GapAnalysisPage() {
     if (d.status === "COMPLETED") {
       setIsAwaitingResult(false)
       setActiveView({ id: d.id, name: d.documentName })
-      utils.compliance.getGapAnalyses.invalidate()
+      utils.gapAnalysis.getGapAnalyses.invalidate()
       resetForm()
       toast.success("Analysis complete", { description: `Overall score: ${d.overallScore ?? "N/A"}/100` })
     }
@@ -994,7 +994,7 @@ export default function GapAnalysisPage() {
       setAnalysisStartedAt(Date.now())
       setPendingDocName(selectedFile?.name ?? "")
       setPendingFrameworks([...selectedFrameworks])
-      utils.compliance.getGapAnalyses.invalidate()
+      utils.gapAnalysis.getGapAnalyses.invalidate()
       toast.success("Analysis queued", { description: "Your document is being processed. This may take 1â€“3 minutes." })
     },
     onError: (err) => {
@@ -1007,7 +1007,7 @@ export default function GapAnalysisPage() {
   const deleteMutation = trpc.gapAnalysis.deleteGapAnalysis.useMutation({
     onSuccess: () => {
       toast.success("Analysis deleted")
-      utils.compliance.getGapAnalyses.invalidate()
+      utils.gapAnalysis.getGapAnalyses.invalidate()
     },
     onError: (err) => {
       toast.error("Failed to delete", { description: err.message })
@@ -1097,7 +1097,7 @@ export default function GapAnalysisPage() {
             Upload your policy documents and compare them against Kenyan regulatory requirements using AI.
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => utils.compliance.getGapAnalyses.invalidate()}>
+        <Button variant="ghost" size="sm" onClick={() => utils.gapAnalysis.getGapAnalyses.invalidate()}>
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
