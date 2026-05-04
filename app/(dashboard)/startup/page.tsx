@@ -3,15 +3,24 @@
 import { useAuthStore } from "@/lib/auth-store"
 import { trpc } from "@/lib/trpc"
 import { usePlan } from "@/lib/plan-context"
+import { useQueryClient } from "@tanstack/react-query"
+import { getQueryKey } from "@trpc/react-query"
 import { FeatureGate, LockedFeatureCard } from "@/components/plan/feature-gate"
 import { getComplianceScoreTheme } from "@/lib/utils/compliance"
 import type { ComplianceScoreIcon } from "@/lib/utils/compliance"
 import { PRIORITY_CONFIG } from "@/lib/calendar-config"
 import Link from "next/link"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import {
   Search,
   ClipboardCheck,
@@ -28,6 +37,27 @@ import {
   ShieldCheck,
   Info,
 } from "lucide-react"
+
+// -------------------------------------------------------------------------
+// Local types mirroring the backend response shape.
+// The backend uses @/ path aliases that the frontend tsconfig cannot resolve,
+// so tRPC hook data types infer as {}. These explicit definitions are the
+// established workaround (see project memory). Keep in sync with
+// compliance.module.ts getComplianceDashboardData return type.
+// -------------------------------------------------------------------------
+type DashboardCategory = {
+  key: string
+  label: string
+  score: number
+  completedItems: number
+  totalItems: number
+}
+type DashboardTrend = {
+  points: number | null
+  label: "increase" | "decrease" | "no_change" | "insufficient_history"
+  comparedAt: string | null
+  windowDays: 30
+}
 
 // -------------------------------------------------------------------------
 // Static fixtures (non-compliance sections — no backend change needed yet)
@@ -147,6 +177,7 @@ function ComplianceScoreSkeleton() {
 export default function StartupDashboard() {
   const user = useAuthStore((state) => state.user)
   const displayName = user?.name?.split(" ")[0] ?? "there"
+  const queryClient = useQueryClient()
 
   // Derive calendar feature entitlement from plan context so the query is
   // never fired for users who don't have access (avoids noisy FORBIDDEN errors).
@@ -166,6 +197,25 @@ export default function StartupDashboard() {
     enabled: !!user,
   })
 
+  // Mutation for toggling compliance items. Invalidates the dashboard query on
+  // success so the score refreshes without a page reload (fixes F-02 dead cache).
+  // The trigger UI (per-item checkbox) lives in the category drill-down component;
+  // this hook is defined here so the invalidation keys are co-located with the query.
+  const { mutate: toggleItemCompleted } = trpc.complianceDashboard.updateDashboardItem.useMutation({
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: getQueryKey(trpc.complianceDashboard.getComplianceDashboard),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: getQueryKey(trpc.complianceDashboard.getChecklistByCategory),
+      })
+      toast.success("Item updated")
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
+
   const {
     data: upcomingDeadlines = [],
     isLoading: deadlinesLoading,
@@ -178,7 +228,7 @@ export default function StartupDashboard() {
     ? getComplianceScoreTheme(dashboardData.overallScore)
     : null
 
-  const trend = dashboardData?.trend ?? 0
+  const trendInfo = (dashboardData as { trend?: DashboardTrend } | undefined)?.trend ?? null
 
   return (
     <div className="flex flex-col gap-6">
@@ -218,43 +268,56 @@ export default function StartupDashboard() {
                 <CardDescription>Overall regulatory compliance status</CardDescription>
               </div>
               <div className="text-right">
-                <p
-                  className="text-4xl font-bold"
-                  style={{ color: overallTheme?.color }}
-                >
-                  {dashboardData.overallScore}%
-                </p>
-                <Badge
-                  variant="outline"
-                  className={`mt-1 ${
-                    trend > 0
-                      ? "border-green-500/50 text-green-500"
-                      : trend < 0
-                      ? "border-red-500/50 text-red-500"
-                      : "border-muted-foreground/50 text-muted-foreground"
-                  }`}
-                >
-                  {trend > 0 ? (
-                    <TrendingUp className="mr-1 h-3 w-3" />
-                  ) : trend < 0 ? (
-                    <TrendingDown className="mr-1 h-3 w-3" />
-                  ) : (
+                {/* Score with weighting tooltip */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <p
+                        className="text-4xl font-bold cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                        style={{ color: overallTheme?.color }}
+                        tabIndex={0}
+                      >
+                        {dashboardData.overallScore}%
+                      </p>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-xs text-xs leading-relaxed">
+                      Overall score is a weighted average: Data Protection (25%), AML/KYC (25%),
+                      CBK Licensing (20%), Consumer Protection (15%), Cybersecurity (15%).
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* Trend badge — discriminated on label, never shows raw "%" as if percent change */}
+                {trendInfo?.label === "insufficient_history" && (
+                  <Badge variant="outline" className="mt-1 border-muted-foreground/40 text-muted-foreground">
                     <Minus className="mr-1 h-3 w-3" />
-                  )}
-                  {trend > 0 ? `+${trend}%` : trend < 0 ? `${trend}%` : "No change"} this month
-                </Badge>
+                    Building history…
+                  </Badge>
+                )}
+                {trendInfo?.label === "no_change" && (
+                  <Badge variant="outline" className="mt-1 border-muted-foreground/50 text-muted-foreground">
+                    <Minus className="mr-1 h-3 w-3" />
+                    No change vs 30 days ago
+                  </Badge>
+                )}
+                {trendInfo?.label === "increase" && trendInfo.points !== null && (
+                  <Badge variant="outline" className="mt-1 border-green-500/50 text-green-500">
+                    <TrendingUp className="mr-1 h-3 w-3" />
+                    +{trendInfo.points} pts vs 30 days ago
+                  </Badge>
+                )}
+                {trendInfo?.label === "decrease" && trendInfo.points !== null && (
+                  <Badge variant="outline" className="mt-1 border-red-500/50 text-red-500">
+                    <TrendingDown className="mr-1 h-3 w-3" />
+                    {trendInfo.points} pts vs 30 days ago
+                  </Badge>
+                )}
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {dashboardData.categories.map((category: {
-                key: string;
-                label: string;
-                score: number;
-                completedItems: number;
-                totalItems: number;
-              }) => {
+              {dashboardData.categories.map((category: DashboardCategory) => {
                 const theme = getComplianceScoreTheme(category.score)
                 return (
                   <div
