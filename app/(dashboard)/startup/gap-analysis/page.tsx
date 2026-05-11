@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useRef, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -41,8 +41,9 @@ import {
   Lock,
 } from "lucide-react"
 import { LoadingScreen } from "@/components/loading-screen"
+import { useAuthStore } from "@/lib/auth-store"
 
-// â”€â”€â”€ Local Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Local Types
 
 type FrameworkOption = {
   slug: string
@@ -53,7 +54,7 @@ type FrameworkOption = {
   locked: boolean
 }
 
-// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Constants
 
 const FOCUS_AREAS = [
   "Data handling and privacy",
@@ -107,7 +108,7 @@ function getScoreLabel(score: number) {
   return "Critical Risk"
 }
 
-// â”€â”€â”€ File Upload Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// File Upload Section
 
 function FileUploadSection({
   file,
@@ -154,7 +155,7 @@ function FileUploadSection({
           <FileText className="h-8 w-8 text-secondary shrink-0" />
           <div>
             <p className="font-medium text-foreground text-sm">{file.name}</p>
-            <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB Â· {file.type.split("/").pop()?.toUpperCase()}</p>
+            <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB - {file.type.split("/").pop()?.toUpperCase()}</p>
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={onRemove} className="text-destructive hover:text-destructive hover:bg-destructive/10">
@@ -179,7 +180,7 @@ function FileUploadSection({
         <Upload className={`h-8 w-8 mx-auto mb-3 ${dragActive ? "text-primary" : "text-muted-foreground"}`} />
         <p className="text-sm font-medium text-foreground">Drop your policy document here</p>
         <p className="text-xs text-muted-foreground mt-1">or <span className="text-primary underline">browse files</span></p>
-        <p className="text-xs text-muted-foreground mt-3">PDF, DOCX, DOC, TXT Â· Max {maxMB}MB</p>
+        <p className="text-xs text-muted-foreground mt-3">PDF, DOCX, DOC, TXT - Max {maxMB}MB</p>
       </div>
       <input
         ref={inputRef}
@@ -192,7 +193,7 @@ function FileUploadSection({
   )
 }
 
-// â”€â”€â”€ Score Gauge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Score Gauge
 
 function ScoreGauge({ score }: { score: number }) {
   const { ring, text, bg } = getScoreColor(score)
@@ -204,7 +205,7 @@ function ScoreGauge({ score }: { score: number }) {
   )
 }
 
-// â”€â”€â”€ Analysis Results View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Analysis Results View
 
 type GapResult = {
   id: string
@@ -262,7 +263,11 @@ function AnalysisResultsView({
   documentName: string
   onBack: () => void
 }) {
-  const { data, isLoading, error } = trpc.gapAnalysis.getGapAnalysisResult.useQuery({ id: analysisId })
+  const user = useAuthStore((state) => state.user)
+  const { data, isLoading, error } = trpc.gapAnalysis.getGapAnalysisResult.useQuery(
+    { id: analysisId },
+    { enabled: !!user }
+  )
   const [expandedGaps, setExpandedGaps] = useState<Record<string, boolean>>({})
 
   const logExportMutation = trpc.compliance.logExport.useMutation()
@@ -303,7 +308,7 @@ function AnalysisResultsView({
           <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
           <p className="text-destructive font-medium">Failed to load analysis</p>
           <p className="text-sm text-muted-foreground mt-1">{error?.message ?? "Unknown error"}</p>
-          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>â† Back</Button>
+          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>Back</Button>
         </CardContent>
       </Card>
     )
@@ -320,7 +325,7 @@ function AnalysisResultsView({
           <XCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
           <p className="text-destructive font-medium">Analysis failed</p>
           <p className="text-sm text-muted-foreground mt-1">{data.errorMessage ?? "An unexpected error occurred"}</p>
-          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>â† Run New Analysis</Button>
+          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>Run New Analysis</Button>
         </CardContent>
       </Card>
     )
@@ -375,10 +380,10 @@ function AnalysisResultsView({
       <div className="flex items-center justify-between">
         <div>
           <Button variant="ghost" size="sm" onClick={onBack} className="mb-2 -ml-2 text-muted-foreground">
-            â† Back to Gap Analysis
+            Back to Gap Analysis
           </Button>
           <h2 className="text-xl font-bold text-foreground">Gap Analysis Results</h2>
-          <p className="text-sm text-muted-foreground mt-1">{data.documentName} Â· {new Date(data.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}</p>
+          <p className="text-sm text-muted-foreground mt-1">{data.documentName} - {new Date(data.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}</p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -416,7 +421,7 @@ function AnalysisResultsView({
         </p>
       </div>
 
-      {/* RAG grounding warning — shown when Pinecone was unavailable during generation */}
+      {/* RAG grounding warning - shown when Pinecone was unavailable during generation */}
       {data.ragGrounded === false && (
         <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm dark:border-yellow-800/50 dark:bg-yellow-900/20">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-600 dark:text-yellow-400" />
@@ -638,7 +643,7 @@ function AnalysisResultsView({
                   <ul className="space-y-1">
                     {fw.strengths.map((s, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="text-secondary">âœ“</span>
+                        <span className="text-secondary">OK</span>
                         {s}
                       </li>
                     ))}
@@ -678,7 +683,7 @@ function AnalysisResultsView({
                       </div>
                       <div className="flex flex-wrap gap-2 mt-2">
                         <Badge variant="outline" className="text-xs bg-muted">{item.framework}</Badge>
-                        <Badge variant="outline" className="text-xs text-warning border-warning/30">⏰ {item.deadline}</Badge>
+                        <Badge variant="outline" className="text-xs text-warning border-warning/30">Due {item.deadline}</Badge>
                         {responsibleRole && (
                           <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
                             <Shield className="h-3 w-3 mr-1" />
@@ -701,7 +706,7 @@ function AnalysisResultsView({
                       {item.resources?.length > 0 && (
                         <ul className="mt-2 space-y-0.5">
                           {item.resources.map((r, i) => (
-                            <li key={i} className="text-xs text-muted-foreground">→ {r}</li>
+                            <li key={i} className="text-xs text-muted-foreground">- {r}</li>
                           ))}
                         </ul>
                       )}
@@ -717,7 +722,7 @@ function AnalysisResultsView({
   )
 }
 
-// â”€â”€â”€ Analysis Progress View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Analysis Progress View
 
 function AnalysisProgressView({
   documentName,
@@ -835,7 +840,7 @@ function AnalysisProgressView({
   )
 }
 
-// â”€â”€â”€ Analysis History Item â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Analysis History Item
 
 function AnalysisHistoryItem({
   analysis,
@@ -869,7 +874,7 @@ function AnalysisHistoryItem({
         <div>
           <p className="font-medium text-foreground text-sm">{analysis.documentName}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {analysis.analysisDepth} Â· {new Date(analysis.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
+            {analysis.analysisDepth} - {new Date(analysis.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
           </p>
           <Badge
             variant="outline"
@@ -922,9 +927,10 @@ function AnalysisHistoryItem({
   )
 }
 
-// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Main Page
 
 export default function GapAnalysisPage() {
+  const user = useAuthStore((state) => state.user)
   const [activeView, setActiveView] = useState<{ id: string; name: string } | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([])
@@ -942,16 +948,25 @@ export default function GapAnalysisPage() {
 
   const utils = trpc.useUtils()
 
-  const { data: analyses, isLoading: listLoading, error: listError } = trpc.gapAnalysis.getGapAnalyses.useQuery()
-  const { data: frameworksData, isLoading: frameworksLoading } = trpc.gapAnalysis.getFrameworks.useQuery()
-  const { data: gapLimits } = trpc.gapAnalysis.getGapAnalysisLimits.useQuery()
+  const { data: analyses, isLoading: listLoading, error: listError } = trpc.gapAnalysis.getGapAnalyses.useQuery(
+    undefined,
+    { enabled: !!user }
+  )
+  const { data: frameworksData, isLoading: frameworksLoading } = trpc.gapAnalysis.getFrameworks.useQuery(
+    undefined,
+    { enabled: !!user }
+  )
+  const { data: gapLimits } = trpc.gapAnalysis.getGapAnalysisLimits.useQuery(
+    undefined,
+    { enabled: !!user }
+  )
   const maxFileSizeBytes = (gapLimits?.maxFileSizeMB ?? 10) * 1024 * 1024
 
   // Polling query   active only while isAwaitingResult
   const pollingQuery = trpc.gapAnalysis.getGapAnalysisResult.useQuery(
     { id: activeAnalysisId! },
     {
-      enabled: isAwaitingResult && activeAnalysisId !== null,
+      enabled: !!user && isAwaitingResult && activeAnalysisId !== null,
       refetchInterval: (query) => {
         const status = query.state.data?.status
         if (status === "COMPLETED" || status === "FAILED") return false
@@ -995,7 +1010,7 @@ export default function GapAnalysisPage() {
       setPendingDocName(selectedFile?.name ?? "")
       setPendingFrameworks([...selectedFrameworks])
       utils.gapAnalysis.getGapAnalyses.invalidate()
-      toast.success("Analysis queued", { description: "Your document is being processed. This may take 1â€“3 minutes." })
+      toast.success("Analysis queued", { description: "Your document is being processed. This may take 1-3 minutes." })
     },
     onError: (err) => {
       toast.error("Analysis failed", {
@@ -1384,4 +1399,3 @@ export default function GapAnalysisPage() {
     </FeatureGate>
   )
 }
-
