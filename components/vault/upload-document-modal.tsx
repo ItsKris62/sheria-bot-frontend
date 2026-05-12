@@ -1,7 +1,10 @@
 "use client"
 
-import { useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
+import { TRPCClientError } from "@trpc/client"
 import { toast } from "sonner"
+import { AlertCircle, FileSpreadsheet, FileText, ImageIcon, Loader2, Plus, Upload, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -21,20 +24,21 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { trpc } from "@/lib/trpc"
-import { getErrorMessage } from "@/lib/trpc"
-import {
-  Upload,
-  FileText,
-  X,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  ImageIcon,
-  FileSpreadsheet,
-  HardDrive,
-} from "lucide-react"
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+const ALLOWED_VAULT_MIME_TYPES = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/msword",
+  "application/vnd.ms-excel",
+  "application/vnd.ms-powerpoint",
+  "text/plain",
+  "text/csv",
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+] as const
 
 const DOCUMENT_CATEGORIES = [
   { value: "CORPORATE", label: "Corporate Documents" },
@@ -47,13 +51,63 @@ const DOCUMENT_CATEGORIES = [
 ] as const
 
 type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number]["value"]
+type UploadStage = "idle" | "presigning" | "uploading" | "confirming"
 
-// ─── File icon helper ─────────────────────────────────────────────────────────
+interface UploadFormState {
+  file: File | null
+  name: string
+  category: DocumentCategory | ""
+  description: string
+  tags: string[]
+  tagInput: string
+  expiryDate: string
+}
+
+interface FormErrors {
+  file?: string
+  name?: string
+  category?: string
+  description?: string
+  tags?: string
+  expiryDate?: string
+}
+
+interface UploadDocumentModalProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSuccess: () => void
+}
+
+interface UploadFailure {
+  status: number
+}
+
+class UploadAbortError extends Error {
+  constructor() {
+    super("Upload cancelled.")
+    this.name = "UploadAbortError"
+  }
+}
+
+const EMPTY_FORM: UploadFormState = {
+  file: null,
+  name: "",
+  category: "",
+  description: "",
+  tags: [],
+  tagInput: "",
+  expiryDate: "",
+}
+
+const TAG_PATTERN = /^[A-Za-z0-9_-]+$/
+const MIME_ACCEPT = ALLOWED_VAULT_MIME_TYPES.join(",")
+const ALLOWED_MIME_SET = new Set<string>(ALLOWED_VAULT_MIME_TYPES)
 
 function FileTypeIcon({ mimeType, className }: { mimeType: string; className?: string }) {
   if (mimeType.startsWith("image/")) return <ImageIcon className={className} />
   if (
     mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    mimeType === "application/vnd.ms-excel" ||
     mimeType === "text/csv"
   ) {
     return <FileSpreadsheet className={className} />
@@ -64,474 +118,597 @@ function FileTypeIcon({ mimeType, className }: { mimeType: string; className?: s
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-
-interface UploadDocumentModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess: () => void
+function getTomorrowInputDate(): string {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  return tomorrow.toISOString().slice(0, 10)
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+function getExpiryIso(dateInput: string): string | undefined {
+  if (!dateInput) return undefined
+  return new Date(`${dateInput}T23:59:59.999Z`).toISOString()
+}
+
+function getTrpcCode(error: unknown): string | undefined {
+  if (error instanceof TRPCClientError) {
+    return error.data?.code as string | undefined
+  }
+  return undefined
+}
+
+function getErrorText(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return "Unexpected upload error."
+}
+
+function validateTags(tags: string[]): string | undefined {
+  if (tags.length > 20) return "Use 20 tags or fewer."
+  const invalid = tags.find((tag) => tag.length < 1 || tag.length > 50 || !TAG_PATTERN.test(tag))
+  if (invalid) return "Tags must be 1-50 characters and use letters, numbers, hyphens, or underscores only."
+  return undefined
+}
+
+function validateForm(form: UploadFormState, maxFileSizeBytes: number): FormErrors {
+  const errors: FormErrors = {}
+
+  if (!form.file) {
+    errors.file = "Choose one file to upload."
+  } else if (!ALLOWED_MIME_SET.has(form.file.type)) {
+    errors.file = "This file type is not supported."
+  } else if (form.file.size < 1024) {
+    errors.file = "File must be at least 1 KB."
+  } else if (maxFileSizeBytes === 0) {
+    errors.file = "Document Vault is not available on your current plan."
+  } else if (maxFileSizeBytes > 0 && form.file.size > maxFileSizeBytes) {
+    errors.file = `File exceeds your plan limit of ${formatBytes(maxFileSizeBytes)}.`
+  }
+
+  const trimmedName = form.name.trim()
+  if (!trimmedName) errors.name = "Document name is required."
+  if (trimmedName.length > 255) errors.name = "Document name must be 255 characters or fewer."
+
+  if (!form.category) errors.category = "Select a category."
+  if (form.description.length > 1000) errors.description = "Description must be 1000 characters or fewer."
+
+  const tagError = validateTags(form.tags)
+  if (tagError) errors.tags = tagError
+
+  if (form.expiryDate) {
+    const expiry = new Date(`${form.expiryDate}T23:59:59.999Z`)
+    if (Number.isNaN(expiry.getTime()) || expiry.getTime() <= Date.now()) {
+      errors.expiryDate = "Expiry date must be in the future."
+    }
+  }
+
+  return errors
+}
+
+function hasErrors(errors: FormErrors): boolean {
+  return Object.values(errors).some(Boolean)
+}
+
+function withPendingTags(form: UploadFormState): UploadFormState {
+  if (!form.tagInput.trim()) return form
+  return {
+    ...form,
+    tags: Array.from(new Set([
+      ...form.tags,
+      ...form.tagInput
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ])).slice(0, 20),
+    tagInput: "",
+  }
+}
 
 export function UploadDocumentModal({ open, onOpenChange, onSuccess }: UploadDocumentModalProps) {
+  const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [dragging, setDragging] = useState(false)
-
-  // Selected file state
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [fileError, setFileError] = useState<string | null>(null)
-
-  // Form fields
-  const [name, setName] = useState("")
-  const [category, setCategory] = useState<DocumentCategory | "">("")
-  const [description, setDescription] = useState("")
-  const [expiryDate, setExpiryDate] = useState("")
-  const [tagsInput, setTagsInput] = useState("")
-
-  // Upload state
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadStage, setUploadStage] = useState<"idle" | "requesting" | "uploading" | "saving" | "done" | "error">("idle")
-
+  const firstFieldRef = useRef<HTMLButtonElement>(null)
+  const xhrRef = useRef<XMLHttpRequest | null>(null)
   const utils = trpc.useUtils()
+
+  const [form, setForm] = useState<UploadFormState>(EMPTY_FORM)
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [dragging, setDragging] = useState(false)
+  const [stage, setStage] = useState<UploadStage>("idle")
+  const [uploadProgress, setUploadProgress] = useState(0)
+
   const getUploadUrl = trpc.vault.getUploadUrl.useMutation()
   const confirmUpload = trpc.vault.confirmUpload.useMutation()
-
-  // ── Tier limits (fetched once when modal is open) ────────────────────────
   const { data: uploadLimits } = trpc.vault.getUploadLimits.useQuery(undefined, {
     enabled: open,
     staleTime: 60_000,
   })
 
-  const maxFileSizeBytes = (uploadLimits?.maxFileSizeMB ?? 25) * 1024 * 1024
-  const allowedMimeTypes: readonly string[] = uploadLimits?.allowedMimeTypes ?? [
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "text/csv",
-    "image/png",
-    "image/jpeg",
-    "image/webp",
-    "text/plain",
-  ]
-  const storageUsedMB = uploadLimits?.storageUsedMB ?? 0
-  const maxTotalStorageMB = uploadLimits?.maxTotalStorageMB ?? -1
+  const maxFileSizeBytes = uploadLimits?.maxFileSizeMB === undefined
+    ? -1
+    : uploadLimits.maxFileSizeMB === -1
+      ? -1
+      : uploadLimits.maxFileSizeMB * 1024 * 1024
+  const isBusy = stage !== "idle"
+  const currentErrors = validateForm(withPendingTags(form), maxFileSizeBytes)
+  const canSubmit = !isBusy && !hasErrors(currentErrors)
 
-  // Build accept string and display label from allowed MIME types
-  const MIME_EXT_MAP: Record<string, string> = {
-    "application/pdf": ".pdf",
-    "application/msword": ".doc",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
-    "text/csv": ".csv",
-    "image/png": ".png",
-    "image/jpeg": ".jpg,.jpeg",
-    "image/webp": ".webp",
-    "text/plain": ".txt",
-  }
-  const acceptAttr = allowedMimeTypes.map((m) => MIME_EXT_MAP[m] ?? "").filter(Boolean).join(",")
-  const acceptedLabel = allowedMimeTypes
-    .map((m) => MIME_EXT_MAP[m]?.replace(/\./g, "").toUpperCase())
-    .filter(Boolean)
-    .join(", ")
+  useEffect(() => {
+    if (!open) return
+    window.setTimeout(() => firstFieldRef.current?.focus(), 0)
+  }, [open])
 
-  // ── File validation ──────────────────────────────────────────────────────
-
-  function validateFile(file: File): string | null {
-    if (!(allowedMimeTypes as string[]).includes(file.type)) {
-      return `File type not allowed. Accepted: ${acceptedLabel}.`
-    }
-    if (file.size > maxFileSizeBytes) {
-      return `File is too large (${formatBytes(file.size)}). Maximum size is ${formatBytes(maxFileSizeBytes)}.`
-    }
-    if (file.size < 1024) {
-      return "File is too small (minimum 1 KB)."
-    }
-    return null
+  function setField<K extends keyof UploadFormState>(key: K, value: UploadFormState[K]) {
+    setForm((current) => ({ ...current, [key]: value }))
+    setErrors((current) => ({ ...current, [key]: undefined }))
   }
 
-  function handleFileSelect(file: File) {
-    const error = validateFile(file)
-    if (error) {
-      setFileError(error)
-      setSelectedFile(null)
+  function resetForm() {
+    xhrRef.current = null
+    setForm(EMPTY_FORM)
+    setErrors({})
+    setDragging(false)
+    setStage("idle")
+    setUploadProgress(0)
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
+
+  function handleClose(nextOpen = false) {
+    if (isBusy) return
+    if (!nextOpen) resetForm()
+    onOpenChange(nextOpen)
+  }
+
+  function selectFile(file: File) {
+    const nextForm = {
+      ...form,
+      file,
+      name: form.name.trim() ? form.name : file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " "),
+    }
+    setForm(nextForm)
+    setErrors((current) => ({ ...current, file: validateForm(nextForm, maxFileSizeBytes).file }))
+  }
+
+  function addTag(rawValue: string) {
+    const values = rawValue
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean)
+
+    if (values.length === 0) return
+
+    const nextTags = Array.from(new Set([...form.tags, ...values])).slice(0, 20)
+    const tagError = validateTags(nextTags)
+    setForm((current) => ({ ...current, tags: nextTags, tagInput: "" }))
+    setErrors((current) => ({ ...current, tags: tagError }))
+  }
+
+  function removeTag(tag: string) {
+    setForm((current) => ({
+      ...current,
+      tags: current.tags.filter((item) => item !== tag),
+    }))
+    setErrors((current) => ({ ...current, tags: undefined }))
+  }
+
+  function handlePresignError(error: unknown) {
+    const code = getTrpcCode(error)
+    const message = getErrorText(error)
+
+    if (code === "FORBIDDEN" && message.toLowerCase().includes("quota")) {
+      toast.error("Storage quota exceeded for your plan. Upgrade or delete documents to continue.", {
+        action: { label: "Billing", onClick: () => router.push("/settings/billing") },
+      })
       return
     }
-    setFileError(null)
-    setSelectedFile(file)
-    // Auto-populate name from filename
-    const baseName = file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ")
-    setName(baseName)
+    if (code === "FORBIDDEN" && message.toLowerCase().includes("not available")) {
+      toast.error("Document Vault is not available on your current plan.", {
+        action: { label: "Billing", onClick: () => router.push("/settings/billing") },
+      })
+      return
+    }
+    if (code === "BAD_REQUEST") {
+      toast.error(message)
+      return
+    }
+
+    console.error("Vault presign failed", error)
+    toast.error("Upload preparation failed. Please try again.")
   }
 
-  // ── Drag and drop ────────────────────────────────────────────────────────
+  function handlePutError(error: UploadFailure) {
+    if (error.status === 0) {
+      toast.error("Upload failed: connection issue. Please check your internet and try again.")
+    } else if (error.status === 403) {
+      toast.error("Upload session expired. Please try again.")
+    } else if (error.status === 413) {
+      toast.error("File too large for upload.")
+    } else if (error.status >= 500) {
+      toast.error("Upload service unavailable. Please try again in a moment.")
+    } else {
+      toast.error(`Upload failed (status ${error.status}). Please try again.`)
+    }
+  }
 
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setDragging(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) handleFileSelect(file)
-  }, [allowedMimeTypes, maxFileSizeBytes]) // eslint-disable-line react-hooks/exhaustive-deps
+  function handleConfirmError(error: unknown) {
+    const code = getTrpcCode(error)
+    const message = getErrorText(error).toLowerCase()
 
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setDragging(true)
-  }, [])
+    if (code === "NOT_FOUND" || code === "GONE") {
+      toast.error("Upload session expired before completion. Please try again.")
+    } else if (code === "BAD_REQUEST" && message.includes("metadata")) {
+      toast.error("Upload verification failed. Please try again.")
+    } else if (code === "FORBIDDEN") {
+      toast.error("You don't have permission to complete this upload.")
+    } else {
+      console.error("Vault confirm failed", error)
+      toast.error("Could not finalize upload. Please contact support if this persists.")
+    }
+  }
 
-  const handleDragLeave = useCallback(() => {
-    setDragging(false)
-  }, [])
-
-  // ── Upload to R2 via presigned URL with XHR progress ────────────────────
-
-  function uploadToR2(url: string, file: File): Promise<void> {
+  function uploadToR2(uploadUrl: string, file: File, requiredHeaders: Record<string, string>): Promise<void> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setUploadProgress(Math.round((e.loaded / e.total) * 100))
+      xhrRef.current = xhr
+      xhr.open("PUT", uploadUrl, true)
+
+      for (const [headerName, headerValue] of Object.entries(requiredHeaders)) {
+        xhr.setRequestHeader(headerName, headerValue)
+      }
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          setUploadProgress(Math.round((event.loaded / event.total) * 100))
         }
       }
+
       xhr.onload = () => {
+        xhrRef.current = null
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve()
-        } else {
-          reject(new Error(`R2 upload failed with status ${xhr.status}`))
+          return
         }
+        reject({ status: xhr.status } satisfies UploadFailure)
       }
-      xhr.onerror = () => reject(new Error("Network error during upload."))
-      xhr.open("PUT", url)
-      xhr.setRequestHeader("Content-Type", file.type)
+
+      xhr.onerror = () => {
+        xhrRef.current = null
+        reject({ status: 0 } satisfies UploadFailure)
+      }
+
+      xhr.onabort = () => {
+        xhrRef.current = null
+        reject(new UploadAbortError())
+      }
+
       xhr.send(file)
     })
   }
 
-  // ── Submit ───────────────────────────────────────────────────────────────
+  function cancelUpload() {
+    if (xhrRef.current) {
+      xhrRef.current.abort()
+    }
+    resetForm()
+    toast.message("Upload cancelled.")
+  }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!selectedFile || !category || !name.trim()) return
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
 
-    const ext = "." + selectedFile.name.split(".").pop()!.toLowerCase()
-    const tags = tagsInput
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean)
-      .slice(0, 20)
+    const submitForm = withPendingTags(form)
 
+    if (form.tagInput.trim()) {
+      setForm(submitForm)
+    }
+
+    const nextErrors = validateForm(submitForm, maxFileSizeBytes)
+    setErrors(nextErrors)
+    if (hasErrors(nextErrors) || !submitForm.file || !submitForm.category) return
+
+    let failureStage: UploadStage = "presigning"
     try {
-      // Step 1: Get presigned URL
-      setUploadStage("requesting")
-      const { uploadUrl, storageKey, documentId } = await getUploadUrl.mutateAsync({
-        filename: selectedFile.name,
-        fileType: selectedFile.type,
-        fileSize: selectedFile.size,
+      setStage("presigning")
+      const presign = await getUploadUrl.mutateAsync({
+        declaredFilename: submitForm.file.name,
+        declaredMimeType: submitForm.file.type,
+        declaredSize: submitForm.file.size,
+        category: submitForm.category,
+        tags: submitForm.tags,
+        name: submitForm.name.trim(),
+        description: submitForm.description.trim() || undefined,
+        expiryDate: getExpiryIso(submitForm.expiryDate),
       })
 
-      // Step 2: Upload file to R2
-      setUploadStage("uploading")
+      failureStage = "uploading"
+      setStage("uploading")
       setUploadProgress(0)
-      await uploadToR2(uploadUrl, selectedFile)
+      await uploadToR2(presign.uploadUrl, submitForm.file, presign.requiredHeaders)
 
-      // Step 3: Create DB record
-      setUploadStage("saving")
-      await confirmUpload.mutateAsync({
-        documentId,
-        storageKey,
-        name: name.trim(),
-        description: description.trim() || undefined,
-        fileName: selectedFile.name,
-        fileType: selectedFile.type,
-        fileExtension: ext,
-        fileSize: selectedFile.size,
-        category: category as DocumentCategory,
-        expiryDate: expiryDate ? new Date(expiryDate).toISOString() : null,
-        tags: tags.length > 0 ? tags : undefined,
-      })
+      failureStage = "confirming"
+      setStage("confirming")
+      await confirmUpload.mutateAsync({ documentId: presign.documentId })
 
-      setUploadStage("done")
-      toast.success("Document uploaded", {
-        description: `"${name.trim()}" was saved to your vault.`,
-      })
-
-      // Step 4: Invalidate cache + close
+      toast.success("Document uploaded successfully.")
       await utils.vault.list.invalidate()
       await utils.vault.getStats.invalidate()
       await utils.vault.getUploadLimits.invalidate()
       onSuccess()
-      handleClose()
-    } catch (err) {
-      setUploadStage("error")
-      toast.error("Upload failed", { description: getErrorMessage(err) })
+      resetForm()
+      onOpenChange(false)
+    } catch (error) {
+      if (error instanceof UploadAbortError) return
+      if (failureStage === "presigning") {
+        handlePresignError(error)
+      } else if (failureStage === "uploading" && typeof error === "object" && error !== null && "status" in error) {
+        handlePutError(error as UploadFailure)
+      } else {
+        handleConfirmError(error)
+      }
+      setStage("idle")
     }
   }
 
-  // ── Reset + close ────────────────────────────────────────────────────────
-
-  function handleClose() {
-    if (uploadStage === "uploading" || uploadStage === "requesting" || uploadStage === "saving") return
-    setSelectedFile(null)
-    setFileError(null)
-    setName("")
-    setCategory("")
-    setDescription("")
-    setExpiryDate("")
-    setTagsInput("")
-    setUploadProgress(0)
-    setUploadStage("idle")
-    onOpenChange(false)
-  }
-
-  const isUploading = uploadStage === "requesting" || uploadStage === "uploading" || uploadStage === "saving"
-  const canSubmit = !!selectedFile && !!category && name.trim().length > 0 && !isUploading
-
-  // ── Storage usage bar (only shown when there is a quota) ─────────────────
-  const showStorageBar = maxTotalStorageMB > 0
-  const storageUsedPct = showStorageBar ? Math.min((storageUsedMB / maxTotalStorageMB) * 100, 100) : 0
+  const fileErrorId = errors.file ? "vault-file-error" : undefined
+  const nameErrorId = errors.name ? "vault-name-error" : undefined
+  const categoryErrorId = errors.category ? "vault-category-error" : undefined
+  const descriptionErrorId = errors.description ? "vault-description-error" : undefined
+  const tagsErrorId = errors.tags ? "vault-tags-error" : undefined
+  const expiryErrorId = errors.expiryDate ? "vault-expiry-error" : undefined
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); else onOpenChange(v) }}>
-      <DialogContent className="max-w-lg w-full max-h-[90vh] overflow-y-auto p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
-          <DialogTitle className="text-xl font-semibold">Upload Document</DialogTitle>
-          <DialogDescription>
-            Add a compliance document to your vault. Max {formatBytes(maxFileSizeBytes)}.{" "}
-            Accepted: {acceptedLabel}.
+    <Dialog open={open} onOpenChange={(nextOpen) => handleClose(nextOpen)}>
+      <DialogContent className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-gray-800 bg-neutral-900 p-0 text-white">
+        <DialogHeader className="border-b border-gray-800 px-6 pb-4 pt-6">
+          <DialogTitle className="text-xl font-semibold text-white">Upload Document</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Add a compliance document to your secure vault.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
-          {/* ── Storage usage indicator ── */}
-          {showStorageBar && (
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <HardDrive className="h-3 w-3" />
-                  Storage
-                </span>
-                <span>{storageUsedMB.toFixed(1)} / {maxTotalStorageMB} MB</span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className={`h-full rounded-full transition-all ${storageUsedPct >= 90 ? "bg-destructive" : storageUsedPct >= 70 ? "bg-yellow-500" : "bg-primary"}`}
-                  style={{ width: `${storageUsedPct}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* ── Drop zone ── */}
-          <div
-            role="button"
-            tabIndex={0}
-            className={`relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors cursor-pointer select-none
-              ${dragging ? "border-primary bg-primary/5" : "border-border/60 bg-muted/30 hover:border-primary/50 hover:bg-muted/50"}
-              ${fileError ? "border-destructive/60 bg-destructive/5" : ""}
-              ${selectedFile ? "border-primary/60 bg-primary/5" : ""}`}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onClick={() => fileInputRef.current?.click()}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click() }}
-          >
-            <input
+        <form onSubmit={handleSubmit} className="space-y-5 px-6 py-5">
+          <div className="space-y-2">
+            <Label htmlFor="vault-file" className="text-white">File</Label>
+            <button
+              ref={firstFieldRef}
+              type="button"
+              disabled={isBusy}
+              aria-describedby={fileErrorId}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(event) => {
+                event.preventDefault()
+                if (!isBusy) setDragging(true)
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(event) => {
+                event.preventDefault()
+                setDragging(false)
+                const file = event.dataTransfer.files?.[0]
+                if (file && !isBusy) selectFile(file)
+              }}
+              className={`flex min-h-40 w-full flex-col items-center justify-center gap-3 rounded-lg border border-dashed p-6 text-center transition-colors ${
+                dragging ? "border-green-500 bg-black" : "border-gray-800 bg-neutral-950"
+              } ${isBusy ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:border-green-500"}`}
+            >
+              {form.file ? (
+                <>
+                  <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-gray-800">
+                    <FileTypeIcon mimeType={form.file.type} className="h-7 w-7 text-green-500" />
+                  </span>
+                  <span className="max-w-full truncate text-sm font-medium text-white">{form.file.name}</span>
+                  <span className="text-xs text-gray-400">{formatBytes(form.file.size)}</span>
+                </>
+              ) : (
+                <>
+                  <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-gray-800">
+                    <Upload className="h-6 w-6 text-green-500" />
+                  </span>
+                  <span className="text-sm font-medium text-white">Drop a file here or browse</span>
+                  <span className="text-xs text-gray-400">PDF, Office, text, CSV, PNG, JPEG, or WebP</span>
+                </>
+              )}
+            </button>
+            <Input
               ref={fileInputRef}
+              id="vault-file"
               type="file"
-              accept={acceptAttr}
+              accept={MIME_ACCEPT}
+              disabled={isBusy}
               className="sr-only"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileSelect(f) }}
+              onChange={(event) => {
+                const file = event.target.files?.[0]
+                if (file) selectFile(file)
+              }}
             />
-
-            {selectedFile ? (
-              <>
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                  <FileTypeIcon mimeType={selectedFile.type} className="h-7 w-7 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground text-sm">{selectedFile.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{formatBytes(selectedFile.size)}</p>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute top-2 right-2 h-7 w-7 p-0"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setSelectedFile(null)
-                    setFileError(null)
-                    setName("")
-                    if (fileInputRef.current) fileInputRef.current.value = ""
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                  <Upload className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium text-sm text-foreground">Drop file here or click to browse</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {acceptedLabel} — max {formatBytes(maxFileSizeBytes)}
-                  </p>
-                </div>
-              </>
-            )}
+            {errors.file && <p id="vault-file-error" className="text-sm text-red-400">{errors.file}</p>}
           </div>
 
-          {fileError && (
-            <p className="flex items-center gap-2 text-sm text-destructive">
-              <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              {fileError}
-            </p>
-          )}
-
-          {/* ── Document name ── */}
-          <div className="space-y-1.5">
-            <Label htmlFor="vault-name">Document Name <span className="text-destructive">*</span></Label>
+          <div className="space-y-2">
+            <Label htmlFor="vault-name" className="text-white">Name</Label>
             <Input
               id="vault-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Certificate of Incorporation"
+              value={form.name}
+              disabled={isBusy}
               maxLength={255}
-              required
+              aria-describedby={nameErrorId}
+              onChange={(event) => setField("name", event.target.value)}
+              placeholder="Certificate of Incorporation"
+              className="border-gray-800 bg-neutral-950 text-white placeholder:text-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500 disabled:cursor-not-allowed"
             />
+            {errors.name && <p id="vault-name-error" className="text-sm text-red-400">{errors.name}</p>}
           </div>
 
-          {/* ── Category ── */}
-          <div className="space-y-1.5">
-            <Label htmlFor="vault-category">Category <span className="text-destructive">*</span></Label>
-            <Select value={category} onValueChange={(v) => setCategory(v as DocumentCategory)}>
-              <SelectTrigger id="vault-category">
+          <div className="space-y-2">
+            <Label htmlFor="vault-category" className="text-white">Category</Label>
+            <Select
+              value={form.category}
+              disabled={isBusy}
+              onValueChange={(value) => setField("category", value as DocumentCategory)}
+            >
+              <SelectTrigger
+                id="vault-category"
+                aria-describedby={categoryErrorId}
+                className="border-gray-800 bg-neutral-950 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 disabled:cursor-not-allowed"
+              >
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
-              <SelectContent>
-                {DOCUMENT_CATEGORIES.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
+              <SelectContent className="border-gray-800 bg-neutral-950 text-white">
+                {DOCUMENT_CATEGORIES.map((category) => (
+                  <SelectItem key={category.value} value={category.value}>
+                    {category.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {errors.category && <p id="vault-category-error" className="text-sm text-red-400">{errors.category}</p>}
           </div>
 
-          {/* ── Description ── */}
-          <div className="space-y-1.5">
-            <Label htmlFor="vault-description">Description <span className="text-muted-foreground text-xs">(optional)</span></Label>
+          <div className="space-y-2">
+            <Label htmlFor="vault-description" className="text-white">Description</Label>
             <Textarea
               id="vault-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of this document..."
+              value={form.description}
+              disabled={isBusy}
               maxLength={1000}
-              rows={2}
-              className="resize-none"
+              rows={3}
+              aria-describedby={descriptionErrorId}
+              onChange={(event) => setField("description", event.target.value)}
+              placeholder="Optional notes for your team"
+              className="resize-none border-gray-800 bg-neutral-950 text-white placeholder:text-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500 disabled:cursor-not-allowed"
             />
+            {errors.description && (
+              <p id="vault-description-error" className="text-sm text-red-400">{errors.description}</p>
+            )}
           </div>
 
-          {/* ── Expiry date ── */}
-          <div className="space-y-1.5">
-            <Label htmlFor="vault-expiry">Expiry Date <span className="text-muted-foreground text-xs">(optional)</span></Label>
+          <div className="space-y-2">
+            <Label htmlFor="vault-expiry" className="text-white">Expiry Date</Label>
             <Input
               id="vault-expiry"
               type="date"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-              min={new Date().toISOString().split("T")[0]}
+              value={form.expiryDate}
+              disabled={isBusy}
+              min={getTomorrowInputDate()}
+              aria-describedby={expiryErrorId}
+              onChange={(event) => setField("expiryDate", event.target.value)}
+              className="border-gray-800 bg-neutral-950 text-white placeholder:text-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500 disabled:cursor-not-allowed"
             />
+            {errors.expiryDate && <p id="vault-expiry-error" className="text-sm text-red-400">{errors.expiryDate}</p>}
           </div>
 
-          {/* ── Tags ── */}
-          <div className="space-y-1.5">
-            <Label htmlFor="vault-tags">Tags <span className="text-muted-foreground text-xs">(optional, comma-separated)</span></Label>
-            <Input
-              id="vault-tags"
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="e.g. 2025, KYC, CBK"
-            />
+          <div className="space-y-2">
+            <Label htmlFor="vault-tags" className="text-white">Tags</Label>
+            <div className="flex gap-2">
+              <Input
+                id="vault-tags"
+                value={form.tagInput}
+                disabled={isBusy || form.tags.length >= 20}
+                aria-describedby={tagsErrorId}
+                onChange={(event) => setField("tagInput", event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === ",") {
+                    event.preventDefault()
+                    addTag(form.tagInput)
+                  }
+                }}
+                onBlur={() => addTag(form.tagInput)}
+                placeholder="kyc"
+                className="border-gray-800 bg-neutral-950 text-white placeholder:text-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500 disabled:cursor-not-allowed"
+              />
+              <Button
+                type="button"
+                disabled={isBusy || !form.tagInput.trim() || form.tags.length >= 20}
+                onClick={() => addTag(form.tagInput)}
+                className="bg-gray-800 text-white hover:bg-gray-700 disabled:cursor-not-allowed"
+                aria-label="Add tag"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {form.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {form.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 rounded border border-gray-800 bg-black px-2 py-1 text-xs text-white"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      disabled={isBusy}
+                      onClick={() => removeTag(tag)}
+                      className="text-gray-400 hover:text-white disabled:cursor-not-allowed"
+                      aria-label={`Remove ${tag}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {errors.tags && <p id="vault-tags-error" className="text-sm text-red-400">{errors.tags}</p>}
           </div>
 
-          {/* ── Upload progress ── */}
-          {isUploading && (
+          {isBusy && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {uploadStage === "requesting" && "Preparing upload..."}
-                  {uploadStage === "uploading" && "Uploading to secure storage..."}
-                  {uploadStage === "saving" && "Saving document record..."}
+                <span className="text-gray-400">
+                  {stage === "presigning" && "Preparing upload"}
+                  {stage === "uploading" && "Uploading"}
+                  {stage === "confirming" && "Finalizing"}
                 </span>
-                {uploadStage === "uploading" && (
-                  <span className="font-medium tabular-nums">{uploadProgress}%</span>
-                )}
+                <span className="font-medium tabular-nums text-white">
+                  {stage === "uploading" ? `${uploadProgress}%` : ""}
+                </span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-2 w-full overflow-hidden rounded bg-gray-800"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={stage === "uploading" ? uploadProgress : stage === "confirming" ? 95 : 10}
+              >
                 <div
-                  className="h-full bg-primary transition-all duration-200"
-                  style={{
-                    width:
-                      uploadStage === "requesting"
-                        ? "15%"
-                        : uploadStage === "uploading"
-                        ? `${uploadProgress}%`
-                        : "90%",
-                  }}
+                  className="h-full bg-green-500 transition-all duration-200"
+                  style={{ width: `${stage === "uploading" ? uploadProgress : stage === "confirming" ? 95 : 10}%` }}
                 />
               </div>
             </div>
           )}
 
-          {uploadStage === "done" && (
-            <p className="flex items-center gap-2 text-sm text-green-600">
-              <CheckCircle2 className="h-4 w-4" />
-              Upload complete!
-            </p>
-          )}
-
-          {uploadStage === "error" && (
-            <p className="flex items-center gap-2 text-sm text-destructive">
-              <AlertCircle className="h-4 w-4" />
-              Upload failed. Please try again.
-            </p>
-          )}
-
-          {/* ── Actions ── */}
           <div className="flex gap-3 pt-2">
             <Button
               type="button"
-              variant="outline"
-              className="flex-1"
-              onClick={handleClose}
-              disabled={isUploading}
+              onClick={stage === "uploading" ? cancelUpload : () => handleClose(false)}
+              disabled={stage === "presigning" || stage === "confirming"}
+              className={stage === "uploading"
+                ? "flex-1 bg-red-600 text-white hover:bg-red-700 disabled:cursor-not-allowed"
+                : "flex-1 bg-gray-800 text-white hover:bg-gray-700 disabled:cursor-not-allowed"}
             >
-              Cancel
+              {stage === "uploading" ? "Cancel Upload" : "Cancel"}
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-primary text-primary-foreground"
               disabled={!canSubmit}
+              className="flex-1 bg-green-500 text-white hover:bg-green-600 disabled:cursor-not-allowed"
             >
-              {isUploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading...
-                </>
+              {stage === "presigning" || stage === "confirming" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Document
-                </>
+                <Upload className="mr-2 h-4 w-4" />
               )}
+              Upload Document
             </Button>
           </div>
+
+          {hasErrors(errors) && (
+            <p className="flex items-center gap-2 text-sm text-red-400">
+              <AlertCircle className="h-4 w-4" />
+              Check the highlighted fields before uploading.
+            </p>
+          )}
         </form>
       </DialogContent>
     </Dialog>
