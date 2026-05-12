@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { trpc } from "@/lib/trpc"
+import { cn } from "@/lib/utils"
 import { FeatureGate } from "@/components/plan/feature-gate"
 import {
   DropdownMenu,
@@ -150,11 +151,11 @@ function FileUploadSection({
 
   if (file) {
     return (
-      <div className="flex items-center justify-between rounded-lg border border-secondary/50 bg-secondary/5 p-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 rounded-lg border border-secondary/50 bg-secondary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
           <FileText className="h-8 w-8 text-secondary shrink-0" />
-          <div>
-            <p className="font-medium text-foreground text-sm">{file.name}</p>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-foreground">{file.name}</p>
             <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB - {file.type.split("/").pop()?.toUpperCase()}</p>
           </div>
         </div>
@@ -864,15 +865,15 @@ function AnalysisHistoryItem({
   const isInProgress = analysis.status !== "COMPLETED" && analysis.status !== "FAILED"
 
   return (
-    <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-card hover:bg-muted/30 transition-colors">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-col gap-4 rounded-lg border border-border/50 bg-card p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 items-start gap-4 sm:items-center">
         {isInProgress ? (
           <Loader2 className="h-8 w-8 text-primary animate-spin shrink-0" />
         ) : (
           <FileText className="h-8 w-8 text-muted-foreground shrink-0" />
         )}
-        <div>
-          <p className="font-medium text-foreground text-sm">{analysis.documentName}</p>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-foreground">{analysis.documentName}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
             {analysis.analysisDepth} - {new Date(analysis.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
           </p>
@@ -899,29 +900,31 @@ function AnalysisHistoryItem({
           )}
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 sm:justify-end">
         {analysis.overallScore != null && scoreConfig && (
           <div className={`h-12 w-12 rounded-full border-4 ${scoreConfig.ring} flex items-center justify-center ${scoreConfig.bg}`}>
             <span className={`text-xs font-bold ${scoreConfig.text}`}>{analysis.overallScore}</span>
           </div>
         )}
-        <Button
-          variant="outline"
-          size="sm"
-          className="bg-transparent"
-          onClick={() => onView(analysis.id, analysis.documentName)}
-          disabled={analysis.status !== "COMPLETED"}
-        >
-          View
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-          onClick={() => onDelete(analysis.id)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-transparent"
+            onClick={() => onView(analysis.id, analysis.documentName)}
+            disabled={analysis.status !== "COMPLETED"}
+          >
+            View
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={() => onDelete(analysis.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   )
@@ -936,6 +939,7 @@ export default function GapAnalysisPage() {
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([])
   const [analysisDepth, setAnalysisDepth] = useState<"quick" | "standard" | "deep">("standard")
   const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>([])
+  const [focusAreasOpen, setFocusAreasOpen] = useState(false)
   const [consentChecked, setConsentChecked] = useState(false)
 
   // Async polling state
@@ -1034,6 +1038,7 @@ export default function GapAnalysisPage() {
     setSelectedFrameworks([])
     setAnalysisDepth("standard")
     setSelectedFocusAreas([])
+    setFocusAreasOpen(false)
     setConsentChecked(false)
   }
 
@@ -1100,25 +1105,35 @@ export default function GapAnalysisPage() {
   }
 
   const analysisHistory = analyses ?? []
+  const groupedFrameworks = frameworksData && frameworksData.length > 0
+    ? Object.entries(
+        (frameworksData as FrameworkOption[]).reduce<Record<string, FrameworkOption[]>>((acc, fw) => {
+          if (!acc[fw.category]) acc[fw.category] = []
+          acc[fw.category].push(fw)
+          return acc
+        }, {})
+      )
+    : []
+  const selectedDepthLabel = ANALYSIS_DEPTHS.find((d) => d.value === analysisDepth)?.label ?? "Standard Analysis"
 
   return (
     <FeatureGate feature="gapAnalysis">
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-foreground">Policy Gap Analysis</h1>
           <p className="text-muted-foreground mt-1">
             Upload your policy documents and compare them against Kenyan regulatory requirements using AI.
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => utils.gapAnalysis.getGapAnalyses.invalidate()}>
+        <Button variant="ghost" size="sm" onClick={() => utils.gapAnalysis.getGapAnalyses.invalidate()} className="shrink-0">
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Upload + Config Panel */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
         {/* Left: Upload */}
         <Card className="border-border/50">
           <CardHeader>
@@ -1142,34 +1157,65 @@ export default function GapAnalysisPage() {
 
         {/* Right: Config */}
         <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Shield className="h-5 w-5 text-primary" />
-              Analysis Configuration
-            </CardTitle>
-            <CardDescription>Choose which regulatory frameworks to compare against.</CardDescription>
+          <CardHeader className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Shield className="h-5 w-5 text-primary" />
+                  Analysis Configuration
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Set the scope once, then run the comparison against your uploaded document.
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="w-fit border-primary/30 bg-primary/10 text-primary">
+                {selectedFrameworks.length} selected
+              </Badge>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Frameworks</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {selectedFrameworks.length || "None"}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Depth</p>
+                <p className="mt-1 truncate text-sm font-semibold text-foreground">{selectedDepthLabel}</p>
+              </div>
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Focus</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {selectedFocusAreas.length > 0 ? `${selectedFocusAreas.length} areas` : "All areas"}
+                </p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-4">
             {/* Frameworks */}
-            <div className="space-y-2">
-              <Label>Regulatory Frameworks <span className="text-destructive">*</span></Label>
-              {frameworksLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-8 w-full" />
-                  <Skeleton className="h-8 w-3/4" />
+            <div className="rounded-xl border border-border/50 bg-background">
+              <div className="flex items-start gap-3 border-b border-border/50 p-4">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  1
                 </div>
-              ) : frameworksData && frameworksData.length > 0 ? (
-                <div className="space-y-3">
-                  {Object.entries(
-                    (frameworksData as FrameworkOption[]).reduce<Record<string, FrameworkOption[]>>((acc: Record<string, FrameworkOption[]>, fw: FrameworkOption) => {
-                      if (!acc[fw.category]) acc[fw.category] = []
-                      acc[fw.category].push(fw)
-                      return acc
-                    }, {})
-                  ).map(([category, fws]: [string, FrameworkOption[]]) => (
-                    <div key={category}>
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">{category}</p>
-                      <div className="flex flex-wrap gap-1.5">
+                <div className="min-w-0">
+                  <Label>Regulatory Frameworks <span className="text-destructive">*</span></Label>
+                  <p className="mt-1 text-xs text-muted-foreground">Select one or more sources for the comparison.</p>
+                </div>
+              </div>
+              {frameworksLoading ? (
+                <div className="space-y-2 p-4">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-3/4" />
+                </div>
+              ) : groupedFrameworks.length > 0 ? (
+                <div className="space-y-4 p-4">
+                  {groupedFrameworks.map(([category, fws]) => (
+                    <div key={category} className="space-y-2">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{category}</p>
+                      <div className="grid gap-2 sm:grid-cols-2">
                         {fws.map((fw: FrameworkOption) => {
                           const isSelected = selectedFrameworks.includes(fw.slug)
                           if (fw.locked) {
@@ -1177,10 +1223,10 @@ export default function GapAnalysisPage() {
                               <div
                                 key={fw.slug}
                                 title={`Upgrade to ${fw.tier.charAt(0) + fw.tier.slice(1).toLowerCase()} to access`}
-                                className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm text-muted-foreground cursor-not-allowed select-none"
+                                className="flex min-h-12 items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/40 px-3 py-2 text-left text-sm text-muted-foreground cursor-not-allowed select-none"
                               >
-                                <Lock className="h-3 w-3 shrink-0" />
-                                {fw.name}
+                                <span className="leading-snug">{fw.name}</span>
+                                <Lock className="h-3.5 w-3.5 shrink-0" />
                               </div>
                             )
                           }
@@ -1193,13 +1239,15 @@ export default function GapAnalysisPage() {
                                   prev.includes(fw.slug) ? prev.filter((s) => s !== fw.slug) : [...prev, fw.slug]
                                 )
                               }
-                              className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                              className={cn(
+                                "flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-colors",
                                 isSelected
-                                  ? "border-primary bg-primary text-primary-foreground"
-                                  : "border-border bg-background text-foreground hover:bg-muted"
-                              }`}
+                                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                                  : "border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/50"
+                              )}
                             >
-                              {fw.name}
+                              <span className="leading-snug">{fw.name}</span>
+                              {isSelected && <CheckCircle2 className="h-4 w-4 shrink-0" />}
                             </button>
                           )
                         })}
@@ -1208,29 +1256,43 @@ export default function GapAnalysisPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">No frameworks available.</p>
+                <p className="p-4 text-xs text-muted-foreground">No frameworks available.</p>
               )}
               {selectedFrameworks.length === 0 && !frameworksLoading && (
-                <p className="text-xs text-muted-foreground">Select at least one framework to analyse against</p>
+                <p className="border-t border-border/50 px-4 py-3 text-xs text-muted-foreground">
+                  Select at least one framework to analyse against.
+                </p>
               )}
             </div>
 
             {/* Analysis Depth */}
-            <div className="space-y-2">
-              <Label>Analysis Depth</Label>
-              <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-xl border border-border/50 bg-background p-4">
+              <div className="mb-3 flex items-start gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  2
+                </div>
+                <div>
+                  <Label>Analysis Depth</Label>
+                  <p className="mt-1 text-xs text-muted-foreground">Choose how detailed the AI review should be.</p>
+                </div>
+              </div>
+              <div className="grid gap-2 md:grid-cols-3">
                 {ANALYSIS_DEPTHS.map((d) => (
                   <button
                     key={d.value}
                     type="button"
                     onClick={() => setAnalysisDepth(d.value as "quick" | "standard" | "deep")}
-                    className={`rounded-lg border p-3 text-left transition-colors ${
+                    className={cn(
+                      "flex min-h-24 flex-col rounded-lg border p-3 text-left transition-colors",
                       analysisDepth === d.value
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:bg-muted/50"
-                    }`}
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:border-primary/40 hover:bg-muted/50"
+                    )}
                   >
-                    <p className="text-sm font-medium text-foreground">{d.label}</p>
+                    <span className="mb-2 flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-foreground">{d.label}</span>
+                      {analysisDepth === d.value && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                    </span>
                     <p className="text-xs text-muted-foreground mt-0.5">{d.description}</p>
                   </button>
                 ))}
@@ -1238,29 +1300,56 @@ export default function GapAnalysisPage() {
             </div>
 
             {/* Focus Areas */}
-            <div className="space-y-2">
-              <Label>Focus Areas <span className="text-muted-foreground text-xs">(optional)</span></Label>
-              <div className="flex flex-wrap gap-2">
-                {FOCUS_AREAS.map((area) => (
-                  <button
-                    key={area}
-                    type="button"
-                    onClick={() =>
-                      setSelectedFocusAreas((prev) =>
-                        prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
-                      )
-                    }
-                    className={`rounded-md border px-2.5 py-1 text-xs transition-colors ${
-                      selectedFocusAreas.includes(area)
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-background text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {area}
-                  </button>
-                ))}
+            <details
+              className="group rounded-xl border border-border/50 bg-background"
+              open={focusAreasOpen}
+              onToggle={(event) => setFocusAreasOpen(event.currentTarget.open)}
+            >
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-3 p-4 marker:hidden">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                    3
+                  </div>
+                  <div>
+                    <Label className="cursor-pointer">Focus Areas <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                    <p className="mt-1 text-xs text-muted-foreground">Narrow the review when you need a targeted pass.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {selectedFocusAreas.length > 0 && (
+                    <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
+                      {selectedFocusAreas.length}
+                    </Badge>
+                  )}
+                  <ChevronDown className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                </div>
+              </summary>
+              <div className="grid gap-2 border-t border-border/50 p-4 sm:grid-cols-2">
+                {FOCUS_AREAS.map((area) => {
+                  const isSelected = selectedFocusAreas.includes(area)
+                  return (
+                    <button
+                      key={area}
+                      type="button"
+                      onClick={() =>
+                        setSelectedFocusAreas((prev) =>
+                          prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
+                        )
+                      }
+                      className={cn(
+                        "flex min-h-10 items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-colors",
+                        isSelected
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:bg-muted/50"
+                      )}
+                    >
+                      <span>{area}</span>
+                      {isSelected && <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />}
+                    </button>
+                  )
+                })}
               </div>
-            </div>
+            </details>
           </CardContent>
         </Card>
       </div>
@@ -1290,8 +1379,8 @@ export default function GapAnalysisPage() {
               <p className="text-sm text-muted-foreground">Uploading document...</p>
             </div>
           ) : (
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 {!canRun && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <AlertTriangle className="h-4 w-4 text-warning" />
@@ -1303,9 +1392,11 @@ export default function GapAnalysisPage() {
                   </div>
                 )}
                 {canRun && (
-                  <div className="flex items-center gap-2 text-sm text-secondary">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Ready   {selectedFile?.name} against {selectedFrameworks.length} framework{selectedFrameworks.length > 1 ? "s" : ""}
+                  <div className="flex min-w-0 items-center gap-2 text-sm text-secondary">
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <span className="truncate">
+                      Ready: {selectedFile?.name} against {selectedFrameworks.length} framework{selectedFrameworks.length > 1 ? "s" : ""}
+                    </span>
                   </div>
                 )}
               </div>
@@ -1314,7 +1405,7 @@ export default function GapAnalysisPage() {
                 disabled={!canRun}
                 loading={runMutation.isPending}
                 loadingText="Uploading..."
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
               >
                 <TrendingUp className="mr-2 h-4 w-4" />
                 Run Gap Analysis
