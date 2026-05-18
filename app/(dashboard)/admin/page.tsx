@@ -1,11 +1,12 @@
 "use client"
 
 import Link from "next/link"
+import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts"
 import {
   Users, FileText, Bot, CreditCard, Activity, Settings,
@@ -23,11 +24,57 @@ const quickActions = [
   { label: "System Settings",   href: "/admin/system",        icon: Settings,   description: "Platform configuration" },
 ]
 
+const CHART_COLORS = {
+  users: "#22c55e",
+  active: "#14b8a6",
+  organizations: "#3b82f6",
+  queries: "#f97316",
+}
+
+const tooltipStyle = {
+  background: "hsl(var(--popover))",
+  border: "1px solid hsl(var(--border))",
+  borderRadius: 8,
+  color: "hsl(var(--popover-foreground))",
+  fontSize: 11,
+  boxShadow: "0 12px 30px rgba(0, 0, 0, 0.35)",
+}
+
+function getLastThirtyDaysRange() {
+  const dateTo = new Date()
+  const dateFrom = new Date(dateTo)
+  dateFrom.setDate(dateTo.getDate() - 29)
+  dateFrom.setHours(0, 0, 0, 0)
+
+  return {
+    dateFrom: dateFrom.toISOString(),
+    dateTo: dateTo.toISOString(),
+  }
+}
+
+function formatShortDate(value: string) {
+  return new Date(value).toLocaleDateString("en-KE", { month: "short", day: "numeric" })
+}
+
+function formatCount(value: number | null | undefined) {
+  return typeof value === "number" ? value.toLocaleString("en-KE") : undefined
+}
+
+function resolveCount(primary: number | null | undefined, fallback: number | null | undefined) {
+  if (typeof primary === "number" && primary > 0) return primary
+  if (typeof fallback === "number" && fallback > 0) return fallback
+  return primary ?? fallback
+}
+
 function ServiceBadge({ status }: { status: string | undefined }) {
   if (!status) return <Badge variant="outline" className="text-muted-foreground">Checking...</Badge>
   if (status === "healthy") return <Badge className="bg-primary/15 text-primary border-0">Healthy</Badge>
   if (status === "degraded") return <Badge className="bg-warning/15 text-warning border-0">Degraded</Badge>
   return <Badge className="bg-destructive/15 text-destructive border-0">Down</Badge>
+}
+
+function hasSeriesActivity(series: Array<{ count: number }> | undefined) {
+  return Boolean(series?.some((point) => point.count > 0))
 }
 
 type StatsShape = {
@@ -38,29 +85,37 @@ type StatsShape = {
 }
 
 export default function AdminDashboard() {
+  const thirtyDayRange = useMemo(() => getLastThirtyDaysRange(), [])
+
   const { data: rawStats, isLoading: statsLoading } = trpc.admin.getStats.useQuery(undefined, {
     retry: 3,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   })
   const { data: health } = trpc.admin.getDetailedHealth.useQuery(undefined, { refetchInterval: 30000 })
   const { data: logsData } = trpc.admin.getLogs.useQuery({ page: 1, limit: 5 })
+  const { data: usersFallback, isLoading: usersFallbackLoading } = trpc.admin.listUsers.useQuery({ page: 1, limit: 1 })
+  const { data: activeUsersFallback, isLoading: activeUsersFallbackLoading } = trpc.admin.listUsers.useQuery({ page: 1, limit: 1, status: "active" })
+  const { data: organizationsFallback, isLoading: organizationsFallbackLoading } = trpc.admin.getAllOrganizations.useQuery({ page: 1, limit: 1 })
   const { data: growth } = trpc.admin.getUserGrowth.useQuery({
     period: "daily",
-    dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    ...thirtyDayRange,
   })
-  const { data: aiUsage } = trpc.admin.getAIUsageMetrics.useQuery({
-    dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-  })
+  const { data: aiUsage } = trpc.admin.getAIUsageMetrics.useQuery(thirtyDayRange)
 
   const stats = rawStats as StatsShape | undefined
 
   const recentLogs = (logsData as { items?: Array<{ id: string; action: string; userId: string | null; entityType: string | null; createdAt: Date }> })?.items ?? []
+  const userTotal = resolveCount(stats?.users?.total, usersFallback?.pagination?.total)
+  const activeUserTotal = resolveCount(stats?.users?.active, activeUsersFallback?.pagination?.total)
+  const organizationTotal = resolveCount(stats?.organizations?.total, organizationsFallback?.total)
+  const aiQueryTotal = resolveCount(stats?.queries?.total, aiUsage?.totalQueries)
+  const cardLoading = statsLoading || usersFallbackLoading || activeUsersFallbackLoading || organizationsFallbackLoading
 
   const statCards = [
-    { label: "Total Users",    value: stats?.users?.total?.toLocaleString(),         icon: Users,     color: "bg-primary" },
-    { label: "Active Users",   value: stats?.users?.active?.toLocaleString(),        icon: Activity,  color: "bg-emerald-500" },
-    { label: "Organizations",  value: stats?.organizations?.total?.toLocaleString(), icon: Building2, color: "bg-secondary" },
-    { label: "AI Queries",     value: stats?.queries?.total?.toLocaleString(),       icon: Bot,       color: "bg-warning" },
+    { label: "Total Users",    value: formatCount(userTotal),         icon: Users,     color: CHART_COLORS.users },
+    { label: "Active Users",   value: formatCount(activeUserTotal),   icon: Activity,  color: CHART_COLORS.active },
+    { label: "Organizations",  value: formatCount(organizationTotal), icon: Building2, color: CHART_COLORS.organizations },
+    { label: "AI Queries",     value: formatCount(aiQueryTotal),      icon: Bot,       color: CHART_COLORS.queries },
   ]
 
   const typedHealth = health as {
@@ -86,18 +141,18 @@ export default function AdminDashboard() {
         {statCards.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.label}>
+            <Card key={stat.label} className="transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow-green-sm">
               <CardContent className="pt-5 pb-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    {statsLoading
+                    {cardLoading
                       ? <Skeleton className="h-8 w-20 mt-1" />
                       : <p className="text-2xl font-bold text-foreground mt-1">{stat.value ?? "0"}</p>
                     }
                   </div>
-                  <div className={`p-2.5 rounded-lg ${stat.color}`}>
-                    <Icon className="h-5 w-5 text-white" />
+                  <div className="p-2.5 rounded-lg" style={{ backgroundColor: `${stat.color}22` }}>
+                    <Icon className="h-5 w-5" style={{ color: stat.color }} />
                   </div>
                 </div>
               </CardContent>
@@ -113,7 +168,7 @@ export default function AdminDashboard() {
             <CardTitle className="text-sm font-medium text-muted-foreground">User Signups (last 30 days)</CardTitle>
           </CardHeader>
           <CardContent>
-            {!growth?.series?.length ? (
+            {!growth?.series?.length || !hasSeriesActivity(growth.series) ? (
               <div className="h-36 flex items-center justify-center text-muted-foreground/40">
                 <Users className="w-8 h-8" />
               </div>
@@ -121,10 +176,19 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height={144}>
                 <LineChart data={growth.series} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v: string) => new Date(v).toLocaleDateString("en-KE", { month: "short", day: "numeric" })} />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={formatShortDate} />
                   <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} formatter={(v: number) => [v, "Users"]} />
-                  <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [value, "Users"]} labelFormatter={formatShortDate} />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke={CHART_COLORS.users}
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                    isAnimationActive
+                    animationDuration={650}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -136,19 +200,28 @@ export default function AdminDashboard() {
             <CardTitle className="text-sm font-medium text-muted-foreground">AI Queries (last 30 days)</CardTitle>
           </CardHeader>
           <CardContent>
-            {!aiUsage?.series?.length ? (
+            {!aiUsage?.series?.length || !hasSeriesActivity(aiUsage.series) ? (
               <div className="h-36 flex items-center justify-center text-muted-foreground/40">
                 <Zap className="w-8 h-8" />
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={144}>
-                <BarChart data={aiUsage.series} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <LineChart data={aiUsage.series} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v: string) => new Date(v).toLocaleDateString("en-KE", { month: "short", day: "numeric" })} />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={formatShortDate} />
                   <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} formatter={(v: number) => [v, "Queries"]} />
-                  <Bar dataKey="count" fill="hsl(var(--warning))" radius={[2, 2, 0, 0]} />
-                </BarChart>
+                  <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [value, "Queries"]} labelFormatter={formatShortDate} />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke={CHART_COLORS.queries}
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                    isAnimationActive
+                    animationDuration={650}
+                  />
+                </LineChart>
               </ResponsiveContainer>
             )}
           </CardContent>

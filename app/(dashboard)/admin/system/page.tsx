@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Settings, Database, Server, Shield, Mail, AlertTriangle, Loader2, Save,
 } from "lucide-react"
@@ -26,6 +27,7 @@ interface SystemConfigValues {
   defaultSubscriptionTier: string
   supportEmail: string
   securityAlertEmail: string
+  sessionTimeoutHours: number
   resourceUsageAlertThreshold: number
   webhookFailureAlertThreshold: number
   passwordMinLength: number
@@ -52,7 +54,7 @@ const CONFIG_GROUPS: { label: string; icon: React.ElementType; keys: (keyof Syst
   {
     label: "Security",
     icon: Shield,
-    keys: ["securityAlertEmail", "passwordMinLength"],
+    keys: ["securityAlertEmail", "sessionTimeoutHours", "passwordMinLength"],
   },
   {
     label: "Alerts",
@@ -72,6 +74,7 @@ const CONFIG_LABELS: Record<string, string> = {
   defaultSubscriptionTier: "Default Subscription Tier",
   supportEmail: "Support Email",
   securityAlertEmail: "Security Alert Email",
+  sessionTimeoutHours: "Session Timeout (Hours)",
   resourceUsageAlertThreshold: "Resource Alert Threshold (%)",
   webhookFailureAlertThreshold: "Webhook Failure Threshold",
   passwordMinLength: "Min Password Length",
@@ -80,8 +83,41 @@ const CONFIG_LABELS: Record<string, string> = {
 
 function configInputType(key: string): "boolean" | "number" | "text" {
   if (["maintenanceMode", "allowNewRegistrations", "requireEmailVerification", "automatedBackupsEnabled"].includes(key)) return "boolean"
-  if (["maxFileUploadMB", "maxQueriesPerHour", "maxPoliciesPerHour", "resourceUsageAlertThreshold", "webhookFailureAlertThreshold", "passwordMinLength"].includes(key)) return "number"
+  if (["maxFileUploadMB", "maxQueriesPerHour", "maxPoliciesPerHour", "resourceUsageAlertThreshold", "webhookFailureAlertThreshold", "sessionTimeoutHours", "passwordMinLength"].includes(key)) return "number"
   return "text"
+}
+
+type ServiceStatus = "healthy" | "degraded" | "down" | "unknown"
+
+interface ServiceHealth {
+  status?: string
+  latencyMs?: number
+  message?: string
+}
+
+function normalizeStatus(status?: string): ServiceStatus {
+  if (status === "healthy" || status === "degraded" || status === "down") return status
+  return "unknown"
+}
+
+function statusBadgeClass(status: ServiceStatus): string {
+  if (status === "healthy") return "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
+  if (status === "degraded") return "bg-amber-500/10 text-amber-700 border-amber-500/20"
+  if (status === "down") return "bg-destructive/10 text-destructive border-destructive/20"
+  return "bg-muted text-muted-foreground border-border"
+}
+
+function statusLabel(status: ServiceStatus): string {
+  if (status === "healthy") return "Healthy"
+  if (status === "degraded") return "Degraded"
+  if (status === "down") return "Down"
+  return "Unknown"
+}
+
+function serviceDetail(service?: ServiceHealth): string | null {
+  if (!service) return null
+  if (typeof service.latencyMs === "number") return `${service.latencyMs} ms`
+  return service.message ?? null
 }
 
 export default function SystemSettingsPage() {
@@ -111,6 +147,8 @@ export default function SystemSettingsPage() {
   const maintenanceMutation = trpc.admin.setMaintenanceMode.useMutation({
     onSuccess: () => {
       void utils.admin.getSystemConfig.invalidate()
+      void utils.admin.getFeatureFlags.invalidate()
+      void utils.admin.getDetailedHealth.invalidate()
       toast.success("Maintenance mode updated")
     },
     onError: (err) => toast.error(err.message),
@@ -124,6 +162,7 @@ export default function SystemSettingsPage() {
   useEffect(() => {
     if (systemConfigData) {
       setLocalConfig(systemConfigData as SystemConfigValues)
+      setMaintenanceMessage(String((systemConfigData as Partial<SystemConfigValues>).maintenanceMessage ?? ""))
       setDirty(false)
     }
   }, [systemConfigData])
@@ -154,19 +193,22 @@ export default function SystemSettingsPage() {
   const h = health as {
     status?: "healthy" | "degraded" | "down"
     services?: {
-      database?: { status?: string }
-      redis?: { status?: string }
-      pinecone?: { status?: string }
-      storage?: { status?: string }
+      database?: ServiceHealth
+      redis?: ServiceHealth
+      pinecone?: ServiceHealth
+      storage?: ServiceHealth
     }
     uptime?: number
     version?: string
+    checkedAt?: string | Date
   } | undefined
 
-  const dbOk = h?.services?.database?.status !== "down"
-  const redisOk = h?.services?.redis?.status !== "down"
-  const pineconeOk = h?.services?.pinecone?.status !== "down"
-  const storageOk = h?.services?.storage?.status !== "down"
+  const systemStatus = normalizeStatus(h?.status)
+  const dbStatus = normalizeStatus(h?.services?.database?.status)
+  const redisStatus = normalizeStatus(h?.services?.redis?.status)
+  const pineconeStatus = normalizeStatus(h?.services?.pinecone?.status)
+  const storageStatus = normalizeStatus(h?.services?.storage?.status)
+  const checkedAt = h?.checkedAt ? new Date(h.checkedAt).toLocaleString() : null
 
   return (
     <div className="space-y-6">
@@ -196,38 +238,56 @@ export default function SystemSettingsPage() {
               <>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">API Server</span>
-                  <Badge className="bg-primary/10 text-primary">Healthy</Badge>
+                  <Badge className={statusBadgeClass(systemStatus)}>{statusLabel(systemStatus)}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Database</span>
-                  <Badge className={dbOk ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}>
-                    {dbOk ? "Connected" : "Error"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {serviceDetail(h?.services?.database) && (
+                      <span className="text-xs text-muted-foreground">{serviceDetail(h?.services?.database)}</span>
+                    )}
+                    <Badge className={statusBadgeClass(dbStatus)}>{statusLabel(dbStatus)}</Badge>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">AI / Vector DB</span>
-                  <Badge className={pineconeOk ? "bg-primary/10 text-primary" : "bg-yellow-100 text-yellow-700"}>
-                    {pineconeOk ? "Operational" : "Degraded"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {serviceDetail(h?.services?.pinecone) && (
+                      <span className="text-xs text-muted-foreground">{serviceDetail(h?.services?.pinecone)}</span>
+                    )}
+                    <Badge className={statusBadgeClass(pineconeStatus)}>{statusLabel(pineconeStatus)}</Badge>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Cache</span>
-                  <Badge className={redisOk ? "bg-primary/10 text-primary" : "bg-yellow-100 text-yellow-700"}>
-                    {redisOk ? "Connected" : "Disconnected"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {serviceDetail(h?.services?.redis) && (
+                      <span className="text-xs text-muted-foreground">{serviceDetail(h?.services?.redis)}</span>
+                    )}
+                    <Badge className={statusBadgeClass(redisStatus)}>{statusLabel(redisStatus)}</Badge>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Storage</span>
-                  <Badge className={storageOk ? "bg-primary/10 text-primary" : "bg-yellow-100 text-yellow-700"}>
-                    {storageOk ? "Online" : "Degraded"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {serviceDetail(h?.services?.storage) && (
+                      <span className="text-xs text-muted-foreground">{serviceDetail(h?.services?.storage)}</span>
+                    )}
+                    <Badge className={statusBadgeClass(storageStatus)}>{statusLabel(storageStatus)}</Badge>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Uptime</span>
                   <span className="text-sm font-medium text-foreground">
-                    {h?.uptime ? `${Math.floor(h.uptime / 3600)}h ${Math.floor((h.uptime % 3600) / 60)}m` : "—"}
+                    {h?.uptime ? `${Math.floor(h.uptime / 3600)}h ${Math.floor((h.uptime % 3600) / 60)}m` : "-"}
                   </span>
                 </div>
+                {checkedAt && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Last Check</span>
+                    <span className="text-xs font-medium text-muted-foreground">{checkedAt}</span>
+                  </div>
+                )}
               </>
             )}
           </CardContent>
@@ -335,6 +395,21 @@ export default function SystemSettingsPage() {
                                 {currentValue ? "Enabled" : "Disabled"}
                               </span>
                             </div>
+                          ) : key === "defaultSubscriptionTier" ? (
+                            <Select
+                              value={String(currentValue ?? "starter")}
+                              onValueChange={(val) => handleConfigChange(key as string, val)}
+                            >
+                              <SelectTrigger className="bg-muted/50 h-9 text-sm">
+                                <SelectValue placeholder="Select tier" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="starter">Starter</SelectItem>
+                                <SelectItem value="STARTUP">Startup</SelectItem>
+                                <SelectItem value="BUSINESS">Business</SelectItem>
+                                <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+                              </SelectContent>
+                            </Select>
                           ) : (
                             <Input
                               type={inputType}
@@ -387,9 +462,7 @@ export default function SystemSettingsPage() {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Status</span>
-              <Badge className={dbOk ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}>
-                {dbOk ? "Healthy" : "Error"}
-              </Badge>
+              <Badge className={statusBadgeClass(dbStatus)}>{statusLabel(dbStatus)}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Provider</span>
