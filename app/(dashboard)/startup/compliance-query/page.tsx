@@ -427,6 +427,12 @@ export default function ComplianceQueryPage() {
                                       <p className="text-xs font-medium text-foreground">
                                         {citation.documentTitle}
                                       </p>
+                                      {citation.authorityStatus && citation.authorityStatus !== "IN_FORCE" && (
+                                        <Badge variant="outline" className="mt-1 h-5 px-1.5 text-[10px]">
+                                          {citation.authorityStatus.replace(/_/g, " ")}
+                                          {citation.isBinding === false ? " / Non-binding" : ""}
+                                        </Badge>
+                                      )}
                                       {citation.section && (
                                         <p className="text-xs text-muted-foreground">
                                           {citation.section}

@@ -11,7 +11,10 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-coco)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
+        numeric: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-munich)', 'var(--font-coco)', 'system-ui', 'sans-serif'],
+        brand: ['var(--font-basicaline)', 'var(--font-coco)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-mono)', 'monospace'],
       },
       colors: {

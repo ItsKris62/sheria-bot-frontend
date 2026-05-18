@@ -435,7 +435,7 @@ export default function BillingSettingsPage() {
                     {displayPrice !== null ? (
                       <>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-bold text-foreground">
+                          <span className="font-numeric text-2xl font-bold text-foreground">
                             {formatPrice(displayPrice, 'KES')}
                           </span>
                           {displayPrice > 0 && (
@@ -449,7 +449,7 @@ export default function BillingSettingsPage() {
                         )}
                       </>
                     ) : (
-                      <span className="text-2xl font-bold text-foreground">Custom</span>
+                      <span className="font-numeric text-2xl font-bold text-foreground">Custom</span>
                     )}
                   </div>
 

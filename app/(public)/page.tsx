@@ -168,17 +168,6 @@ export default function LandingPage() {
   return (
     <div ref={parallaxRef} className="relative overflow-hidden">
       <DemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
-      {/* Subtle grid background */}
-      <div 
-        className="pointer-events-none fixed inset-0 z-0"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(34, 197, 94, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(34, 197, 94, 0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '64px 64px',
-        }}
-      />
 
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center pt-20 pb-32">
@@ -221,9 +210,9 @@ export default function LandingPage() {
                 size="lg"
                 variant="outline"
                 onClick={() => setDemoOpen(true)}
-                className="group w-full sm:w-auto rounded-xl border-border-strong bg-transparent hover:bg-surface hover:border-brand-green/30 transition-all duration-300 px-8 h-12 text-base"
+                className="group w-full sm:w-auto rounded-xl border-border-strong bg-transparent px-8 h-12 text-base text-foreground transition-all duration-300 hover:border-brand-green hover:bg-brand-green hover:text-foreground-on-green hover:shadow-glow-green focus-visible:ring-brand-green/50"
               >
-                <Play className="h-4 w-4" />
+                <Play className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
                 Watch Demo
               </Button>
             </div>
@@ -236,7 +225,7 @@ export default function LandingPage() {
                   className="group relative rounded-xl border border-border bg-surface/50 p-4 transition-all duration-300 hover:border-brand-green/30 hover:bg-surface"
                   data-parallax={0.05 + index * 0.02}
                 >
-                  <div className="text-2xl sm:text-3xl font-bold text-brand-green">{stat.value}</div>
+                  <div className="font-numeric text-2xl sm:text-3xl font-bold text-brand-green">{stat.value}</div>
                   <div className="mt-1 text-xs sm:text-sm text-foreground-muted">{stat.label}</div>
                 </div>
               ))}
@@ -349,7 +338,7 @@ export default function LandingPage() {
                 
                 <div className="relative rounded-2xl border border-border bg-surface p-8 transition-all duration-500 hover:border-brand-green/30">
                   {/* Step number */}
-                  <div className="absolute -top-4 left-8 flex h-8 items-center justify-center rounded-full bg-brand-green px-4 text-sm font-bold text-foreground-on-green">
+                  <div className="font-numeric absolute -top-4 left-8 flex h-8 items-center justify-center rounded-full bg-brand-green px-4 text-sm font-bold text-foreground-on-green">
                     {item.step}
                   </div>
                   
@@ -367,8 +356,11 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-24 sm:py-32 scroll-mt-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section id="testimonials" className="relative overflow-hidden py-24 sm:py-32 scroll-mt-20">
+        <div className="absolute inset-x-4 top-44 h-80 bg-[linear-gradient(115deg,transparent_0%,rgba(6,78,59,0.32)_18%,rgba(34,197,94,0.18)_48%,rgba(13,148,136,0.14)_68%,transparent_100%)] blur-3xl pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-10 h-40 bg-[linear-gradient(90deg,transparent_0%,rgba(17,24,39,0.82)_22%,rgba(6,78,59,0.38)_50%,rgba(17,24,39,0.82)_78%,transparent_100%)] blur-2xl pointer-events-none" />
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-6 border-brand-green/30 text-brand-green bg-brand-green/5 px-4 py-1">
               Testimonials
@@ -379,39 +371,48 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="mt-20 grid gap-8 lg:grid-cols-3">
+          <div className="relative mt-20 grid gap-6 lg:grid-cols-3 lg:items-center lg:gap-5">
             {testimonials.map((testimonial, index) => (
-              <Card 
+              <div
                 key={testimonial.author} 
-                className="group border-border bg-surface/50 backdrop-blur-sm hover:border-brand-green/30 transition-all duration-500"
                 data-parallax={0.1 + index * 0.05}
               >
-                <CardContent className="p-8">
-                  <div className="flex gap-1 text-brand-green">
-                    {[...Array(5)].map((_, i) => (
-                      <Sparkles key={i} className="h-4 w-4 fill-current" />
-                    ))}
-                  </div>
-                  <p className="mt-6 text-foreground-muted leading-relaxed text-lg italic">&ldquo;{testimonial.quote}&rdquo;</p>
-                  <div className="mt-8 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-green/10 text-brand-green font-bold text-lg">
-                      {testimonial.author.split(" ").map((n) => n[0]).join("")}
+                <Card
+                  className={`group relative overflow-hidden border border-white/10 border-l-white/20 border-t-white/25 bg-surface/55 shadow-elevated backdrop-blur-2xl transition-all duration-500 hover:border-brand-green/35 hover:bg-surface/70 hover:shadow-glow-green ${
+                    index === 1
+                      ? "z-10 bg-surface/75 shadow-glow-green lg:-translate-y-6 lg:scale-[1.04]"
+                      : "opacity-[0.82] lg:translate-y-8 lg:scale-[0.94] hover:opacity-100"
+                  }`}
+                >
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-white/45 via-brand-green/35 to-transparent" />
+                  <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/35 via-brand-green/20 to-transparent" />
+                  <div className="absolute inset-x-0 -top-px h-28 bg-gradient-to-b from-brand-green/10 via-brand-green/5 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-100" />
+
+                  <CardContent className={`${index === 1 ? "p-9" : "p-8"}`}>
+                    <p className={`${index === 1 ? "text-xl text-foreground" : "text-lg text-foreground-secondary"} leading-relaxed font-medium`}>
+                      &ldquo;{testimonial.quote}&rdquo;
+                    </p>
+                    <div className="mt-8 flex items-center gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-brand-green/20 bg-brand-green/10 text-brand-green font-bold text-lg shadow-glow-green-sm">
+                        {testimonial.author.split(" ").map((n) => n[0]).join("")}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">{testimonial.author}</p>
+                        <p className="text-sm text-foreground-muted">{testimonial.role}, {testimonial.company}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-foreground">{testimonial.author}</p>
-                      <p className="text-sm text-foreground-muted">{testimonial.role}, {testimonial.company}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="relative border-y border-border bg-surface/30 py-24 sm:py-32">
-        <div className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-brand-green/5 rounded-full blur-[100px] pointer-events-none" data-parallax="0.3" />
+      <section id="pricing" className="relative overflow-hidden border-y border-border bg-surface/30 py-24 sm:py-32">
+        <div className="absolute inset-x-6 top-44 h-72 bg-[linear-gradient(115deg,transparent_0%,rgba(6,78,59,0.12)_26%,rgba(34,197,94,0.08)_52%,rgba(13,148,136,0.08)_72%,transparent_100%)] blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-[rgba(34,197,94,0.03)] rounded-full blur-[100px] pointer-events-none" data-parallax="0.3" />
         
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
@@ -427,50 +428,58 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="mt-20 grid gap-8 lg:grid-cols-3">
+          <div className="relative mt-20 grid gap-6 lg:grid-cols-3 lg:items-center lg:gap-5">
             {pricingPlans.map((plan, index) => (
-              <Card 
+              <div
                 key={plan.name} 
-                className={`group relative transition-all duration-500 ${
-                  plan.popular 
-                    ? "border-brand-green/50 bg-surface shadow-glow-green scale-105 z-10" 
-                    : "border-border bg-surface/50 backdrop-blur-sm hover:border-brand-green/30"
-                }`}
+                className="relative"
                 data-parallax={0.1 + index * 0.03}
               >
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <div className="absolute -top-4 left-1/2 z-20 -translate-x-1/2">
                     <Badge className="bg-brand-green text-foreground-on-green shadow-glow-green-sm px-4 py-1">Most Popular</Badge>
                   </div>
                 )}
-                <CardContent className="p-8">
-                  <h3 className="text-2xl font-semibold text-foreground">{plan.name}</h3>
-                  <p className="mt-2 text-sm text-foreground-muted">{plan.description}</p>
-                  <div className="mt-6">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-foreground-muted">{plan.period}</span>
-                  </div>
-                  <ul className="mt-8 space-y-4">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm text-foreground-muted">
-                        <CheckCircle2 className="h-4 w-4 text-brand-green shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    className={`mt-8 w-full rounded-xl ${
+                <Card
+                  className={`group relative overflow-hidden border border-white/10 border-l-white/20 border-t-white/25 bg-surface/55 shadow-elevated backdrop-blur-2xl transition-all duration-500 hover:border-brand-green/30 hover:bg-surface/70 ${
+                    plan.popular
+                      ? "z-10 bg-surface/75 shadow-glow-green-sm lg:-translate-y-5 lg:scale-[1.04]"
+                      : "opacity-[0.86] lg:translate-y-7 lg:scale-[0.95] hover:opacity-100"
+                  }`}
+                >
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-white/40 via-brand-green/25 to-transparent" />
+                  <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/30 via-brand-green/15 to-transparent" />
+                  <div className="absolute inset-x-0 -top-px h-24 bg-gradient-to-b from-[rgba(34,197,94,0.07)] via-[rgba(34,197,94,0.025)] to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-100" />
+
+                  <CardContent className="relative z-10 p-8">
+                    <h3 className="text-2xl font-semibold text-foreground">{plan.name}</h3>
+                    <p className="mt-2 text-sm text-foreground-muted">{plan.description}</p>
+                    <div className="mt-6">
+                      <span className="font-numeric text-4xl font-bold text-foreground">{plan.price}</span>
+                      <span className="text-foreground-muted">{plan.period}</span>
+                    </div>
+                    <ul className="mt-8 space-y-4">
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-3 text-sm text-foreground-muted">
+                          <CheckCircle2 className="h-4 w-4 text-brand-green shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      className={`mt-8 w-full rounded-xl ${
                       plan.popular 
                         ? "bg-brand-green text-foreground-on-green hover:bg-brand-green-hover shadow-glow-green-sm" 
                         : "bg-transparent border-border hover:bg-brand-green/10 hover:border-brand-green/30 hover:text-brand-green"
-                    }`}
-                    variant={plan.popular ? "default" : "outline"}
-                    asChild
-                  >
-                    <Link href={plan.name === "Enterprise" ? "/contact" : "/register"}>{plan.cta}</Link>
-                  </Button>
-                </CardContent>
-              </Card>
+                      }`}
+                      variant={plan.popular ? "default" : "outline"}
+                      asChild
+                    >
+                      <Link href={plan.name === "Enterprise" ? "/contact" : "/register"}>{plan.cta}</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             ))}
           </div>
           

@@ -212,7 +212,7 @@ export default function ForRegulatorsPage() {
               ].map((stat) => (
                 <Card key={stat.label} className="border-border/50 bg-card/50">
                   <CardContent className="p-6 text-center">
-                    <p className="text-3xl font-bold text-primary">{stat.value}</p>
+                    <p className="font-numeric text-3xl font-bold text-primary">{stat.value}</p>
                     <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
                   </CardContent>
                 </Card>

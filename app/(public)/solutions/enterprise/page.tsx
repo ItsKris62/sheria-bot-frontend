@@ -256,7 +256,7 @@ export default function ForEnterprisePage() {
               <Card key={stat.label} className="border-border/50 bg-card/50">
                 <CardContent className="p-6 text-center">
                   <stat.icon className="mx-auto h-8 w-8 text-primary" />
-                  <p className="mt-3 text-3xl font-bold text-foreground">{stat.value}</p>
+                  <p className="font-numeric mt-3 text-3xl font-bold text-foreground">{stat.value}</p>
                   <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
                 </CardContent>
               </Card>

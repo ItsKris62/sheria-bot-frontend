@@ -137,7 +137,7 @@ export default function PricingPage() {
                   </CardHeader>
                   <CardContent className="flex flex-1 flex-col">
                     <div className="mb-6">
-                      <span className="text-4xl font-bold text-foreground">{priceDisplay}</span>
+                      <span className="font-numeric text-4xl font-bold text-foreground">{priceDisplay}</span>
                       {plan.price.monthly !== null && plan.price.monthly > 0 && (
                         <span className="text-muted-foreground">/month</span>
                       )}

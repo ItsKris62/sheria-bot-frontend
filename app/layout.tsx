@@ -1,6 +1,7 @@
 import React from "react"
 import type { Metadata, Viewport } from 'next'
-import { Inter, JetBrains_Mono } from 'next/font/google'
+import { Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Providers } from '@/components/providers'
@@ -10,12 +11,69 @@ import './globals.css'
 
 const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-inter'
+  variable: '--font-inter',
 })
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono'
+const cocoGothic = localFont({
+  src: [
+    {
+      path: './fonts/CocoGothic-Light.ttf',
+      weight: '300',
+      style: 'normal',
+    },
+    {
+      path: './fonts/CocoGothic-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-coco',
+  display: 'swap',
+  preload: false,
+  declarations: [
+    {
+      prop: 'unicode-range',
+      value: 'U+0041-005A, U+0061-007A, U+00C0-024F',
+    },
+  ],
+})
+
+const munichSans = localFont({
+  src: './fonts/MUNICH SANS.ttf',
+  variable: '--font-munich',
+  display: 'swap',
+  weight: '400',
+  style: 'normal',
+  preload: false,
+  declarations: [
+    {
+      prop: 'unicode-range',
+      value: 'U+0041-005A, U+0061-007A, U+00C0-024F',
+    },
+  ],
+})
+
+const basicaline = localFont({
+  src: './fonts/Basicaline.otf',
+  variable: '--font-basicaline',
+  display: 'swap',
+  weight: '400',
+  style: 'normal',
+  preload: false,
+  declarations: [
+    {
+      prop: 'unicode-range',
+      value: 'U+0041-005A, U+0061-007A, U+00C0-024F',
+    },
+  ],
+})
+
+const jetbrainsMono = localFont({
+  src: './fonts/JetBrainsMono-VariableFont_wght.ttf',
+  variable: '--font-mono',
+  display: 'swap',
+  weight: '100 800',
+  style: 'normal',
 })
 
 const BASE_URL = 'https://sheriabot.com'
@@ -115,9 +173,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark bg-background" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${cocoGothic.variable} ${munichSans.variable} ${basicaline.variable} ${jetbrainsMono.variable} dark bg-background`}
+      suppressHydrationWarning
+    >
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className="font-sans antialiased"
         suppressHydrationWarning
       >
         {/* Global JSON-LD: WebSite + Organization schema */}

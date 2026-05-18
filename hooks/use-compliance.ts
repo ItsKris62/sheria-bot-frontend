@@ -13,6 +13,10 @@ export interface CitationItem {
   textSnippet:   string;
   score:         number;
   citation:      string | null;
+  authorityStatus?: "DRAFT" | "IN_FORCE" | "SUPERSEDED" | "CONSULTATION" | string;
+  isBinding?: boolean;
+  source?: string | null;
+  version?: string | null;
 }
 
 /** Full orchestrated-path shape returned by both tRPC and SSE paths. */
