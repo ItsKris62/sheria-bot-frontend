@@ -25,7 +25,6 @@ import {
   Globe,
   Clock,
   ChevronRight,
-  Play,
 } from "lucide-react"
 
 const features = [
@@ -264,10 +263,11 @@ export default function LandingPage() {
                 size="lg"
                 variant="outline"
                 onClick={() => setDemoOpen(true)}
+                aria-label="Open tutorial videos"
                 className="group w-full sm:w-auto rounded-xl border-border-strong bg-transparent px-8 h-12 text-base text-foreground transition-all duration-300 hover:border-brand-green hover:bg-brand-green hover:text-foreground-on-green hover:shadow-glow-green focus-visible:ring-brand-green/50"
               >
                 <FileText className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-                 Tutorial
+                View Sample Answer
               </Button>
             </div>
 

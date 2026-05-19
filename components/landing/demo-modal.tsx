@@ -1,7 +1,14 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
-import { X, Play, Shield, FileText, BarChart3, Scale, Bell, ChevronRight, Ticket } from "lucide-react"
+import { type ReactNode, useState, useRef, useCallback } from "react"
+import { Play, Shield, FileText, BarChart3, Scale, Bell, ChevronRight, Ticket } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 const R2_BASE = "https://pub-724936356a15494f9ce61480c5225e6f.r2.dev/demos"
 
@@ -9,7 +16,7 @@ interface DemoSection {
   id: string
   title: string
   description: string
-  icon: React.ReactNode
+  icon: ReactNode
   videoUrl: string
 }
 
@@ -17,14 +24,14 @@ const DEMO_SECTIONS: DemoSection[] = [
   {
     id: "ai-compliance",
     title: "AI Compliance Queries",
-    description: "Ask complex regulatory questions and get instant, cited answers",
+    description: "Ask regulatory questions and review cited answers",
     icon: <Shield className="h-4 w-4" />,
     videoUrl: `${R2_BASE}/compliance-c.mp4`,
   },
   {
     id: "compliance-checklist",
     title: "Compliance Checklist",
-    description: "Auto-generate tailored checklists based on your business type",
+    description: "Generate checklists for your fintech workflow",
     icon: <FileText className="h-4 w-4" />,
     videoUrl: `${R2_BASE}/0421.mp4`,
   },
@@ -38,14 +45,14 @@ const DEMO_SECTIONS: DemoSection[] = [
   {
     id: "gap-analysis",
     title: "Gap Analysis",
-    description: "Upload documents and identify compliance gaps instantly",
+    description: "Upload documents and identify compliance gaps",
     icon: <BarChart3 className="h-4 w-4" />,
     videoUrl: "",
   },
   {
     id: "policy-library",
     title: "Policy Library",
-    description: "Browse and search Kenya's full regulatory document library",
+    description: "Browse and search Kenya's regulatory library",
     icon: <Scale className="h-4 w-4" />,
     videoUrl: "",
   },
@@ -80,54 +87,29 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
     setVideoError(false)
   }, [])
 
-  useEffect(() => {
-    if (!open) return
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
-    document.addEventListener("keydown", handleKey)
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.removeEventListener("keydown", handleKey)
-      document.body.style.overflow = ""
-    }
-  }, [open, onClose])
-
-  if (!open) return null
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose()
+      }}
     >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-
-      {/* Modal */}
-      <div className="relative z-10 w-full max-w-6xl rounded-2xl border border-border bg-background shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Product Demo</h2>
-            <p className="text-sm text-foreground-muted">See how SheriaBot works for your fintech</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-2 text-foreground-muted hover:text-foreground hover:bg-surface transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+      <DialogContent className="flex max-h-[90vh] w-[calc(100vw-2rem)] max-w-6xl flex-col gap-0 overflow-hidden rounded-2xl border-border bg-background p-0 shadow-2xl">
+        <DialogHeader className="border-b border-border px-6 pb-4 pt-6 pr-14 text-left">
+          <DialogTitle className="text-lg font-semibold text-foreground">Tutorial Videos</DialogTitle>
+          <DialogDescription className="text-sm text-foreground-muted">
+            Watch short walkthroughs on how to navigate SheriaBot and complete common compliance tasks.
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Body */}
-        <div className="flex flex-1 overflow-hidden min-h-0">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
 
           {/* Sidebar */}
-          <div className="w-64 flex-shrink-0 border-r border-border overflow-y-auto bg-surface/30">
+          <div className="max-h-56 w-full flex-shrink-0 overflow-y-auto border-b border-border bg-surface/30 md:max-h-none md:w-72 md:border-b-0 md:border-r">
             <div className="p-3">
               <p className="px-3 py-2 text-xs font-medium text-foreground-muted uppercase tracking-wider">
-                Feature Tours
+                Tutorial Library
               </p>
               {DEMO_SECTIONS.map((section) => {
                 const isActive = activeSection.id === section.id
@@ -136,6 +118,7 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
                   <button
                     key={section.id}
                     onClick={() => handleSectionChange(section)}
+                    aria-pressed={isActive}
                     className={`w-full text-left rounded-xl px-3 py-3 mb-1 transition-all duration-200 group ${
                       isActive
                         ? "bg-brand-green/10 border border-brand-green/30 text-brand-green"
@@ -164,8 +147,8 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
           </div>
 
           {/* Video panel */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 bg-black flex items-center justify-center relative min-h-0">
+          <div className="flex min-h-[22rem] flex-1 flex-col overflow-hidden">
+            <div className="relative flex min-h-0 flex-1 items-center justify-center bg-black">
               {activeSection.videoUrl && !videoError ? (
                 <video
                   ref={videoRef}
@@ -194,7 +177,7 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
                       rel="noopener noreferrer"
                       className="inline-block mt-3 text-xs text-brand-green underline underline-offset-2"
                     >
-                      Open video directly →
+                      Open video directly &gt;
                     </a>
                   </div>
                 </div>
@@ -206,14 +189,14 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
                   <div>
                     <p className="text-foreground font-medium text-lg">{activeSection.title}</p>
                     <p className="text-foreground-muted text-sm mt-1">{activeSection.description}</p>
-                    <p className="text-foreground-muted/50 text-xs mt-3">Demo video coming soon</p>
+                    <p className="text-foreground-muted/50 text-xs mt-3">Tutorial video coming soon</p>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Video meta */}
-            <div className="px-6 py-4 border-t border-border flex-shrink-0 bg-surface/20">
+            <div className="flex-shrink-0 border-t border-border bg-surface/20 px-6 py-4">
               <div className="flex items-center gap-3">
                 <span className="text-brand-green">{activeSection.icon}</span>
                 <div>
@@ -229,7 +212,7 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
