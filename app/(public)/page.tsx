@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { type ReactNode, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { DemoModal } from "@/components/landing/demo-modal"
+import { PricingSection } from "@/components/landing/pricing-section"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { LogoMarquee, LogoMarqueeCompact } from "@/components/landing/logo-marquee"
+import { LogoMarquee } from "@/components/landing/logo-marquee"
+import { ComplianceEvidenceSection } from "@/components/landing/compliance-evidence-section"
 import { REGULATOR_LOGOS } from "@/lib/constants/logos"
 import {
   Scale,
@@ -15,7 +17,6 @@ import {
   FileText,
   Users,
   BarChart3,
-  CheckCircle2,
   ArrowRight,
   Sparkles,
   BookOpen,
@@ -30,33 +31,33 @@ import {
 const features = [
   {
     icon: Sparkles,
-    title: "AI Policy Generator",
-    description: "Generate comprehensive regulatory policies in minutes with AI-powered analysis of Kenya's legal corpus.",
+    title: "Generate regulator-ready policies in minutes",
+    description: "Instantly draft customized compliance documents tailored to your specific fintech business model.",
   },
   {
     icon: BookOpen,
-    title: "Legal Corpus Access",
-    description: "Access a complete database of CBK guidelines, Data Protection Act, AML regulations, and more.",
-  },
-  {
-    icon: Shield,
-    title: "Compliance Checklists",
-    description: "Auto-generated checklists tailored to your fintech product and regulatory requirements.",
-  },
-  {
-    icon: Bell,
-    title: "Regulatory Alerts",
-    description: "Stay ahead with real-time notifications on regulatory changes affecting your business.",
+    title: "Ask CBK, AML, and Data Protection questions with citations",
+    description: "Get accurate, source-backed answers from Kenya's comprehensive legal and regulatory corpus.",
   },
   {
     icon: FileText,
-    title: "Gap Analysis",
-    description: "Upload your policies and get instant AI-powered gap analysis against current regulations.",
+    title: "Track compliance gaps before they become audit issues",
+    description: "Proactively identify and resolve missing policies or regulatory requirements in your operations.",
+  },
+  {
+    icon: Bell,
+    title: "Receive alerts when Kenyan fintech rules change",
+    description: "Stay ahead of the curve with real-time notifications whenever relevant regulations are updated.",
+  },
+  {
+    icon: Shield,
+    title: "Build checklists for licensing, KYC, and reporting obligations",
+    description: "Ensure you meet every regulatory requirement with auto-generated, step-by-step compliance workflows.",
   },
   {
     icon: BarChart3,
-    title: "Analytics Dashboard",
-    description: "Track compliance status, query history, and regulatory trends with visual analytics.",
+    title: "Prove compliance with audit-ready visual reporting",
+    description: "Maintain a clear, traceable history of your compliance queries and regulatory alignment for regulators.",
   },
 ]
 
@@ -88,60 +89,13 @@ const testimonials = [
   },
 ]
 
-const pricingPlans = [
-  {
-    name: "Startup",
-    price: "KES 25,000",
-    period: "/month",
-    description: "Perfect for growing fintech startups",
-    features: [
-      "Unlimited compliance queries",
-      "5 checklist generations/month",
-      "Regulatory alerts",
-      "Basic analytics",
-      "Email support",
-    ],
-    cta: "Start Free Trial",
-    popular: false,
-  },
-  {
-    name: "Business",
-    price: "KES 75,000",
-    period: "/month",
-    description: "For established fintech companies",
-    features: [
-      "Everything in Startup",
-      "Unlimited checklist generations",
-      "Gap analysis tool",
-      "API access",
-      "Advanced analytics",
-      "Priority support",
-    ],
-    cta: "Start Free Trial",
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    period: "",
-    description: "For regulators and large institutions",
-    features: [
-      "Everything in Business",
-      "Policy generator",
-      "Legal corpus management",
-      "Custom integrations",
-      "Dedicated support",
-      "SLA guarantee",
-    ],
-    cta: "Contact Sales",
-    popular: false,
-  },
-]
-
 function useParallax() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (prefersReducedMotion) return
+
     const handleScroll = () => {
       if (!ref.current) return
       const elements = ref.current.querySelectorAll("[data-parallax]")
@@ -150,15 +104,118 @@ function useParallax() {
         const rect = el.getBoundingClientRect()
         const speed = Number.parseFloat(el.getAttribute("data-parallax") || "0.5")
         const yPos = (window.innerHeight - rect.top) * speed * 0.1
-        ;(el as HTMLElement).style.transform = `translateY(${yPos}px)`
+        const element = el as HTMLElement
+
+        if (element.hasAttribute("data-ambient-layer")) {
+          element.style.setProperty("--parallax-y", `${yPos}px`)
+        } else {
+          element.style.transform = `translateY(${yPos}px)`
+        }
       })
     }
 
+    const handlePointerMove = (event: PointerEvent) => {
+      if (!ref.current || event.pointerType === "touch") return
+
+      const target = event.target as Element | null
+      const section = target?.closest("[data-ambient-section]") as HTMLElement | null
+      if (!section) return
+
+      const rect = section.getBoundingClientRect()
+      const x = ((event.clientX - rect.left) / rect.width) * 100
+      const y = ((event.clientY - rect.top) / rect.height) * 100
+      const driftX = (x - 50) / 50
+      const driftY = (y - 50) / 50
+
+      section.style.setProperty("--mouse-x", `${x}%`)
+      section.style.setProperty("--mouse-y", `${y}%`)
+      section.style.setProperty("--drift-x", driftX.toFixed(3))
+      section.style.setProperty("--drift-y", driftY.toFixed(3))
+      section.style.setProperty("--drift-x-px", `${(driftX * 8).toFixed(2)}px`)
+      section.style.setProperty("--drift-y-px", `${(driftY * 6).toFixed(2)}px`)
+      section.style.setProperty("--drift-x-px-inverse", `${(driftX * -5).toFixed(2)}px`)
+      section.style.setProperty("--drift-y-px-inverse", `${(driftY * -4).toFixed(2)}px`)
+    }
+
+    handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
+    window.addEventListener("pointermove", handlePointerMove, { passive: true })
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("pointermove", handlePointerMove)
+    }
   }, [])
 
   return ref
+}
+
+function SectionAtmosphere({
+  tone = "green",
+  density = "normal",
+}: {
+  tone?: "green" | "gold"
+  density?: "quiet" | "normal"
+}) {
+  const accent =
+    tone === "gold"
+      ? "rgba(198,161,91,0.12)"
+      : "rgba(30,215,96,0.11)"
+  const secondary =
+    tone === "gold"
+      ? "rgba(30,215,96,0.045)"
+      : "rgba(15,169,88,0.055)"
+  const opacity = density === "quiet" ? "opacity-55" : "opacity-80"
+
+  return (
+    <>
+      <div
+        className={`pointer-events-none absolute inset-0 -z-10 transition-[background,transform,opacity] duration-700 ease-out ${opacity}`}
+        style={{
+          background: `radial-gradient(circle at var(--mouse-x,50%) var(--mouse-y,30%), ${accent}, transparent 30%), linear-gradient(115deg, transparent 0%, ${secondary} 42%, transparent 76%)`,
+          transform:
+            "translate3d(var(--drift-x-px,0px), calc(var(--parallax-y,0px) + var(--drift-y-px,0px)), 0)",
+        }}
+        data-parallax={density === "quiet" ? "0.035" : "0.055"}
+        data-ambient-layer
+      />
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.12] [background-image:linear-gradient(rgba(245,247,246,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(245,247,246,0.06)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:radial-gradient(circle_at_var(--mouse-x,50%)_var(--mouse-y,45%),black,transparent_58%)] motion-reduce:hidden"
+        style={{
+          transform:
+            "translate3d(var(--drift-x-px-inverse,0px), calc(var(--parallax-y,0px) + var(--drift-y-px-inverse,0px)), 0)",
+        }}
+        data-parallax="0.025"
+        data-ambient-layer
+      />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-brand-green/25 to-transparent" />
+    </>
+  )
+}
+
+function AmbientSection({
+  children,
+  className,
+  id,
+  tone,
+  density,
+}: {
+  children: ReactNode
+  className: string
+  id?: string
+  tone?: "green" | "gold"
+  density?: "quiet" | "normal"
+}) {
+  return (
+    <section
+      id={id}
+      data-ambient-section
+      className={`relative isolate overflow-hidden ${className}`}
+    >
+      <SectionAtmosphere tone={tone} density={density} />
+      {children}
+    </section>
+  )
 }
 
 export default function LandingPage() {
@@ -170,11 +227,7 @@ export default function LandingPage() {
       <DemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
 
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center pt-20 pb-32">
-        {/* Gradient orbs */}
-        <div className="absolute top-20 left-1/4 w-[500px] h-[500px] bg-brand-green/10 rounded-full blur-[120px] pointer-events-none" data-parallax="0.2" />
-        <div className="absolute bottom-20 right-1/4 w-[400px] h-[400px] bg-brand-green/5 rounded-full blur-[100px] pointer-events-none" data-parallax="0.3" />
-        
+      <AmbientSection className="flex min-h-[90vh] items-center pt-20 pb-32" density="normal">
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
           <div className="mx-auto max-w-4xl text-center">
             {/* Main headline */}
@@ -191,7 +244,8 @@ export default function LandingPage() {
 
             {/* Subheadline */}
             <p className="mt-8 text-lg sm:text-xl text-foreground-muted max-w-2xl mx-auto leading-relaxed text-balance">
-              Navigate CBK regulations, AML requirements, and data protection laws with AI assistance. Generate policies, track compliance, and stay ahead of regulatory changes.
+              <span className="block font-medium text-foreground mb-4">Kenyan fintech compliance, answered with legal citations.</span>
+              <span className="block">Ask questions about CBK, AML, KYC, Data Protection, and payment regulations. Get source-backed answers, generate checklists, and prepare audit-ready documents in minutes.</span>
             </p>
 
             {/* CTA buttons */}
@@ -202,7 +256,7 @@ export default function LandingPage() {
                 className="group w-full sm:w-auto bg-brand-green text-foreground-on-green hover:bg-brand-green-hover rounded-xl shadow-glow-green hover:shadow-glow-green transition-all duration-300 px-8 h-12 text-base font-semibold"
               >
                 <Link href="/register">
-                  Start Free Trial
+                  Run Your First Compliance Query
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>
               </Button>
@@ -212,8 +266,8 @@ export default function LandingPage() {
                 onClick={() => setDemoOpen(true)}
                 className="group w-full sm:w-auto rounded-xl border-border-strong bg-transparent px-8 h-12 text-base text-foreground transition-all duration-300 hover:border-brand-green hover:bg-brand-green hover:text-foreground-on-green hover:shadow-glow-green focus-visible:ring-brand-green/50"
               >
-                <Play className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-                Watch Demo
+                <FileText className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+                View Sample Answer
               </Button>
             </div>
 
@@ -232,26 +286,29 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </AmbientSection>
 
       {/* Logo Marquee Section */}
-      <section className="relative py-16 border-y border-border">
+      <AmbientSection className="border-y border-border py-16" density="quiet">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-foreground-muted mb-8 uppercase tracking-wider">
-            Trusted by Kenya&apos;s leading regulators and financial institutions
+          <p className="text-center text-sm font-medium text-foreground-muted mb-2 uppercase tracking-wider">
+            Built around Kenya&apos;s key regulatory frameworks
+          </p>
+          <p className="text-center text-xs text-foreground-muted/60 mb-8">
+            SheriaBot is not affiliated with or endorsed by the listed regulators.
           </p>
         </div>
         <LogoMarquee 
-          logos={REGULATOR_LOGOS} 
+          logos={REGULATOR_LOGOS as any} 
           speed="slow" 
           pauseOnHover 
         />
-      </section>
+      </AmbientSection>
+
+      <ComplianceEvidenceSection />
 
       {/* Features Section */}
-      <section id="features" className="relative py-24 sm:py-32 scroll-mt-20">
-        <div className="absolute top-1/2 left-0 w-[400px] h-[400px] bg-brand-green/5 rounded-full blur-[100px] -translate-y-1/2 pointer-events-none" />
-        
+      <AmbientSection id="features" className="py-24 sm:py-32 scroll-mt-20" density="quiet">
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-6 border-brand-green/30 text-brand-green bg-brand-green/5 px-4 py-1">
@@ -290,10 +347,10 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </AmbientSection>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="relative border-y border-border bg-surface/30 py-24 sm:py-32 scroll-mt-20">
+      <AmbientSection id="how-it-works" className="border-y border-border bg-surface/30 py-24 sm:py-32 scroll-mt-20" density="quiet">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-6 border-brand-green/30 text-brand-green bg-brand-green/5 px-4 py-1">
@@ -353,13 +410,10 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </AmbientSection>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="relative overflow-hidden py-24 sm:py-32 scroll-mt-20">
-        <div className="absolute inset-x-4 top-44 h-80 bg-[linear-gradient(115deg,transparent_0%,rgba(6,78,59,0.32)_18%,rgba(34,197,94,0.18)_48%,rgba(13,148,136,0.14)_68%,transparent_100%)] blur-3xl pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-10 h-40 bg-[linear-gradient(90deg,transparent_0%,rgba(17,24,39,0.82)_22%,rgba(6,78,59,0.38)_50%,rgba(17,24,39,0.82)_78%,transparent_100%)] blur-2xl pointer-events-none" />
-
+      <AmbientSection id="testimonials" className="py-24 sm:py-32 scroll-mt-20" density="normal">
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-6 border-brand-green/30 text-brand-green bg-brand-green/5 px-4 py-1">
@@ -407,91 +461,12 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </AmbientSection>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="relative overflow-hidden border-y border-border bg-surface/30 py-24 sm:py-32">
-        <div className="absolute inset-x-6 top-44 h-72 bg-[linear-gradient(115deg,transparent_0%,rgba(6,78,59,0.12)_26%,rgba(34,197,94,0.08)_52%,rgba(13,148,136,0.08)_72%,transparent_100%)] blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-[rgba(34,197,94,0.03)] rounded-full blur-[100px] pointer-events-none" data-parallax="0.3" />
-        
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <Badge variant="outline" className="mb-6 border-brand-green/30 text-brand-green bg-brand-green/5 px-4 py-1">
-              Pricing
-            </Badge>
-            <h2 className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl text-balance">
-              Simple, Transparent{" "}
-              <span className="text-brand-green">Pricing</span>
-            </h2>
-            <p className="mt-6 text-lg text-foreground-muted">
-              Start with a 14-day free trial. No credit card required.
-            </p>
-          </div>
-
-          <div className="relative mt-20 grid gap-6 lg:grid-cols-3 lg:items-center lg:gap-5">
-            {pricingPlans.map((plan, index) => (
-              <div
-                key={plan.name} 
-                className="relative"
-                data-parallax={0.1 + index * 0.03}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 z-20 -translate-x-1/2">
-                    <Badge className="bg-brand-green text-foreground-on-green shadow-glow-green-sm px-4 py-1">Most Popular</Badge>
-                  </div>
-                )}
-                <Card
-                  className={`group relative overflow-hidden border border-white/10 border-l-white/20 border-t-white/25 bg-surface/55 shadow-elevated backdrop-blur-2xl transition-all duration-500 hover:border-brand-green/30 hover:bg-surface/70 ${
-                    plan.popular
-                      ? "z-10 bg-surface/75 shadow-glow-green-sm lg:-translate-y-5 lg:scale-[1.04]"
-                      : "opacity-[0.86] lg:translate-y-7 lg:scale-[0.95] hover:opacity-100"
-                  }`}
-                >
-                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-white/40 via-brand-green/25 to-transparent" />
-                  <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/30 via-brand-green/15 to-transparent" />
-                  <div className="absolute inset-x-0 -top-px h-24 bg-gradient-to-b from-[rgba(34,197,94,0.07)] via-[rgba(34,197,94,0.025)] to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-100" />
-
-                  <CardContent className="relative z-10 p-8">
-                    <h3 className="text-2xl font-semibold text-foreground">{plan.name}</h3>
-                    <p className="mt-2 text-sm text-foreground-muted">{plan.description}</p>
-                    <div className="mt-6">
-                      <span className="font-numeric text-4xl font-bold text-foreground">{plan.price}</span>
-                      <span className="text-foreground-muted">{plan.period}</span>
-                    </div>
-                    <ul className="mt-8 space-y-4">
-                      {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-3 text-sm text-foreground-muted">
-                          <CheckCircle2 className="h-4 w-4 text-brand-green shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                    <Button
-                      className={`mt-8 w-full rounded-xl ${
-                      plan.popular 
-                        ? "bg-brand-green text-foreground-on-green hover:bg-brand-green-hover shadow-glow-green-sm" 
-                        : "bg-transparent border-border hover:bg-brand-green/10 hover:border-brand-green/30 hover:text-brand-green"
-                      }`}
-                      variant={plan.popular ? "default" : "outline"}
-                      asChild
-                    >
-                      <Link href={plan.name === "Enterprise" ? "/contact" : "/register"}>{plan.cta}</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
-          </div>
-          
-          {/* Compact logo strip in pricing */}
-          <div className="mt-16 pt-8 border-t border-border">
-            <LogoMarqueeCompact logos={REGULATOR_LOGOS} />
-          </div>
-        </div>
-      </section>
+      <PricingSection />
 
       {/* Trust Section */}
-      <section className="py-24">
+      <AmbientSection className="py-24" density="quiet">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold text-foreground sm:text-4xl text-balance">
@@ -505,7 +480,7 @@ export default function LandingPage() {
           <div className="mt-16 grid grid-cols-2 gap-8 sm:grid-cols-4">
             {[
               { icon: Lock, label: "End-to-End Encryption" },
-              { icon: Shield, label: "SOC 2 Compliant" },
+              { icon: Shield, label: "Role-Based Access Controls" },
               { icon: Globe, label: "Kenya Data Residency" },
               { icon: Clock, label: "99.9% Uptime SLA" },
             ].map((item, index) => (
@@ -522,13 +497,12 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </AmbientSection>
 
       {/* CTA Section */}
-      <section className="py-24">
+      <AmbientSection className="py-24" tone="gold" density="quiet">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Card className="relative overflow-hidden border-brand-green/30 bg-gradient-to-br from-brand-green/10 via-surface to-surface">
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-green/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
             <CardContent className="relative p-12 sm:p-16 text-center">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground text-balance">
                 Ready to Simplify Your{" "}
@@ -544,7 +518,7 @@ export default function LandingPage() {
                   className="group w-full sm:w-auto bg-brand-green text-foreground-on-green hover:bg-brand-green-hover rounded-xl shadow-glow-green hover:shadow-glow-green transition-all duration-300 hover:scale-105 px-8 h-12 font-semibold"
                 >
                   <Link href="/register">
-                    Start Free Trial
+                    Run Your First Compliance Query
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </Link>
                 </Button>
@@ -560,7 +534,7 @@ export default function LandingPage() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </AmbientSection>
     </div>
   )
 }

@@ -468,7 +468,7 @@ export default function AuthCallbackPage() {
               </div>
               <div className="flex items-center gap-1.5">
                 <Lock className="h-3.5 w-3.5 text-primary" />
-                <span>SOC 2 compliant infrastructure</span>
+                <span>Secure cloud infrastructure</span>
               </div>
             </div>
           )}

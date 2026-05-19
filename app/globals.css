@@ -265,6 +265,7 @@
 /* ── Smooth Scrolling */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 88px;
 }
 
 /* ── Custom Scrollbar */

@@ -1,215 +1,91 @@
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import {
-  CheckCircle2,
-  ArrowRight,
-  Zap,
-  Building2,
-  Scale,
-  HelpCircle,
-  Shield,
-} from "lucide-react"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import {
-  PUBLIC_PRICING_PLANS,
-  PLAN_COMPARISON_ROWS,
-  formatPrice,
-  getAnnualSavings,
-  type PlanId,
-} from "@/lib/config/plans"
+import { ArrowRight, HelpCircle } from "lucide-react"
 
-// ── Icon map for plan cards ─────────────────────────────────────────────────
-
-const PLAN_ICONS: Record<PlanId, React.ComponentType<{ className?: string }>> = {
-  REGULATOR: Shield,
-  STARTUP: Zap,
-  BUSINESS: Building2,
-  ENTERPRISE: Scale,
-}
-
-// ── Register CTA links per plan ─────────────────────────────────────────────
-
-const PLAN_CTA_LINKS: Record<PlanId, string> = {
-  REGULATOR: '/register',
-  STARTUP: '/register?plan=startup',
-  BUSINESS: '/register?plan=business',
-  ENTERPRISE: '/contact?subject=enterprise',
-}
-
-// ── FAQ data ─────────────────────────────────────────────────────────────────
+import { PricingSection } from "@/components/landing/pricing-section"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { PLAN_COMPARISON_ROWS } from "@/lib/config/plans"
 
 const faqs = [
   {
     question: "What payment methods do you accept?",
-    answer: "We accept M-Pesa, bank transfers, and major credit/debit cards. For Enterprise plans, we also offer invoicing with NET 30 terms.",
+    answer:
+      "We accept M-Pesa, bank transfers, and major credit/debit cards. Enterprise plans can also be invoiced with NET 30 terms.",
   },
   {
     question: "Can I change my plan later?",
-    answer: "Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll be prorated for the remainder of your billing cycle. Downgrades take effect at the next billing period.",
+    answer:
+      "Yes. You can upgrade or downgrade from billing settings. Upgrades are prorated, while downgrades take effect at the next billing period.",
   },
   {
     question: "Is there a free trial?",
-    answer: "Yes! Startup and Business plans come with a 14-day free trial with full access to features. No credit card required to start.",
+    answer:
+      "Yes. Startup and Business plans include a 14-day free trial with no credit card required.",
   },
   {
     question: "What happens to my data if I cancel?",
-    answer: "You can export all your data at any time. After cancellation, you retain full access during the 7-day grace period, then data is retained for 30 days before permanent deletion.",
+    answer:
+      "You can export your data at any time. After cancellation, access continues during the grace period, and retention follows the policy in your account terms.",
   },
   {
-    question: "Do you offer discounts for NGOs or government agencies?",
-    answer: "Yes, we offer special pricing for non-profits, NGOs, and government regulatory bodies. Contact our sales team for details.",
-  },
-  {
-    question: "What's included in the free trial?",
-    answer: "The free trial includes full access to all features of the selected plan, allowing you to test compliance queries, checklist generation, and analytics.",
+    question: "Do you support regulated institutions?",
+    answer:
+      "Yes. Enterprise deployments can include onboarding, governance workflows, audit logs, custom integrations, and dedicated support.",
   },
 ]
 
-// ── Page ─────────────────────────────────────────────────────────────────────
-
 export default function PricingPage() {
   return (
-    <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 sm:py-32">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <Badge variant="outline" className="mb-4 border-primary/50 text-primary">
-              Pricing
-            </Badge>
-            <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              Simple, Transparent{" "}
-              <span className="text-primary">Pricing</span>
-            </h1>
-            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-              Start with a 14-day free trial. No credit card required.{" "}
-              Choose the plan that fits your compliance needs.
-            </p>
-          </div>
-        </div>
-      </section>
+    <div className="flex flex-col bg-[#050706]">
+      <PricingSection />
 
-      {/* Pricing Cards */}
-      <section className="pb-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-3">
-            {PUBLIC_PRICING_PLANS.map((plan) => {
-              const Icon = PLAN_ICONS[plan.id]
-              const ctaLink = PLAN_CTA_LINKS[plan.id]
-              const annualSavings = getAnnualSavings(plan)
-              const priceDisplay = formatPrice(plan.price.monthly, plan.price.currency)
-              const annualDisplay = plan.price.yearly !== null
-                ? `${formatPrice(plan.price.yearly, plan.price.currency)}/year${annualSavings ? ` (${annualSavings})` : ''}`
-                : 'Contact us for volume pricing'
-
-              return (
-                <Card
-                  key={plan.id}
-                  className={`relative flex flex-col ${
-                    plan.popular
-                      ? "border-primary/50 shadow-lg shadow-primary/10"
-                      : "border-border/50"
-                  }`}
-                >
-                  {plan.badge === 'Most Popular' && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
-                    </div>
-                  )}
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                        plan.popular ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-                      }`}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <CardTitle className="text-xl">{plan.name}</CardTitle>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{plan.tagline}</p>
-                  </CardHeader>
-                  <CardContent className="flex flex-1 flex-col">
-                    <div className="mb-6">
-                      <span className="font-numeric text-4xl font-bold text-foreground">{priceDisplay}</span>
-                      {plan.price.monthly !== null && plan.price.monthly > 0 && (
-                        <span className="text-muted-foreground">/month</span>
-                      )}
-                      <p className="mt-1 text-sm text-muted-foreground">{annualDisplay}</p>
-                    </div>
-
-                    <ul className="flex-1 space-y-3">
-                      {plan.features.map((feature) => (
-                        <li key={feature.text} className="flex items-start gap-2">
-                          <CheckCircle2 className={`mt-0.5 h-4 w-4 shrink-0 ${
-                            feature.included ? "text-secondary" : "text-muted-foreground/30"
-                          }`} />
-                          <span className={`text-sm ${
-                            feature.included ? "text-muted-foreground" : "text-muted-foreground/50 line-through"
-                          }`}>
-                            {feature.text}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <Button
-                      className={`mt-8 w-full ${
-                        plan.popular
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-transparent"
-                      }`}
-                      variant={plan.popular ? "default" : "outline"}
-                      asChild
-                    >
-                      <Link href={ctaLink}>
-                        {plan.cta.type !== 'none' ? plan.cta.label : 'Get Started'}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Comparison Table */}
-      <section className="border-y border-border bg-muted/30 py-20">
+      <section className="border-b border-[#1D2925] bg-[#050706] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <Badge variant="outline" className="mb-4">
+            <Badge
+              variant="outline"
+              className="mb-4 border-[#1D2925] bg-[#0D1411] text-[#B8C0BC]"
+            >
               Compare Plans
             </Badge>
-            <h2 className="text-3xl font-bold text-foreground">
-              Feature Comparison
+            <h2 className="text-3xl font-bold text-[#F5F7F6]">
+              Compliance capability by plan
             </h2>
           </div>
 
-          <div className="mt-12 overflow-x-auto">
-            <table className="w-full min-w-[600px]">
+          <div className="mt-12 overflow-x-auto rounded-3xl border border-[#1D2925] bg-[#080D0B]">
+            <table className="w-full min-w-[680px]">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="pb-4 text-left font-medium text-muted-foreground">Feature</th>
-                  <th className="pb-4 text-center font-medium text-foreground">Startup</th>
-                  <th className="pb-4 text-center font-medium text-primary">Business</th>
-                  <th className="pb-4 text-center font-medium text-foreground">Enterprise</th>
+                <tr className="border-b border-[#1D2925]">
+                  <th className="px-6 py-5 text-left text-sm font-semibold text-[#B8C0BC]">
+                    Feature
+                  </th>
+                  <th className="px-6 py-5 text-center text-sm font-semibold text-[#F5F7F6]">
+                    Startup
+                  </th>
+                  <th className="px-6 py-5 text-center text-sm font-semibold text-[#1ED760]">
+                    Business
+                  </th>
+                  <th className="px-6 py-5 text-center text-sm font-semibold text-[#D8B76E]">
+                    Enterprise
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {PLAN_COMPARISON_ROWS.map((row) => (
-                  <tr key={row.feature} className="border-b border-border/50">
-                    <td className="py-4 text-sm text-muted-foreground">{row.feature}</td>
-                    <td className="py-4 text-center text-sm text-muted-foreground">{row.startup}</td>
-                    <td className="py-4 text-center text-sm font-medium text-foreground">{row.business}</td>
-                    <td className="py-4 text-center text-sm text-muted-foreground">{row.enterprise}</td>
+                  <tr key={row.feature} className="border-b border-[#1D2925]/70 last:border-b-0">
+                    <td className="px-6 py-4 text-sm text-[#B8C0BC]">{row.feature}</td>
+                    <td className="px-6 py-4 text-center text-sm text-[#7F8A85]">
+                      {row.startup}
+                    </td>
+                    <td className="px-6 py-4 text-center text-sm font-semibold text-[#F5F7F6]">
+                      {row.business}
+                    </td>
+                    <td className="px-6 py-4 text-center text-sm text-[#B8C0BC]">
+                      {row.enterprise}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -218,16 +94,18 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-20">
+      <section className="bg-[#050706] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <Badge variant="outline" className="mb-4">
+            <Badge
+              variant="outline"
+              className="mb-4 border-[#1D2925] bg-[#0D1411] text-[#B8C0BC]"
+            >
               <HelpCircle className="mr-1 h-3 w-3" />
               FAQ
             </Badge>
-            <h2 className="text-3xl font-bold text-foreground">
-              Frequently Asked Questions
+            <h2 className="text-3xl font-bold text-[#F5F7F6]">
+              Questions before you start
             </h2>
           </div>
 
@@ -235,14 +113,14 @@ export default function PricingPage() {
             <Accordion type="single" collapsible className="space-y-4">
               {faqs.map((faq, index) => (
                 <AccordionItem
-                  key={index}
+                  key={faq.question}
                   value={`item-${index}`}
-                  className="rounded-lg border border-border/50 bg-card/50 px-4"
+                  className="rounded-2xl border border-[#1D2925] bg-[#0D1411] px-5"
                 >
-                  <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
+                  <AccordionTrigger className="text-left font-semibold text-[#F5F7F6] hover:no-underline">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
+                  <AccordionContent className="leading-7 text-[#B8C0BC]">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>
@@ -252,26 +130,34 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="border-t border-border bg-muted/30 py-20">
+      <section className="border-t border-[#1D2925] bg-[#080D0B] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Card className="border-primary/50 bg-gradient-to-br from-primary/10 via-card to-secondary/10">
-            <CardContent className="p-12 text-center">
-              <h2 className="text-3xl font-bold text-foreground">
-                Not Sure Which Plan is Right?
+          <Card className="overflow-hidden rounded-[28px] border-[#1D2925] bg-[radial-gradient(circle_at_top,rgba(30,215,96,0.12),transparent_42%),linear-gradient(180deg,#101814_0%,#070A09_100%)]">
+            <CardContent className="p-10 text-center sm:p-14">
+              <h2 className="text-3xl font-bold text-[#F5F7F6]">
+                Not sure which plan is right?
               </h2>
-              <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-                Book a demo with our team and we&apos;ll help you find the perfect fit
-                for your compliance needs.
+              <p className="mx-auto mt-4 max-w-xl leading-7 text-[#B8C0BC]">
+                Book a demo and we will map your compliance maturity, workflows, and
+                rollout needs to the right plan.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button
+                  size="lg"
+                  asChild
+                  className="rounded-2xl bg-[#1ED760] font-bold text-[#06110A] hover:bg-[#33E875]"
+                >
                   <Link href="/register">
                     Start Free Trial
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild className="bg-transparent">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  asChild
+                  className="rounded-2xl border-[#27342F] bg-transparent text-[#F5F7F6] hover:border-[#1ED760]/50 hover:bg-[#122018]"
+                >
                   <Link href="/contact">Book a Demo</Link>
                 </Button>
               </div>
