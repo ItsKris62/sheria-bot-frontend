@@ -311,8 +311,8 @@ interface UpgradeBannerProps {
 
 const PLAN_PRICES: Partial<Record<PlanName, string>> = {
   FREE_TRIAL: "Free (7-day trial)",
-  STARTUP:    "KES 25,000 / month",
-  BUSINESS:   "KES 75,000 / month",
+  STARTUP:    "KES 4,999 / month",
+  BUSINESS:   "KES 44,999 / month",
   ENTERPRISE: "Custom pricing",
 };
 

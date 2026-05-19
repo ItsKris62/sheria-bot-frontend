@@ -31,8 +31,8 @@ type FlowState = "initiate" | "waiting" | "success" | "failed" | "timeout"
 type Plan = "STARTUP" | "BUSINESS"
 
 const PLAN_PRICES: Record<Plan, { kes: number; label: string }> = {
-  STARTUP:  { kes: 25000, label: "Startup" },
-  BUSINESS: { kes: 75000, label: "Business" },
+  STARTUP:  { kes: 4999, label: "Startup" },
+  BUSINESS: { kes: 44999, label: "Business" },
 }
 
 const POLL_INTERVAL_MS  = 5000   // 5 seconds

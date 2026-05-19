@@ -38,7 +38,7 @@ const plans: PricingPlan[] = [
     bestFor:
       "Replacing manual regulatory research and spreadsheet-based compliance tracking.",
     monthlyPrice: 4999,
-    yearlyPrice: 49990,
+    yearlyPrice: 50390,
     features: [
       "Unlimited compliance queries",
       "5 checklist generations/month",
@@ -58,7 +58,7 @@ const plans: PricingPlan[] = [
     bestFor:
       "Teams needing audit-ready workflows, recurring monitoring, and operational compliance visibility.",
     monthlyPrice: 44999,
-    yearlyPrice: 449990,
+    yearlyPrice: 453590,
     features: [
       "Everything in Startup",
       "Unlimited checklist generations",
