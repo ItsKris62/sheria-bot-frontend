@@ -4,14 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import {
   ArrowRight,
-  BarChart3,
   CheckCircle2,
   FileCheck2,
   Headphones,
-  Landmark,
   LockKeyhole,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react"
 
 type BillingCycle = "monthly" | "yearly"
@@ -280,7 +277,6 @@ function PricingCard({
   const isEnterprise = plan.tone === "enterprise"
   const price = getPlanPrice(plan, cycle)
   const cadence = typeof price === "number" ? (cycle === "yearly" ? "/year" : "/month") : ""
-  const Icon = isEnterprise ? Landmark : isBusiness ? BarChart3 : Sparkles
 
   return (
     <article
@@ -291,19 +287,7 @@ function PricingCard({
         <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_50%_0%,rgba(30,215,96,0.18),transparent_62%)] opacity-90 transition duration-500 group-hover:opacity-100" />
       )}
 
-      <div className="relative z-10 flex items-start justify-between gap-4">
-        <div
-          className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${
-            isEnterprise
-              ? "border-[#C6A15B]/25 bg-[#C6A15B]/10 text-[#D8B76E]"
-              : isBusiness
-                ? "border-[#1ED760]/25 bg-[#1ED760]/12 text-[#1ED760]"
-                : "border-[#1D2925] bg-[#101814] text-[#B8C0BC]"
-          }`}
-          aria-hidden="true"
-        >
-          <Icon className="h-5 w-5" />
-        </div>
+      <div className="relative z-10 flex min-h-9 items-start justify-end">
         {plan.label && (
           <span className="rounded-full border border-[#1ED760]/25 bg-[#1ED760]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#1ED760]">
             {plan.label}

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,7 +14,6 @@ import {
   Send,
   Loader2,
   BookOpen,
-  Sparkles,
   Clock,
   ChevronRight,
   Scale,
@@ -68,6 +68,21 @@ interface Message {
 }
 
 type FeedbackRating = "up" | "down" | null
+type FeedbackPulse = { rating: "up" | "down"; nonce: number }
+
+function SheriaBotLogo({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <Image
+      src="/favicon-logo.png"
+      alt=""
+      width={40}
+      height={40}
+      className={cn("rounded-full object-contain", className)}
+      aria-hidden="true"
+      priority={false}
+    />
+  )
+}
 
 // ─── MessageActionBar ─────────────────────────────────────────────────────────
 
@@ -80,6 +95,7 @@ interface MessageActionBarProps {
   savedState: Record<string, boolean>
   feedbackLoading: Record<string, boolean>
   saveLoading: Record<string, boolean>
+  feedbackPulse: Record<string, FeedbackPulse | undefined>
 }
 
 function MessageActionBar({
@@ -91,12 +107,14 @@ function MessageActionBar({
   savedState,
   feedbackLoading,
   saveLoading,
+  feedbackPulse,
 }: MessageActionBarProps) {
   const qId = message.queryId
   const rating = qId ? (feedbackState[qId] ?? null) : null
   const isSaved = qId ? (savedState[qId] ?? false) : false
   const isFbLoading = qId ? (feedbackLoading[qId] ?? false) : false
   const isSaveLoading = qId ? (saveLoading[qId] ?? false) : false
+  const pulse = qId ? feedbackPulse[qId] : undefined
   const noQueryId = !qId
 
   return (
@@ -144,20 +162,21 @@ function MessageActionBar({
         size="icon"
         className={cn(
           "h-8 w-8 transition-all duration-150",
-          rating === "up" && "bg-primary/10 text-primary",
+          rating === "up" && "bg-primary/10 text-primary shadow-glow-green-sm",
+          isFbLoading && rating === "up" && "ring-1 ring-primary/30",
           noQueryId && "opacity-40 cursor-not-allowed",
         )}
         onClick={() => qId && onFeedback(qId, "up")}
-        disabled={noQueryId || isFbLoading}
+        disabled={noQueryId}
         title={noQueryId ? "Available once response has been saved" : "Mark as helpful"}
         aria-label="Mark as helpful"
         aria-pressed={rating === "up"}
+        aria-busy={isFbLoading}
       >
-        {isFbLoading ? (
-          <Loader2 className="h-3 w-3 animate-spin" />
-        ) : (
-          <ThumbsUp className="h-3 w-3" />
-        )}
+        <ThumbsUp
+          key={`up-${pulse?.nonce ?? 0}`}
+          className={cn("h-3 w-3", pulse?.rating === "up" && "animate-feedback-pop")}
+        />
       </Button>
 
       {/* Thumbs Down */}
@@ -166,20 +185,21 @@ function MessageActionBar({
         size="icon"
         className={cn(
           "h-8 w-8 transition-all duration-150",
-          rating === "down" && "bg-destructive/10 text-destructive",
+          rating === "down" && "bg-destructive/10 text-destructive shadow-[0_0_0_1px_rgba(239,68,68,0.18),0_2px_8px_rgba(239,68,68,0.22)]",
+          isFbLoading && rating === "down" && "ring-1 ring-destructive/30",
           noQueryId && "opacity-40 cursor-not-allowed",
         )}
         onClick={() => qId && onFeedback(qId, "down")}
-        disabled={noQueryId || isFbLoading}
+        disabled={noQueryId}
         title={noQueryId ? "Available once response has been saved" : "Mark as not helpful"}
         aria-label="Mark as not helpful"
         aria-pressed={rating === "down"}
+        aria-busy={isFbLoading}
       >
-        {isFbLoading ? (
-          <Loader2 className="h-3 w-3 animate-spin" />
-        ) : (
-          <ThumbsDown className="h-3 w-3" />
-        )}
+        <ThumbsDown
+          key={`down-${pulse?.nonce ?? 0}`}
+          className={cn("h-3 w-3", pulse?.rating === "down" && "animate-feedback-pop")}
+        />
       </Button>
     </div>
   )
@@ -195,6 +215,7 @@ export default function ComplianceQueryPage() {
   const [savedState, setSavedState] = useState<Record<string, boolean>>({})
   const [feedbackLoading, setFeedbackLoading] = useState<Record<string, boolean>>({})
   const [saveLoading, setSaveLoading] = useState<Record<string, boolean>>({})
+  const [feedbackPulse, setFeedbackPulse] = useState<Record<string, FeedbackPulse | undefined>>({})
 
   const { submit: streamSubmit, state: streamState } = useComplianceStream()
   const { data: historyData } = useComplianceHistory(1, 5)
@@ -206,18 +227,23 @@ export default function ComplianceQueryPage() {
   const lastPushedQueryIdRef = useRef<string | null>(null)
   // Captures the question text at submit time for AbstainCard keyword matching
   const pendingQuestionRef = useRef<string>("")
+  const feedbackInFlightRef = useRef<Set<string>>(new Set())
 
   const isStreaming = (["connecting", "streaming", "verifying"] as const).some(
     (p) => p === streamState.phase,
   )
 
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const chatScrollRef = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
-  // Auto-scroll whenever messages update or live content grows
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, streamState.content])
+  const scrollChatToBottom = () => {
+    window.requestAnimationFrame(() => {
+      const viewport = chatScrollRef.current?.querySelector<HTMLElement>(
+        "[data-radix-scroll-area-viewport]",
+      )
+      viewport?.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" })
+    })
+  }
 
   // Commit completed stream result into the messages array
   useEffect(() => {
@@ -267,6 +293,7 @@ export default function ComplianceQueryPage() {
     ])
     setQuery("")
     streamSubmit({ question: trimmed })
+    scrollChatToBottom()
   }
 
   const handleSuggestedQuery = (suggested: string) => setQuery(suggested)
@@ -276,10 +303,15 @@ export default function ComplianceQueryPage() {
   }
 
   const handleFeedback = async (queryId: string, rating: "up" | "down") => {
-    if (feedbackLoading[queryId]) return
+    if (feedbackInFlightRef.current.has(queryId)) return
+    feedbackInFlightRef.current.add(queryId)
     const previous = feedbackState[queryId] ?? null
     const optimistic: FeedbackRating = previous === rating ? null : rating
     setFeedbackState((prev) => ({ ...prev, [queryId]: optimistic }))
+    setFeedbackPulse((prev) => ({
+      ...prev,
+      [queryId]: { rating, nonce: Date.now() },
+    }))
     setFeedbackLoading((prev) => ({ ...prev, [queryId]: true }))
     try {
       const result = await feedbackMutation.mutateAsync({ queryId, rating })
@@ -288,6 +320,7 @@ export default function ComplianceQueryPage() {
       setFeedbackState((prev) => ({ ...prev, [queryId]: previous }))
       toast.error("Couldn't save feedback", { description: "Please try again." })
     } finally {
+      feedbackInFlightRef.current.delete(queryId)
       setFeedbackLoading((prev) => ({ ...prev, [queryId]: false }))
     }
   }
@@ -329,11 +362,11 @@ export default function ComplianceQueryPage() {
         <div className="lg:col-span-2">
           <Card className="flex h-[calc(100vh-240px)] flex-col border-border/50 bg-card">
             {/* Messages Area */}
-            <ScrollArea className="flex-1 p-6">
+            <ScrollArea ref={chatScrollRef} className="flex-1 p-6">
               {showEmptyState ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                    <Sparkles className="h-8 w-8 text-primary" />
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 shadow-glow-green-sm">
+                    <SheriaBotLogo className="h-10 w-10" />
                   </div>
                   <h2 className="mt-4 text-xl font-semibold text-foreground">
                     Ask a Compliance Question
@@ -388,8 +421,8 @@ export default function ComplianceQueryPage() {
                         <div className="max-w-[85%] rounded-2xl px-4 py-3 bg-muted">
                           {/* SheriaBot header */}
                           <div className="mb-2 flex items-center gap-2">
-                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                              <Sparkles className="h-3 w-3 text-primary" aria-hidden="true" />
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full border border-primary/20 bg-primary/10 shadow-glow-green-sm">
+                              <SheriaBotLogo className="h-4 w-4" />
                             </div>
                             <span className="text-sm font-medium text-foreground">SheriaBot</span>
                             {message.confidence != null && (
@@ -409,18 +442,18 @@ export default function ComplianceQueryPage() {
 
                           {/* Legal citations */}
                           {message.citations && message.citations.length > 0 && (
-                            <div className="mt-4 border-t border-border/50 pt-4">
-                              <p className="mb-2 text-xs font-medium text-muted-foreground">
+                            <div className="mt-4 border-t border-[#D4AF37]/30 pt-4">
+                              <p className="mb-2 text-xs font-semibold text-[#D4AF37]">
                                 Legal Citations ({message.citations.length}):
                               </p>
                               <div className="space-y-2">
                                 {message.citations.map((citation, index) => (
                                   <div
                                     key={index}
-                                    className="flex items-start gap-2 rounded-lg bg-background/50 p-2"
+                                    className="flex items-start gap-2 rounded-lg border border-[#D4AF37]/25 bg-[#D4AF37]/[0.06] p-2 shadow-[0_0_18px_rgba(212,175,55,0.08)]"
                                   >
                                     <Scale
-                                      className="h-4 w-4 mt-0.5 shrink-0 text-primary"
+                                      className="h-4 w-4 mt-0.5 shrink-0 text-[#D4AF37]"
                                       aria-hidden="true"
                                     />
                                     <div className="min-w-0">
@@ -428,7 +461,7 @@ export default function ComplianceQueryPage() {
                                         {citation.documentTitle}
                                       </p>
                                       {citation.authorityStatus && citation.authorityStatus !== "IN_FORCE" && (
-                                        <Badge variant="outline" className="mt-1 h-5 px-1.5 text-[10px]">
+                                        <Badge variant="outline" className="mt-1 h-5 border-[#D4AF37]/35 px-1.5 text-[10px] text-[#D4AF37]">
                                           {citation.authorityStatus.replace(/_/g, " ")}
                                           {citation.isBinding === false ? " / Non-binding" : ""}
                                         </Badge>
@@ -460,6 +493,7 @@ export default function ComplianceQueryPage() {
                             savedState={savedState}
                             feedbackLoading={feedbackLoading}
                             saveLoading={saveLoading}
+                            feedbackPulse={feedbackPulse}
                           />
                         </div>
                       )}
@@ -471,8 +505,8 @@ export default function ComplianceQueryPage() {
                     <div className="flex justify-start">
                       <div className="max-w-[85%] rounded-2xl px-4 py-3 bg-muted">
                         <div className="mb-2 flex items-center gap-2">
-                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                            <Sparkles className="h-3 w-3 text-primary" aria-hidden="true" />
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full border border-primary/20 bg-primary/10 shadow-glow-green-sm">
+                            <SheriaBotLogo className="h-4 w-4" />
                           </div>
                           <span className="text-sm font-medium text-foreground">SheriaBot</span>
                           {streamState.phase === "verifying" && (
@@ -491,8 +525,6 @@ export default function ComplianceQueryPage() {
                     </div>
                   )}
 
-                  {/* Sentinel — keeps latest content in view */}
-                  <div ref={messagesEndRef} />
                 </div>
               )}
             </ScrollArea>
@@ -518,7 +550,7 @@ export default function ComplianceQueryPage() {
                     }
                   }}
                   placeholder="Ask about KYC requirements, data protection, CBK guidelines…"
-                  className="flex-1 bg-background"
+                  className="flex-1 border-primary/25 bg-background shadow-[0_0_0_1px_rgba(34,197,94,0.08),0_0_18px_rgba(34,197,94,0.12)] transition-shadow duration-200 focus-visible:border-primary/60 focus-visible:shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_0_24px_rgba(34,197,94,0.22)]"
                   disabled={isStreaming}
                 />
                 <LoadingButton

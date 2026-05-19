@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
-import { Sparkles, Loader2, CheckCircle2 } from "lucide-react"
+import Image from "next/image"
+import { Loader2, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 // ─── Contextual document map ──────────────────────────────────────────────────
@@ -167,8 +168,15 @@ export function ThinkingIndicator({ query }: ThinkingIndicatorProps) {
       <div className="rounded-2xl bg-muted px-4 py-4 max-w-[85%] min-w-[260px]">
         {/* SheriaBot header row */}
         <div className="mb-3 flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-            <Sparkles className="h-3 w-3 text-primary" />
+          <div className="flex h-6 w-6 items-center justify-center rounded-full border border-primary/20 bg-primary/10 shadow-glow-green-sm">
+            <Image
+              src="/favicon-logo.png"
+              alt=""
+              width={20}
+              height={20}
+              className="h-4 w-4 rounded-full object-contain"
+              aria-hidden="true"
+            />
           </div>
           <span className="text-sm font-medium text-foreground">SheriaBot</span>
           <span className="ml-auto text-xs text-muted-foreground italic">Thinking…</span>
