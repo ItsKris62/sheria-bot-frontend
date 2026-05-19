@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { getQueryKey } from "@trpc/react-query"
@@ -39,9 +39,6 @@ import {
   Lock,
   ChevronDown,
   ChevronUp,
-  Building2,
-  Scale,
-  Shield,
   Smartphone,
   Send,
   Receipt,
@@ -53,9 +50,8 @@ import { toast } from "sonner"
 import {
   PLANS,
   PLAN_ORDER,
+  PUBLIC_PRICING_PLANS,
   PLAN_COMPARISON_ROWS,
-  formatPrice,
-  getAnnualSavings,
   type PlanId,
 } from "@/lib/config/plans"
 
@@ -93,13 +89,6 @@ interface EnterpriseFormState {
 }
 
 // ── Icon map ───────────────────────────────────────────────────────────────
-
-const PLAN_ICONS: Record<PlanId, React.ComponentType<{ className?: string }>> = {
-  REGULATOR: Shield,
-  STARTUP: Zap,
-  BUSINESS: Building2,
-  ENTERPRISE: Scale,
-}
 
 // ── Status helpers ─────────────────────────────────────────────────────────
 
@@ -181,6 +170,142 @@ function PaymentStatusBadge({ status }: { status: string }) {
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────
+
+function easeOutCubic(value: number) {
+  return 1 - Math.pow(1 - value, 3)
+}
+
+function CompactAnimatedPrice({ value }: { value: number | null }) {
+  const numericValue = value
+  const [displayValue, setDisplayValue] = useState(numericValue ?? 0)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const displayValueRef = useRef(displayValue)
+
+  useEffect(() => {
+    displayValueRef.current = displayValue
+  }, [displayValue])
+
+  useEffect(() => {
+    if (numericValue === null) {
+      setIsTransitioning(false)
+      return
+    }
+
+    let animationFrame = 0
+    let transitionTimer = 0
+    let startTime: number | null = null
+    const startValue = displayValueRef.current
+    const duration = 520
+
+    setIsTransitioning(true)
+
+    const animate = (timestamp: number) => {
+      if (startTime === null) startTime = timestamp
+      const progress = Math.min((timestamp - startTime) / duration, 1)
+      const nextValue = Math.round(startValue + (numericValue - startValue) * easeOutCubic(progress))
+
+      displayValueRef.current = nextValue
+      setDisplayValue(nextValue)
+
+      if (progress < 1) {
+        animationFrame = window.requestAnimationFrame(animate)
+      } else {
+        displayValueRef.current = numericValue
+        setDisplayValue(numericValue)
+        transitionTimer = window.setTimeout(() => setIsTransitioning(false), 90)
+      }
+    }
+
+    animationFrame = window.requestAnimationFrame(animate)
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame)
+      window.clearTimeout(transitionTimer)
+    }
+  }, [numericValue])
+
+  if (value === null) {
+    return <span>Custom</span>
+  }
+
+  return (
+    <span
+      className={`inline-flex items-baseline gap-1.5 transition duration-500 ease-out ${
+        isTransitioning ? "opacity-80 blur-[0.25px]" : "opacity-100 blur-0"
+      }`}
+      aria-live="polite"
+    >
+      <span className="text-[0.45em] font-semibold uppercase tracking-[0.12em] text-[#7F8A85]">
+        KES
+      </span>
+      <span>{displayValue.toLocaleString("en-KE")}</span>
+    </span>
+  )
+}
+
+function CompactBillingToggle({
+  cycle,
+  onChange,
+}: {
+  cycle: BillingCycle
+  onChange: (cycle: BillingCycle) => void
+}) {
+  const isYearly = cycle === "yearly"
+
+  return (
+    <div className="relative inline-grid h-11 w-[244px] grid-cols-2 items-center rounded-full border border-[#1D2925] bg-[#0A100D]/90 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_14px_40px_rgba(0,0,0,0.24)] sm:w-[286px]">
+      <span
+        className={`absolute left-1 top-1 h-9 w-[calc(50%-4px)] rounded-full bg-[#1ED760] shadow-[0_8px_22px_rgba(30,215,96,0.18)] transition duration-500 ease-out ${
+          isYearly ? "translate-x-full" : "translate-x-0"
+        }`}
+        aria-hidden="true"
+      />
+      <button
+        type="button"
+        className={`relative z-10 h-9 rounded-full text-xs font-semibold transition duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1ED760]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-sm ${
+          !isYearly ? "text-[#06110A]" : "text-[#B8C0BC] hover:text-[#F5F7F6]"
+        }`}
+        onClick={() => onChange("monthly")}
+        aria-pressed={!isYearly}
+      >
+        Monthly
+      </button>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={isYearly}
+        aria-label="Use yearly billing"
+        className={`relative z-10 flex h-9 items-center justify-center gap-1.5 rounded-full text-xs font-semibold transition duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1ED760]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-sm ${
+          isYearly ? "text-[#06110A]" : "text-[#B8C0BC] hover:text-[#F5F7F6]"
+        }`}
+        onClick={() => onChange("yearly")}
+      >
+        Yearly
+        <span
+          className={`hidden rounded-full border px-1.5 py-0.5 text-[10px] font-bold transition duration-500 sm:inline-flex ${
+            isYearly
+              ? "border-[#06110A]/20 bg-[#06110A]/10 text-[#06110A]"
+              : "border-[#1D2925] bg-[#101814] text-[#7F8A85]"
+          }`}
+        >
+          Save 17%
+        </span>
+      </button>
+    </div>
+  )
+}
+
+function getCompactCardClasses(planId: PlanId) {
+  if (planId === "BUSINESS") {
+    return "border-[#1ED760]/40 bg-[radial-gradient(circle_at_top,rgba(30,215,96,0.14),transparent_42%),linear-gradient(180deg,#12251B_0%,#07100C_100%)] shadow-[0_18px_60px_rgba(30,215,96,0.09),0_1px_0_rgba(255,255,255,0.06)_inset]"
+  }
+
+  if (planId === "ENTERPRISE") {
+    return "border-[#C6A15B]/30 bg-[linear-gradient(180deg,rgba(198,161,91,0.08),transparent_35%),linear-gradient(180deg,#111411_0%,#070A09_100%)] shadow-[0_18px_54px_rgba(0,0,0,0.25),0_1px_0_rgba(255,255,255,0.04)_inset]"
+  }
+
+  return "border-[#1D2925] bg-[linear-gradient(180deg,#0D1411_0%,#080D0B_100%)] shadow-[0_18px_50px_rgba(0,0,0,0.22),0_1px_0_rgba(255,255,255,0.04)_inset]"
+}
 
 export default function BillingSettingsPage() {
   const router = useRouter()
@@ -353,137 +478,105 @@ export default function BillingSettingsPage() {
             <h2 className="text-lg font-semibold text-foreground">Choose a Plan</h2>
             <p className="text-sm text-muted-foreground">Yearly billing saves 17% compared to monthly</p>
           </div>
-          {/* Billing cycle toggle */}
-          <div className="flex items-center gap-1 rounded-lg border border-border bg-muted/50 p-1">
-            <button
-              onClick={() => setBillingCycle("monthly")}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                billingCycle === "monthly"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingCycle("yearly")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                billingCycle === "yearly"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Yearly
-              <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
-                Save 17%
-              </span>
-            </button>
-          </div>
+          <CompactBillingToggle cycle={billingCycle} onChange={setBillingCycle} />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {PLAN_ORDER.map((planId) => {
-            const planConfig = PLANS[planId]
-            const Icon = PLAN_ICONS[planId]
+        <div className="grid gap-4 lg:grid-cols-3">
+          {PUBLIC_PRICING_PLANS.map((planConfig) => {
+            const planId = planConfig.id
+            const isBusinessPlan = planId === "BUSINESS"
+            const isEnterprisePlan = planId === "ENTERPRISE"
             const isCurrent = planId === currentPlanId
             const isLowerTier = PLAN_ORDER.indexOf(planId) < currentPlanIndex
-            const annualSavings = getAnnualSavings(planConfig)
             const displayPrice = billingCycle === "yearly" && planConfig.price.yearly !== null
               ? planConfig.price.yearly
               : planConfig.price.monthly
 
             return (
-              <Card
+              <article
                 key={planId}
-                className={`relative flex flex-col transition-all ${
-                  isCurrent
-                    ? "border-primary/60 shadow-md shadow-primary/10 bg-primary/5"
-                    : planConfig.popular
-                    ? "border-primary/30"
-                    : "border-border/50"
-                } ${isLowerTier ? "opacity-60" : ""}`}
+                className={`group relative flex min-h-[25rem] flex-col overflow-hidden rounded-[22px] border p-5 transition duration-500 ease-out hover:-translate-y-0.5 hover:border-[#1ED760]/45 ${getCompactCardClasses(planId)} ${isLowerTier ? "opacity-60" : ""}`}
               >
+                <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                {isBusinessPlan && (
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_50%_0%,rgba(30,215,96,0.18),transparent_62%)] opacity-90 transition duration-500 group-hover:opacity-100" />
+                )}
                 {isCurrent && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground text-xs whitespace-nowrap">
+                  <div className="absolute right-4 top-4 z-20">
+                    <Badge className="border border-[#1ED760]/25 bg-[#1ED760] text-xs text-[#06110A] whitespace-nowrap">
                       Current Plan
                     </Badge>
                   </div>
                 )}
                 {!isCurrent && planConfig.badge === "Most Popular" && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground text-xs whitespace-nowrap">
+                  <div className="absolute right-4 top-4 z-20">
+                    <Badge className="border border-[#1ED760]/25 bg-[#1ED760]/10 text-xs text-[#1ED760] whitespace-nowrap">
                       Most Popular
                     </Badge>
                   </div>
                 )}
 
-                <CardHeader className="pb-3 pt-5">
-                  <div className="flex items-center gap-2">
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-md ${
-                      isCurrent ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-                    }`}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <CardTitle className="text-base">{planConfig.name}</CardTitle>
-                  </div>
-                </CardHeader>
+                <div className="relative z-10 pt-3">
+                  <h3 className="text-xl font-bold leading-tight text-[#F5F7F6]">
+                    {planConfig.name}
+                  </h3>
+                  <p className="mt-3 min-h-[3.5rem] text-sm leading-6 text-[#B8C0BC]">
+                    {planConfig.tagline}
+                  </p>
+                </div>
 
-                <CardContent className="flex flex-1 flex-col pt-0">
-                  {/* Price */}
-                  <div className="mb-4">
-                    {displayPrice !== null ? (
-                      <>
-                        <div className="flex items-baseline gap-1">
-                          <span className="font-numeric text-2xl font-bold text-foreground">
-                            {formatPrice(displayPrice, 'KES')}
-                          </span>
-                          {displayPrice > 0 && (
-                            <span className="text-xs text-muted-foreground">
-                              /{billingCycle === "yearly" ? "yr" : "mo"}
-                            </span>
-                          )}
-                        </div>
-                        {billingCycle === "yearly" && annualSavings && (
-                          <p className="text-xs text-emerald-600 mt-0.5">{annualSavings}</p>
-                        )}
-                      </>
-                    ) : (
-                      <span className="font-numeric text-2xl font-bold text-foreground">Custom</span>
+                <div className="relative z-10 mt-5 border-y border-[#1D2925]/80 py-5">
+                  <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
+                    <div className="font-numeric text-[32px] font-extrabold leading-none text-[#F5F7F6]">
+                      <CompactAnimatedPrice value={displayPrice} />
+                    </div>
+                    {displayPrice !== null && displayPrice > 0 && (
+                      <span className="pb-1 text-xs font-medium text-[#7F8A85]">
+                        /{billingCycle === "yearly" ? "year" : "month"}
+                      </span>
                     )}
                   </div>
+                  <p className="mt-3 text-xs leading-5 text-[#7F8A85]">
+                    {billingCycle === "yearly" && displayPrice !== null
+                      ? "Annual billing with two months of budget returned."
+                      : isEnterprisePlan
+                        ? "Sales-led pricing for governed rollout and integrations."
+                        : "Trial included. No credit card required."}
+                  </p>
+                </div>
 
-                  {/* Feature list */}
-                  <ul className="flex-1 space-y-1.5 mb-4">
-                    {planConfig.features.slice(0, 4).map((feature) => (
-                      <li key={feature.text} className="flex items-start gap-1.5">
-                        <CheckCircle2 className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
-                          feature.included ? "text-primary" : "text-muted-foreground/30"
-                        }`} />
-                        <span className={`text-xs ${
-                          feature.included ? "text-muted-foreground" : "text-muted-foreground/50 line-through"
-                        }`}>
-                          {feature.text}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                <ul className="relative z-10 mt-5 flex-1 space-y-3">
+                  {planConfig.features.filter((feature) => feature.included).slice(0, 5).map((feature) => (
+                    <li key={feature.text} className="flex gap-2.5 text-xs leading-5 text-[#DDE3E0]">
+                      <CheckCircle2
+                        className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
+                          isEnterprisePlan ? "text-[#D8B76E]" : "text-[#1ED760]"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span>{feature.text}</span>
+                    </li>
+                  ))}
+                </ul>
 
-                  {/* CTA button */}
+                <div className="relative z-10 mt-6">
                   {isCurrent ? (
-                    <Button size="sm" variant="outline" disabled className="w-full text-xs">
+                    <Button size="sm" disabled className="w-full border border-[#1D2925] bg-[#101814] text-xs text-[#7F8A85] hover:bg-[#101814]">
                       Current Plan
                     </Button>
                   ) : isLowerTier ? (
-                    <Button size="sm" variant="outline" disabled className="w-full text-xs opacity-50">
+                    <Button size="sm" disabled className="w-full border border-[#1D2925] bg-[#101814] text-xs text-[#7F8A85] opacity-70 hover:bg-[#101814]">
                       <Lock className="mr-1 h-3 w-3" />
                       Downgrade via Portal
                     </Button>
                   ) : planConfig.cta.type === "subscribe" ? (
                     <LoadingButton
                       size="sm"
-                      className="w-full text-xs"
-                      variant={planConfig.popular ? "default" : "outline"}
+                      className={`w-full text-xs font-bold ${
+                        isBusinessPlan
+                          ? "bg-[#1ED760] text-[#06110A] hover:bg-[#33E875]"
+                          : "border border-[#27342F] bg-[#101814] text-[#F5F7F6] hover:border-[#1ED760]/50 hover:bg-[#122018]"
+                      }`}
                       onClick={() => {
                         const preferredMethod = billing && "preferredPaymentMethod" in billing
                           ? (billing as unknown as { preferredPaymentMethod?: string | null }).preferredPaymentMethod
@@ -509,8 +602,7 @@ export default function BillingSettingsPage() {
                   ) : planConfig.cta.type === "contact-sales" ? (
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="w-full text-xs"
+                      className="w-full border border-[#C6A15B]/34 bg-[#0B0D0C] text-xs font-bold text-[#F5F7F6] hover:border-[#D8B76E]/70 hover:bg-[#14120C]"
                       onClick={() => {
                         setEnterpriseSuccess(false)
                         setEnterpriseForm({ name: "", email: "", message: "" })
@@ -520,8 +612,8 @@ export default function BillingSettingsPage() {
                       {planConfig.cta.label}
                     </Button>
                   ) : null}
-                </CardContent>
-              </Card>
+                </div>
+              </article>
             )
           })}
         </div>
