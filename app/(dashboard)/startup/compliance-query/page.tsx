@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -34,21 +35,13 @@ import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
 import { ThinkingIndicator } from "@/components/compliance/thinking-indicator"
 import { AbstainCard } from "@/components/compliance/abstain-card"
 import { UngroundedBanner } from "@/components/compliance/ungrounded-banner"
+import { AllQueriesDialog } from "@/components/compliance/all-queries-dialog"
+import { isRegulatoryArea, REGULATORY_AREA_NAMES } from "@/lib/compliance/compliance.types"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const suggestedQueries = [
-  "What are the KYC requirements for digital lenders in Kenya?",
-  "How do I comply with the Data Protection Act for mobile money?",
-  "What are the CBK reporting requirements for payment service providers?",
-  "Consumer protection obligations for fintech companies",
-  "AML compliance requirements for cryptocurrency exchanges",
-]
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Types
 
 interface Message {
   id: string
@@ -58,12 +51,12 @@ interface Message {
   confidence?: number | null
   queryId?: string
   timestamp: Date
-  /** Orchestrator fields — populated on the streaming path */
+  /** Orchestrator fields - populated on the streaming path */
   abstained?: boolean
   route?: string | null
   runId?: string | null
   grounded?: boolean
-  /** User question that produced this response — used by AbstainCard for authority matching */
+  /** User question that produced this response - used by AbstainCard for authority matching */
   question?: string
 }
 
@@ -84,7 +77,7 @@ function SheriaBotLogo({ className = "h-5 w-5" }: { className?: string }) {
   )
 }
 
-// ─── MessageActionBar ─────────────────────────────────────────────────────────
+// MessageActionBar
 
 interface MessageActionBarProps {
   message: Message
@@ -205,9 +198,11 @@ function MessageActionBar({
   )
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// Page
 
 export default function ComplianceQueryPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [query, setQuery] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
 
@@ -218,13 +213,29 @@ export default function ComplianceQueryPage() {
   const [feedbackPulse, setFeedbackPulse] = useState<Record<string, FeedbackPulse | undefined>>({})
 
   const { submit: streamSubmit, state: streamState } = useComplianceStream()
-  const { data: historyData } = useComplianceHistory(1, 5)
+  const { data: historyData } = useComplianceHistory(1, 3)
+  const [showAllQueries, setShowAllQueries] = useState(false)
 
   const feedbackMutation = trpc.compliance.submitFeedback.useMutation()
   const saveMutation = trpc.compliance.toggleSave.useMutation()
+  const clickTrackingMutation = trpc.compliance.recordSuggestionClick.useMutation()
 
-  // Dedup guard — prevents double-push in React StrictMode
+  // Suggested queries - server-driven personalised list, 1h client cache
+  const {
+    data: suggestedQueriesData,
+    isLoading: suggestedQueriesLoading,
+    isError: suggestedQueriesError,
+  } = trpc.compliance.getSuggestedQueries.useQuery({}, {
+    staleTime: 60 * 60 * 1000, // 1 hour - matches Redis TTL
+  })
+  type SuggestionItem = { id: string; text: string; reason?: string; relatedArea?: string }
+  const suggestions: SuggestionItem[] = suggestedQueriesData?.suggestions ?? []
+
+  const utils = trpc.useUtils()
+
+  // Dedup guard - prevents double-push in React StrictMode
   const lastPushedQueryIdRef = useRef<string | null>(null)
+  const topicPrefillAppliedRef = useRef(false)
   // Captures the question text at submit time for AbstainCard keyword matching
   const pendingQuestionRef = useRef<string>("")
   const feedbackInFlightRef = useRef<Set<string>>(new Set())
@@ -235,6 +246,18 @@ export default function ComplianceQueryPage() {
 
   const chatScrollRef = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    if (topicPrefillAppliedRef.current) return
+    topicPrefillAppliedRef.current = true
+
+    const topic = searchParams.get("topic")
+    if (!isRegulatoryArea(topic)) return
+
+    const areaLabel = REGULATORY_AREA_NAMES[topic]
+    setQuery(`What are the current compliance requirements for ${areaLabel} that apply to my organization?`)
+    router.replace("/startup/compliance-query", { scroll: false })
+  }, [router, searchParams])
 
   const scrollChatToBottom = () => {
     window.requestAnimationFrame(() => {
@@ -274,7 +297,7 @@ export default function ComplianceQueryPage() {
     }
   }, [streamState.phase, streamState.result])
 
-  // ─── Handlers ───────────────────────────────────────────────────────────────
+  // Handlers
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -296,7 +319,15 @@ export default function ComplianceQueryPage() {
     scrollChatToBottom()
   }
 
-  const handleSuggestedQuery = (suggested: string) => setQuery(suggested)
+  const handleSuggestedQuery = (suggestionText: string, suggestionId?: string) => {
+    setQuery(suggestionText)
+    if (suggestionId) {
+      clickTrackingMutation.mutate(
+        { suggestionId },
+        { onError: () => { /* fire-and-forget - silent failure */ } }
+      )
+    }
+  }
 
   const handleCopy = (content: string) => {
     navigator.clipboard.writeText(content)
@@ -342,7 +373,7 @@ export default function ComplianceQueryPage() {
     }
   }
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
+  // Render
 
   const showEmptyState = messages.length === 0 && !isStreaming
 
@@ -379,17 +410,28 @@ export default function ComplianceQueryPage() {
                     <p className="mb-3 text-sm font-medium text-muted-foreground">
                       Suggested queries:
                     </p>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {suggestedQueries.slice(0, 3).map((suggestion, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleSuggestedQuery(suggestion)}
-                          className="rounded-full border border-border/50 bg-muted/50 px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted"
-                        >
-                          {suggestion.length > 40 ? suggestion.slice(0, 40) + "..." : suggestion}
-                        </button>
-                      ))}
-                    </div>
+                    {suggestedQueriesLoading ? (
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="h-10 w-40 animate-pulse rounded-full bg-muted/50"
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {(suggestions as SuggestionItem[]).slice(0, 3).map((s) => (
+                          <button
+                            key={s.id}
+                            onClick={() => handleSuggestedQuery(s.text, s.id)}
+                            className="rounded-full border border-border/50 bg-muted/50 px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                          >
+                            {s.text.length > 40 ? s.text.slice(0, 40) + "..." : s.text}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -432,7 +474,7 @@ export default function ComplianceQueryPage() {
                             )}
                           </div>
 
-                          {/* Ungrounded warning — shown when answer has limited RAG backing */}
+                          {/* Ungrounded warning - shown when answer has limited RAG backing */}
                           {message.grounded === false && (
                             <UngroundedBanner className="mb-3" />
                           )}
@@ -500,7 +542,7 @@ export default function ComplianceQueryPage() {
                     </div>
                   ))}
 
-                  {/* Live streaming bubble — visible during connecting/streaming/verifying */}
+                  {/* Live streaming bubble - visible during connecting/streaming/verifying */}
                   {isStreaming && (
                     <div className="flex justify-start">
                       <div className="max-w-[85%] rounded-2xl px-4 py-3 bg-muted">
@@ -549,7 +591,7 @@ export default function ComplianceQueryPage() {
                       formRef.current?.requestSubmit()
                     }
                   }}
-                  placeholder="Ask about KYC requirements, data protection, CBK guidelines…"
+                  placeholder="Ask about KYC requirements, data protection, CBK guidelines..."
                   className="flex-1 border-primary/25 bg-background shadow-[0_0_0_1px_rgba(34,197,94,0.08),0_0_18px_rgba(34,197,94,0.12)] transition-shadow duration-200 focus-visible:border-primary/60 focus-visible:shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_0_24px_rgba(34,197,94,0.22)]"
                   disabled={isStreaming}
                 />
@@ -580,21 +622,47 @@ export default function ComplianceQueryPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-foreground">Suggested Queries</CardTitle>
-              <CardDescription>Common compliance questions</CardDescription>
+              <CardDescription>Personalised compliance questions</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {suggestedQueries.map((suggestion, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSuggestedQuery(suggestion)}
-                    className="flex w-full items-center gap-2 rounded-lg border border-border/50 p-3 text-left text-sm transition-colors hover:bg-muted/50"
+              {suggestedQueriesLoading ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-12 w-full animate-pulse rounded-lg bg-muted/50"
+                    />
+                  ))}
+                </div>
+              ) : suggestedQueriesError ? (
+                <div className="flex flex-col items-center justify-center py-6 gap-2 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Could not load suggestions
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      void utils.compliance.getSuggestedQueries.invalidate()
+                    }
                   >
-                    <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="line-clamp-2 text-foreground">{suggestion}</span>
-                  </button>
-                ))}
-              </div>
+                    Retry
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {(suggestions as SuggestionItem[]).map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => handleSuggestedQuery(s.text, s.id)}
+                      className="flex w-full items-center gap-2 rounded-lg border border-border/50 p-3 text-left text-sm transition-colors hover:bg-muted/50"
+                    >
+                      <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="line-clamp-2 text-foreground">{s.text}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -607,24 +675,34 @@ export default function ComplianceQueryPage() {
             <CardContent>
               <div className="space-y-3">
                 {historyData?.queries && historyData.queries.length > 0 ? (
-                  historyData.queries.map((item: any) => (
-                    <Link
-                      key={item.id}
-                      href={`/startup/compliance-query/${item.id}`}
-                      className="flex items-center gap-3 rounded-lg border border-border/50 p-3 transition-colors hover:bg-muted/50"
+                  <>
+                    {(historyData.queries as Array<Pick<typeof historyData.queries[number], 'id' | 'query' | 'createdAt'>>).map((item) => (
+                      <Link
+                        key={item.id}
+                        href={`/startup/compliance-query/${item.id}`}
+                        className="flex items-center gap-3 rounded-lg border border-border/50 p-3 transition-colors hover:bg-muted/50"
+                      >
+                        <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {item.query}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </Link>
+                    ))}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => setShowAllQueries(true)}
                     >
-                      <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {item.query}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
-                        </p>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </Link>
-                  ))
+                      View all
+                    </Button>
+                  </>
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     No queries yet. Ask your first question!
