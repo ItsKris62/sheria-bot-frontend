@@ -299,7 +299,7 @@ export default function LandingPage() {
           </p>
         </div>
         <LogoMarquee 
-          logos={REGULATOR_LOGOS as any} 
+          logos={REGULATOR_LOGOS}
           speed="slow" 
           pauseOnHover 
         />

@@ -43,16 +43,46 @@ export const LOGOS = {
  * These match the structure expected by the LogoMarquee component.
  */
 export const REGULATOR_LOGOS = [
-  { name: "Central Bank of Kenya", abbreviation: "CBK" },
-  { name: "Capital Markets Authority", abbreviation: "CMA" },
-  { name: "Office of the Data Protection Commissioner", abbreviation: "ODPC" },
-  { name: "Communications Authority of Kenya", abbreviation: "CA" },
-  { name: "Insurance Regulatory Authority", abbreviation: "IRA" },
-  { name: "Financial Reporting Centre", abbreviation: "FRC" },
-  { name: "Kenya Revenue Authority", abbreviation: "KRA" },
-  { name: "Retirement Benefits Authority", abbreviation: "RBA" },
-  { name: "Competition Authority of Kenya", abbreviation: "CAK" },
+  {
+    name: "Central Bank of Kenya",
+    abbreviation: "CBK",
+    logo: "/logos/CBK_LOGO.png-removebg-preview.png",
+  },
+  {
+    name: "Capital Markets Authority",
+    abbreviation: "CMA",
+    logo: "/logos/CMA_Logo-removebg-preview.png",
+  },
+  { name: "Office of the Data Protection Commissioner", 
+    abbreviation: "ODPC",
+    logo: "/logos/ODPC-Logo-removebg-preview.png",
+   },
+  {
+    name: "Communications Authority of Kenya",
+    abbreviation: "CA",
+    logo: "/logos/CA-logo-removebg-preview.png",
+  },
+  {
+    name: "Insurance Regulatory Authority",
+    abbreviation: "IRA",
+    logo: "/logos/IRA-Logo-removebg-preview.png",
+  },
+  {
+    name: "Financial Reporting Centre",
+    abbreviation: "FRC",
+    logo: "/logos/FRC-Logo-removebg-preview.png",
+  },
+  {
+    name: "Kenya Revenue Authority",
+    abbreviation: "KRA",
+    logo: "/logos/KRA-Logo-removebg-preview.png",
+  },
+  { name: "Retirement Benefits Authority", 
+    abbreviation: "RBA",
+    logo: "/logos/RBA-Logo-removebg-preview.png",
+  },
+  /**{ name: "Competition Authority of Kenya", abbreviation: "CAK" },
   { name: "National Treasury", abbreviation: "NT" },
   { name: "Kenya Bankers Association", abbreviation: "KBA" },
-  { name: "Fintech Association of Kenya", abbreviation: "FAK" },
+  { name: "Fintech Association of Kenya", abbreviation: "FAK" },*/
 ] as const
