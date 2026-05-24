@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   Mail,
   Building2,
+  Bot,
   Calendar,
   Clock,
   Shield,
@@ -52,8 +53,18 @@ export default function UserDetailPage() {
   const { data: activityData, isLoading: activityLoading } = trpc.admin.getUserActivityLog.useQuery({ userId })
   const { disableUser, enableUser } = useAdminActions()
 
+  type QpuData = {
+    total: number
+    last30d: number
+    last7d: number
+    byStatus: { completed: number; processing: number; failed: number }
+    lastQueryAt: string | null
+  }
+  const { data: qpuRaw, isLoading: qpuLoading } = trpc.analytics.getQueriesPerUser.useQuery({ userId, range: 'alltime' })
+  const qpu = qpuRaw as QpuData | undefined
+
   const forceResetMutation = trpc.admin.forcePasswordReset.useMutation({
-    onSuccess: () => toast.success("Password reset forced — user sessions cleared"),
+    onSuccess: () => toast.success("Password reset forced -- user sessions cleared"),
     onError: (err) => toast.error("Failed", { description: err.message }),
   })
 
@@ -167,7 +178,7 @@ export default function UserDetailPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left column — profile card */}
+        {/* Left column -- profile card */}
         <div className="space-y-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur">
             <CardContent className="pt-6">
@@ -234,7 +245,7 @@ export default function UserDetailPage() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Plan</span>
-                <Badge className="bg-warning/10 text-warning">{user.organizationPlan ?? "—"}</Badge>
+                <Badge className="bg-warning/10 text-warning">{user.organizationPlan ?? "--"}</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Email Verified</span>
@@ -246,7 +257,7 @@ export default function UserDetailPage() {
           </Card>
         </div>
 
-        {/* Right column — tabs */}
+        {/* Right column -- tabs */}
         <div className="lg:col-span-2">
           <Tabs defaultValue="overview" className="space-y-6">
             <TabsList className="bg-muted/50">
@@ -276,6 +287,58 @@ export default function UserDetailPage() {
                   </CardContent>
                 </Card>
               </div>
+
+              <Card className="border-border/50 bg-card/50 backdrop-blur">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Bot className="h-4 w-4 text-primary" />
+                    Query Activity
+                  </CardTitle>
+                  <CardDescription>Compliance query usage for this user</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {qpuLoading ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 2 }).map((_, i) => (
+                        <Skeleton key={i} className="h-4 w-full" />
+                      ))}
+                    </div>
+                  ) : !qpu ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No query data available</p>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-lg bg-muted/30 p-3 text-center">
+                          <p className="text-2xl font-bold tabular-nums text-foreground">{qpu.total.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">All time</p>
+                        </div>
+                        <div className="rounded-lg bg-muted/30 p-3 text-center">
+                          <p className="text-2xl font-bold tabular-nums text-foreground">{qpu.last30d.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">Last 30 days</p>
+                        </div>
+                        <div className="rounded-lg bg-muted/30 p-3 text-center">
+                          <p className="text-2xl font-bold tabular-nums text-foreground">{qpu.last7d.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">Last 7 days</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium uppercase text-muted-foreground">Status Breakdown</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge className="bg-primary/10 text-primary">{qpu.byStatus.completed.toLocaleString()} Completed</Badge>
+                          <Badge className="bg-warning/10 text-warning">{qpu.byStatus.processing.toLocaleString()} Processing</Badge>
+                          <Badge className="bg-destructive/10 text-destructive">{qpu.byStatus.failed.toLocaleString()} Failed</Badge>
+                        </div>
+                      </div>
+                      {qpu.lastQueryAt && (
+                        <p className="text-xs text-muted-foreground">
+                          Last query:{" "}
+                          {new Date(qpu.lastQueryAt).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" })}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               <Card className="border-border/50 bg-card/50 backdrop-blur">
                 <CardHeader>

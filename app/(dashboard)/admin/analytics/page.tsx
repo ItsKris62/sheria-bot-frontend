@@ -212,20 +212,27 @@ function AnalyticsFilters({ range, setRange, period, setPeriod }: AnalyticsFilte
   )
 }
 
-function UserGrowthTab({ filters, period }: { filters: DateFilter; period: PeriodValue }) {
+function UserGrowthTab({ filters, period, range }: { filters: DateFilter; period: PeriodValue; range: RangeValue }) {
   const { data: stats, isLoading: statsLoading } = trpc.admin.getStats.useQuery()
   const { data: growth, isLoading: growthLoading } = trpc.admin.getUserGrowth.useQuery({ period, ...filters })
 
+  const dauRange: 'last7d' | 'last30d' | 'last90d' =
+    range === '7' ? 'last7d' : range === '30' ? 'last30d' : 'last90d'
+  const { data: dauData, isLoading: dauLoading } = trpc.analytics.getDailyActiveUsers.useQuery({ range: dauRange })
+
   const series = growth?.series ?? []
+  const dauSeries = (dauData as { today: number; series: Array<{ date: string; dau: number }> } | undefined)?.series ?? []
+  const dauToday = (dauData as { today: number } | undefined)?.today ?? 0
   const users = stats?.users
   const organizations = stats?.organizations
 
   return (
     <div className="space-y-4 animate-fade-slide-up">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Total Users" value={users?.total.toLocaleString()} icon={Users} loading={statsLoading} trend="up" color={CHART_COLORS[0]} />
         <StatCard title="Active Users" value={users?.active.toLocaleString()} icon={Activity} loading={statsLoading} sub="Logged in recently" color={CHART_COLORS[1]} />
         <StatCard title="Organizations" value={organizations?.total.toLocaleString()} icon={Building2} loading={statsLoading} color={CHART_COLORS[3]} />
+        <StatCard title="Today's DAU" value={dauToday.toLocaleString()} icon={Bot} loading={dauLoading} sub="Distinct query users today" color={CHART_COLORS[2]} />
       </div>
 
       <Card>
@@ -257,6 +264,46 @@ function UserGrowthTab({ filters, period }: { filters: DateFilter; period: Perio
                   stroke={CHART_COLORS[0]}
                   strokeWidth={3}
                   fill="url(#userGrowthFill)"
+                  activeDot={{ r: 6, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                  isAnimationActive
+                  animationDuration={700}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Daily Active Users</CardTitle>
+          <p className="text-xs text-muted-foreground">Last 90 days</p>
+          <CardDescription>Distinct users who submitted at least one compliance query per day (Nairobi time).</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {dauLoading ? (
+            <ChartLoading />
+          ) : dauSeries.length === 0 ? (
+            <EmptyChart icon={Bot} message="No query activity found for this range." />
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={dauSeries} margin={{ top: 8, right: 14, left: -8, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="dauFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={CHART_COLORS[2]} stopOpacity={0.42} />
+                    <stop offset="95%" stopColor={CHART_COLORS[2]} stopOpacity={0.03} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={fmtDate} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [value, "Active users"]} labelFormatter={fmtDate} />
+                <Area
+                  type="monotone"
+                  dataKey="dau"
+                  stroke={CHART_COLORS[2]}
+                  strokeWidth={3}
+                  fill="url(#dauFill)"
                   activeDot={{ r: 6, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   isAnimationActive
                   animationDuration={700}
@@ -586,7 +633,7 @@ export default function AnalyticsPage() {
         </TabsList>
 
         <TabsContent value="users">
-          <UserGrowthTab filters={filters} period={period} />
+          <UserGrowthTab filters={filters} period={period} range={range} />
         </TabsContent>
         <TabsContent value="ai">
           <AIUsageTab filters={filters} />

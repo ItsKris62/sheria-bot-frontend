@@ -31,17 +31,19 @@ import {
   Mail,
   ListFilter,
   Ban,
+  ThumbsUp,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
 
-// ─── Nav definition ───────────────────────────────────────────────────────────
+// --- Nav definition -----------------------------------------------------------
 
 interface NavItem {
   title: string
   href: string
   icon: React.ComponentType<{ className?: string }>
   badgeQuery?: "supportOpen"
+  exact?: boolean
 }
 
 export interface AdminNavGroup {
@@ -54,7 +56,8 @@ export const adminNav: AdminNavGroup[] = [
     title: "Overview",
     items: [
       { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
-      { title: "Analytics", href: "/admin/analytics", icon: BarChart2 },
+      { title: "Analytics", href: "/admin/analytics", icon: BarChart2, exact: true },
+      { title: "Feedback", href: "/admin/analytics/feedback", icon: ThumbsUp },
     ],
   },
   {
@@ -100,7 +103,7 @@ export const adminNav: AdminNavGroup[] = [
   },
 ]
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// --- Component ----------------------------------------------------------------
 
 export function AdminSidebar() {
   const pathname = usePathname()
@@ -117,7 +120,7 @@ export function AdminSidebar() {
     setMobileOpen(false)
   }, [pathname, setMobileOpen])
 
-  // ── Shared nav groups renderer ──────────────────────────────────────────
+  // -- Shared nav groups renderer ------------------------------------------
   function renderGroups(opts: { showCollapsed: boolean }) {
     return adminNav.map((group) => (
       <div key={group.title}>
@@ -131,7 +134,9 @@ export function AdminSidebar() {
             const isActive =
               item.href === "/admin"
                 ? pathname === "/admin"
-                : pathname === item.href || pathname.startsWith(item.href + "/")
+                : item.exact
+                  ? pathname === item.href
+                  : pathname === item.href || pathname.startsWith(item.href + "/")
 
             const badgeValue =
               item.badgeQuery === "supportOpen" && openCount > 0
@@ -147,7 +152,8 @@ export function AdminSidebar() {
                   isActive
                     ? "bg-primary/15 text-primary shadow-sm"
                     : "text-muted-foreground hover:bg-primary/10 hover:text-foreground",
-                  opts.showCollapsed && "justify-center px-2"
+                  opts.showCollapsed && "justify-center px-2",
+                  !opts.showCollapsed && item.href.startsWith("/admin/analytics/") && "pl-6"
                 )}
                 title={opts.showCollapsed ? item.title : undefined}
               >
@@ -185,7 +191,7 @@ export function AdminSidebar() {
 
   return (
     <>
-      {/* ── Desktop sidebar (md and above) ───────────────────────────────── */}
+      {/* -- Desktop sidebar (md and above) --------------------------------- */}
       <aside
         className={cn(
           "fixed left-0 top-0 z-40 hidden md:flex h-screen flex-col border-r border-border/50 bg-background/95 backdrop-blur-xl transition-all duration-500 ease-out",
@@ -257,7 +263,7 @@ export function AdminSidebar() {
         </div>
       </aside>
 
-      {/* ── Mobile drawer (below md) ──────────────────────────────────────── */}
+      {/* -- Mobile drawer (below md) ---------------------------------------- */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-72 p-0 flex flex-col">
           <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
