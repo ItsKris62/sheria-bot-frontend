@@ -196,6 +196,13 @@
   to { transform: translateX(calc(-50% - 1rem)); }
 }
 
+@keyframes thread-pulse {
+  0% { transform: translateX(-120%); opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { transform: translateX(360%); opacity: 0; }
+}
+
 /* ── Animation Utilities */
 .animate-glow-pulse {
   animation: glow-pulse 2.4s ease-in-out infinite;
@@ -246,6 +253,10 @@
 .animate-scroll {
   animation: scroll var(--animation-duration, 40s) linear infinite;
   animation-direction: var(--animation-direction, forwards);
+}
+
+.animate-thread-pulse {
+  animation: thread-pulse 3.8s ease-in-out infinite;
 }
 
 /* ── Stagger Animation Delays */

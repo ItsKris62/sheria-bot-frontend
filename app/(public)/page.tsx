@@ -1,6 +1,6 @@
 "use client"
 
-import { type ReactNode, useEffect, useRef, useState } from "react"
+import { type MouseEvent, type ReactNode, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { DemoModal } from "@/components/landing/demo-modal"
 import { PricingSection } from "@/components/landing/pricing-section"
@@ -87,6 +87,34 @@ const testimonials = [
     company: "Central Bank of Kenya",
   },
 ]
+
+const howItWorksSteps = [
+  {
+    step: "01",
+    title: "Connect Your Business",
+    description: "Tell us about your fintech product. Our AI analyzes your business model to identify applicable regulations.",
+    icon: Users,
+  },
+  {
+    step: "02",
+    title: "Get AI Analysis",
+    description: "Receive instant compliance checklists, gap analysis, and policy recommendations tailored to your needs.",
+    icon: Zap,
+  },
+  {
+    step: "03",
+    title: "Stay Compliant",
+    description: "Monitor regulatory changes, track your compliance status, and generate reports with our dashboard.",
+    icon: Scale,
+  },
+]
+
+function handleSpotlightMove(event: MouseEvent<HTMLDivElement>) {
+  const rect = event.currentTarget.getBoundingClientRect()
+
+  event.currentTarget.style.setProperty("--spotlight-x", `${event.clientX - rect.left}px`)
+  event.currentTarget.style.setProperty("--spotlight-y", `${event.clientY - rect.top}px`)
+}
 
 function useParallax() {
   const ref = useRef<HTMLDivElement>(null)
@@ -362,49 +390,50 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="mt-20 grid gap-8 lg:grid-cols-3">
-            {[
-              {
-                step: "01",
-                title: "Connect Your Business",
-                description: "Tell us about your fintech product. Our AI analyzes your business model to identify applicable regulations.",
-                icon: Users,
-              },
-              {
-                step: "02", 
-                title: "Get AI Analysis",
-                description: "Receive instant compliance checklists, gap analysis, and policy recommendations tailored to your needs.",
-                icon: Zap,
-              },
-              {
-                step: "03",
-                title: "Stay Compliant",
-                description: "Monitor regulatory changes, track your compliance status, and generate reports with our dashboard.",
-                icon: Scale,
-              },
-            ].map((item, index) => (
+          <div className="relative mt-20 grid gap-8 lg:grid-cols-3 lg:gap-6">
+            <div className="pointer-events-none absolute left-[10%] right-[10%] top-6 z-0 hidden h-px overflow-hidden bg-gradient-to-r from-brand-green/10 via-brand-green/35 to-brand-green/10 lg:block">
+              <div className="absolute inset-y-0 w-1/3 animate-thread-pulse bg-gradient-to-r from-transparent via-brand-green to-transparent shadow-[0_0_18px_rgba(34,197,94,0.75)]" />
+            </div>
+
+            {howItWorksSteps.map((item, index) => (
               <div 
                 key={item.step} 
-                className="group relative"
+                className={`group relative z-10 pt-12 ${index === 1 ? "lg:translate-y-7" : ""}`}
                 data-parallax={0.1 + index * 0.03}
               >
-                {/* Connector line */}
-                {index < 2 && (
-                  <div className="hidden lg:block absolute top-12 left-[calc(100%_-_1rem)] w-[calc(100%_-_2rem)] h-px bg-gradient-to-r from-brand-green/50 via-brand-green/20 to-transparent" />
-                )}
-                
-                <div className="relative rounded-2xl border border-border bg-surface p-8 transition-all duration-500 hover:border-brand-green/30">
-                  {/* Step number */}
-                  <div className="font-numeric absolute -top-4 left-8 flex h-8 items-center justify-center rounded-full bg-brand-green px-4 text-sm font-bold text-foreground-on-green">
+                <div className="font-numeric absolute left-8 top-0 z-20 flex h-12 min-w-12 items-center justify-center rounded-full border border-brand-green/35 bg-background/80 px-3 text-sm font-bold text-brand-green shadow-[0_0_20px_rgba(34,197,94,0.22)] backdrop-blur-md transition-all duration-500 group-hover:border-brand-green/70 group-hover:text-foreground">
+                  <span className="absolute inset-0 rounded-full bg-brand-green/10 opacity-0 blur-md transition-opacity duration-500 group-hover:opacity-100" />
+                  <span className="relative">
+                    {item.step}
+                  </span>
+                </div>
+
+                <div
+                  className="
+                    relative min-h-[260px] overflow-hidden rounded-2xl border border-white/10
+                    bg-white/[0.02] p-8 shadow-elevated backdrop-blur-md
+                    transition-all duration-500 hover:-translate-y-1 hover:border-brand-green/50
+                    hover:bg-white/[0.04] hover:shadow-glow-green
+                  "
+                  onMouseMove={handleSpotlightMove}
+                >
+                  <div
+                    className="
+                      pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100
+                      [background:radial-gradient(220px_circle_at_var(--spotlight-x,50%)_var(--spotlight-y,30%),rgba(34,197,94,0.18),transparent_68%)]
+                    "
+                  />
+                  <div className="pointer-events-none absolute -bottom-4 right-4 font-numeric text-9xl font-black leading-none text-white/5">
                     {item.step}
                   </div>
-                  
-                  <div className="mt-4 flex h-14 w-14 items-center justify-center rounded-xl bg-brand-green/10 text-brand-green">
-                    <item.icon className="h-7 w-7" />
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+
+                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl border border-brand-green/20 bg-brand-green/10 text-brand-green">
+                    <item.icon className="h-7 w-7 drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                   </div>
-                  
-                  <h3 className="mt-6 text-xl font-semibold text-foreground">{item.title}</h3>
-                  <p className="mt-4 text-foreground-muted leading-relaxed">{item.description}</p>
+
+                  <h3 className="relative mt-8 text-xl font-semibold text-foreground">{item.title}</h3>
+                  <p className="relative mt-4 text-foreground-muted leading-relaxed">{item.description}</p>
                 </div>
               </div>
             ))}
