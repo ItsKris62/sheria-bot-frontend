@@ -208,17 +208,29 @@ function BillingToggle({
   const isYearly = cycle === "yearly"
 
   return (
-    <div className="relative inline-grid h-14 w-[286px] grid-cols-2 items-center rounded-full border border-[#1D2925] bg-[#0A100D]/90 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_18px_60px_rgba(0,0,0,0.28)] sm:w-[340px]">
-      <span
-        className={`absolute left-1.5 top-1.5 h-11 w-[calc(50%-6px)] rounded-full bg-[#1ED760] shadow-[0_10px_28px_rgba(30,215,96,0.20)] transition duration-500 ease-out ${
-          isYearly ? "translate-x-full" : "translate-x-0"
-        }`}
+    <div className="relative [perspective:900px]">
+      <div
+        className="pointer-events-none absolute -inset-2 rounded-full bg-[#1ED760]/12 blur-2xl transition duration-700 ease-out"
         aria-hidden="true"
       />
+      <div className="relative inline-grid h-16 w-[306px] grid-cols-2 items-center rounded-full border border-[#26352F] bg-[linear-gradient(180deg,#101A15_0%,#070B09_48%,#020403_100%)] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.10),inset_0_-12px_24px_rgba(0,0,0,0.36),0_22px_48px_rgba(0,0,0,0.34),0_7px_0_rgba(0,0,0,0.28)] sm:w-[360px]">
+      <span
+        className={`absolute left-2 top-2 h-12 w-[calc(50%-8px)] overflow-hidden rounded-full bg-[linear-gradient(145deg,#68FF99_0%,#1ED760_48%,#0FAE47_100%)] shadow-[inset_0_2px_0_rgba(255,255,255,0.45),inset_0_-8px_16px_rgba(4,74,31,0.32),0_13px_26px_rgba(30,215,96,0.28),0_4px_0_rgba(6,58,27,0.52)] transition-[transform,box-shadow,background] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
+          isYearly
+            ? "[transform:translate3d(100%,0,0)_rotateY(-7deg)]"
+            : "[transform:translate3d(0,0,0)_rotateY(7deg)]"
+        }`}
+        aria-hidden="true"
+      >
+        <span className="absolute inset-x-3 top-1 h-3 rounded-full bg-white/38 blur-[1px]" />
+        <span className="absolute inset-y-2 right-3 w-px bg-white/35" />
+      </span>
       <button
         type="button"
-        className={`relative z-10 h-11 rounded-full text-sm font-semibold transition duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1ED760]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050706] ${
-          !isYearly ? "text-[#06110A]" : "text-[#B8C0BC] hover:text-[#F5F7F6]"
+        className={`relative z-10 h-12 rounded-full text-sm font-bold transition-[color,transform,text-shadow] duration-500 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1ED760]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050706] ${
+          !isYearly
+            ? "translate-y-[-1px] text-[#06110A] [text-shadow:0_1px_0_rgba(255,255,255,0.22)]"
+            : "text-[#B8C0BC] hover:text-[#F5F7F6]"
         }`}
         onClick={() => onChange("monthly")}
         aria-pressed={!isYearly}
@@ -230,22 +242,25 @@ function BillingToggle({
         role="switch"
         aria-checked={isYearly}
         aria-label="Use yearly billing"
-        className={`relative z-10 flex h-11 items-center justify-center gap-2 rounded-full text-sm font-semibold transition duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1ED760]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050706] ${
-          isYearly ? "text-[#06110A]" : "text-[#B8C0BC] hover:text-[#F5F7F6]"
+        className={`relative z-10 flex h-12 items-center justify-center gap-2 rounded-full text-sm font-bold transition-[color,transform,text-shadow] duration-500 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1ED760]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050706] ${
+          isYearly
+            ? "translate-y-[-1px] text-[#06110A] [text-shadow:0_1px_0_rgba(255,255,255,0.22)]"
+            : "text-[#B8C0BC] hover:text-[#F5F7F6]"
         }`}
         onClick={() => onChange("yearly")}
       >
         Yearly
         <span
-          className={`hidden rounded-full border px-2 py-0.5 text-[11px] font-bold transition duration-500 sm:inline-flex ${
+          className={`hidden rounded-full border px-2 py-0.5 text-[11px] font-extrabold shadow-sm transition-[background,border-color,color,transform] duration-500 sm:inline-flex ${
             isYearly
-              ? "border-[#06110A]/20 bg-[#06110A]/10 text-[#06110A]"
-              : "border-[#1D2925] bg-[#101814] text-[#7F8A85]"
+              ? "translate-y-0 border-[#06110A]/20 bg-[#06110A]/10 text-[#06110A]"
+              : "translate-y-px border-[#26352F] bg-[#101814] text-[#8D9994]"
           }`}
         >
           Save 17%
         </span>
       </button>
+      </div>
     </div>
   )
 }
