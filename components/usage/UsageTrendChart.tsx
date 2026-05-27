@@ -45,7 +45,7 @@ export interface UsageTrendChartProps {
 
 interface CustomTooltipProps {
   active?: boolean
-  payload?: any[]
+  payload?: Array<{ payload: UsageTrendDataPoint }>
   label?: string
   categoryLabel: string
 }
@@ -77,10 +77,7 @@ function CustomTooltip({ active, payload, label, categoryLabel }: CustomTooltipP
   }
 
   return (
-    <div
-      className="bg-card border border-border rounded-lg p-3 shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-xs text-foreground space-y-1"
-      style={{ fontSize: 12 }}
-    >
+    <div className="bg-card border border-border rounded-lg p-3 shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-xs text-foreground space-y-1">
       <div className="font-bold text-foreground">{label}</div>
       <div className="text-muted-foreground">
         Used: <span className="text-foreground font-medium">{limitText}</span>

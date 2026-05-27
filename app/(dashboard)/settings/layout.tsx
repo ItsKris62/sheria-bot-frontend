@@ -64,7 +64,7 @@ export default function SettingsLayout({
       
       <div className="flex flex-1">
         {/* Settings Sidebar */}
-        <aside className="w-64 border-r border-border bg-card/50">
+        <aside className="w-64 border-r border-border bg-card/50 md:sticky md:top-16 md:self-start md:h-[calc(100vh-4rem)] z-20">
           <ScrollArea className="h-[calc(100vh-4rem)]">
             <nav className="flex flex-col gap-1 p-4">
               {settingsNav.map((item) => {
@@ -90,7 +90,7 @@ export default function SettingsLayout({
         </aside>
 
         {/* Settings Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 p-6">
           <div className="mx-auto max-w-3xl">
             {children}
           </div>
