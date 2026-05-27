@@ -16,15 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle, ArrowDown, ArrowUp, Minus, TrendingUp } from "lucide-react"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts"
+import { UsageTrendChart, type UsageTrendDataPoint } from "./UsageTrendChart"
 
 // ── Local types ───────────────────────────────────────────────────────────────
 
@@ -197,79 +189,6 @@ function ComparisonRow({
 
 // ── Trend chart ───────────────────────────────────────────────────────────────
 
-interface TrendChartProps {
-  categoryKey:   string
-  categoryLabel: string
-  history:       PeriodSummary[]
-  current:       PeriodSummary
-}
-
-function TrendChart({ categoryKey, categoryLabel, history, current }: TrendChartProps) {
-  // Merge history (oldest first) + current period
-  const allPeriods = [...history].reverse().concat([current])
-
-  const chartData = allPeriods.map((p, i) => {
-    const cat = p.categories.find((c) => c.key === categoryKey)
-    return {
-      month:     toEATShortMonth(p.periodStart),
-      count:     cat?.current ?? 0,
-      isCurrent: i === allPeriods.length - 1,
-    }
-  })
-
-  return (
-    <div className="mt-4">
-      <div className="flex items-center gap-1.5 mb-2">
-        <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="text-xs text-muted-foreground font-medium">
-          {categoryLabel} — 6 month trend
-        </span>
-      </div>
-      <ResponsiveContainer width="100%" height={80}>
-        <BarChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-          <XAxis
-            dataKey="month"
-            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis hide />
-          <Tooltip
-            contentStyle={{
-              background:  "hsl(var(--card))",
-              border:      "1px solid hsl(var(--border))",
-              borderRadius: "6px",
-              fontSize:    12,
-            }}
-            labelStyle={{ color: "hsl(var(--foreground))" }}
-            itemStyle={{ color: "hsl(var(--muted-foreground))" }}
-            formatter={(val: number) => [val.toLocaleString(), categoryLabel]}
-          />
-          <Bar dataKey="count" radius={[3, 3, 0, 0]}>
-            {chartData.map((entry, i) => (
-              <Cell
-                key={i}
-                fill={entry.isCurrent ? "#F59E0B" : "#22C55E"}
-                opacity={entry.isCurrent ? 1 : 0.7}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-      <div className="flex items-center gap-3 mt-1">
-        <div className="flex items-center gap-1">
-          <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "#22C55E" }} />
-          <span className="text-[10px] text-muted-foreground">Previous months</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "#F59E0B" }} />
-          <span className="text-[10px] text-muted-foreground">This month</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ── Plan change indicator ─────────────────────────────────────────────────────
 
 function PlanChangedNote({
@@ -324,6 +243,25 @@ export function UsageComparison() {
   )
 
   const comparison = (compareQuery.data ?? null) as ComparisonData | null
+
+  const matchedChange = comparison?.changes.find((c) => c.key === chartCategory)
+  const chartCategoryLabel = matchedChange?.label ?? chartCategory
+  const changePercent = matchedChange ? matchedChange.changePercent : null
+  const direction = matchedChange ? matchedChange.direction : null
+
+  const trendData: UsageTrendDataPoint[] = comparison && history.length > 0
+    ? [...history].reverse().concat([comparison.current]).map((p, i, arr) => {
+        const cat = p.categories.find((c) => c.key === chartCategory)
+        return {
+          month:       toEATShortMonth(p.periodStart),
+          count:       cat?.current ?? 0,
+          limit:       cat?.limit ?? -1,
+          percentUsed: cat?.percentUsed ?? 0,
+          available:   cat?.available ?? false,
+          isCurrent:   i === arr.length - 1,
+        }
+      })
+    : []
 
   // ── Empty state: first billing period ─────────────────────────────────────
   if (!historyQuery.isLoading && history.length === 0) {
@@ -464,13 +402,11 @@ export function UsageComparison() {
                     ))}
                 </div>
 
-                <TrendChart
-                  categoryKey={chartCategory}
-                  categoryLabel={
-                    comparison.changes.find((c) => c.key === chartCategory)?.label ?? chartCategory
-                  }
-                  history={history}
-                  current={comparison.current}
+                <UsageTrendChart
+                  categoryLabel={chartCategoryLabel}
+                  data={trendData}
+                  changePercent={changePercent}
+                  direction={direction}
                 />
               </>
             )}
