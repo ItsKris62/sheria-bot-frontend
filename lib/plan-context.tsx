@@ -6,7 +6,7 @@ import { useAuthStore } from "./auth-store";
 
 // ============================================================================
 // Local type definitions (mirrors backend entitlements.config + billing router)
-// Cannot import from backend directly — @/ aliases are not resolvable in the
+// Cannot import from backend directly -- @/ aliases are not resolvable in the
 // frontend tsconfig. Types are kept in sync manually.
 // ============================================================================
 
@@ -39,7 +39,7 @@ export interface PlanEntitlements {
   teamCollaboration:    boolean;
   regulatoryDashboard:  boolean;
   regulatoryAlerts:     boolean;
-  /** Compliance Calendar — create/manage org-scoped deadline events */
+  /** Compliance Calendar -- create/manage org-scoped deadline events */
   complianceCalendar:   boolean;
   documentRepository:   StorageEntitlement;
   maxSeats:             number;
@@ -109,6 +109,10 @@ export interface PlanBilling {
   gracePeriodEndsAt:  string | null;
   cancelledAt:        string | null;
   subscriptionEndsAt: string | null;
+  // B4.1 (2026-05-27) -- M-Pesa lifecycle fields surfaced from the billing procedure.
+  preferredPaymentMethod: "STRIPE" | "MPESA" | null;
+  mpesaNextPaymentDueDate: string | null; // ISO-8601
+  subscriptionCycleEnd:    string | null; // ISO-8601, mirrors mpesaNextPaymentDueDate
 }
 
 export interface PlanData {
@@ -250,7 +254,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isInitialized   = useAuthStore((s) => s.isInitialized);
 
-  // Cast to PlanData — tRPC cannot resolve backend @/ aliases in the frontend
+  // Cast to PlanData -- tRPC cannot resolve backend @/ aliases in the frontend
   // tsconfig, so inference resolves to {}. The shape is kept in sync with
   // billing.router.ts manually via the local types above.
   const { data: rawData, isLoading: queryLoading, isError } =
@@ -323,7 +327,7 @@ export function usePlan(): PlanContextValue {
 }
 
 /**
- * Quick check — returns true if the current plan includes `feature`.
+ * Quick check -- returns true if the current plan includes `feature`.
  * Sugar over `usePlan().hasFeature(key)`.
  */
 export function useHasFeature(key: FeatureKey): boolean {

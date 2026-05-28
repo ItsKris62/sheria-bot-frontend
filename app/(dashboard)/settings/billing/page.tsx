@@ -55,7 +55,7 @@ import {
   type PlanId,
 } from "@/lib/config/plans"
 
-// ── Local type helpers ─────────────────────────────────────────────────────
+// -- Local type helpers -----------------------------------------------------
 
 type CheckoutInput = { plan: "STARTUP" | "BUSINESS" }
 type SessionResult = { url: string | null }
@@ -88,9 +88,9 @@ interface EnterpriseFormState {
   message: string;
 }
 
-// ── Icon map ───────────────────────────────────────────────────────────────
+// -- Icon map ---------------------------------------------------------------
 
-// ── Status helpers ─────────────────────────────────────────────────────────
+// -- Status helpers ---------------------------------------------------------
 
 function statusBadge(status: SubscriptionStatusValue) {
   switch (status) {
@@ -111,7 +111,7 @@ function statusBadge(status: SubscriptionStatusValue) {
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "—"
+  if (!iso) return "--"
   return new Date(iso).toLocaleDateString("en-KE", { year: "numeric", month: "long", day: "numeric" })
 }
 
@@ -120,7 +120,7 @@ function daysUntil(iso: string | null): number {
   return Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000))
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────
+// -- Skeleton --------------------------------------------------------------
 
 function BillingSkeleton() {
   return (
@@ -154,7 +154,7 @@ function BillingSkeleton() {
   )
 }
 
-// ── Payment status badge ───────────────────────────────────────────────────
+// -- Payment status badge ---------------------------------------------------
 
 function PaymentStatusBadge({ status }: { status: string }) {
   switch (status) {
@@ -169,7 +169,7 @@ function PaymentStatusBadge({ status }: { status: string }) {
   }
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────
+// -- Main page -------------------------------------------------------------
 
 function easeOutCubic(value: number) {
   return 1 - Math.pow(1 - value, 3)
@@ -399,7 +399,7 @@ export default function BillingSettingsPage() {
         <p className="text-muted-foreground mt-1">Manage your subscription and payment methods</p>
       </div>
 
-      {/* ── Status alerts ── */}
+      {/* -- Status alerts -- */}
       {isPastDue && (
         <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm">
           <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
@@ -420,7 +420,7 @@ export default function BillingSettingsPage() {
           <Clock className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
           <div>
             <p className="font-medium text-foreground">
-              Grace period — {graceDays} day{graceDays !== 1 ? "s" : ""} remaining
+              Grace period -- {graceDays} day{graceDays !== 1 ? "s" : ""} remaining
             </p>
             <p className="text-muted-foreground mt-0.5">
               Your subscription was cancelled but you retain full {PLANS[currentPlanId].name} access
@@ -457,7 +457,7 @@ export default function BillingSettingsPage() {
         <div className="flex items-start gap-3 rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm">
           <ShieldCheck className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
           <p className="text-muted-foreground">
-            Free trial —{" "}
+            Free trial --{" "}
             <span className="font-medium text-foreground">
               {trialDays} day{trialDays !== 1 ? "s" : ""} remaining
             </span>
@@ -471,7 +471,7 @@ export default function BillingSettingsPage() {
         </div>
       )}
 
-      {/* ── Plan selector ── */}
+      {/* -- Plan selector -- */}
       <div>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div>
@@ -578,9 +578,7 @@ export default function BillingSettingsPage() {
                           : "border border-[#27342F] bg-[#101814] text-[#F5F7F6] hover:border-[#1ED760]/50 hover:bg-[#122018]"
                       }`}
                       onClick={() => {
-                        const preferredMethod = billing && "preferredPaymentMethod" in billing
-                          ? (billing as unknown as { preferredPaymentMethod?: string | null }).preferredPaymentMethod
-                          : null
+                        const preferredMethod = billing?.preferredPaymentMethod ?? null
                         if (preferredMethod === "MPESA") {
                           setMpesaFlowPlan(planId as MpesaPlan)
                         } else {
@@ -591,9 +589,7 @@ export default function BillingSettingsPage() {
                       loadingText="Opening..."
                     >
                       {(() => {
-                        const preferredMethod = billing && "preferredPaymentMethod" in billing
-                          ? (billing as unknown as { preferredPaymentMethod?: string | null }).preferredPaymentMethod
-                          : null
+                        const preferredMethod = billing?.preferredPaymentMethod ?? null
                         return preferredMethod === "MPESA"
                           ? <><Smartphone className="mr-1 h-3 w-3" />{planConfig.cta.label}</>
                           : <><Zap className="mr-1 h-3 w-3" />{planConfig.cta.label}</>
@@ -619,14 +615,14 @@ export default function BillingSettingsPage() {
         </div>
       </div>
 
-      {/* ── Usage card ── */}
+      {/* -- Usage card -- */}
       <UsageCard
         compareOpen={usageCompareOpen}
         onCompareToggle={setUsageCompareOpen}
       />
       {usageCompareOpen && <UsageComparison />}
 
-      {/* ── Feature comparison (collapsible) ── */}
+      {/* -- Feature comparison (collapsible) -- */}
       <Card className="border-border/50 bg-card/50 backdrop-blur">
         <CardHeader
           className="cursor-pointer select-none"
@@ -678,7 +674,7 @@ export default function BillingSettingsPage() {
         )}
       </Card>
 
-      {/* ── Payment methods ── */}
+      {/* -- Payment methods -- */}
       <Card className="border-border/50 bg-card/50 backdrop-blur">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -799,7 +795,7 @@ export default function BillingSettingsPage() {
                     )}
                   </button>
 
-                  {/* Phone number input — shown when M-Pesa is selected */}
+                  {/* Phone number input -- shown when M-Pesa is selected */}
                   {isMpesaActive && (
                     <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-4 space-y-3">
                       <div className="space-y-1.5">
@@ -865,7 +861,7 @@ export default function BillingSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* ── Subscription management ── */}
+      {/* -- Subscription management -- */}
       <Card className="border-border/50 bg-card/50 backdrop-blur">
         <CardHeader>
           <CardTitle className="text-base">Subscription Management</CardTitle>
@@ -944,7 +940,7 @@ export default function BillingSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* ── Payment history ── */}
+      {/* -- Payment history -- */}
       <Card className="border-border/50 bg-card/50 backdrop-blur">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -997,13 +993,13 @@ export default function BillingSettingsPage() {
                             : new Date(p.createdAt).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" })}
                         </td>
                         <td className="py-3 text-muted-foreground font-mono text-xs whitespace-nowrap">
-                          {p.invoiceNumber ?? "—"}
+                          {p.invoiceNumber ?? "--"}
                         </td>
                         <td className="py-3 text-foreground max-w-[160px] truncate">
                           {p.description ?? "Payment"}
                         </td>
                         <td className="py-3 text-right font-medium tabular-nums whitespace-nowrap">
-                          {p.amount === 0 ? "—" : `${p.currency} ${(p.amount / 100).toLocaleString("en-KE")}`}
+                          {p.amount === 0 ? "--" : `${p.currency} ${(p.amount / 100).toLocaleString("en-KE")}`}
                         </td>
                         <td className="py-3 text-center">
                           <PaymentStatusBadge status={p.status} />
@@ -1056,7 +1052,7 @@ export default function BillingSettingsPage() {
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold tabular-nums">
-                          {p.amount === 0 ? "—" : `${p.currency} ${(p.amount / 100).toLocaleString("en-KE")}`}
+                          {p.amount === 0 ? "--" : `${p.currency} ${(p.amount / 100).toLocaleString("en-KE")}`}
                         </span>
                         {p.provider === "MPESA" ? (
                           <Badge className="bg-green-500/10 text-green-700 border-green-500/20 text-xs gap-1">
@@ -1116,7 +1112,7 @@ export default function BillingSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* ── Enterprise contact sales modal ── */}
+      {/* -- Enterprise contact sales modal -- */}
       <Dialog
         open={showEnterpriseModal}
         onOpenChange={(open) => {
@@ -1216,7 +1212,7 @@ export default function BillingSettingsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Invoice modal ── */}
+      {/* -- Invoice modal -- */}
       {selectedPaymentId && (
         <InvoiceModal
           paymentId={selectedPaymentId}
@@ -1224,7 +1220,7 @@ export default function BillingSettingsPage() {
         />
       )}
 
-      {/* ── M-Pesa payment flow modal ── */}
+      {/* -- M-Pesa payment flow modal -- */}
       {mpesaFlowPlan && (
         <MpesaPaymentFlow
           plan={mpesaFlowPlan}
