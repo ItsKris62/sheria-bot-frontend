@@ -185,7 +185,7 @@ export function Footer() {
         <div className="mt-8 flex flex-col items-center justify-between gap-6 border-t border-border/50 pt-8 md:flex-row">
           <div className="flex flex-col items-center gap-2 md:items-start">
             <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} SheriaBot. All rights reserved.
+              &copy; {new Date().getFullYear()} Sheria<span className="text-brand-green">Bot</span>. All rights reserved.
             </p>
             <p className="text-xs text-muted-foreground/70">
               Nairobi, Kenya

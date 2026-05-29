@@ -29,34 +29,24 @@ import {
 
 const features = [
   {
-    icon: Sparkles,
-    title: "Generate regulator-ready policies in minutes",
-    description: "Instantly draft customized compliance documents tailored to your specific fintech business model.",
-  },
-  {
-    icon: BookOpen,
-    title: "Ask CBK, AML, and Data Protection questions with citations",
-    description: "Get accurate, source-backed answers from Kenya's comprehensive legal and regulatory corpus.",
-  },
-  {
+    id: "draft-policies",
     icon: FileText,
-    title: "Track compliance gaps before they become audit issues",
-    description: "Proactively identify and resolve missing policies or regulatory requirements in your operations.",
+    title: "Draft Policies in Minutes, Not Months",
+    description: "Free your team from staring at blank pages. We help you generate legally sound AML/KYC frameworks tailored to Kenyan law instantly, so you can launch faster.",
+    badge: "⚡ Saves ~15 hrs/month",
   },
   {
-    icon: Bell,
-    title: "Receive alerts when Kenyan fintech rules change",
-    description: "Stay ahead of the curve with real-time notifications whenever relevant regulations are updated.",
-  },
-  {
+    id: "spot-blindspots",
     icon: Shield,
-    title: "Build checklists for licensing, KYC, and reporting obligations",
-    description: "Ensure you meet every regulatory requirement with auto-generated, step-by-step compliance workflows.",
+    title: "Spot Your Compliance Blind Spots",
+    description: "Sleep soundly knowing you’re covered. Upload your documents, and we’ll instantly flag where you fall short of the DPA or CBK guidelines before an audit does.",
   },
   {
-    icon: BarChart3,
-    title: "Prove compliance with audit-ready visual reporting",
-    description: "Maintain a clear, traceable history of your compliance queries and regulatory alignment for regulators.",
+    id: "verifiable-citations",
+    icon: BookOpen,
+    title: "Answers You Can Take to the Boardroom",
+    description: "Never second-guess the AI. Every answer comes with direct, verifiable citations from actual Kenyan gazettes and acts, giving you absolute confidence.",
+    interactive: true,
   },
 ]
 
@@ -340,14 +330,14 @@ export default function LandingPage() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-6 border-brand-green/30 text-brand-green bg-brand-green/5 px-4 py-1">
-              Features
+              Relief
             </Badge>
             <h2 className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl text-balance">
               Everything You Need for{" "}
               <span className="text-brand-green">Regulatory Compliance</span>
             </h2>
             <p className="mt-6 text-lg text-foreground-muted">
-              Built specifically for Kenya&apos;s fintech ecosystem with deep understanding of local regulations.
+              How Sheria<span className="text-brand-green">Bot</span> lightens your workload:
             </p>
           </div>
 
@@ -355,22 +345,52 @@ export default function LandingPage() {
             {features.map((feature, index) => (
               <Card 
                 key={feature.title} 
-                className="group relative overflow-hidden border-border bg-surface/50 backdrop-blur-sm transition-all duration-500 hover:border-brand-green/30 hover:bg-surface"
+                className="group relative overflow-hidden rounded-2xl border-border bg-surface/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,135,90,0.15)] hover:bg-surface"
                 data-parallax={0.05 + index * 0.02}
               >
-                <CardContent className="p-8">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-green/10 text-brand-green transition-all duration-500 group-hover:bg-brand-green group-hover:text-foreground-on-green group-hover:shadow-glow-green-sm">
-                    <feature.icon className="h-6 w-6" />
+                <CardContent className="p-8 flex flex-col h-full justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 transition-all duration-300">
+                        <feature.icon className="h-6 w-6" strokeWidth={1.75} />
+                      </div>
+                      {feature.badge && (
+                        <span className="text-[10px] font-semibold tracking-wide px-2.5 py-0.5 rounded-full bg-emerald-950/30 text-emerald-400 border border-emerald-500/20">
+                          {feature.badge}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="mt-6 text-lg font-semibold text-foreground">{feature.title}</h3>
+                    <p className="mt-3 text-foreground-muted leading-relaxed text-sm">{feature.description}</p>
                   </div>
-                  <h3 className="mt-6 text-lg font-semibold text-foreground">{feature.title}</h3>
-                  <p className="mt-3 text-foreground-muted leading-relaxed">{feature.description}</p>
-                  <div className="mt-6 flex items-center text-sm text-brand-green opacity-0 transition-all duration-300 group-hover:opacity-100">
-                    <span>Learn more</span>
-                    <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </div>
+
+                  {/* Micro-UI interaction for Citations Card */}
+                  {feature.interactive && (
+                    <div className="mt-6 relative h-8 overflow-hidden">
+                      <div className="absolute inset-0 flex items-center transition-all duration-300 group-hover:-translate-y-full group-hover:opacity-0">
+                        <div className="flex items-center text-sm text-brand-green">
+                          <span>Learn more</span>
+                          <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 flex items-center opacity-0 translate-y-2 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-mono bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md shadow-sm">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          [Data Protection Act, S.30]
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {!feature.interactive && (
+                    <div className="mt-6 flex items-center text-sm text-brand-green opacity-0 transition-all duration-300 group-hover:opacity-100">
+                      <span>Learn more</span>
+                      <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  )}
                 </CardContent>
                 {/* Hover glow effect */}
-                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-green/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-green/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               </Card>
             ))}
           </div>

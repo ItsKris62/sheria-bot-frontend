@@ -153,8 +153,9 @@ export function Header() {
             priority
           />
           <div className="flex flex-col leading-none">
-            <span className="text-base font-bold text-foreground tracking-tight">SheriaBot</span>
-            <span className="text-[9px] text-primary/80 font-semibold tracking-[0.15em] uppercase mt-0.5">Kenya Fintech</span>
+            <span className="text-base font-bold text-white tracking-tight">
+              Sheria<span className="text-brand-green">Bot</span>
+            </span>
           </div>
         </Link>
 
@@ -298,7 +299,9 @@ export function Header() {
                   height={36}
                   className="h-9 w-9 object-contain"
                 />
-                <span className="text-base font-bold text-foreground">SheriaBot</span>
+                <span className="text-base font-bold text-white tracking-tight">
+                  Sheria<span className="text-brand-green">Bot</span>
+                </span>
               </Link>
 
               {/* Mobile Solutions */}

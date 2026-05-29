@@ -204,7 +204,9 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 priority
               />
               <div className="flex flex-col">
-                <span className="font-bold text-foreground tracking-tight">SheriaBot</span>
+                <span className="font-bold text-white tracking-tight">
+                  Sheria<span className="text-brand-green">Bot</span>
+                </span>
                 <span className="text-[10px] text-primary font-medium -mt-0.5 tracking-wider uppercase">Dashboard</span>
               </div>
             </Link>
@@ -298,7 +300,9 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 priority
               />
               <div className="flex flex-col">
-                <span className="font-bold text-foreground tracking-tight">SheriaBot</span>
+                <span className="font-bold text-white tracking-tight">
+                  Sheria<span className="text-brand-green">Bot</span>
+                </span>
                 <span className="text-[10px] text-primary font-medium -mt-0.5 tracking-wider uppercase">Dashboard</span>
               </div>
             </Link>

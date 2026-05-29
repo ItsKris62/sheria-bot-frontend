@@ -25,8 +25,9 @@ export default function AuthLayout({
               className="h-10 w-10 object-contain"
             />
             <div className="flex flex-col leading-none">
-              <span className="text-2xl font-bold text-foreground tracking-tight">SheriaBot</span>
-              <span className="text-[10px] text-primary/80 font-semibold tracking-[0.15em] uppercase mt-0.5">Kenya Fintech</span>
+              <span className="text-2xl font-bold text-white tracking-tight">
+                Sheria<span className="text-brand-green">Bot</span>
+              </span>
             </div>
           </Link>
 
@@ -59,8 +60,9 @@ export default function AuthLayout({
                 className="h-9 w-9 object-contain"
               />
               <div className="flex flex-col leading-none">
-                <span className="text-xl font-bold text-foreground tracking-tight">SheriaBot</span>
-                <span className="text-[9px] text-primary/80 font-semibold tracking-[0.15em] uppercase mt-0.5">Kenya Fintech</span>
+                <span className="text-xl font-bold text-white tracking-tight">
+                  Sheria<span className="text-brand-green">Bot</span>
+                </span>
               </div>
             </Link>
           </div>
