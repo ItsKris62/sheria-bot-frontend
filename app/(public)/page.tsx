@@ -25,7 +25,29 @@ import {
   Globe,
   Clock,
   ChevronRight,
+  X,
 } from "lucide-react"
+
+const modalData = {
+  "draft-policies": {
+    title: "Instantly Generate Compliant Policies",
+    body: "Stop paying massive retainer fees for standard compliance documents. SheriaBot asks you a few simple questions about your business model and instantly generates AML/CFT, KYC, and Data Privacy policies that strictly adhere to the latest CBK and ODPC guidelines.",
+    cta: "Start Drafting Now",
+    href: "/register",
+  },
+  "spot-blindspots": {
+    title: "Automated Legal Gap Analysis",
+    body: "Upload your existing Terms of Service or Privacy Policy. Our agentic RAG system acts like a senior compliance officer, cross-referencing your documents against Kenyan law and highlighting exact clauses that leave you legally exposed.",
+    cta: "Audit Your Documents",
+    href: "/register",
+  },
+  "verifiable-citations": {
+    title: "Zero Hallucinations. Just Law.",
+    body: "AI is only useful if you can trust it. Every time SheriaBot answers a compliance question, it provides direct, clickable citations mapping back to the exact section, act, and year of the Kenya Gazette. Verify everything instantly.",
+    cta: "See How It Works",
+    href: "/pricing",
+  },
+}
 
 const features = [
   {
@@ -238,6 +260,7 @@ function AmbientSection({
 export default function LandingPage() {
   const parallaxRef = useParallax()
   const [demoOpen, setDemoOpen] = useState(false)
+  const [activeModal, setActiveModal] = useState<string | null>(null)
 
   return (
     <div ref={parallaxRef} className="relative overflow-hidden">
@@ -317,7 +340,7 @@ export default function LandingPage() {
           </p>
         </div>
         <LogoMarquee 
-          logos={REGULATOR_LOGOS}
+          logos={REGULATOR_LOGOS as any}
           speed="slow" 
           pauseOnHover 
         />
@@ -366,27 +389,33 @@ export default function LandingPage() {
 
                   {/* Micro-UI interaction for Citations Card */}
                   {feature.interactive && (
-                    <div className="mt-6 relative h-8 overflow-hidden">
-                      <div className="absolute inset-0 flex items-center transition-all duration-300 group-hover:-translate-y-full group-hover:opacity-0">
+                    <button
+                      onClick={() => setActiveModal(feature.id)}
+                      className="mt-6 relative h-8 w-full text-left overflow-hidden focus:outline-none group/btn"
+                    >
+                      <div className="absolute inset-0 flex items-center transition-all duration-300 group-hover/btn:-translate-y-full group-hover/btn:opacity-0 opacity-100">
                         <div className="flex items-center text-sm text-brand-green">
                           <span>Learn more</span>
-                          <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                          <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                         </div>
                       </div>
-                      <div className="absolute inset-0 flex items-center opacity-0 translate-y-2 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      <div className="absolute inset-0 flex items-center opacity-0 translate-y-2 transition-all duration-300 group-hover/btn:translate-y-0 group-hover/btn:opacity-100">
                         <span className="inline-flex items-center gap-1.5 text-[11px] font-mono bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md shadow-sm">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           [Data Protection Act, S.30]
                         </span>
                       </div>
-                    </div>
+                    </button>
                   )}
 
                   {!feature.interactive && (
-                    <div className="mt-6 flex items-center text-sm text-brand-green opacity-0 transition-all duration-300 group-hover:opacity-100">
+                    <button
+                      onClick={() => setActiveModal(feature.id)}
+                      className="mt-6 flex items-center text-sm text-brand-green opacity-100 md:opacity-0 transition-all duration-300 group-hover:opacity-100 focus:outline-none"
+                    >
                       <span>Learn more</span>
                       <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </div>
+                    </button>
                   )}
                 </CardContent>
                 {/* Hover glow effect */}
@@ -584,6 +613,60 @@ export default function LandingPage() {
           </Card>
         </div>
       </AmbientSection>
+
+      {/* Feature Relief Modal */}
+      {activeModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity duration-300"
+            onClick={() => setActiveModal(null)}
+          />
+
+          {/* Modal Card */}
+          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-emerald-500/20 bg-slate-800 p-8 shadow-2xl transition-all animate-in fade-in zoom-in-95 duration-200">
+            {/* Close button */}
+            <button
+              onClick={() => setActiveModal(null)}
+              className="absolute right-4 top-4 rounded-xl p-1.5 text-muted-foreground hover:bg-white/5 hover:text-white transition-all duration-200"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Content */}
+            <div className="mt-2">
+              <h3 className="text-xl font-bold text-white tracking-tight">
+                {modalData[activeModal as keyof typeof modalData]?.title}
+              </h3>
+              <p className="mt-4 text-slate-300 leading-relaxed text-sm">
+                {modalData[activeModal as keyof typeof modalData]?.body}
+              </p>
+            </div>
+
+            {/* Footer / CTA */}
+            <div className="mt-8 flex justify-end gap-3">
+              <button
+                onClick={() => setActiveModal(null)}
+                className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <Link 
+                href={modalData[activeModal as keyof typeof modalData]?.href} 
+                onClick={() => setActiveModal(null)}
+                className="bg-[#00875A] hover:bg-emerald-600 text-white rounded-lg px-6 py-2 text-sm font-semibold transition-colors duration-200 inline-flex items-center"
+              >
+                {modalData[activeModal as keyof typeof modalData]?.cta}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
