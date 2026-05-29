@@ -1,6 +1,6 @@
 import React from "react"
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Caveat } from 'next/font/google'
 import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -12,6 +12,12 @@ import './globals.css'
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+})
+
+const caveat = Caveat({
+  subsets: ['latin'],
+  variable: '--font-caveat',
+  display: 'swap',
 })
 
 const cocoGothic = localFont({
@@ -161,6 +167,8 @@ export const metadata: Metadata = {
   },
 }
 
+
+
 export const viewport: Viewport = {
   themeColor: '#0a0e17',
   width: 'device-width',
@@ -175,7 +183,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${cocoGothic.variable} ${munichSans.variable} ${basicaline.variable} ${jetbrainsMono.variable} dark bg-background`}
+      className={`${inter.variable} ${cocoGothic.variable} ${munichSans.variable} ${basicaline.variable} ${jetbrainsMono.variable} ${caveat.variable} dark bg-background`}
       suppressHydrationWarning
     >
       <body

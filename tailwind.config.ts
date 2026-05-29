@@ -16,6 +16,7 @@ const config: Config = {
         display: ['var(--font-munich)', 'var(--font-coco)', 'system-ui', 'sans-serif'],
         brand: ['var(--font-basicaline)', 'var(--font-coco)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-mono)', 'monospace'],
+        caveat: ['var(--font-caveat)', 'cursive'],
       },
       colors: {
         background: 'var(--bg-base)',
