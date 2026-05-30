@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+import { withSentryConfig } from "@sentry/nextjs";
+
 
 /**
  * Content-Security-Policy for the SheriaBot Next.js frontend.
@@ -54,4 +56,19 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Suppresses source map uploading logs during bundling
+  silent: true,
+}, {
+  // Upload a larger set of source maps for prettier stack traces (increases build time slightly)
+  widenClientFileUpload: true,
+
+  // Automatically annotate React components to show their component name in breadcrumbs and profiles
+  reactComponentAnnotation: { enabled: true },
+
+  // Hides source maps from visitors
+  hideSourceMaps: true,
+
+  // Automatically tree-shakes Sentry logging statements to reduce bundle size
+  disableLogger: true,
+});

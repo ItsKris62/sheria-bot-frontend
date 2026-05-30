@@ -1,6 +1,8 @@
 "use client"
 
 import React, { Component } from "react"
+import * as Sentry from "@sentry/nextjs"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle, RefreshCw } from "lucide-react"
@@ -27,6 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("ErrorBoundary caught:", error, errorInfo) // TODO: remove before prod
+    Sentry.captureException(error, { extra: { errorInfo } })
   }
 
   render() {
