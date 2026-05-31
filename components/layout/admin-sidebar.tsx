@@ -95,6 +95,7 @@ export const adminNav: AdminNavGroup[] = [
     title: "System",
     items: [
       { title: "AI Configuration", href: "/admin/ai-config", icon: Bot },
+      { title: "AI Jobs", href: "/admin/ai-jobs", icon: Activity },
       { title: "Billing & Plans", href: "/admin/billing", icon: CreditCard },
       { title: "Audit Logs", href: "/admin/audit-logs", icon: Activity },
       { title: "Security", href: "/admin/security", icon: Lock },
