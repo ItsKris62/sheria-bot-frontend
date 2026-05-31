@@ -933,7 +933,7 @@ export default function BillingSettingsPage() {
             {isEnterprise && (
               <p className="text-sm text-muted-foreground">
                 Your Enterprise plan is managed by your dedicated account manager. Contact{" "}
-                <span className="font-medium text-foreground">support@sheriabot.co.ke</span> for changes.
+                <span className="font-medium text-foreground">support@sheriabot.com</span> for changes.
               </p>
             )}
           </div>

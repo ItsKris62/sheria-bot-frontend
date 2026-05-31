@@ -158,7 +158,7 @@ export function SecurityPolicyContent() {
           <p>
             SheriaBot encourages responsible disclosure of security vulnerabilities. If you believe you have
             discovered a security vulnerability in our platform, please report it to{" "}
-            <span className="text-primary">security@sheriabot.co.ke</span> before public disclosure. We will
+            <span className="text-primary">security@sheriabot.com</span> before public disclosure. We will
             acknowledge receipt within 2 business days and work to investigate and remediate confirmed
             vulnerabilities promptly. We do not take legal action against researchers who report vulnerabilities
             in good faith through this channel.
@@ -461,8 +461,8 @@ export function SecurityPolicyContent() {
           </p>
           <BulletList
             items={[
-              "Email: security@sheriabot.co.ke — for responsible disclosure of vulnerabilities",
-              "Email: support@sheriabot.co.ke — for suspected account compromise or unusual activity on your account",
+              "Email: security@sheriabot.com — for responsible disclosure of vulnerabilities",
+              "Email: support@sheriabot.com — for suspected account compromise or unusual activity on your account",
               "Please include: a description of the issue, steps to reproduce (if applicable), the potential impact, and your contact details for follow-up",
             ]}
           />
@@ -500,7 +500,7 @@ export function SecurityPolicyContent() {
             rows={[
               ["Recovery Time Objective (RTO)", "Target: 4 hours for major infrastructure failures; 1 hour for application-layer incidents"],
               ["Recovery Point Objective (RPO)", "Target: 24 hours (based on daily backup schedule); PITR available for shorter windows"],
-              ["Communication During Outage", "Status updates posted to status.sheriabot.co.ke and via email to registered users for outages exceeding 30 minutes"],
+              ["Communication During Outage", "Status updates posted to status.sheriabot.com and via email to registered users for outages exceeding 30 minutes"],
             ]}
           />
         </SubSection>
@@ -611,18 +611,18 @@ export function SecurityPolicyContent() {
         <p>For security-related matters, please use the appropriate contact below:</p>
         <InfoTable
           rows={[
-            ["Security Vulnerabilities", "security@sheriabot.co.ke — responsible disclosure of security vulnerabilities"],
-            ["Account Security Issues", "support@sheriabot.co.ke — suspected account compromise, unusual activity"],
-            ["Data Protection Officer", "dpo@sheriabot.co.ke — data protection and privacy concerns"],
-            ["Legal / Regulatory", "legal@sheriabot.co.ke — regulatory inquiries, law enforcement requests"],
-            ["General Support", "support@sheriabot.co.ke — general platform support"],
+            ["Security Vulnerabilities", "security@sheriabot.com — responsible disclosure of security vulnerabilities"],
+            ["Account Security Issues", "support@sheriabot.com — suspected account compromise, unusual activity"],
+            ["Data Protection Officer", "dpo@sheriabot.com — data protection and privacy concerns"],
+            ["Legal / Regulatory", "legal@sheriabot.com — regulatory inquiries, law enforcement requests"],
+            ["General Support", "support@sheriabot.com — general platform support"],
             ["Mailing Address", "SheriaBot Technologies Limited, Nairobi, Kenya"],
           ]}
         />
         <Callout variant="warning">
           <strong className="text-foreground">Law Enforcement Requests:</strong> SheriaBot responds to valid
           legal process (court orders, regulatory demands) issued under the laws of the Republic of Kenya. All
-          such requests must be directed to <span className="text-primary">legal@sheriabot.co.ke</span> and
+          such requests must be directed to <span className="text-primary">legal@sheriabot.com</span> and
           accompanied by the relevant legal instrument. We will notify affected users of disclosure requests
           unless prohibited by law from doing so.
         </Callout>

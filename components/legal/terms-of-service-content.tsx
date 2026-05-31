@@ -90,7 +90,7 @@ export function TermsOfServiceContent() {
         <p>In these Terms, the following definitions apply:</p>
         <div className="space-y-2">
           {[
-            ['"Platform"', 'SheriaBot\'s web-based AI compliance application available at https://www.sheriabot.co.ke, including all associated APIs, tools, mobile interfaces, and documentation.'],
+            ['"Platform"', 'SheriaBot\'s web-based AI compliance application available at https://www.sheriabot.com, including all associated APIs, tools, mobile interfaces, and documentation.'],
             ['"AI Services"', 'The artificial intelligence and machine learning features embedded in the Platform that process compliance queries, analyse regulatory documents, and generate Outputs.'],
             ['"Authorised User"', 'An employee, contractor, or agent of the Customer who is authorised by the Customer to access and use the Platform under the Customer\'s Subscription.'],
             ['"Customer Data"', 'Data, content, documents, and information submitted, uploaded, or transmitted by the Customer or its Authorised Users to the Platform, including documents uploaded for compliance analysis.'],
@@ -128,7 +128,7 @@ export function TermsOfServiceContent() {
           <p>
             You are solely responsible for maintaining the confidentiality of your account credentials (username,
             password, and API keys). You must immediately notify SheriaBot at{" "}
-            <span className="text-primary">support@sheriabot.co.ke</span> of any suspected unauthorised access to or
+            <span className="text-primary">support@sheriabot.com</span> of any suspected unauthorised access to or
             use of your account. SheriaBot is not liable for any loss, damage, or regulatory consequences resulting
             from unauthorised use of your credentials.
           </p>
@@ -436,7 +436,7 @@ export function TermsOfServiceContent() {
         <Clause title="10.1 Termination by Customer">
           <p>
             You may terminate your Subscription at any time by providing written notice to{" "}
-            <span className="text-primary">support@sheriabot.co.ke</span>. Termination takes effect at the end of
+            <span className="text-primary">support@sheriabot.com</span>. Termination takes effect at the end of
             the then-current billing period. No refunds are issued for the unused portion of a pre-paid period.
           </p>
         </Clause>
@@ -569,7 +569,7 @@ export function TermsOfServiceContent() {
             ["15.3 Waiver", "Failure by either party to exercise or enforce any right or remedy under these Terms does not constitute a waiver of that right or remedy. A waiver is only effective if made in writing and signed by an authorised representative."],
             ["15.4 Force Majeure", "Neither party shall be liable for failure or delay in performance caused by circumstances beyond its reasonable control, including acts of God, government actions, civil disturbances, power or telecommunications failures, or cyberattacks, provided the affected party gives prompt notice and uses reasonable efforts to mitigate the impact."],
             ["15.5 Assignment", "You may not assign or transfer these Terms, or any rights or obligations under them, without SheriaBot's prior written consent. SheriaBot may assign these Terms to an affiliate or in connection with a merger, acquisition, or sale of all or substantially all of its assets, upon written notice to you."],
-            ["15.6 Notices", "All legal notices under these Terms must be in writing and sent to: legal@sheriabot.co.ke (for SheriaBot) or the email address registered on your account (for you). Notices are effective upon receipt."],
+            ["15.6 Notices", "All legal notices under these Terms must be in writing and sent to: legal@sheriabot.com (for SheriaBot) or the email address registered on your account (for you). Notices are effective upon receipt."],
             ["15.7 Relationship of Parties", "The parties are independent contractors. Nothing in these Terms creates a partnership, joint venture, agency, franchise, or employment relationship between SheriaBot and the Customer."],
           ].map(([title, body]) => (
             <div key={title} className="p-3 rounded-md border border-border bg-muted/10">

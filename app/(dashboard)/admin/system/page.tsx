@@ -447,7 +447,7 @@ export default function SystemSettingsPage() {
             </div>
             <div className="space-y-2">
               <Label>From Email</Label>
-              <Input readOnly defaultValue="noreply@sheriabot.co.ke" className="bg-muted/50" />
+              <Input readOnly defaultValue="noreply@sheriabot.com" className="bg-muted/50" />
             </div>
           </CardContent>
         </Card>

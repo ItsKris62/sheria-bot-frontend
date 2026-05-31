@@ -133,8 +133,8 @@ export function PrivacyPolicyContent() {
             ["Registered Address", "Nairobi, Kenya"],
             ["Company Registration", "[C/XXXXX] — Laws of Kenya"],
             ["ODPC Registration No.", "ODPC-XXXXXX"],
-            ["Data Protection Officer", "dpo@sheriabot.co.ke"],
-            ["General Privacy Queries", "privacy@sheriabot.co.ke"],
+            ["Data Protection Officer", "dpo@sheriabot.com"],
+            ["General Privacy Queries", "privacy@sheriabot.com"],
             ["Phone", "+254 (0) XXX XXX XXX"],
           ]}
         />
@@ -245,7 +245,7 @@ export function PrivacyPolicyContent() {
         />
         <p>
           Where processing is based on <strong className="text-foreground">consent</strong>, you may withdraw your
-          consent at any time by contacting privacy@sheriabot.co.ke without affecting the lawfulness of prior
+          consent at any time by contacting privacy@sheriabot.com without affecting the lawfulness of prior
           processing.
         </p>
       </DocSection>
@@ -290,7 +290,7 @@ export function PrivacyPolicyContent() {
 
         <p>
           A full and current list of sub-processors is available upon written request at{" "}
-          <span className="text-primary">privacy@sheriabot.co.ke</span>. We will provide at least 14 days' notice
+          <span className="text-primary">privacy@sheriabot.com</span>. We will provide at least 14 days' notice
           before onboarding a new sub-processor that processes your personal data.
         </p>
       </DocSection>
@@ -321,7 +321,7 @@ export function PrivacyPolicyContent() {
         </ul>
         <p>
           You may obtain a copy of the relevant transfer safeguards by contacting{" "}
-          <span className="text-primary">privacy@sheriabot.co.ke</span>.
+          <span className="text-primary">privacy@sheriabot.com</span>.
         </p>
       </DocSection>
 
@@ -410,7 +410,7 @@ export function PrivacyPolicyContent() {
         <div className="mt-2 rounded-md border border-border bg-muted/20 p-3">
           <p>
             To exercise any of these rights, submit a written request to{" "}
-            <span className="text-primary font-medium">privacy@sheriabot.co.ke</span> with the subject line{" "}
+            <span className="text-primary font-medium">privacy@sheriabot.com</span> with the subject line{" "}
             <em>"Data Subject Request."</em> We will acknowledge and respond within{" "}
             <strong className="text-foreground">21 days</strong> as required by the DPA. If you are dissatisfied with
             our response, you have the right to lodge a complaint with the{" "}
@@ -450,7 +450,7 @@ export function PrivacyPolicyContent() {
         </p>
         <p>
           If you believe we have inadvertently collected personal data from an individual under 18, please contact{" "}
-          <span className="text-primary">privacy@sheriabot.co.ke</span> immediately and we will take prompt steps to
+          <span className="text-primary">privacy@sheriabot.com</span> immediately and we will take prompt steps to
           delete such data.
         </p>
       </DocSection>
@@ -474,9 +474,9 @@ export function PrivacyPolicyContent() {
         <p>For any privacy-related queries, concerns, or to exercise your data subject rights:</p>
         <InfoTable
           rows={[
-            ["Data Protection Officer", "dpo@sheriabot.co.ke"],
-            ["Privacy Queries", "privacy@sheriabot.co.ke"],
-            ["Legal Notices", "legal@sheriabot.co.ke"],
+            ["Data Protection Officer", "dpo@sheriabot.com"],
+            ["Privacy Queries", "privacy@sheriabot.com"],
+            ["Legal Notices", "legal@sheriabot.com"],
             ["Mailing Address", "SheriaBot Technologies Limited, Nairobi, Kenya"],
             ["Phone", "+254 (0) XXX XXX XXX"],
             ["ODPC", "www.odpc.go.ke — for unresolved complaints"],

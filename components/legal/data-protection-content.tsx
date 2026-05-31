@@ -261,7 +261,7 @@ export function DataProtectionContent() {
           <InfoTable
             rows={[
               ["Role", "Designated Data Protection Officer / Compliance Lead"],
-              ["Contact Email", "dpo@sheriabot.co.ke"],
+              ["Contact Email", "dpo@sheriabot.com"],
               ["Responsibilities", "Oversight of DPA 2019 compliance, DPIA coordination, DSR handling, ODPC liaison, staff training"],
             ]}
           />
@@ -468,7 +468,7 @@ export function DataProtectionContent() {
         <SubSection title="6.3 Right to Transfer Safeguards">
           <p>
             Data subjects may obtain a copy of the relevant transfer safeguards by submitting a written request
-            to <span className="text-primary">privacy@sheriabot.co.ke</span>. Where contractual confidentiality
+            to <span className="text-primary">privacy@sheriabot.com</span>. Where contractual confidentiality
             prevents full disclosure, we will describe the nature of the safeguard in as much detail as is
             permissible.
           </p>
@@ -484,7 +484,7 @@ export function DataProtectionContent() {
         </p>
         <SubSection title="7.1 Receipt and Acknowledgement">
           <p>
-            All DSRs submitted to <span className="text-primary">privacy@sheriabot.co.ke</span> are logged in our
+            All DSRs submitted to <span className="text-primary">privacy@sheriabot.com</span> are logged in our
             DSR register upon receipt. An acknowledgement is sent to the requester within{" "}
             <strong className="text-foreground">3 business days</strong> confirming receipt and providing an
             estimated response date.
@@ -559,7 +559,7 @@ export function DataProtectionContent() {
         <SubSection title="8.2 Detection and Internal Reporting">
           <BulletList
             items={[
-              "Any employee, contractor, or sub-processor who becomes aware of or suspects a personal data breach must report it internally to the Data Protection Officer at dpo@sheriabot.co.ke within 4 hours of discovery",
+              "Any employee, contractor, or sub-processor who becomes aware of or suspects a personal data breach must report it internally to the Data Protection Officer at dpo@sheriabot.com within 4 hours of discovery",
               "The DPO is responsible for convening an initial incident response team within 24 hours",
               "All systems access logs, error logs, and audit trails relevant to the suspected breach are preserved immediately upon report",
             ]}
@@ -780,9 +780,9 @@ export function DataProtectionContent() {
         <SubSection title="12.3 Contact">
           <InfoTable
             rows={[
-              ["Data Protection Officer", "dpo@sheriabot.co.ke"],
-              ["Privacy Queries", "privacy@sheriabot.co.ke"],
-              ["Legal Notices", "legal@sheriabot.co.ke"],
+              ["Data Protection Officer", "dpo@sheriabot.com"],
+              ["Privacy Queries", "privacy@sheriabot.com"],
+              ["Legal Notices", "legal@sheriabot.com"],
               ["Supervisory Authority", "Office of the Data Protection Commissioner (ODPC) — www.odpc.go.ke"],
               ["ODPC Address", "P.O. Box 22181 — 00505, Nairobi, Kenya"],
             ]}
