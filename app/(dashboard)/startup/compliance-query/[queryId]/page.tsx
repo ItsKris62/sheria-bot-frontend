@@ -14,6 +14,8 @@ import {
   ArrowLeft,
   Clock,
   FileText,
+  Bookmark,
+  BookmarkCheck,
   ThumbsUp,
   ThumbsDown,
   Copy,
@@ -153,6 +155,7 @@ type FollowUpEntry = {
   answer: string | null
   citations: CitationItem[]
   isLoading: boolean
+  createdAt?: Date | string
 }
 
 function FollowUpSourcesDisclosure({ citations }: { citations: CitationItem[] }) {
@@ -189,6 +192,7 @@ export default function QueryDetailPage() {
   const [followUpError, setFollowUpError] = useState<string | null>(null)
   const [followUps, setFollowUps] = useState<FollowUpEntry[]>([])
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null)
+  const [saved, setSaved] = useState(false)
   const [copied, setCopied] = useState(false)
   const followUpTextareaRef = useRef<HTMLTextAreaElement | null>(null)
 
@@ -205,13 +209,44 @@ export default function QueryDetailPage() {
     { queryId },
     { enabled: !!queryId },
   )
+  const { data: savedStatus } = trpc.compliance.getSavedStatus.useQuery(
+    { queryId },
+    { enabled: !!queryId },
+  )
+  const { data: persistedFollowUps } = trpc.compliance.getFollowUps.useQuery(
+    { originalQueryId: queryId },
+    { enabled: !!queryId },
+  )
   const feedbackMutation = trpc.compliance.submitFeedback.useMutation()
+  const saveMutation = trpc.compliance.toggleSave.useMutation()
   const followUpMutation = trpc.compliance.followUp.useMutation()
   const exportMutation = trpc.compliance.exportQueryDocx.useMutation()
 
   useEffect(() => {
     setFeedback(feedbackStatus?.rating ?? null)
   }, [feedbackStatus?.rating])
+
+  useEffect(() => {
+    setSaved(savedStatus?.saved ?? false)
+  }, [savedStatus?.saved])
+
+  useEffect(() => {
+    const persisted = Array.isArray(persistedFollowUps?.followUps)
+      ? persistedFollowUps.followUps.map((item) => ({
+          id: item.id,
+          question: item.query,
+          answer: item.response,
+          citations: Array.isArray(item.citations) ? (item.citations as CitationItem[]) : [],
+          isLoading: false,
+          createdAt: item.createdAt,
+        }))
+      : []
+
+    setFollowUps((current) => {
+      const pending = current.filter((item) => item.isLoading)
+      return [...persisted, ...pending]
+    })
+  }, [persistedFollowUps?.followUps])
 
   // Derived values
   const isNotFound = (error as { data?: { code?: string } } | null)?.data?.code === "NOT_FOUND"
@@ -241,15 +276,35 @@ export default function QueryDetailPage() {
     try {
       const result = await exportMutation.mutateAsync({ queryId })
       if (result.downloadUrl) {
-        window.open(result.downloadUrl, "_blank", "noopener,noreferrer")
+        const link = document.createElement("a")
+        link.href = result.downloadUrl
+        link.download = result.fileName ?? "SheriaBot_Compliance_Query.docx"
+        link.rel = "noopener noreferrer"
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
         toast.success("Export ready", {
-          description: "Your DOCX file has been generated.",
+          description: `${result.fileName ?? "DOCX file"} is downloading.`,
         })
       }
-    } catch {
+    } catch (err) {
       toast.error("Export failed", {
-        description: "We could not generate the DOCX right now. Please try again.",
+        description: getErrorMessage(err),
       })
+    }
+  }
+
+  const handleSave = async () => {
+    const previous = saved
+    setSaved(!previous)
+    try {
+      const result = await saveMutation.mutateAsync({ queryId })
+      setSaved(result.saved)
+      void utils.compliance.getSavedStatus.invalidate({ queryId })
+      toast(result.saved ? "Response saved" : "Removed from saved")
+    } catch (err) {
+      setSaved(previous)
+      toast.error("Couldn't update saved response", { description: getErrorMessage(err) })
     }
   }
 
@@ -315,6 +370,7 @@ export default function QueryDetailPage() {
       )
       setFollowUpQuestion("")
       void utils.compliance.get.invalidate({ id: queryId })
+      void utils.compliance.getFollowUps.invalidate({ originalQueryId: queryId })
       requestAnimationFrame(() => followUpTextareaRef.current?.focus())
     } catch (err) {
       setFollowUps((items) => items.filter((item) => item.id !== optimisticId))
@@ -494,6 +550,22 @@ export default function QueryDetailPage() {
                       <Download className="h-4 w-4 mr-1" />
                     )}
                     Export
+                  </Button>
+                  <Button
+                    variant={saved ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => void handleSave()}
+                    disabled={saveMutation.isPending || !hasResponse}
+                    aria-pressed={saved}
+                  >
+                    {saveMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    ) : saved ? (
+                      <BookmarkCheck className="h-4 w-4 mr-1" />
+                    ) : (
+                      <Bookmark className="h-4 w-4 mr-1" />
+                    )}
+                    {saved ? "Saved" : "Save"}
                   </Button>
                 </div>
               </div>

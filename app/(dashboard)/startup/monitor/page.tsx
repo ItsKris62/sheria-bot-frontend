@@ -1,140 +1,71 @@
 "use client"
 
-import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Bell,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  FileText,
-  ExternalLink,
-  Settings,
-  Filter,
-  RefreshCw,
-} from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { trpc } from "@/lib/trpc"
+import { AlertTriangle, Bell, CheckCircle2, Clock, ExternalLink, FileText, RefreshCw } from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
 
-const regulatoryUpdates = [
-  {
-    id: 1,
-    title: "CBK Revises Mobile Money Transaction Limits",
-    source: "Central Bank of Kenya",
-    date: "2024-01-28",
-    type: "regulation",
-    impact: "high",
-    summary: "New daily transaction limits for mobile money operators effective March 2024. Maximum daily transactions increased to KES 500,000.",
-    isRead: false,
-  },
-  {
-    id: 2,
-    title: "ODPC Issues Guidelines on Cross-Border Data Transfers",
-    source: "Office of Data Protection Commissioner",
-    date: "2024-01-25",
-    type: "guideline",
-    impact: "medium",
-    summary: "New requirements for Standard Contractual Clauses and adequacy assessments for international data transfers.",
-    isRead: false,
-  },
-  {
-    id: 3,
-    title: "FRC Updates Suspicious Transaction Reporting Form",
-    source: "Financial Reporting Centre",
-    date: "2024-01-22",
-    type: "compliance",
-    impact: "medium",
-    summary: "New STR form with additional fields for crypto-related transactions. Effective February 1, 2024.",
-    isRead: true,
-  },
-  {
-    id: 4,
-    title: "CMA Proposes Digital Asset Regulations",
-    source: "Capital Markets Authority",
-    date: "2024-01-20",
-    type: "proposal",
-    impact: "high",
-    summary: "Draft regulations for cryptocurrency exchanges and digital asset service providers open for public comment.",
-    isRead: true,
-  },
-  {
-    id: 5,
-    title: "CBK Sandbox Cohort 3 Applications Open",
-    source: "Central Bank of Kenya",
-    date: "2024-01-18",
-    type: "announcement",
-    impact: "low",
-    summary: "Applications for the third cohort of the CBK regulatory sandbox are now open until March 31, 2024.",
-    isRead: true,
-  },
-]
-
-const alertSettings = [
-  { id: "cbk", label: "Central Bank of Kenya", enabled: true },
-  { id: "odpc", label: "ODPC Kenya", enabled: true },
-  { id: "frc", label: "Financial Reporting Centre", enabled: true },
-  { id: "cma", label: "Capital Markets Authority", enabled: false },
-  { id: "ira", label: "Insurance Regulatory Authority", enabled: false },
-]
-
-const impactConfig = {
-  high: { label: "High Impact", color: "bg-destructive/10 text-destructive" },
-  medium: { label: "Medium Impact", color: "bg-warning/10 text-warning" },
-  low: { label: "Low Impact", color: "bg-muted text-muted-foreground" },
+type AlertItem = {
+  id: string
+  title: string
+  summary: string
+  sourceUrl: string | null
+  regulatoryBody: string
+  category: string
+  severity: string
+  publishedAt: Date | string | null
+  isRead: boolean
+  notificationId: string | null
 }
 
-const typeConfig = {
-  regulation: { label: "Regulation", color: "bg-primary/10 text-primary" },
-  guideline: { label: "Guideline", color: "bg-primary/10 text-primary" },
-  compliance: { label: "Compliance", color: "bg-warning/10 text-warning" },
-  proposal: { label: "Proposal", color: "bg-muted text-muted-foreground" },
-  announcement: { label: "Announcement", color: "bg-muted text-muted-foreground" },
+const severityClasses: Record<string, string> = {
+  CRITICAL: "bg-destructive/10 text-destructive",
+  HIGH: "bg-destructive/10 text-destructive",
+  MEDIUM: "bg-warning/10 text-warning",
+  LOW: "bg-muted text-muted-foreground",
 }
 
 export default function MonitorPage() {
-  const [updates, setUpdates] = useState(regulatoryUpdates)
-  const [settings, setSettings] = useState(alertSettings)
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const utils = trpc.useUtils()
+  const { data, isLoading, isError, refetch, isFetching } = trpc.alert.getAlerts.useQuery({
+    page: 1,
+    limit: 25,
+  })
+  const markAllMutation = trpc.alert.markAllAsRead.useMutation({
+    onSuccess: () => {
+      void utils.alert.getAlerts.invalidate()
+      void utils.alert.getUnreadCount.invalidate()
+    },
+  })
 
-  const unreadCount = updates.filter((u) => !u.isRead).length
-
-  const markAsRead = (id: number) => {
-    setUpdates(updates.map((u) => (u.id === id ? { ...u, isRead: true } : u)))
-  }
-
-  const markAllAsRead = () => {
-    setUpdates(updates.map((u) => ({ ...u, isRead: true })))
-  }
-
-  const toggleAlertSetting = (id: string) => {
-    setSettings(settings.map((s) => (s.id === id ? { ...s, enabled: !s.enabled } : s)))
-  }
-
-  const handleRefresh = () => {
-    setIsRefreshing(true)
-    setTimeout(() => setIsRefreshing(false), 1500)
-  }
+  const alerts: AlertItem[] = Array.isArray(data?.alerts) ? (data.alerts as AlertItem[]) : []
+  const unreadCount = alerts.filter((item) => !item.isRead).length
+  const highImpactCount = alerts.filter((item) => item.severity === "HIGH" || item.severity === "CRITICAL").length
+  const categories = new Set(alerts.map((item) => item.category).filter(Boolean))
+  const bodies = new Set(alerts.map((item) => item.regulatoryBody).filter(Boolean))
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Regulatory Monitor</h1>
-          <p className="text-muted-foreground mt-1">
-            Stay updated with the latest regulatory changes and announcements
-          </p>
+          <p className="text-muted-foreground mt-1">Live regulatory alerts published to your workspace</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+          <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-          <Button variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
+          {unreadCount > 0 ? (
+            <Button variant="outline" onClick={() => markAllMutation.mutate()} disabled={markAllMutation.isPending}>
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Mark all read
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -160,9 +91,7 @@ export default function MonitorPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">High Impact</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {updates.filter((u) => u.impact === "high").length}
-                </p>
+                <p className="text-2xl font-bold text-foreground">{highImpactCount}</p>
               </div>
             </div>
           </CardContent>
@@ -174,10 +103,8 @@ export default function MonitorPage() {
                 <FileText className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">New Regulations</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {updates.filter((u) => u.type === "regulation").length}
-                </p>
+                <p className="text-sm text-muted-foreground">Categories</p>
+                <p className="text-2xl font-bold text-foreground">{categories.size}</p>
               </div>
             </div>
           </CardContent>
@@ -189,110 +116,76 @@ export default function MonitorPage() {
                 <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Sources Monitored</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {settings.filter((s) => s.enabled).length}
-                </p>
+                <p className="text-sm text-muted-foreground">Regulators</p>
+                <p className="text-2xl font-bold text-foreground">{bodies.size}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="updates" className="space-y-6">
-        <TabsList className="bg-muted/50">
-          <TabsTrigger value="updates">Updates</TabsTrigger>
-          <TabsTrigger value="settings">Alert Settings</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="updates" className="space-y-4">
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Recent Updates</CardTitle>
-                  <CardDescription>Latest regulatory changes and announcements</CardDescription>
+      <Card className="border-border/50 bg-card/50 backdrop-blur">
+        <CardHeader>
+          <CardTitle>Recent Updates</CardTitle>
+          <CardDescription>Latest regulatory changes and announcements</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isLoading ? (
+            <>
+              <Skeleton className="h-[120px] rounded-lg" />
+              <Skeleton className="h-[120px] rounded-lg" />
+              <Skeleton className="h-[120px] rounded-lg" />
+            </>
+          ) : isError ? (
+            <div className="py-12 text-center">
+              <AlertTriangle className="mx-auto h-10 w-10 text-destructive/60" />
+              <p className="mt-3 text-sm text-muted-foreground">Could not load regulatory alerts.</p>
+            </div>
+          ) : alerts.length === 0 ? (
+            <div className="py-12 text-center">
+              <Bell className="mx-auto h-10 w-10 text-muted-foreground/50" />
+              <p className="mt-3 text-sm text-muted-foreground">No active alerts in your current plan window.</p>
+            </div>
+          ) : alerts.map((alert) => (
+            <Link
+              key={alert.id}
+              href={alert.sourceUrl || `/dashboard/alerts/${alert.id}`}
+              target={alert.sourceUrl ? "_blank" : undefined}
+              className={`block rounded-lg p-4 transition-colors hover:bg-muted/50 ${
+                alert.isRead ? "bg-muted/30" : "border-l-4 border-l-primary bg-primary/5"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="mb-1 flex items-center gap-2">
+                    {!alert.isRead ? <div className="h-2 w-2 rounded-full bg-primary" /> : null}
+                    <h3 className="font-medium text-foreground">{alert.title}</h3>
+                  </div>
+                  <p className="mb-2 text-sm text-muted-foreground">{alert.summary}</p>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <span>{alert.regulatoryBody}</span>
+                    {alert.publishedAt ? (
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatDistanceToNow(new Date(alert.publishedAt), { addSuffix: true })}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
-                {unreadCount > 0 && (
-                  <Button variant="ghost" size="sm" onClick={markAllAsRead}>
-                    Mark all as read
-                  </Button>
-                )}
+                <div className="flex flex-col items-end gap-2">
+                  <Badge className={severityClasses[alert.severity] ?? severityClasses.LOW}>
+                    {alert.severity.toLowerCase()} impact
+                  </Badge>
+                  <Badge variant="outline">{alert.category.replace(/_/g, " ")}</Badge>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {updates.map((update) => (
-                <div
-                  key={update.id}
-                  className={`p-4 rounded-lg transition-colors cursor-pointer ${
-                    update.isRead ? "bg-muted/30" : "bg-primary/5 border-l-4 border-l-primary"
-                  }`}
-                  onClick={() => markAsRead(update.id)}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        {!update.isRead && (
-                          <div className="w-2 h-2 rounded-full bg-primary" />
-                        )}
-                        <h3 className="font-medium text-foreground">{update.title}</h3>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">{update.summary}</p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>{update.source}</span>
-                        <span>{new Date(update.date).toLocaleDateString("en-KE")}</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <Badge className={impactConfig[update.impact as keyof typeof impactConfig].color}>
-                        {impactConfig[update.impact as keyof typeof impactConfig].label}
-                      </Badge>
-                      <Badge variant="outline" className={typeConfig[update.type as keyof typeof typeConfig].color}>
-                        {typeConfig[update.type as keyof typeof typeConfig].label}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="text-primary">
-                      Read Full Update <ExternalLink className="h-3 w-3 ml-1" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="settings" className="space-y-4">
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
-            <CardHeader>
-              <CardTitle>Alert Settings</CardTitle>
-              <CardDescription>
-                Configure which regulatory bodies you want to receive updates from
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {settings.map((setting) => (
-                <div
-                  key={setting.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-muted/30"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Bell className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="font-medium text-foreground">{setting.label}</span>
-                  </div>
-                  <Switch
-                    checked={setting.enabled}
-                    onCheckedChange={() => toggleAlertSetting(setting.id)}
-                  />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              <div className="mt-3 flex items-center gap-2 text-sm text-primary">
+                Read Full Update <ExternalLink className="h-3 w-3" />
+              </div>
+            </Link>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -2,210 +2,223 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useParams, useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
+import { getErrorMessage } from "@/lib/trpc"
+import { usePolicy, usePolicyActions } from "@/hooks/use-policies"
+import { toast } from "sonner"
 import {
+  AlertCircle,
   ArrowLeft,
-  Download,
-  Copy,
-  Share2,
-  FileText,
   BookOpen,
   CheckCircle2,
-  Clock,
-  ExternalLink,
-  Printer,
+  Copy,
+  Download,
+  FileText,
+  Loader2,
+  RefreshCw,
 } from "lucide-react"
-import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
 
-const policyData = {
-  id: "pol-001",
-  title: "Digital Credit Provider Consumer Protection Policy",
-  status: "completed",
-  createdAt: "2025-01-15T10:30:00Z",
-  query: "Generate a consumer protection policy for digital credit providers that complies with CBK regulations",
-  sections: [
-    {
-      title: "1. Introduction and Scope",
-      content: `This Consumer Protection Policy ("Policy") is established in accordance with the Central Bank of Kenya (Digital Credit Providers) Regulations, 2024 and the Consumer Protection Act, 2012. This Policy applies to all digital lending operations conducted by [Company Name] ("the Company") within the Republic of Kenya.
+type PolicyRecord = {
+  id: string
+  title: string | null
+  scenario: string
+  content: string | null
+  executiveSummary?: string | null
+  analysis?: string | null
+  status: string
+  version: number
+  regulatoryAreas: string[]
+  createdAt: Date | string
+  citations?: Array<{
+    id: string
+    actName: string
+    section: string
+    textSnippet: string
+    verified: boolean
+  }>
+}
 
-The Policy aims to ensure fair, transparent, and responsible lending practices that protect consumers while maintaining the financial sustainability of the Company's operations.`,
-    },
-    {
-      title: "2. Pricing and Fee Disclosure",
-      content: `2.1 All fees, charges, and interest rates must be disclosed clearly and prominently before loan disbursement.
-
-2.2 The Company shall provide a standardized loan schedule showing:
-- Principal amount
-- Total interest charges
-- All applicable fees (facility fee, late payment fees, etc.)
-- Total cost of credit
-- Annual Percentage Rate (APR)
-
-2.3 No hidden charges or fees shall be applied that were not disclosed at the time of loan application.`,
-    },
-    {
-      title: "3. Right to Information",
-      content: `3.1 Borrowers have the right to receive complete information about loan terms in a language they understand.
-
-3.2 The Company shall provide loan agreements that are written in plain language, avoiding technical jargon where possible.
-
-3.3 A copy of the signed loan agreement shall be provided to the borrower immediately after execution.`,
-    },
-    {
-      title: "4. Cooling-Off Period",
-      content: `4.1 In accordance with CBK Digital Credit Providers Regulations, borrowers shall have a 48-hour cooling-off period during which they may cancel the loan without penalty.
-
-4.2 The Company shall clearly communicate this right to borrowers at the time of loan disbursement.
-
-4.3 Cancellation requests shall be processed within 24 hours of receipt.`,
-    },
-    {
-      title: "5. Debt Collection Practices",
-      content: `5.1 The Company shall only use ethical and lawful debt collection practices.
-
-5.2 Prohibited practices include:
-- Contacting borrowers before 7:00 AM or after 9:00 PM
-- Harassment, threats, or use of abusive language
-- Contact with employers, family members, or third parties (except guarantors)
-- Public shaming or disclosure of debt status
-- Misrepresentation of legal consequences
-
-5.3 All debt collection communications shall be documented and retained for audit purposes.`,
-    },
-  ],
-  citations: [
-    {
-      law: "CBK Digital Credit Providers Regulations, 2024",
-      section: "Part III, Section 15",
-      text: "Disclosure of terms and conditions",
-    },
-    {
-      law: "Consumer Protection Act, 2012",
-      section: "Section 4",
-      text: "Consumer rights",
-    },
-    {
-      law: "Data Protection Act, 2019",
-      section: "Section 25",
-      text: "Rights of data subjects",
-    },
-    {
-      law: "Central Bank of Kenya Act",
-      section: "Section 33",
-      text: "Regulation of financial institutions",
-    },
-  ],
+function buildDisplayContent(policy: PolicyRecord) {
+  return [
+    policy.executiveSummary ? `## Executive Summary\n\n${policy.executiveSummary}` : null,
+    policy.analysis ? `## Regulatory Analysis\n\n${policy.analysis}` : null,
+    policy.content,
+  ].filter(Boolean).join("\n\n")
 }
 
 export default function PolicyViewerPage() {
+  const params = useParams()
+  const router = useRouter()
+  const policyId = (Array.isArray(params.id) ? params.id[0] : params.id) ?? ""
   const [copied, setCopied] = useState(false)
+  const [refinementInstructions, setRefinementInstructions] = useState("")
+
+  const { data, isLoading, isError, error } = usePolicy(policyId)
+  const { exportPolicy, isExporting, refine, isRefining } = usePolicyActions()
+  const policy = data as PolicyRecord | undefined
+  const content = policy ? buildDisplayContent(policy) : ""
+  const canUseContent = !!content.trim() && policy?.status === "COMPLETED"
 
   const handleCopy = async () => {
-    const fullText = policyData.sections.map((s) => `${s.title}\n\n${s.content}`).join("\n\n")
-    await navigator.clipboard.writeText(fullText)
+    if (!content) return
+    await navigator.clipboard.writeText(content)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <Link 
-            href="/regulator/policy-generator/history" 
-            className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-          >
+  const handleExport = async (format: "DOCX" | "PDF" | "MD") => {
+    try {
+      const result = await exportPolicy({ id: policyId, format })
+      const link = document.createElement("a")
+      link.href = result.downloadUrl
+      link.download = result.filename ?? `SheriaBot_Policy.${format.toLowerCase()}`
+      link.rel = "noopener noreferrer"
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      toast.success("Policy export ready", {
+        description: `${result.filename ?? "Your policy"} is downloading.`,
+      })
+    } catch (err) {
+      toast.error("Export failed", { description: getErrorMessage(err) })
+    }
+  }
+
+  const handleRefine = async () => {
+    const instructions = refinementInstructions.trim()
+    if (instructions.length < 10) {
+      toast.error("Add more detail", { description: "Refinement instructions must be at least 10 characters." })
+      return
+    }
+
+    try {
+      const result = await refine({ id: policyId, refinementInstructions: instructions })
+      toast.success("Policy refined", { description: "A new policy version has been created." })
+      setRefinementInstructions("")
+      if (result.policyId) router.push(`/regulator/policy-generator/${result.policyId}`)
+    } catch (err) {
+      toast.error("Refinement failed", { description: getErrorMessage(err) })
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-20 w-full rounded-lg" />
+        <Skeleton className="h-[420px] w-full rounded-lg" />
+      </div>
+    )
+  }
+
+  if (isError || !policy) {
+    return (
+      <div className="space-y-6">
+        <Button variant="ghost" asChild>
+          <Link href="/regulator/policy-generator/history">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to History
           </Link>
-          <h1 className="text-2xl font-bold text-foreground">{policyData.title}</h1>
+        </Button>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{getErrorMessage(error)}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <Link href="/regulator/policy-generator/history" className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to History
+          </Link>
+          <h1 className="text-2xl font-bold text-foreground">{policy.title ?? "Untitled policy"}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <Badge variant="outline" className="border-secondary/50 text-secondary">
+            <Badge variant={policy.status === "COMPLETED" ? "outline" : "secondary"} className="border-secondary/50 text-secondary">
               <CheckCircle2 className="mr-1 h-3 w-3" />
-              Completed
+              {policy.status.replace(/_/g, " ")}
             </Badge>
-            <span className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              {new Date(policyData.createdAt).toLocaleDateString("en-KE", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
+            <Badge variant="outline">Version {policy.version}</Badge>
+            <span>{new Date(policy.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}</span>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleCopy} className="bg-transparent">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={handleCopy} className="bg-transparent" disabled={!content}>
             {copied ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
             {copied ? "Copied" : "Copy"}
           </Button>
-          <Button variant="outline" size="sm" className="bg-transparent">
-            <Printer className="mr-2 h-4 w-4" />
-            Print
+          <Button variant="outline" size="sm" className="bg-transparent" onClick={() => void handleExport("DOCX")} disabled={isExporting || !canUseContent}>
+            {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+            DOCX
           </Button>
-          <Button variant="outline" size="sm" className="bg-transparent">
+          <Button variant="outline" size="sm" className="bg-transparent" onClick={() => void handleExport("PDF")} disabled={isExporting || !canUseContent}>
             <Download className="mr-2 h-4 w-4" />
-            Export
+            PDF
           </Button>
-          <Button variant="outline" size="sm" className="bg-transparent">
-            <Share2 className="mr-2 h-4 w-4" />
-            Share
+          <Button variant="outline" size="sm" className="bg-transparent" onClick={() => void handleExport("MD")} disabled={isExporting || !canUseContent}>
+            <Download className="mr-2 h-4 w-4" />
+            MD
           </Button>
         </div>
       </div>
 
-      {/* Original Query */}
       <Card className="border-border/50 bg-muted/30">
         <CardContent className="p-4">
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Original Query:</span> {policyData.query}
+            <span className="font-medium text-foreground">Scenario:</span> {policy.scenario}
           </p>
         </CardContent>
       </Card>
 
-      {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        {/* Policy Content */}
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
               Policy Document
             </CardTitle>
+            {!canUseContent ? (
+              <CardDescription>
+                This policy is not ready for export or refinement until generation completes.
+              </CardDescription>
+            ) : null}
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="preview">
-              <TabsList className="mb-4">
-                <TabsTrigger value="preview">Preview</TabsTrigger>
-                <TabsTrigger value="markdown">Markdown</TabsTrigger>
-              </TabsList>
-              <TabsContent value="preview" className="space-y-6">
-                {policyData.sections.map((section, index) => (
-                  <div key={index} className="space-y-3">
-                    <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                      <span className="w-1 h-4 rounded-full bg-primary inline-block shrink-0" />
-                      {section.title}
-                    </h3>
-                    <ComplianceFeedback content={section.content} variant="report" />
-                  </div>
-                ))}
-              </TabsContent>
-              <TabsContent value="markdown">
-                <pre className="overflow-auto rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
-                  {policyData.sections.map((s) => `## ${s.title}\n\n${s.content}`).join("\n\n")}
-                </pre>
-              </TabsContent>
-            </Tabs>
+            {content ? (
+              <Tabs defaultValue="preview">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                  <TabsTrigger value="markdown">Markdown</TabsTrigger>
+                </TabsList>
+                <TabsContent value="preview">
+                  <ComplianceFeedback content={content} variant="report" collapsible />
+                </TabsContent>
+                <TabsContent value="markdown">
+                  <pre className="max-h-[620px] overflow-auto rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
+                    {content}
+                  </pre>
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <p className="py-12 text-center text-sm text-muted-foreground">
+                No generated policy content is available yet.
+              </p>
+            )}
           </CardContent>
         </Card>
 
-        {/* Citations Sidebar */}
         <div className="space-y-4">
           <Card className="border-border/50">
             <CardHeader>
@@ -215,30 +228,39 @@ export default function PolicyViewerPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {policyData.citations.map((citation, index) => (
-                <div key={index} className="rounded-lg border border-border/50 bg-muted/30 p-3">
-                  <p className="text-sm font-medium text-foreground">{citation.law}</p>
-                  <p className="mt-1 text-xs text-primary">{citation.section}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{citation.text}</p>
-                  <Button variant="ghost" size="sm" className="mt-2 h-7 text-xs">
-                    View Full Text
-                    <ExternalLink className="ml-1 h-3 w-3" />
-                  </Button>
+              {policy.citations && policy.citations.length > 0 ? policy.citations.map((citation) => (
+                <div key={citation.id} className="rounded-lg border border-border/50 bg-muted/30 p-3">
+                  <p className="text-sm font-medium text-foreground">{citation.actName}</p>
+                  {citation.section ? <p className="mt-1 text-xs text-primary">Section {citation.section}</p> : null}
+                  <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">{citation.textSnippet}</p>
+                  {citation.verified ? <Badge variant="outline" className="mt-2">Verified</Badge> : null}
                 </div>
-              ))}
+              )) : (
+                <p className="text-sm text-muted-foreground">No citation records are attached to this policy.</p>
+              )}
             </CardContent>
           </Card>
 
           <Card className="border-border/50">
-            <CardContent className="p-4">
-              <h4 className="mb-2 text-sm font-medium text-foreground">Need to modify?</h4>
-              <p className="mb-3 text-xs text-muted-foreground">
-                You can generate a new version with different parameters.
-              </p>
-              <Button variant="outline" size="sm" className="w-full bg-transparent" asChild>
-                <Link href="/regulator/policy-generator">
-                  Create New Version
-                </Link>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <RefreshCw className="h-4 w-4 text-primary" />
+                Refine Policy
+              </CardTitle>
+              <CardDescription>Create a new version using targeted instructions.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Textarea
+                value={refinementInstructions}
+                onChange={(event) => setRefinementInstructions(event.target.value)}
+                placeholder="e.g. Add a section for incident reporting timelines and strengthen the board oversight obligations."
+                className="min-h-[130px] bg-muted/50"
+                maxLength={1000}
+                disabled={!canUseContent || isRefining}
+              />
+              <Button className="w-full" onClick={() => void handleRefine()} disabled={!canUseContent || isRefining}>
+                {isRefining ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                {isRefining ? "Refining..." : "Create Refined Version"}
               </Button>
             </CardContent>
           </Card>

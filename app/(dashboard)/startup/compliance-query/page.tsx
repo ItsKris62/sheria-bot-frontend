@@ -319,11 +319,15 @@ export default function ComplianceQueryPage() {
     scrollChatToBottom()
   }
 
-  const handleSuggestedQuery = (suggestionText: string, suggestionId?: string) => {
+  const handleSuggestedQuery = (
+    suggestionText: string,
+    suggestionId?: string,
+    surface: "empty_state" | "sidebar" = "sidebar",
+  ) => {
     setQuery(suggestionText)
     if (suggestionId) {
       clickTrackingMutation.mutate(
-        { suggestionId },
+        { suggestionId, suggestionText, surface },
         { onError: () => { /* fire-and-forget - silent failure */ } }
       )
     }
@@ -424,7 +428,7 @@ export default function ComplianceQueryPage() {
                         {(suggestions as SuggestionItem[]).slice(0, 3).map((s) => (
                           <button
                             key={s.id}
-                            onClick={() => handleSuggestedQuery(s.text, s.id)}
+                            onClick={() => handleSuggestedQuery(s.text, s.id, "empty_state")}
                             className="rounded-full border border-border/50 bg-muted/50 px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted"
                           >
                             {s.text.length > 40 ? s.text.slice(0, 40) + "..." : s.text}
@@ -654,7 +658,7 @@ export default function ComplianceQueryPage() {
                   {(suggestions as SuggestionItem[]).map((s) => (
                     <button
                       key={s.id}
-                      onClick={() => handleSuggestedQuery(s.text, s.id)}
+                      onClick={() => handleSuggestedQuery(s.text, s.id, "sidebar")}
                       className="flex w-full items-center gap-2 rounded-lg border border-border/50 p-3 text-left text-sm transition-colors hover:bg-muted/50"
                     >
                       <Search className="h-4 w-4 shrink-0 text-muted-foreground" />

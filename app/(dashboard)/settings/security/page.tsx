@@ -400,18 +400,6 @@ function TwoFactorCard() {
               </Button>
             )}
           </div>
-
-          {/* SMS placeholder */}
-          <div className="flex items-center justify-between rounded-lg bg-muted/30 p-4 opacity-50">
-            <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium text-foreground">SMS Authentication</p>
-                <p className="text-sm text-muted-foreground">Receive codes via SMS (coming soon)</p>
-              </div>
-            </div>
-            <Badge variant="outline" className="text-xs">Coming Soon</Badge>
-          </div>
         </CardContent>
       </Card>
 

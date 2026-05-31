@@ -4,7 +4,11 @@ import { useEffect, useState } from "react"
 import {
   ChevronLeft,
   ChevronRight,
+  Download,
+  MousePointerClick,
   MessageSquare,
+  MoreHorizontal,
+  NotepadText,
   RefreshCw,
   ThumbsDown,
   ThumbsUp,
@@ -41,6 +45,22 @@ type FeedbackData = {
   pagination: { page: number; pageSize: number; totalRows: number; totalPages: number }
 }
 
+type WorkflowEventRow = {
+  id: string
+  action: string
+  entityType: string | null
+  entityId: string | null
+  createdAt: string
+  userEmail: string | null
+  userName: string | null
+}
+
+type WorkflowEventData = {
+  aggregate: Record<string, number>
+  rows: WorkflowEventRow[]
+  pagination: { page: number; pageSize: number; totalRows: number; totalPages: number }
+}
+
 const PAGE_SIZE = 20
 
 const RANGE_OPTIONS: Array<{ value: FeedbackRange; label: string }> = [
@@ -48,6 +68,20 @@ const RANGE_OPTIONS: Array<{ value: FeedbackRange; label: string }> = [
   { value: "last30d", label: "Last 30 days" },
   { value: "last90d", label: "Last 90 days" },
 ]
+
+const WORKFLOW_EVENT_LABELS: Record<string, string> = {
+  SUGGESTED_QUERY_CLICKED: "Suggested Query Clicks",
+  COMPLIANCE_QUERY_EXPORTED: "Query Exports",
+  POLICY_EXPORT: "Policy Exports",
+  GAP_ANALYSIS_EXPORTED: "Gap Exports",
+  CHECKLIST_EXPORTED: "Checklist Exports",
+}
+
+const daysForRange = (value: FeedbackRange) => {
+  if (value === "last7d") return 7
+  if (value === "last90d") return 90
+  return 30
+}
 
 export default function FeedbackPage() {
   const [range, setRange] = useState<FeedbackRange>("last30d")
@@ -58,7 +92,18 @@ export default function FeedbackPage() {
   const { data: rawData, isLoading, isError, refetch } = trpc.analytics.getFeedbackSummary.useQuery(
     { range, page, pageSize: PAGE_SIZE },
   )
+  const {
+    data: rawWorkflowData,
+    isLoading: workflowLoading,
+    isError: workflowError,
+    refetch: refetchWorkflow,
+  } = trpc.analytics.getWorkflowEventSummary.useQuery({
+    days: daysForRange(range),
+    page: 1,
+    pageSize: 12,
+  })
   const data = rawData as FeedbackData | undefined
+  const workflowData = rawWorkflowData as WorkflowEventData | undefined
 
   const aggregate = data?.aggregate
   const rows = data?.rows ?? []
@@ -100,6 +145,100 @@ export default function FeedbackPage() {
           </SelectContent>
         </Select>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <MousePointerClick className="h-4 w-4 text-primary" />
+            Workflow Events
+          </CardTitle>
+          <CardDescription>Suggested-query usage and export activity from audit logs.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {workflowError ? (
+            <div className="flex flex-col items-center gap-3 py-8 text-muted-foreground">
+              <p className="text-sm">Failed to load workflow events.</p>
+              <Button variant="outline" size="sm" onClick={() => refetchWorkflow()}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Retry
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-3 md:grid-cols-5">
+                {Object.entries(WORKFLOW_EVENT_LABELS).map(([action, label]) => {
+                  const isExport = action.includes("EXPORT")
+                  const Icon = action === "SUGGESTED_QUERY_CLICKED" ? MousePointerClick : isExport ? Download : NotepadText
+                  return (
+                    <div key={action} className="rounded-md border border-border/50 bg-muted/30 p-3">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                        <Icon className="h-4 w-4 text-primary" />
+                      </div>
+                      {workflowLoading ? (
+                        <Skeleton className="h-7 w-16" />
+                      ) : (
+                        <p className="text-2xl font-bold tabular-nums text-foreground">
+                          {(workflowData?.aggregate[action] ?? 0).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="overflow-x-auto rounded-md border border-border/50">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Event</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Entity</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {workflowLoading ? (
+                      Array.from({ length: 4 }).map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell><Skeleton className="h-4 w-44" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-36" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        </TableRow>
+                      ))
+                    ) : (workflowData?.rows.length ?? 0) === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                          No workflow events in selected range
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      workflowData!.rows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <Badge variant="outline" className="gap-1">
+                              <MoreHorizontal className="h-3 w-3" />
+                              {WORKFLOW_EVENT_LABELS[row.action] ?? row.action}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{row.userEmail ?? row.userName ?? <span className="text-muted-foreground">unknown</span>}</TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {row.entityType ?? "--"}{row.entityId ? ` / ${row.entityId.slice(0, 8)}` : ""}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {new Date(row.createdAt).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" })}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Aggregate stat row */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

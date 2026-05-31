@@ -5,211 +5,166 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Plus,
-  Search,
-  FileText,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
-  ArrowRight,
-  Building2,
-  Calendar,
-} from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
+import { getErrorMessage, trpc } from "@/lib/trpc"
+import { toast } from "sonner"
+import { AlertCircle, ArrowRight, Building2, Calendar, CheckCircle2, Clock, FileText, Plus, Search } from "lucide-react"
 
-const applications = [
-  {
-    id: "APP-2024-001",
-    title: "Payment Service Provider License",
-    regulator: "Central Bank of Kenya",
-    status: "in-progress",
-    progress: 65,
-    submittedDate: "2024-01-10",
-    lastUpdate: "2024-01-25",
-    nextAction: "Submit audited financials",
-    dueDate: "2024-02-15",
-  },
-  {
-    id: "APP-2024-002",
-    title: "Data Controller Registration",
-    regulator: "ODPC Kenya",
-    status: "submitted",
-    progress: 100,
-    submittedDate: "2024-01-05",
-    lastUpdate: "2024-01-20",
-    nextAction: "Awaiting ODPC review",
-    dueDate: null,
-  },
-  {
-    id: "APP-2024-003",
-    title: "Regulatory Sandbox Application",
-    regulator: "Central Bank of Kenya",
-    status: "approved",
-    progress: 100,
-    submittedDate: "2023-11-15",
-    lastUpdate: "2024-01-02",
-    nextAction: "Begin sandbox testing",
-    dueDate: "2024-03-01",
-  },
-  {
-    id: "APP-2023-004",
-    title: "Foreign Exchange Bureau License",
-    regulator: "Central Bank of Kenya",
-    status: "rejected",
-    progress: 100,
-    submittedDate: "2023-09-20",
-    lastUpdate: "2023-12-15",
-    nextAction: "Address feedback and resubmit",
-    dueDate: null,
-  },
-  {
-    id: "APP-2024-005",
-    title: "E-Money Issuer License",
-    regulator: "Central Bank of Kenya",
-    status: "draft",
-    progress: 30,
-    submittedDate: null,
-    lastUpdate: "2024-01-28",
-    nextAction: "Complete application form",
-    dueDate: "2024-02-28",
-  },
-]
+type ApplicationRow = {
+  id: string
+  title: string
+  regulator: string
+  licenseType: string
+  status: string
+  progress: number
+  referenceNumber: string | null
+  nextAction: string | null
+  dueDate: Date | string | null
+  submittedAt: Date | string | null
+  updatedAt: Date | string
+  _count?: { documents: number; fees: number; regulatorFeedback: number; timelineEvents: number }
+}
 
-const statusConfig = {
-  draft: { label: "Draft", icon: FileText, color: "bg-muted text-muted-foreground" },
-  "in-progress": { label: "In Progress", icon: Clock, color: "bg-primary/10 text-primary" },
-  submitted: { label: "Submitted", icon: AlertCircle, color: "bg-warning/10 text-warning" },
-  approved: { label: "Approved", icon: CheckCircle2, color: "bg-primary/10 text-primary" },
-  rejected: { label: "Rejected", icon: XCircle, color: "bg-destructive/10 text-destructive" },
+const statusConfig: Record<string, { label: string; color: string; icon: typeof FileText }> = {
+  DRAFT: { label: "Draft", icon: FileText, color: "bg-muted text-muted-foreground" },
+  IN_PROGRESS: { label: "In Progress", icon: Clock, color: "bg-primary/10 text-primary" },
+  SUBMITTED: { label: "Submitted", icon: AlertCircle, color: "bg-warning/10 text-warning" },
+  AWAITING_FEEDBACK: { label: "Awaiting Feedback", icon: AlertCircle, color: "bg-warning/10 text-warning" },
+  APPROVED: { label: "Approved", icon: CheckCircle2, color: "bg-primary/10 text-primary" },
+  REJECTED: { label: "Rejected", icon: AlertCircle, color: "bg-destructive/10 text-destructive" },
+  WITHDRAWN: { label: "Withdrawn", icon: FileText, color: "bg-muted text-muted-foreground" },
 }
 
 export default function ApplicationsPage() {
+  const utils = trpc.useUtils()
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-
-  const filteredApplications = applications.filter((app) => {
-    const matchesSearch =
-      app.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.id.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === "all" || app.status === statusFilter
-    return matchesSearch && matchesStatus
+  const [formOpen, setFormOpen] = useState(false)
+  const [form, setForm] = useState({
+    title: "",
+    regulator: "",
+    licenseType: "",
+    referenceNumber: "",
+    nextAction: "",
+    dueDate: "",
   })
 
-  const stats = {
-    total: applications.length,
-    inProgress: applications.filter((a) => a.status === "in-progress").length,
-    approved: applications.filter((a) => a.status === "approved").length,
-    pending: applications.filter((a) => a.status === "submitted").length,
+  const { data, isLoading, isError } = trpc.application.list.useQuery({
+    page: 1,
+    limit: 50,
+    status: statusFilter === "all" ? undefined : statusFilter as never,
+    search: searchQuery.trim() || undefined,
+  })
+  const createMutation = trpc.application.create.useMutation({
+    onSuccess: () => {
+      setForm({ title: "", regulator: "", licenseType: "", referenceNumber: "", nextAction: "", dueDate: "" })
+      setFormOpen(false)
+      void utils.application.list.invalidate()
+      toast.success("Application tracking record created")
+    },
+    onError: (err) => toast.error("Could not create application", { description: getErrorMessage(err) }),
+  })
+
+  const applications: ApplicationRow[] = Array.isArray(data?.applications) ? (data.applications as ApplicationRow[]) : []
+  const stats = data?.stats ?? { total: 0, inProgress: 0, submitted: 0, approved: 0 }
+  const statCards = [
+    { label: "Total Applications", value: stats.total, Icon: FileText },
+    { label: "In Progress", value: stats.inProgress, Icon: Clock },
+    { label: "Submitted", value: stats.submitted, Icon: AlertCircle },
+    { label: "Approved", value: stats.approved, Icon: CheckCircle2 },
+  ]
+
+  const submit = () => {
+    createMutation.mutate({
+      title: form.title,
+      regulator: form.regulator,
+      licenseType: form.licenseType,
+      referenceNumber: form.referenceNumber || undefined,
+      nextAction: form.nextAction || undefined,
+      dueDate: form.dueDate ? new Date(`${form.dueDate}T00:00:00`) : undefined,
+      progress: 0,
+      status: "DRAFT",
+    })
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">License Applications</h1>
-          <p className="text-muted-foreground mt-1">
-            Track and manage your regulatory license applications
-          </p>
+          <p className="text-muted-foreground mt-1">Track application status, documents, fees, timelines, and regulator feedback</p>
         </div>
-        <Button className="bg-primary text-primary-foreground">
+        <Button className="bg-primary text-primary-foreground" onClick={() => setFormOpen((value) => !value)}>
           <Plus className="h-4 w-4 mr-2" />
           New Application
         </Button>
       </div>
 
+      {formOpen ? (
+        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <CardHeader>
+            <CardTitle>Create Application Record</CardTitle>
+            <CardDescription>Start tracking a real regulatory application for your organization.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-2">
+            <Input placeholder="Payment Service Provider License" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+            <Input placeholder="Central Bank of Kenya" value={form.regulator} onChange={(e) => setForm((f) => ({ ...f, regulator: e.target.value }))} />
+            <Input placeholder="License type" value={form.licenseType} onChange={(e) => setForm((f) => ({ ...f, licenseType: e.target.value }))} />
+            <Input placeholder="Reference number (optional)" value={form.referenceNumber} onChange={(e) => setForm((f) => ({ ...f, referenceNumber: e.target.value }))} />
+            <Input placeholder="Next action (optional)" value={form.nextAction} onChange={(e) => setForm((f) => ({ ...f, nextAction: e.target.value }))} />
+            <Input type="date" value={form.dueDate} onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))} />
+            <div className="flex gap-2 md:col-span-2">
+              <Button onClick={submit} disabled={createMutation.isPending || !form.title || !form.regulator || !form.licenseType}>
+                {createMutation.isPending ? "Creating..." : "Create Application"}
+              </Button>
+              <Button variant="outline" onClick={() => setFormOpen(false)}>Cancel</Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-muted">
-                <FileText className="h-5 w-5 text-foreground" />
+        {statCards.map(({ label, value, Icon }) => (
+          <Card key={label} className="border-border/50 bg-card/50 backdrop-blur">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <Icon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{label}</p>
+                  <p className="text-2xl font-bold text-foreground">{value}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Applications</p>
-                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-primary/10">
-                <Clock className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">In Progress</p>
-                <p className="text-2xl font-bold text-foreground">{stats.inProgress}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-primary/10">
-                <CheckCircle2 className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Approved</p>
-                <p className="text-2xl font-bold text-foreground">{stats.approved}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-warning/10">
-                <AlertCircle className="h-5 w-5 text-warning" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Pending Review</p>
-                <p className="text-2xl font-bold text-foreground">{stats.pending}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card className="border-border/50 bg-card/50 backdrop-blur">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <CardTitle>All Applications</CardTitle>
-              <CardDescription>View and manage your license applications</CardDescription>
+              <CardDescription>Organization-scoped application tracking records</CardDescription>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search applications..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-[250px] bg-muted/50"
-                />
+                <Input placeholder="Search applications..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 sm:w-[250px] bg-muted/50" />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[150px] bg-muted/50">
+                <SelectTrigger className="sm:w-[190px] bg-muted/50">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="submitted">Submitted</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
+                  {Object.entries(statusConfig).map(([value, config]) => (
+                    <SelectItem key={value} value={value}>{config.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -217,53 +172,55 @@ export default function ApplicationsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {filteredApplications.map((app) => {
-              const status = statusConfig[app.status as keyof typeof statusConfig]
+            {isLoading ? (
+              <>
+                <Skeleton className="h-[112px] rounded-lg" />
+                <Skeleton className="h-[112px] rounded-lg" />
+                <Skeleton className="h-[112px] rounded-lg" />
+              </>
+            ) : isError ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">Could not load application records.</p>
+            ) : applications.length === 0 ? (
+              <div className="py-12 text-center">
+                <FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />
+                <p className="mt-3 text-sm text-muted-foreground">No application records yet.</p>
+              </div>
+            ) : applications.map((app) => {
+              const status = statusConfig[app.status] ?? statusConfig.DRAFT
               const StatusIcon = status.icon
               return (
                 <Link key={app.id} href={`/startup/applications/${app.id}`}>
                   <div className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
-                    <div className="flex items-start justify-between">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="flex items-start gap-4">
                         <div className="p-3 rounded-lg bg-primary/10">
                           <FileText className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <h3 className="font-medium text-foreground">{app.title}</h3>
-                            <Badge variant="outline" className="font-mono text-xs">
-                              {app.id}
-                            </Badge>
+                            {app.referenceNumber ? <Badge variant="outline" className="font-mono text-xs">{app.referenceNumber}</Badge> : null}
                           </div>
-                          <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Building2 className="h-3 w-3" />
-                              {app.regulator}
-                            </span>
-                            {app.submittedDate && (
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                Submitted: {new Date(app.submittedDate).toLocaleDateString("en-KE")}
-                              </span>
-                            )}
+                          <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{app.regulator}</span>
+                            <span>{app.licenseType}</span>
+                            {app.dueDate ? <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Due {new Date(app.dueDate).toLocaleDateString("en-KE")}</span> : null}
                           </div>
-                          <p className="text-sm text-primary mt-2">Next: {app.nextAction}</p>
+                          {app.nextAction ? <p className="mt-2 text-sm text-primary">Next: {app.nextAction}</p> : null}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <Badge className={status.color}>
-                          <StatusIcon className="h-3 w-3 mr-1" />
-                          {status.label}
-                        </Badge>
-                        {app.status !== "approved" && app.status !== "rejected" && (
-                          <div className="w-32">
-                            <div className="flex items-center justify-between text-xs mb-1">
-                              <span className="text-muted-foreground">Progress</span>
-                              <span className="text-foreground">{app.progress}%</span>
-                            </div>
-                            <Progress value={app.progress} className="h-1.5" />
+                      <div className="flex flex-col items-start gap-2 lg:items-end">
+                        <Badge className={status.color}><StatusIcon className="h-3 w-3 mr-1" />{status.label}</Badge>
+                        <div className="w-40">
+                          <div className="mb-1 flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Progress</span>
+                            <span className="text-foreground">{app.progress}%</span>
                           </div>
-                        )}
+                          <Progress value={app.progress} className="h-1.5" />
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {(app._count?.documents ?? 0)} docs - {(app._count?.regulatorFeedback ?? 0)} feedback
+                        </span>
                       </div>
                     </div>
                   </div>

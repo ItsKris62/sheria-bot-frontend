@@ -64,37 +64,6 @@ type DashboardTrend = {
 }
 
 // -------------------------------------------------------------------------
-// Static fixtures (non-compliance sections - no backend change needed yet)
-// -------------------------------------------------------------------------
-
-const regulatoryAlerts = [
-  {
-    id: 1,
-    title: "New CBK Digital Lending Regulations",
-    description: "Updated requirements for digital credit providers effective March 2026",
-    date: "Feb 3, 2026",
-    impact: "high",
-    read: false,
-  },
-  {
-    id: 2,
-    title: "Data Protection Act Amendment",
-    description: "Changes to consent requirements for financial data processing",
-    date: "Feb 1, 2026",
-    impact: "medium",
-    read: false,
-  },
-  {
-    id: 3,
-    title: "Mobile Money Interoperability Guidelines",
-    description: "CBK publishes final guidelines for cross-platform transactions",
-    date: "Jan 28, 2026",
-    impact: "low",
-    read: true,
-  },
-]
-
-// -------------------------------------------------------------------------
 // Score icon helper
 // -------------------------------------------------------------------------
 
@@ -209,6 +178,28 @@ export default function StartupDashboard() {
     { daysAhead: 30 },
     { staleTime: 5 * 60 * 1000, enabled: calendarEnabled },
   )
+
+  const {
+    data: alertsData,
+    isLoading: alertsLoading,
+    isError: alertsError,
+  } = trpc.alert.getAlerts.useQuery(
+    { page: 1, limit: 3 },
+    { staleTime: 60 * 1000, enabled: !!user },
+  )
+
+  type AlertItem = {
+    id: string
+    title: string
+    summary: string
+    severity: string
+    regulatoryBody: string
+    publishedAt: Date | string | null
+    isRead: boolean
+  }
+  const regulatoryAlerts: AlertItem[] = Array.isArray(alertsData?.alerts)
+    ? (alertsData.alerts as AlertItem[])
+    : []
 
   const overallTheme = dashboardData
     ? getComplianceScoreTheme(dashboardData.overallScore)
@@ -461,38 +452,61 @@ export default function StartupDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {regulatoryAlerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className={`flex items-start gap-4 rounded-lg border p-4 transition-all duration-200 hover:shadow-sm hover:border-primary/30 cursor-default ${alert.read ? "border-border/50" : "border-primary/50 bg-primary/5"
-                    }`}
-                >
-                  <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${alert.impact === "high"
-                    ? "bg-destructive/10 text-destructive"
-                    : alert.impact === "medium"
-                      ? "bg-warning/10 text-warning"
-                      : "bg-muted text-muted-foreground"
-                    }`}>
-                    <AlertCircle className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-foreground">{alert.title}</p>
-                      {!alert.read && (
-                        <div className="h-2 w-2 rounded-full bg-primary" />
-                      )}
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{alert.description}</p>
-                    <p className="mt-2 text-xs text-muted-foreground">{alert.date}</p>
-                  </div>
-                  <Badge variant={
-                    alert.impact === "high" ? "destructive" :
-                      alert.impact === "medium" ? "secondary" : "outline"
-                  }>
-                    {alert.impact} impact
-                  </Badge>
+              {alertsLoading ? (
+                <>
+                  <Skeleton className="h-[88px] rounded-lg" />
+                  <Skeleton className="h-[88px] rounded-lg" />
+                  <Skeleton className="h-[88px] rounded-lg" />
+                </>
+              ) : alertsError ? (
+                <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
+                  <AlertCircle className="h-6 w-6 text-destructive/60" />
+                  <p className="text-sm text-muted-foreground">Could not load regulatory alerts</p>
                 </div>
-              ))}
+              ) : regulatoryAlerts.length === 0 ? (
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  No active regulatory alerts for your current plan window.
+                </p>
+              ) : regulatoryAlerts.map((alert) => {
+                const severity = alert.severity.toLowerCase()
+                const publishedAt = alert.publishedAt ? new Date(alert.publishedAt) : null
+                return (
+                  <Link
+                    key={alert.id}
+                    href={`/dashboard/alerts/${alert.id}`}
+                    className={`flex items-start gap-4 rounded-lg border p-4 transition-all duration-200 hover:shadow-sm hover:border-primary/30 ${alert.isRead ? "border-border/50" : "border-primary/50 bg-primary/5"
+                      }`}
+                  >
+                    <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${severity === "critical" || severity === "high"
+                      ? "bg-destructive/10 text-destructive"
+                      : severity === "medium"
+                        ? "bg-warning/10 text-warning"
+                        : "bg-muted text-muted-foreground"
+                      }`}>
+                      <AlertCircle className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-foreground">{alert.title}</p>
+                        {!alert.isRead && (
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                        )}
+                      </div>
+                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{alert.summary}</p>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {alert.regulatoryBody}
+                        {publishedAt ? ` - ${formatDistanceToNow(publishedAt, { addSuffix: true })}` : ""}
+                      </p>
+                    </div>
+                    <Badge variant={
+                      severity === "critical" || severity === "high" ? "destructive" :
+                        severity === "medium" ? "secondary" : "outline"
+                    }>
+                      {severity} impact
+                    </Badge>
+                  </Link>
+                )
+              })}
             </div>
           </CardContent>
         </Card>
