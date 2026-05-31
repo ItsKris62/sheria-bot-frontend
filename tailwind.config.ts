@@ -11,10 +11,14 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-coco)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
-        numeric: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-munich)', 'var(--font-coco)', 'system-ui', 'sans-serif'],
-        brand: ['var(--font-basicaline)', 'var(--font-coco)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        body: ['var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        legal: ['var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        ui: ['var(--font-general-sans)', 'var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        numeric: ['var(--font-general-sans)', 'var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-cabinet)', 'var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-cabinet)', 'var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        brand: ['var(--font-basicaline)', 'var(--font-cabinet)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-mono)', 'monospace'],
         caveat: ['var(--font-caveat)', 'cursive'],
       },

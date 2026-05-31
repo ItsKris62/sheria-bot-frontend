@@ -55,7 +55,7 @@ export default function SettingsLayout({
               className="h-8 w-8 object-contain"
             />
             <div className="flex flex-col leading-none">
-              <span className="font-bold text-foreground tracking-tight">SheriaBot</span>
+              <span className="brand-wordmark font-bold text-foreground">SheriaBot</span>
               <span className="text-[9px] text-primary/80 font-semibold tracking-[0.15em] uppercase mt-0.5">Settings</span>
             </div>
           </Link>

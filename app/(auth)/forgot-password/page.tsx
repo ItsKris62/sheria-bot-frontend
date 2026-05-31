@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
             <Scale className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground">SheriaBot</span>
+          <span className="brand-wordmark text-xl font-bold text-foreground">SheriaBot</span>
         </Link>
         <CardTitle className="text-2xl">Forgot Password?</CardTitle>
         <CardDescription>

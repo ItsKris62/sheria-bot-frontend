@@ -433,7 +433,7 @@ export default function AuthCallbackPage() {
             className="h-9 w-9 object-contain"
           />
           <div className="flex flex-col leading-none">
-            <span className="text-lg font-bold text-white tracking-tight">
+            <span className="brand-wordmark text-lg font-bold text-white">
               Sheria<span className="text-brand-green">Bot</span>
             </span>
           </div>

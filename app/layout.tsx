@@ -1,6 +1,6 @@
 import React from "react"
 import type { Metadata, Viewport } from 'next'
-import { Inter, Caveat } from 'next/font/google'
+import { Caveat } from 'next/font/google'
 import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -9,54 +9,37 @@ import { JsonLd } from '@/components/seo/json-ld'
 
 import './globals.css'
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
+const satoshi = localFont({
+  src: '../public/fonts/Satoshi-Variable.ttf',
+  variable: '--font-satoshi',
+  display: 'swap',
+  weight: '300 900',
+  style: 'normal',
+  preload: true,
+})
+
+const cabinetGrotesk = localFont({
+  src: '../public/fonts/CabinetGrotesk-Variable.ttf',
+  variable: '--font-cabinet',
+  display: 'swap',
+  weight: '100 900',
+  style: 'normal',
+  preload: true,
+})
+
+const generalSans = localFont({
+  src: '../public/fonts/GeneralSans-Variable.ttf',
+  variable: '--font-general-sans',
+  display: 'swap',
+  weight: '200 700',
+  style: 'normal',
+  preload: true,
 })
 
 const caveat = Caveat({
   subsets: ['latin'],
   variable: '--font-caveat',
   display: 'swap',
-})
-
-const cocoGothic = localFont({
-  src: [
-    {
-      path: './fonts/CocoGothic-Light.ttf',
-      weight: '300',
-      style: 'normal',
-    },
-    {
-      path: './fonts/CocoGothic-Regular.ttf',
-      weight: '400',
-      style: 'normal',
-    },
-  ],
-  variable: '--font-coco',
-  display: 'swap',
-  preload: false,
-  declarations: [
-    {
-      prop: 'unicode-range',
-      value: 'U+0041-005A, U+0061-007A, U+00C0-024F',
-    },
-  ],
-})
-
-const munichSans = localFont({
-  src: './fonts/MUNICH SANS.ttf',
-  variable: '--font-munich',
-  display: 'swap',
-  weight: '400',
-  style: 'normal',
-  preload: false,
-  declarations: [
-    {
-      prop: 'unicode-range',
-      value: 'U+0041-005A, U+0061-007A, U+00C0-024F',
-    },
-  ],
 })
 
 const basicaline = localFont({
@@ -183,7 +166,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${cocoGothic.variable} ${munichSans.variable} ${basicaline.variable} ${jetbrainsMono.variable} ${caveat.variable} dark bg-background`}
+      className={`${satoshi.variable} ${cabinetGrotesk.variable} ${generalSans.variable} ${basicaline.variable} ${jetbrainsMono.variable} ${caveat.variable} dark bg-background`}
       suppressHydrationWarning
     >
       <body

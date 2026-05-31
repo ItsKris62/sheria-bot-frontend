@@ -94,7 +94,7 @@ function ResetPasswordContent() {
             height={40}
             className="h-10 w-10 object-contain"
           />
-          <span className="text-xl font-bold text-foreground">SheriaBot</span>
+          <span className="brand-wordmark text-xl font-bold text-foreground">SheriaBot</span>
         </Link>
         <CardTitle className="text-2xl">Reset Password</CardTitle>
         <CardDescription>Enter your new password below.</CardDescription>

@@ -25,7 +25,7 @@ export default function AuthLayout({
               className="h-10 w-10 object-contain"
             />
             <div className="flex flex-col leading-none">
-              <span className="text-2xl font-bold text-white tracking-tight">
+              <span className="brand-wordmark text-2xl font-bold text-white">
                 Sheria<span className="text-brand-green">Bot</span>
               </span>
             </div>
@@ -60,7 +60,7 @@ export default function AuthLayout({
                 className="h-9 w-9 object-contain"
               />
               <div className="flex flex-col leading-none">
-                <span className="text-xl font-bold text-white tracking-tight">
+                <span className="brand-wordmark text-xl font-bold text-white">
                   Sheria<span className="text-brand-green">Bot</span>
                 </span>
               </div>

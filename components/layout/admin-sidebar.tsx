@@ -215,7 +215,7 @@ export function AdminSidebar() {
                 priority
               />
               <div className="flex flex-col">
-                <span className="font-bold text-white tracking-tight">
+                <span className="brand-wordmark font-bold text-white">
                   Sheria<span className="text-brand-green">Bot</span>
                 </span>
                 <span className="text-[10px] text-destructive font-semibold -mt-0.5 tracking-wider uppercase flex items-center gap-1">
@@ -283,7 +283,7 @@ export function AdminSidebar() {
                 priority
               />
               <div className="flex flex-col">
-                <span className="font-bold text-white tracking-tight">
+                <span className="brand-wordmark font-bold text-white">
                   Sheria<span className="text-brand-green">Bot</span>
                 </span>
                 <span className="text-[10px] text-destructive font-semibold -mt-0.5 tracking-wider uppercase flex items-center gap-1">

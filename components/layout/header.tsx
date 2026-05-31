@@ -153,7 +153,7 @@ export function Header() {
             priority
           />
           <div className="flex flex-col leading-none">
-            <span className="text-base font-bold text-white tracking-tight">
+            <span className="brand-wordmark text-base font-bold text-white">
               Sheria<span className="text-brand-green">Bot</span>
             </span>
           </div>
@@ -299,7 +299,7 @@ export function Header() {
                   height={36}
                   className="h-9 w-9 object-contain"
                 />
-                <span className="text-base font-bold text-white tracking-tight">
+                <span className="brand-wordmark text-base font-bold text-white">
                   Sheria<span className="text-brand-green">Bot</span>
                 </span>
               </Link>

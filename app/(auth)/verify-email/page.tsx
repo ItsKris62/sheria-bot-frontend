@@ -100,7 +100,7 @@ function VerifyEmailContent() {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
             <Scale className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground">SheriaBot</span>
+          <span className="brand-wordmark text-xl font-bold text-foreground">SheriaBot</span>
         </Link>
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <Mail className="h-8 w-8 text-primary" />

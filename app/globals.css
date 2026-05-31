@@ -99,17 +99,52 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  summary,
+  [role="button"],
+  [role="menuitem"],
+  [role="tab"] {
+    @apply font-ui;
+  }
+
+  article,
+  .prose,
+  .legal-document,
+  [data-legal-reading="true"] {
+    @apply font-legal;
   }
 
   .tabular-nums {
-    font-family: var(--font-inter), system-ui, sans-serif;
+    @apply font-numeric;
   }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .brand-wordmark {
+    @apply font-brand;
+    font-synthesis: none;
+    letter-spacing: 0;
   }
   .glass {
     background: rgba(10, 10, 10, 0.5);

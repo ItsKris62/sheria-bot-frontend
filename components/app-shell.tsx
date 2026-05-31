@@ -52,7 +52,7 @@ export function TopBar({
     <div className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 px-4 py-3 md:px-6">
       <div className="flex h-14 items-center gap-4">
         <div className="flex flex-1 items-center gap-4">
-          <Link href="/" className="font-bold text-lg text-primary hidden md:block">
+          <Link href="/" className="brand-wordmark font-bold text-lg text-primary hidden md:block">
             {title}
           </Link>
 
