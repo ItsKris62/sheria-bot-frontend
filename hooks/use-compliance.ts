@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { trpc, getErrorMessage } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
+import { playNotificationSound } from "@/lib/notification-sounds";
 
 // ── Shared response types ─────────────────────────────────────────────────────
 
@@ -214,6 +215,7 @@ export function useComplianceStream() {
                 break;
 
               case "done":
+                playNotificationSound("chat-complete");
                 setState((prev) => ({
                   ...prev,
                   phase: "complete",

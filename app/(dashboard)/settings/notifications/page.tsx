@@ -37,6 +37,7 @@ import {
   LifeBuoy,
   Megaphone,
   Loader2,
+  Volume2,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
@@ -492,20 +493,39 @@ export default function NotificationSettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {isLoading
-              ? loadingRows(1)
+              ? loadingRows(2)
               : (
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                  <div>
-                    <p className="font-medium text-foreground">Real-time Alerts</p>
-                    <p className="text-sm text-muted-foreground">
-                      Show notifications for important updates in real-time
-                    </p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                    <div>
+                      <p className="font-medium text-foreground">Real-time Alerts</p>
+                      <p className="text-sm text-muted-foreground">
+                        Show notifications for important updates in real-time
+                      </p>
+                    </div>
+                    <Switch
+                      checked={prefs?.realTimeAlerts ?? true}
+                      disabled={updateMutation.isPending}
+                      onCheckedChange={(v) => toggle("realTimeAlerts", v)}
+                    />
                   </div>
-                  <Switch
-                    checked={prefs?.realTimeAlerts ?? true}
-                    disabled={updateMutation.isPending}
-                    onCheckedChange={(v) => toggle("realTimeAlerts", v)}
-                  />
+
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-3">
+                      <Volume2 className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="font-medium text-foreground">In-app sounds</p>
+                        <p className="text-sm text-muted-foreground">
+                          Play short sounds for notifications, alerts, confirmations, and AI completions
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={prefs?.inAppSoundsEnabled ?? true}
+                      disabled={updateMutation.isPending}
+                      onCheckedChange={(v) => toggle("inAppSoundsEnabled", v)}
+                    />
+                  </div>
                 </div>
               )}
           </CardContent>

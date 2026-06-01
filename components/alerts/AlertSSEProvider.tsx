@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAlertSSE, type AlertSSEEvent } from "@/hooks/use-alert-sse";
+import { playNotificationSound, soundForAlertSeverity } from "@/lib/notification-sounds";
 
 /**
  * Headless component - renders nothing.
@@ -16,10 +17,16 @@ import { useAlertSSE, type AlertSSEEvent } from "@/hooks/use-alert-sse";
  */
 export function AlertSSEProvider(): null {
   const utils = trpc.useUtils();
+  const { data: prefs } = trpc.user.getNotificationPreferences.useQuery(undefined, {
+    staleTime: 60_000,
+  });
 
-  const handleAlertEvent = useCallback((_event: AlertSSEEvent) => {
+  const handleAlertEvent = useCallback((event: AlertSSEEvent) => {
     utils.alert.getUnreadCount.invalidate();
-  }, [utils]);
+    if (prefs && (prefs.inAppSoundsEnabled ?? true)) {
+      playNotificationSound(soundForAlertSeverity(event.severity));
+    }
+  }, [prefs?.inAppSoundsEnabled, utils]);
 
   useAlertSSE(handleAlertEvent);
 

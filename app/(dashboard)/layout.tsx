@@ -6,6 +6,7 @@ import { useAuthStore } from "@/lib/auth-store"
 import { useIdleTimeout } from "@/hooks/use-idle-timeout"
 import { SessionTimeoutWarning } from "@/components/session-timeout-warning"
 import { AlertSSEProvider } from "@/components/alerts/AlertSSEProvider"
+import { NotificationSoundProvider } from "@/components/notifications/NotificationSoundProvider"
 
 function IdleTimeoutWrapper({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
@@ -36,6 +37,7 @@ export default function DashboardLayout({
   return (
     <AuthGuard>
       <IdleTimeoutWrapper>
+        <NotificationSoundProvider />
         <AlertSSEProvider />
         <div className="min-h-screen bg-background">
           {children}
