@@ -561,8 +561,8 @@ function ChecklistCard({
 
   const retryMutation = trpc.checklist.retryChecklist.useMutation({
     onSuccess: () => {
-      utils.checklist.listChecklists.invalidate()
-      utils.checklist.getChecklistStatus.invalidate({ checklistId: checklist.id })
+      void utils.checklist.listChecklists.invalidate()
+      void utils.checklist.getChecklistStatus.invalidate({ checklistId: checklist.id })
       onSelect(checklist.id) // navigate to detail to watch GENERATING state
     },
     onError: (err: { message?: string }) => {
@@ -2198,8 +2198,8 @@ function ChecklistDetailView({
     onSuccess: () => {
       pollStartRef.current = Date.now() // reset poll timer
       setTimedOut(false)
-      utils.checklist.getChecklistStatus.invalidate({ checklistId })
-      utils.checklist.listChecklists.invalidate()
+      void utils.checklist.getChecklistStatus.invalidate({ checklistId })
+      void utils.checklist.listChecklists.invalidate()
       toast.success("Retry started", { description: "Checklist generation is in progress." })
     },
     onError: (err: { message?: string }) => {

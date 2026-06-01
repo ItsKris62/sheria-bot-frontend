@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuthStore } from "@/lib/auth-store"
+import { useAuthenticatedQueryEnabled, useAuthStore } from "@/lib/auth-store"
 import { trpc } from "@/lib/trpc"
 import { usePlan } from "@/lib/plan-context"
 import { useQueryClient } from "@tanstack/react-query"
@@ -131,6 +131,7 @@ function ComplianceScoreSkeleton() {
 
 export default function StartupDashboard() {
   const user = useAuthStore((state) => state.user)
+  const authQueryEnabled = useAuthenticatedQueryEnabled()
   const displayName = user?.name?.split(" ")[0] ?? "there"
   const queryClient = useQueryClient()
 
@@ -146,10 +147,9 @@ export default function StartupDashboard() {
   } = trpc.complianceDashboard.getComplianceDashboard.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
     retry: 1,
-    // Block until the auth store has hydrated. AuthGuard ensures the user is
-    // authenticated, but the Zustand store populates asynchronously from the
-    // persisted session, so !!user is the correct readiness signal here.
-    enabled: !!user,
+    // Block until the auth store has hydrated and the tRPC link can attach
+    // Authorization. This avoids a first-render 401 while Supabase restores.
+    enabled: authQueryEnabled,
   })
 
   // Mutation for toggling compliance items. Invalidates the dashboard query on
@@ -185,7 +185,7 @@ export default function StartupDashboard() {
     isError: alertsError,
   } = trpc.alert.getAlerts.useQuery(
     { page: 1, limit: 3 },
-    { staleTime: 60 * 1000, enabled: !!user },
+    { staleTime: 60 * 1000, enabled: authQueryEnabled },
   )
 
   type AlertItem = {

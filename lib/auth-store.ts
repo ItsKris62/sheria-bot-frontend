@@ -94,3 +94,18 @@ export function useUserRole(): UserRole | null {
 export function useHasRole(role: UserRole): boolean {
   return useAuthStore((state) => state.user?.role === role);
 }
+
+/**
+ * Protected tRPC queries need both the hydrated user and the bearer token.
+ * AuthGuard only waits for the session restore; this selector prevents route
+ * components from racing the tRPC link before Authorization headers are ready.
+ */
+export function useAuthenticatedQueryEnabled(): boolean {
+  return useAuthStore(
+    (state) =>
+      state.isInitialized &&
+      state.isAuthenticated &&
+      Boolean(state.user) &&
+      Boolean(state.accessToken),
+  );
+}
