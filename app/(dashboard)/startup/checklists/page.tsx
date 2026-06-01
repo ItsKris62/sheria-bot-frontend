@@ -65,7 +65,7 @@ import {
 } from "lucide-react"
 import { LOGOS } from "@/lib/constants/logos"
 
-// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Constants ---------------------------------------------------------------
 
 const PRODUCT_TYPES = [
   "Mobile Money Operator",
@@ -86,7 +86,7 @@ const PRODUCT_TYPES = [
 const BUSINESS_STAGES = [
   "Pre-launch / Licensing Phase",
   "Operational (less than 1 year)",
-  "Operational (1â€“3 years)",
+  "Operational (1-3 years)",
   "Scaling / Expanding Services",
 ]
 
@@ -135,8 +135,8 @@ const PRIORITY_CONFIG: Record<string, { label: string; color: string; badge: str
   },
 }
 
-// â”€â”€â”€ Local Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Backend uses path aliases not resolvable in frontend tsconfig â†’ cast via these types.
+// --- Local Types -------------------------------------------------------------
+// Backend uses path aliases not resolvable in frontend tsconfig -> cast via these types.
 
 type LegacyItemStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"
 type NormalizedItemStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "NOT_APPLICABLE"
@@ -237,11 +237,11 @@ type ChecklistSummaryLocal = {
   isNormalized: boolean
 }
 
-/** Polling budget: 80 polls Ã— 3 s = 4 minutes */
+/** Polling budget: 80 polls x 3 s = 4 minutes */
 const POLL_INTERVAL_MS  = 3_000
 const POLL_TIMEOUT_MS   = 4 * 60 * 1_000 // 4 minutes
 
-// â”€â”€â”€ Multi-Select Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Multi-Select Component --------------------------------------------------
 
 function MultiSelect({
   options,
@@ -283,7 +283,7 @@ function MultiSelect({
   )
 }
 
-// â”€â”€â”€ Generate Checklist Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Generate Checklist Dialog ------------------------------------------------
 // Fire-and-forget: submits async mutation, closes immediately, polls in detail view.
 
 type RetryDefaults = {
@@ -511,7 +511,7 @@ function GenerateChecklistDialog({
               <p className="text-sm text-muted-foreground">
                 Our AI retrieves relevant passages from Kenyan regulatory documents (CBK, DPA, POCAMLA,
                 etc.) to ground your checklist in actual law   not generic guidance. Generation runs in
-                the background and typically takes 1â€“3 minutes.
+                the background and typically takes 1-3 minutes.
               </p>
             </div>
           </div>
@@ -539,7 +539,7 @@ function GenerateChecklistDialog({
   )
 }
 
-// â”€â”€â”€ Checklist Card (Summary) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Checklist Card (Summary) -------------------------------------------------
 
 const MAX_CARD_RETRIES = 3
 
@@ -702,7 +702,7 @@ function ChecklistCard({
   )
 }
 
-// â”€â”€â”€ Item Status Icon â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Item Status Icon ---------------------------------------------------------
 
 function NormalizedStatusIcon({ status }: { status: NormalizedItemStatus }) {
   if (status === "COMPLETED")      return <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
@@ -717,7 +717,7 @@ function LegacyStatusIcon({ status }: { status: string }) {
   return <Circle className="h-5 w-5 text-muted-foreground/50 shrink-0" />
 }
 
-// â”€â”€â”€ PDF Export (Legacy) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- PDF Export (Legacy) -----------------------------------------------------
 // TODO: add a normalized-checklist PDF export when NormalizedChecklistDetailView
 // is stable. For now, this function is used only for legacy (isNormalized=false) checklists.
 
@@ -775,9 +775,9 @@ function buildPrintHtml(data: {
 
   const itemStatusBadge = (id: string) => {
     const s = itemProgress[id] ?? "NOT_STARTED"
-    if (s === "COMPLETED")  return `<span style="color:#16A34A;font-weight:600">âœ“ Completed</span>`
-    if (s === "IN_PROGRESS") return `<span style="color:#2563EB;font-weight:600">âŸ³ In Progress</span>`
-    return `<span style="color:#6B7280">â—‹ Not Started</span>`
+    if (s === "COMPLETED")  return `<span style="color:#16A34A;font-weight:600">✓ Completed</span>`
+    if (s === "IN_PROGRESS") return `<span style="color:#2563EB;font-weight:600">⟳ In Progress</span>`
+    return `<span style="color:#6B7280">○ Not Started</span>`
   }
 
   const categoryRows = categories.map((cat) => {
@@ -805,8 +805,8 @@ function buildPrintHtml(data: {
           </div>
         ` : ""}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">â° Deadline</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.deadline}</p></div>` : ""}
-          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">âš ï¸ Penalty</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.penalty}</p></div>` : ""}
+          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">&#9200; Deadline</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.deadline}</p></div>` : ""}
+          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">&#9888;&#xfe0f; Penalty</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.penalty}</p></div>` : ""}
         </div>
       </div>
     `).join("")
@@ -888,7 +888,7 @@ function buildPrintHtml(data: {
         <p style="font-size:11px;color:#6B7280;margin:4px 0 0">Est. Days to Compliance</p>
       </div>
     </div>
-    ${inProgressItems > 0 ? `<p style="margin-top:12px;font-size:12px;color:#2563EB">âŸ³ ${inProgressItems} items currently in progress</p>` : ""}
+    ${inProgressItems > 0 ? `<p style="margin-top:12px;font-size:12px;color:#2563EB">⟳ ${inProgressItems} items currently in progress</p>` : ""}
   </div>
   <div>
     <h2 style="font-size:16px;font-weight:700;color:#1F2937;margin-bottom:16px;border-bottom:2px solid #22C55E;padding-bottom:6px">Compliance Requirements</h2>
@@ -932,7 +932,7 @@ function handleExportPdf(data: Parameters<typeof buildPrintHtml>[0]) {
   setTimeout(() => { printWindow.print() }, 500)
 }
 
-// â”€â”€â”€ PDF Export (Normalized) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- PDF Export (Normalized) -------------------------------------------------
 
 function buildNormalizedPrintHtml(data: {
   title: string
@@ -962,10 +962,10 @@ function buildNormalizedPrintHtml(data: {
   }
 
   const statusBadge = (s: string) => {
-    if (s === "COMPLETED")      return `<span style="color:#16A34A;font-weight:600">âœ“ Completed</span>`
-    if (s === "IN_PROGRESS")    return `<span style="color:#2563EB;font-weight:600">âŸ³ In Progress</span>`
+    if (s === "COMPLETED")      return `<span style="color:#16A34A;font-weight:600">✓ Completed</span>`
+    if (s === "IN_PROGRESS")    return `<span style="color:#2563EB;font-weight:600">⟳ In Progress</span>`
     if (s === "NOT_APPLICABLE") return `<span style="color:#9CA3AF;font-weight:600">  Not Applicable</span>`
-    return `<span style="color:#6B7280">â—‹ Pending</span>`
+    return `<span style="color:#6B7280">○ Pending</span>`
   }
 
   const categoryRows = categories.map((cat) => {
@@ -994,8 +994,8 @@ function buildNormalizedPrintHtml(data: {
           </div>
         ` : ""}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">â° Deadline</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.deadline}</p></div>` : ""}
-          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">âš ï¸ Penalty</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.penalty}</p></div>` : ""}
+          ${item.deadline ? `<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#166534">&#9200; Deadline</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.deadline}</p></div>` : ""}
+          ${item.penalty ? `<div style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#9F1239">&#9888;&#xfe0f; Penalty</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.penalty}</p></div>` : ""}
         </div>
         ${item.notes ? `<div style="margin-top:8px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:4px;padding:6px"><p style="font-size:10px;font-weight:600;color:#92400E">ðŸ“ Notes</p><p style="font-size:11px;color:#6B7280;margin-top:2px">${item.notes}</p></div>` : ""}
       </div>
@@ -1059,7 +1059,7 @@ function buildNormalizedPrintHtml(data: {
       <span style="color:#6B7280">Product Type:</span><span style="font-weight:600">${productType ?? " "}</span>
       <span style="color:#6B7280">Business Stage:</span><span style="font-weight:600">${businessStage ?? " "}</span>
     </div>
-    <p style="margin-top:24px;font-size:11px;color:#9CA3AF">Confidential   For Internal Use Only Â· Generated by SheriaBot</p>
+    <p style="margin-top:24px;font-size:11px;color:#9CA3AF">Confidential   For Internal Use Only · Generated by SheriaBot</p>
   </div>
 
   <div style="margin-bottom:32px;page-break-after:always">
@@ -1131,7 +1131,7 @@ function handleExportNormalizedPdf(data: Parameters<typeof buildNormalizedPrintH
   setTimeout(() => { printWindow.print() }, 500)
 }
 
-// â”€â”€â”€ Normalized Checklist Detail View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Normalized Checklist Detail View -----------------------------------------
 
 function NormalizedChecklistDetailView({
   checklistId,
@@ -1236,7 +1236,7 @@ function NormalizedChecklistDetailView({
     },
   })
 
-  // Cycle: PENDING â†’ IN_PROGRESS â†’ COMPLETED â†’ PENDING
+  // Cycle: PENDING -> IN_PROGRESS -> COMPLETED -> PENDING
   const cycleStatus = (current: NormalizedItemStatus): NormalizedItemStatus => {
     if (current === "PENDING"      || current === "NOT_APPLICABLE") return "IN_PROGRESS"
     if (current === "IN_PROGRESS") return "COMPLETED"
@@ -1277,7 +1277,7 @@ function NormalizedChecklistDetailView({
           <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
           <p className="text-destructive font-medium">Failed to load checklist detail</p>
           <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>
-            â† Back
+            ← Back
           </Button>
         </CardContent>
       </Card>
@@ -1362,14 +1362,14 @@ function NormalizedChecklistDetailView({
             onClick={onBack}
             className="mb-2 -ml-2 text-muted-foreground"
           >
-            â† Back to Checklists
+            ← Back to Checklists
           </Button>
           <h2 className="text-xl font-bold text-foreground">{detailData.title}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {detailData.productType} Â· {detailData.businessStage}
+            {detailData.productType} · {detailData.businessStage}
             {detailData.generatedAt && (
               <span className="ml-2 text-xs">
-                Â· Generated {new Date(detailData.generatedAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
+                · Generated {new Date(detailData.generatedAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
               </span>
             )}
           </p>
@@ -1643,7 +1643,7 @@ function NormalizedChecklistDetailView({
                                   }
                                   className="text-xs text-primary hover:underline"
                                 >
-                                  {isExpanded ? "Hide details â†‘" : "View details â†“"}
+                                  {isExpanded ? "Hide details ↑" : "View details ↓"}
                                 </button>
                               </div>
 
@@ -1676,8 +1676,8 @@ function NormalizedChecklistDetailView({
                                   <div className="grid grid-cols-2 gap-3">
                                     {item.deadline && (
                                       <div className="rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-2">
-                                        <p className="text-xs font-medium text-green-800 dark:text-green-400">
-                                          â° Deadline
+                                        <p className="text-xs font-medium text-green-800 dark:text-green-400 flex items-center gap-1">
+                                          <Clock className="h-3 w-3" /> Deadline
                                         </p>
                                         <p className="text-xs text-muted-foreground mt-0.5">
                                           {item.deadline}
@@ -1686,8 +1686,8 @@ function NormalizedChecklistDetailView({
                                     )}
                                     {item.penalty && (
                                       <div className="rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-2">
-                                        <p className="text-xs font-medium text-red-700 dark:text-red-400">
-                                          âš ï¸ Penalty
+                                        <p className="text-xs font-medium text-red-700 dark:text-red-400 flex items-center gap-1">
+                                          <AlertTriangle className="h-3 w-3" /> Penalty
                                         </p>
                                         <p className="text-xs text-muted-foreground mt-0.5">
                                           {item.penalty}
@@ -1739,7 +1739,7 @@ function NormalizedChecklistDetailView({
   )
 }
 
-// â”€â”€â”€ Legacy Checklist Detail View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Legacy Checklist Detail View ---------------------------------------------
 // Handles pre-March 2026 checklists stored as JSON blob + itemProgress map.
 
 function LegacyChecklistDetailView({
@@ -1819,7 +1819,7 @@ function LegacyChecklistDetailView({
           <p className="text-destructive font-medium">Failed to load checklist</p>
           <p className="text-sm text-muted-foreground mt-1">{error?.message ?? "Unknown error"}</p>
           <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>
-            â† Back
+            ← Back
           </Button>
         </CardContent>
       </Card>
@@ -1882,11 +1882,11 @@ function LegacyChecklistDetailView({
             onClick={onBack}
             className="mb-2 -ml-2 text-muted-foreground"
           >
-            â† Back to Checklists
+            ← Back to Checklists
           </Button>
           <h2 className="text-xl font-bold text-foreground">{data.title}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {data.productType} Â· {data.businessStage}
+            {data.productType} · {data.businessStage}
           </p>
         </div>
         <Button
@@ -1914,7 +1914,7 @@ function LegacyChecklistDetailView({
               <p className="text-4xl font-bold text-primary">{progressPct}%</p>
               <p className="text-sm text-muted-foreground mt-1">
                 {completedCount} of {totalItems} completed
-                {inProgressCount > 0 && ` Â· ${inProgressCount} in progress`}
+                {inProgressCount > 0 && ` · ${inProgressCount} in progress`}
               </p>
             </div>
           </div>
@@ -2088,7 +2088,7 @@ function LegacyChecklistDetailView({
                                     }
                                     className="text-xs text-primary hover:underline"
                                   >
-                                    {isExpanded ? "Hide details â†‘" : "View details â†“"}
+                                    {isExpanded ? "Hide details ↑" : "View details ↓"}
                                   </button>
                                 </div>
                                 {isExpanded && (
@@ -2118,8 +2118,8 @@ function LegacyChecklistDetailView({
                                     <div className="grid grid-cols-2 gap-3">
                                       {item.deadline && (
                                         <div className="rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-2">
-                                          <p className="text-xs font-medium text-green-800 dark:text-green-400">
-                                            â° Deadline
+                                          <p className="text-xs font-medium text-green-800 dark:text-green-400 flex items-center gap-1">
+                                            <Clock className="h-3 w-3" /> Deadline
                                           </p>
                                           <p className="text-xs text-muted-foreground mt-0.5">
                                             {item.deadline}
@@ -2128,8 +2128,8 @@ function LegacyChecklistDetailView({
                                       )}
                                       {item.penalty && (
                                         <div className="rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-2">
-                                          <p className="text-xs font-medium text-red-700 dark:text-red-400">
-                                            âš ï¸ Penalty
+                                          <p className="text-xs font-medium text-red-700 dark:text-red-400 flex items-center gap-1">
+                                            <AlertTriangle className="h-3 w-3" /> Penalty
                                           </p>
                                           <p className="text-xs text-muted-foreground mt-0.5">
                                             {item.penalty}
@@ -2156,7 +2156,7 @@ function LegacyChecklistDetailView({
   )
 }
 
-// â”€â”€â”€ Checklist Detail Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Checklist Detail Router --------------------------------------------------
 // Polls status â†’ routes to NormalizedChecklistDetailView or LegacyChecklistDetailView.
 
 const MAX_DETAIL_RETRIES = 3
@@ -2222,7 +2222,7 @@ function ChecklistDetailView({
     return (
       <div className="space-y-4">
         <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2 text-muted-foreground">
-          â† Back to Checklists
+          ← Back to Checklists
         </Button>
         <Card className="border-destructive/50">
           <CardContent className="pt-6 text-center">
@@ -2251,7 +2251,7 @@ function ChecklistDetailView({
             onClick={onBack}
             className="-ml-2 text-muted-foreground"
           >
-            â† Back to Checklists
+            ← Back to Checklists
           </Button>
           <Card className="border-yellow-500/50 bg-yellow-50/10">
             <CardContent className="pt-6 text-center space-y-3">
@@ -2262,7 +2262,7 @@ function ChecklistDetailView({
                 whether the checklist appeared, or delete it and try again.
               </p>
               <Button variant="outline" className="bg-transparent" onClick={onBack}>
-                â† Back to Checklists
+                ← Back to Checklists
               </Button>
             </CardContent>
           </Card>
@@ -2278,7 +2278,7 @@ function ChecklistDetailView({
           onClick={onBack}
           className="-ml-2 text-muted-foreground"
         >
-          â† Back to Checklists
+          ← Back to Checklists
         </Button>
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="pt-8 pb-8 text-center space-y-4">
@@ -2309,7 +2309,7 @@ function ChecklistDetailView({
     )
   }
 
-  // â”€â”€ Failed state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- Failed state -----------------------------------------------------------
   if (isFailed) {
     const errorMessage = statusData?.metadata?.errorMessage
     const retryCount   = statusData?.metadata?.retryCount ?? 0
@@ -2323,7 +2323,7 @@ function ChecklistDetailView({
           onClick={onBack}
           className="-ml-2 text-muted-foreground"
         >
-          â† Back to Checklists
+          ← Back to Checklists
         </Button>
 
         {/* Error banner */}
@@ -2391,7 +2391,7 @@ function ChecklistDetailView({
             Generate New Checklist
           </Button>
           <Button variant="ghost" onClick={onBack} className="text-muted-foreground">
-            â† Back
+            ← Back
           </Button>
         </div>
 
@@ -2430,7 +2430,7 @@ function ChecklistDetailView({
   return <LegacyChecklistDetailView checklistId={checklistId} onBack={onBack} />
 }
 
-// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Main Page --------------------------------------------------------------
 
 export default function ChecklistsPage() {
   const [activeChecklistId, setActiveChecklistId] = useState<string | null>(null)
@@ -2644,7 +2644,7 @@ export default function ChecklistsPage() {
                 <p className="text-2xl font-bold text-foreground">{checklists.length}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {completedChecklistCount > 0 && `${completedChecklistCount} completed`}
-                  {generatingChecklistCount > 0 && ` Â· ${generatingChecklistCount} generating`}
+                  {generatingChecklistCount > 0 && ` · ${generatingChecklistCount} generating`}
                 </p>
               </CardContent>
             </Card>
