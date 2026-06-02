@@ -35,8 +35,9 @@ import {
   CalendarDays,
   UserPlus,
   Loader2,
-  Eye,
-  EyeOff,
+  KeyRound,
+  CalendarPlus,
+  Ban,
 } from "lucide-react"
 import { getErrorMessage, trpc } from "@/lib/trpc"
 import { toast } from "sonner"
@@ -52,7 +53,10 @@ interface PilotTester {
   pilotStartedAt:   string | null
   pilotExpiresAt:   string | null
   pilotConvertedAt: string | null
-  status:           "active" | "expired" | "converted"
+  status:           "active" | "expired" | "converted" | "revoked"
+  pilotExtensionCount: number
+  pilotFirstExtensionGrantedAt: string | null
+  pilotSecondExtensionGrantedAt: string | null
   daysRemaining:    number
   daysSinceStart:   number
   engagementScore:  number
@@ -94,6 +98,8 @@ function StatusBadge({ status }: { status: PilotTester["status"] }) {
     return <Badge className="bg-primary/10 text-primary border-0">Active</Badge>
   if (status === "converted")
     return <Badge className="bg-emerald-500/10 text-emerald-600 border-0">Converted</Badge>
+  if (status === "revoked")
+    return <Badge className="bg-destructive/10 text-destructive border-0">Revoked</Badge>
   return <Badge className="bg-muted text-muted-foreground border-0">Expired</Badge>
 }
 
@@ -171,15 +177,12 @@ const NEW_ORGANIZATION_VALUE = "__new__"
 function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
   const utils = trpc.useUtils()
   const [open, setOpen] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
     email: "",
     fullName: "",
-    password: "",
     role: "STARTUP" as "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN",
     organizationId: "",
     organizationName: "",
-    sendWelcomeEmail: true,
   })
   const { data: organizationOptions, isLoading: organizationsLoading } = trpc.admin.listOrganizations.useQuery(
     undefined,
@@ -188,20 +191,20 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
   const organizations = organizationOptions ?? []
   const creatingNewOrganization = !form.organizationId
 
-  const createUserMutation = trpc.admin.createUser.useMutation({
-    onSuccess: () => {
-      toast.success("User profile created successfully")
+  const createUserMutation = trpc.pilot.createPilotTester.useMutation({
+    onSuccess: (result) => {
+      toast.success(`Pilot tester created. Email ${result.emailDeliveryStatus.toLowerCase()}.`)
       setOpen(false)
       setForm({
         email: "",
         fullName: "",
-        password: "",
         role: "STARTUP",
         organizationId: "",
         organizationName: "",
-        sendWelcomeEmail: true,
       })
       void utils.admin.listOrganizations.invalidate()
+      void utils.pilot.getStats.invalidate()
+      void utils.pilot.listTesters.invalidate()
       onSuccess()
     },
     onError: (err) => {
@@ -211,12 +214,8 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.email || !form.fullName || !form.password) {
+    if (!form.email || !form.fullName) {
       toast.error("Please fill in all required fields")
-      return
-    }
-    if (form.password.length < 8) {
-      toast.error("Password must be at least 8 characters")
       return
     }
     if (creatingNewOrganization && form.organizationName.trim().length < 2) {
@@ -226,12 +225,9 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
     createUserMutation.mutate({
       email: form.email,
       fullName: form.fullName,
-      password: form.password,
-      role: form.role,
+      role: form.role === "ENTERPRISE" ? "ENTERPRISE" : "STARTUP",
       organizationId: form.organizationId || undefined,
       organizationName: creatingNewOrganization ? form.organizationName.trim() || undefined : undefined,
-      isPilot: true,
-      sendWelcomeEmail: form.sendWelcomeEmail,
     })
   }
 
@@ -275,27 +271,8 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
               />
             </div>
 
-            <div className="col-span-2 space-y-1.5">
-              <Label htmlFor="password">Password <span className="text-destructive">*</span></Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Min. 8 characters"
-                  value={form.password}
-                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                  required
-                  minLength={8}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+            <div className="col-span-2 rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
+              A strong temporary password will be generated, emailed to the pilot tester, and expire after 1 hour.
             </div>
 
             <div className="space-y-1.5">
@@ -310,8 +287,8 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
                 <SelectContent>
                   <SelectItem value="STARTUP">Startup</SelectItem>
                   <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
-                  <SelectItem value="REGULATOR">Regulator</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="REGULATOR" disabled>Regulator</SelectItem>
+                  <SelectItem value="ADMIN" disabled>Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -359,19 +336,6 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
             )}
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
-            <input
-              id="sendWelcome"
-              type="checkbox"
-              checked={form.sendWelcomeEmail}
-              onChange={(e) => setForm((f) => ({ ...f, sendWelcomeEmail: e.target.checked }))}
-              className="h-4 w-4 rounded border-border accent-primary"
-            />
-            <Label htmlFor="sendWelcome" className="text-sm font-normal cursor-pointer">
-              Send welcome email with login instructions
-            </Label>
-          </div>
-
           <DialogFooter className="pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={createUserMutation.isPending}>
               Cancel
@@ -393,10 +357,38 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
 
 // ─── Tester row ───────────────────────────────────────────────────────────────
 
-function TesterRow({ tester }: { tester: PilotTester }) {
+function TesterRow({ tester, onChanged }: { tester: PilotTester; onChanged: () => void }) {
+  const utils = trpc.useUtils()
+  const reissueMutation = trpc.pilot.reissueTemporaryPassword.useMutation({
+    onSuccess: (result) => {
+      toast.success(`Temporary password reissued. Email ${result.emailDeliveryStatus.toLowerCase()}.`)
+      void utils.pilot.listTesters.invalidate()
+      onChanged()
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  })
+  const extendMutation = trpc.pilot.extendPilotAccess.useMutation({
+    onSuccess: (result) => {
+      toast.success(`Pilot extended to ${fmtDate(result.pilotAccessExpiresAt)}`)
+      void utils.pilot.getStats.invalidate()
+      void utils.pilot.listTesters.invalidate()
+      onChanged()
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  })
+  const revokeMutation = trpc.pilot.revokePilotAccess.useMutation({
+    onSuccess: () => {
+      toast.success("Pilot access revoked")
+      void utils.pilot.getStats.invalidate()
+      void utils.pilot.listTesters.invalidate()
+      onChanged()
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  })
   const initials = tester.fullName
     ? tester.fullName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
     : tester.email.slice(0, 2).toUpperCase()
+  const nextExtensionDays = tester.pilotExtensionCount === 0 ? 10 : tester.pilotExtensionCount === 1 ? 5 : null
 
   return (
     <tr className="hover:bg-muted/20 transition-colors">
@@ -455,6 +447,43 @@ function TesterRow({ tester }: { tester: PilotTester }) {
           <CalendarDays className="h-3.5 w-3.5" />
           {fmtDate(tester.pilotExpiresAt)}
         </span>
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5"
+            disabled={reissueMutation.isPending}
+            onClick={() => reissueMutation.mutate({ userId: tester.id })}
+          >
+            {reissueMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <KeyRound className="h-3.5 w-3.5" />}
+            Reissue
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5"
+            disabled={extendMutation.isPending || nextExtensionDays === null || tester.status === "converted" || tester.status === "revoked"}
+            onClick={() => nextExtensionDays && extendMutation.mutate({ userId: tester.id, extensionDays: nextExtensionDays })}
+          >
+            {extendMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CalendarPlus className="h-3.5 w-3.5" />}
+            {nextExtensionDays ? `+${nextExtensionDays}d` : "No extension"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-destructive hover:text-destructive"
+            disabled={revokeMutation.isPending || tester.status === "converted" || tester.status === "revoked"}
+            onClick={() => revokeMutation.mutate({ userId: tester.id })}
+          >
+            {revokeMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Ban className="h-3.5 w-3.5" />}
+            Revoke
+          </Button>
+        </div>
       </td>
     </tr>
   )
@@ -572,11 +601,12 @@ export default function PilotDashboardPage() {
                     <th className="text-left px-4 py-3 font-medium">Events</th>
                     <th className="text-left px-4 py-3 font-medium">Last Active</th>
                     <th className="text-left px-4 py-3 font-medium">Expires</th>
+                    <th className="text-left px-4 py-3 font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {testers.map((tester) => (
-                    <TesterRow key={tester.id} tester={tester} />
+                    <TesterRow key={tester.id} tester={tester} onChanged={handleUserCreated} />
                   ))}
                 </tbody>
               </table>

@@ -22,7 +22,9 @@ export function NotificationSoundProvider(): null {
   const { data: prefs } = trpc.user.getNotificationPreferences.useQuery(undefined, {
     staleTime: 60_000,
   })
-  const soundsEnabled = prefs ? prefs.inAppSoundsEnabled ?? true : false
+  // Default to true while prefs are loading so the module-level flag stays
+  // enabled until we know the user's actual preference.
+  const soundsEnabled = prefs ? (prefs.inAppSoundsEnabled ?? true) : true
   const previousUnreadCount = useRef<number | null>(null)
   const lastPlayedId = useRef<string | null>(null)
 
@@ -38,6 +40,14 @@ export function NotificationSoundProvider(): null {
     }
   )
 
+  // Keep the refetch function in a stable ref so the count-change effect
+  // doesn't need it in its dependency array (avoids spurious re-runs).
+  const refetchNotifications = notificationsQuery.refetch
+  const refetchRef = useRef(refetchNotifications)
+  useEffect(() => {
+    refetchRef.current = refetchNotifications
+  })
+
   useEffect(() => {
     setNotificationSoundsEnabled(soundsEnabled)
   }, [soundsEnabled])
@@ -51,14 +61,14 @@ export function NotificationSoundProvider(): null {
       return
     }
 
-    void notificationsQuery.refetch().then(({ data }) => {
+    void refetchRef.current().then(({ data }) => {
       const latestUnread = (data?.items?.[0] ?? null) as NotificationItem | null
       if (!latestUnread || latestUnread.id === lastPlayedId.current) return
 
       lastPlayedId.current = latestUnread.id
       playNotificationSound(soundForNotification(latestUnread))
     })
-  }, [notificationsQuery, soundsEnabled, unreadCountQuery.data?.count])
+  }, [soundsEnabled, unreadCountQuery.data?.count])
 
   return null
 }

@@ -44,6 +44,7 @@ export function useAuth() {
         role: result.user.role as UserRole,
         organizationId: result.user.organization?.id ?? null,
         emailVerified: result.user.emailVerified,
+        mustChangePassword: result.user.mustChangePassword,
         createdAt: String(result.user.createdAt),
       };
 
@@ -54,6 +55,10 @@ export function useAuth() {
       });
 
       setAuth(authUser, result.accessToken);
+      if (result.user.mustChangePassword) {
+        router.push("/change-password");
+        return result;
+      }
       router.push(getDashboardPath(authUser.role));
       return result;
     },

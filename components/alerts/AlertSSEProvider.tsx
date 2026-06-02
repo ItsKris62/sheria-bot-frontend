@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAlertSSE, type AlertSSEEvent } from "@/hooks/use-alert-sse";
 import { playNotificationSound, soundForAlertSeverity } from "@/lib/notification-sounds";
@@ -21,12 +21,20 @@ export function AlertSSEProvider(): null {
     staleTime: 60_000,
   });
 
+  // Keep prefs in a ref so the callback always reads the latest value without
+  // needing to be recreated (and without triggering SSE reconnects).
+  const prefsRef = useRef(prefs);
+  useEffect(() => {
+    prefsRef.current = prefs;
+  });
+
   const handleAlertEvent = useCallback((event: AlertSSEEvent) => {
     utils.alert.getUnreadCount.invalidate();
-    if (prefs && (prefs.inAppSoundsEnabled ?? true)) {
+    const currentPrefs = prefsRef.current;
+    if (!currentPrefs || (currentPrefs.inAppSoundsEnabled ?? true)) {
       playNotificationSound(soundForAlertSeverity(event.severity));
     }
-  }, [prefs?.inAppSoundsEnabled, utils]);
+  }, [utils]);
 
   useAlertSSE(handleAlertEvent);
 

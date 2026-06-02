@@ -20,6 +20,8 @@ const cspDirectives = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' https://fonts.gstatic.com",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https:",
+  // Allow audio files served from the Cloudflare R2 public bucket
+  "media-src 'self' https://*.r2.dev",
   "frame-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",

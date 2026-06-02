@@ -40,6 +40,11 @@ export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
       return
     }
 
+    if (user?.mustChangePassword && pathname !== "/change-password") {
+      router.replace("/change-password")
+      return
+    }
+
     if (allowedRoles && user && !allowedRoles.includes(user.role)) {
       // Redirect to the user's own dashboard
       router.replace(getRoleBasePath(user.role))
@@ -51,6 +56,10 @@ export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
   }
 
   if (!isAuthenticated) {
+    return null
+  }
+
+  if (user?.mustChangePassword && pathname !== "/change-password") {
     return null
   }
 
@@ -75,7 +84,12 @@ export function GuestGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isInitialized) return
 
-    if (isAuthenticated && user && !isVerifyEmailPage) {
+    if (isAuthenticated && user?.mustChangePassword && pathname !== "/change-password") {
+      router.replace("/change-password")
+      return
+    }
+
+    if (isAuthenticated && user && !isVerifyEmailPage && pathname !== "/change-password") {
       router.replace(getRoleBasePath(user.role))
     }
   }, [isInitialized, isAuthenticated, user, router, isVerifyEmailPage])
@@ -84,7 +98,7 @@ export function GuestGuard({ children }: { children: React.ReactNode }) {
     return <LoadingScreen fullScreen />
   }
 
-  if (isAuthenticated && !isVerifyEmailPage) {
+  if (isAuthenticated && !isVerifyEmailPage && pathname !== "/change-password") {
     return null
   }
 

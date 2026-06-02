@@ -12,6 +12,7 @@ export interface AuthUser {
   role: UserRole;
   organizationId: string | null;
   emailVerified: boolean;
+  mustChangePassword?: boolean;
   createdAt: string;
 }
 
