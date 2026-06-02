@@ -18,6 +18,10 @@ export interface CitationItem {
   isBinding?: boolean;
   source?: string | null;
   version?: string | null;
+  /** Whether this citation was confirmed against the RAG regulatory corpus. */
+  verified?: boolean;
+  /** Verification status: "verified" = confirmed in corpus, "unverified" = not found, "not_checked" = verification not attempted. */
+  verificationStatus?: "verified" | "unverified" | "not_checked";
 }
 
 /** Full orchestrated-path shape returned by both tRPC and SSE paths. */

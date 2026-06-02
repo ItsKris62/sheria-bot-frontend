@@ -95,6 +95,9 @@ const STATUS_LABELS: Record<string, { label: string; description: string }> = {
   FAILED:     { label: "Analysis failed",                 description: "An error occurred during analysis." },
 }
 
+const VERIFIED_HELPER_TEXT =
+  "Verified sources were matched to SheriaBot's legal corpus and accepted by the verification flow. This does not replace independent legal advice."
+
 function getScoreColor(score: number) {
   if (score >= 91) return { ring: "border-secondary", text: "text-secondary", bg: "bg-secondary/10" }
   if (score >= 71) return { ring: "border-yellow-500", text: "text-yellow-600", bg: "bg-yellow-50 dark:bg-yellow-900/20" }
@@ -213,6 +216,13 @@ type GapResult = {
   title: string
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"
   regulatoryBasis: string
+  citationVerified?: boolean
+  verificationStatus?: "verified" | "unverified" | "not_checked"
+  sourceDocumentTitle?: string
+  sourceSection?: string
+  sourceSnippet?: string
+  authorityStatus?: string
+  isBinding?: boolean
   description: string
   policyCurrentState: string
   recommendation: string
@@ -348,6 +358,13 @@ function AnalysisResultsView({
     const order = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 }
     return (order[a.severity] ?? 3) - (order[b.severity] ?? 3)
   })
+
+  function gapVerificationLabel(gap: GapResult): "Verified" | "Unverified" | "Not checked" {
+    if (gap.verificationStatus === "verified") return "Verified"
+    if (gap.verificationStatus === "unverified") return "Unverified"
+    if (gap.verificationStatus === "not_checked") return "Not checked"
+    return "Not checked"
+  }
 
   function handleExportPdf() {
     const html = buildGapAnalysisReportHtml({
@@ -521,6 +538,7 @@ function AnalysisResultsView({
             sortedGaps.map((gap) => {
               const sc = SEVERITY_CONFIG[gap.severity] ?? SEVERITY_CONFIG.LOW
               const isExpanded = expandedGaps[gap.id]
+              const verification = gapVerificationLabel(gap)
               return (
                 <div key={gap.id} className={`rounded-lg border border-l-4 p-4 ${sc.bg} ${sc.border}`}>
                   <div className="flex items-start justify-between gap-3">
@@ -532,10 +550,15 @@ function AnalysisResultsView({
                       </div>
                       <p className="text-xs text-primary font-medium mt-1 flex items-center gap-1.5 flex-wrap">
                         <span>{gap.regulatoryBasis}</span>
-                        {(gap as Record<string, unknown>).citationVerified === true ? (
+                        {verification === "Verified" ? (
                           <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800">
                             <CheckCircle2 className="h-3 w-3" />
                             Verified
+                          </span>
+                        ) : verification === "Not checked" ? (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border">
+                            <AlertCircle className="h-3 w-3" />
+                            Not checked
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
@@ -565,6 +588,34 @@ function AnalysisResultsView({
                         <p className="font-medium text-foreground text-xs mb-1">Recommendation</p>
                         <p className="text-xs text-muted-foreground leading-relaxed">{gap.recommendation}</p>
                       </div>
+
+                      {(gap.sourceDocumentTitle || gap.sourceSection || gap.sourceSnippet) ? (
+                        <div className="rounded-md border border-border/40 bg-background/60 p-3">
+                          <p className="font-medium text-foreground text-xs mb-1">Source Context</p>
+                          <p className="mb-2 text-xs leading-relaxed text-muted-foreground">
+                            {VERIFIED_HELPER_TEXT}
+                          </p>
+                          {gap.sourceDocumentTitle ? (
+                            <p className="text-xs font-medium text-foreground">{gap.sourceDocumentTitle}</p>
+                          ) : null}
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            {gap.sourceSection ? (
+                              <Badge variant="outline" className="text-[10px]">
+                                {gap.sourceSection}
+                              </Badge>
+                            ) : null}
+                            {gap.authorityStatus ? (
+                              <Badge variant="outline" className="text-[10px]">
+                                {gap.authorityStatus.replace(/_/g, " ")}
+                                {gap.isBinding === false ? " / Non-binding" : ""}
+                              </Badge>
+                            ) : null}
+                          </div>
+                          {gap.sourceSnippet ? (
+                            <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">{gap.sourceSnippet}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
 
                       {/* Evidence Required Checklist */}
                       {(() => {

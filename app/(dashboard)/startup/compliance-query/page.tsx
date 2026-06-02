@@ -77,6 +77,21 @@ function SheriaBotLogo({ className = "h-5 w-5" }: { className?: string }) {
   )
 }
 
+function citationVerificationLabel(citation: CitationItem): "Verified" | "Unverified" | "Not checked" {
+  if (citation.verificationStatus === "verified") return "Verified"
+  if (citation.verificationStatus === "unverified") return "Unverified"
+  return "Not checked"
+}
+
+function citationVerificationClass(label: "Verified" | "Unverified" | "Not checked"): string {
+  if (label === "Verified") return "border-emerald-500/35 text-emerald-600"
+  if (label === "Unverified") return "border-amber-500/35 text-amber-600"
+  return "border-muted-foreground/25 text-muted-foreground"
+}
+
+const VERIFIED_HELPER_TEXT =
+  "Verified sources were matched to SheriaBot's legal corpus and accepted by the verification flow. This does not replace independent legal advice."
+
 // MessageActionBar
 
 interface MessageActionBarProps {
@@ -492,39 +507,59 @@ export default function ComplianceQueryPage() {
                               <p className="mb-2 text-xs font-semibold text-[#D4AF37]">
                                 Legal Citations ({message.citations.length}):
                               </p>
+                              <p className="mb-2 text-xs leading-relaxed text-muted-foreground">
+                                {VERIFIED_HELPER_TEXT}
+                              </p>
                               <div className="space-y-2">
-                                {message.citations.map((citation, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex items-start gap-2 rounded-lg border border-[#D4AF37]/25 bg-[#D4AF37]/[0.06] p-2 shadow-[0_0_18px_rgba(212,175,55,0.08)]"
-                                  >
-                                    <Scale
-                                      className="h-4 w-4 mt-0.5 shrink-0 text-[#D4AF37]"
-                                      aria-hidden="true"
-                                    />
-                                    <div className="min-w-0">
-                                      <p className="text-xs font-medium text-foreground">
-                                        {citation.documentTitle}
-                                      </p>
-                                      {citation.authorityStatus && citation.authorityStatus !== "IN_FORCE" && (
-                                        <Badge variant="outline" className="mt-1 h-5 border-[#D4AF37]/35 px-1.5 text-[10px] text-[#D4AF37]">
-                                          {citation.authorityStatus.replace(/_/g, " ")}
-                                          {citation.isBinding === false ? " / Non-binding" : ""}
-                                        </Badge>
-                                      )}
-                                      {citation.section && (
-                                        <p className="text-xs text-muted-foreground">
-                                          {citation.section}
+                                {message.citations.map((citation, index) => {
+                                  const verification = citationVerificationLabel(citation)
+
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="flex items-start gap-2 rounded-lg border border-[#D4AF37]/25 bg-[#D4AF37]/[0.06] p-2 shadow-[0_0_18px_rgba(212,175,55,0.08)]"
+                                    >
+                                      <Scale
+                                        className="h-4 w-4 mt-0.5 shrink-0 text-[#D4AF37]"
+                                        aria-hidden="true"
+                                      />
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-xs font-medium text-foreground">
+                                          {citation.documentTitle}
                                         </p>
-                                      )}
-                                      {citation.textSnippet && (
-                                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                          {citation.textSnippet}
-                                        </p>
-                                      )}
+                                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                          {citation.authorityStatus && citation.authorityStatus !== "IN_FORCE" && (
+                                            <Badge variant="outline" className="h-5 border-[#D4AF37]/35 px-1.5 text-[10px] text-[#D4AF37]">
+                                              {citation.authorityStatus.replace(/_/g, " ")}
+                                              {citation.isBinding === false ? " / Non-binding" : ""}
+                                            </Badge>
+                                          )}
+                                          <Badge
+                                            variant="outline"
+                                            className={cn("h-5 px-1.5 text-[10px]", citationVerificationClass(verification))}
+                                          >
+                                            {verification}
+                                          </Badge>
+                                          {citation.score > 0 ? (
+                                            <span className="text-[10px] text-muted-foreground">
+                                              {Math.round(citation.score * 100)}% relevance
+                                            </span>
+                                          ) : null}
+                                        </div>
+                                        {citation.section && (
+                                          <p className="text-xs text-muted-foreground">
+                                            {citation.section}
+                                          </p>
+                                        )}
+                                        {citation.textSnippet && (
+                                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                            {citation.textSnippet}
+                                          </p>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  )
+                                })}
                               </div>
                             </div>
                           )}

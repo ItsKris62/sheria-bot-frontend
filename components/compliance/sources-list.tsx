@@ -16,12 +16,18 @@ type SourceEntry = {
   key: string
   documentTitle: string
   section: string | null
+  textSnippet: string | null
   score: number
   authorityStatus: string
   isBinding: boolean
   version: string | null
+  verified: boolean | null
+  verificationStatus: "verified" | "unverified" | "not_checked" | null
   baseName: string
 }
+
+const VERIFIED_HELPER_TEXT =
+  "Verified sources were matched to SheriaBot's legal corpus and accepted by the verification flow. This does not replace independent legal advice."
 
 function sourceKey(citation: SourceCitation, index: number): string {
   if (citation?.documentId) return citation.documentId
@@ -48,6 +54,18 @@ function authorityLabel(status: string, isBinding: boolean): string | null {
   return "Non-binding"
 }
 
+function verificationLabel(source: SourceEntry): "Verified" | "Unverified" | "Not checked" {
+  if (source.verificationStatus === "verified") return "Verified"
+  if (source.verificationStatus === "unverified") return "Unverified"
+  return "Not checked"
+}
+
+function verificationClass(label: "Verified" | "Unverified" | "Not checked"): string {
+  if (label === "Verified") return "border-emerald-500/40 bg-emerald-500/10 text-emerald-700"
+  if (label === "Unverified") return "border-amber-500/40 bg-amber-500/10 text-amber-700"
+  return "border-muted-foreground/25 bg-muted text-muted-foreground"
+}
+
 function dedupeSources(citations: SourceCitation[]): SourceEntry[] {
   const byKey = new Map<string, SourceEntry>()
 
@@ -62,10 +80,13 @@ function dedupeSources(citations: SourceCitation[]): SourceEntry[] {
       key,
       documentTitle,
       section: citation?.section?.trim() || null,
+      textSnippet: citation?.textSnippet?.trim() || null,
       score,
       authorityStatus: citation?.authorityStatus ?? "IN_FORCE",
       isBinding: citation?.isBinding ?? true,
       version: citation?.version?.trim() || null,
+      verified: citation?.verified ?? null,
+      verificationStatus: citation?.verificationStatus ?? null,
       baseName: baseNameOf(documentTitle),
     }
 
@@ -95,8 +116,11 @@ export function SourcesList({ citations }: SourcesListProps) {
 
   return (
     <div className="space-y-3">
+      <p className="text-xs leading-relaxed text-muted-foreground">{VERIFIED_HELPER_TEXT}</p>
+
       {visibleSources.map((source) => {
         const label = authorityLabel(source.authorityStatus, source.isBinding)
+        const verification = verificationLabel(source)
         const showSection = !!source.section && (baseNameCounts.get(source.baseName) ?? 0) > 1
 
         return (
@@ -111,13 +135,24 @@ export function SourcesList({ citations }: SourcesListProps) {
                   ) : null}
                 </p>
                 {showSection ? <p className="text-xs text-muted-foreground">{source.section}</p> : null}
-                <p className="text-xs text-muted-foreground">Source on file</p>
+                {source.textSnippet ? (
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{source.textSnippet}</p>
+                ) : null}
+                <p className="text-xs text-muted-foreground">
+                  Source on file
+                  {source.score > 0 ? ` - ${Math.round(source.score * 100)}% relevance` : ""}
+                </p>
               </div>
-              {label ? (
-                <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-700">
-                  {label}
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                {label ? (
+                  <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-700">
+                    {label}
+                  </Badge>
+                ) : null}
+                <Badge variant="outline" className={verificationClass(verification)}>
+                  {verification}
                 </Badge>
-              ) : null}
+              </div>
             </div>
           </div>
         )
