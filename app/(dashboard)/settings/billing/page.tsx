@@ -310,7 +310,7 @@ function getCompactCardClasses(planId: PlanId) {
 export default function BillingSettingsPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { plan, usage, billing, isLoading } = usePlan()
+  const { plan, usage, billing, isLoading, isPilotAccess, pilot } = usePlan()
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly")
   const [showComparison, setShowComparison] = useState(false)
   const [showEnterpriseModal, setShowEnterpriseModal] = useState(false)
@@ -383,13 +383,14 @@ export default function BillingSettingsPage() {
   const graceDays = daysUntil(billing?.gracePeriodEndsAt ?? null)
   const isManagedByStripe = billing?.stripeCustomerId != null
   const isRegulator = currentPlanId === "REGULATOR"
-  const isEnterprise = currentPlanId === "ENTERPRISE"
+  const isEnterprise = !isPilotAccess && currentPlanId === "ENTERPRISE"
   const isPastDue = status === "PAST_DUE"
   const isGracePeriod = status === "GRACE_PERIOD"
   const isExpired = status === "EXPIRED" || status === "CANCELLED"
   const isTrialing = status === "TRIALING"
   const isActive = status === "ACTIVE"
   const currentPlanIndex = PLAN_ORDER.indexOf(currentPlanId)
+  const displayPlanName = isPilotAccess ? "Pilot Access" : PLANS[currentPlanId].name
 
   return (
     <div className="space-y-8">
@@ -400,6 +401,19 @@ export default function BillingSettingsPage() {
       </div>
 
       {/* -- Status alerts -- */}
+      {isPilotAccess && (
+        <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          <Clock className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium text-foreground">Pilot Access</p>
+            <p className="text-muted-foreground mt-0.5">
+              Your pilot entitlement profile is active
+              {pilot?.pilotExpiresAt ? ` until ${formatDate(pilot.pilotExpiresAt)}.` : "."}
+            </p>
+          </div>
+        </div>
+      )}
+
       {isPastDue && (
         <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm">
           <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
@@ -486,7 +500,7 @@ export default function BillingSettingsPage() {
             const planId = planConfig.id
             const isBusinessPlan = planId === "BUSINESS"
             const isEnterprisePlan = planId === "ENTERPRISE"
-            const isCurrent = planId === currentPlanId
+            const isCurrent = !isPilotAccess && planId === currentPlanId
             const isLowerTier = PLAN_ORDER.indexOf(planId) < currentPlanIndex
             const displayPrice = billingCycle === "yearly" && planConfig.price.yearly !== null
               ? planConfig.price.yearly
@@ -662,7 +676,7 @@ export default function BillingSettingsPage() {
                       <td className={`py-3 text-center ${currentPlanId === "BUSINESS" ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
                         {row.business}
                       </td>
-                      <td className={`py-3 text-center ${currentPlanId === "ENTERPRISE" ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                      <td className={`py-3 text-center ${!isPilotAccess && currentPlanId === "ENTERPRISE" ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
                         {row.enterprise}
                       </td>
                     </tr>
@@ -872,7 +886,7 @@ export default function BillingSettingsPage() {
             <div>
               <p className="text-sm font-medium text-foreground">Current Plan</p>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm text-muted-foreground">{PLANS[currentPlanId].name}</span>
+                <span className="text-sm text-muted-foreground">{displayPlanName}</span>
                 {statusBadge(status)}
               </div>
             </div>

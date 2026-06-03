@@ -11,6 +11,14 @@ import { useAuthStore } from "./auth-store";
 // ============================================================================
 
 export type PlanName = "REGULATOR" | "FREE_TRIAL" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
+export type EffectivePlanSource =
+  | "SUBSCRIPTION"
+  | "FREE_TRIAL"
+  | "GRACE_PERIOD"
+  | "PILOT"
+  | "FALLBACK"
+  | "SUSPENDED";
+export type PilotEntitlementProfile = "PILOT_FULL" | "PILOT_FULL_WITH_POLICY_GENERATION";
 
 export type SupportTier  = "community" | "email-48hr" | "priority-24hr" | "dedicated";
 export type AnalyticsTier = "none" | "basic" | "advanced";
@@ -121,6 +129,14 @@ export interface PlanData {
   usage:        PlanUsage;
   billing:      PlanBilling;
   trial:        FrontendTrialStatus | null;
+  effectivePlanSource: EffectivePlanSource;
+  pilot: {
+    isPilot: boolean;
+    pilotStatus: "ACTIVE" | "EXPIRED" | "REVOKED" | "CONVERTED" | null;
+    pilotExpiresAt: string | null;
+    pilotExtensionCount: number;
+    entitlementProfile: PilotEntitlementProfile | null;
+  };
 }
 
 // ============================================================================
@@ -176,6 +192,9 @@ interface PlanContextValue {
 
   /** Full trial status object (non-null only when plan === FREE_TRIAL). */
   trial: FrontendTrialStatus | null;
+  effectivePlanSource: EffectivePlanSource | null;
+  pilot: PlanData["pilot"] | null;
+  isPilotAccess: boolean;
 
   /** True when the user is on an active free trial. */
   isTrialActive: boolean;
@@ -200,6 +219,9 @@ const PlanContext = createContext<PlanContextValue>({
   isUnlimited: () => false,
   planDisplayName: "",
   trial: null,
+  effectivePlanSource: null,
+  pilot: null,
+  isPilotAccess: false,
   isTrialActive: false,
   trialDaysRemaining: null,
 });
@@ -208,7 +230,11 @@ const PlanContext = createContext<PlanContextValue>({
 // Helpers
 // ============================================================================
 
-function resolvePlanDisplayName(plan: PlanName | null): string {
+function resolvePlanDisplayName(
+  plan: PlanName | null,
+  effectivePlanSource?: EffectivePlanSource | null,
+): string {
+  if (effectivePlanSource === "PILOT") return "Pilot Access";
   switch (plan) {
     case "REGULATOR":  return "Regulator (Free)";
     case "FREE_TRIAL": return "Free Trial (7-day)";
@@ -278,12 +304,17 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     const usage        = data?.usage        ?? null;
     const billing      = data?.billing      ?? null;
     const trial        = (data as PlanData | undefined)?.trial ?? null;
+    const effectivePlanSource = data?.effectivePlanSource ?? null;
+    const pilot = data?.pilot ?? null;
 
     return {
       plan,
       entitlements,
       usage,
       billing,
+      effectivePlanSource,
+      pilot,
+      isPilotAccess: effectivePlanSource === "PILOT",
       isLoading,
       isError,
 
@@ -302,7 +333,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         return resolveGetLimit(entitlements, key) === -1;
       },
 
-      planDisplayName: resolvePlanDisplayName(plan),
+      planDisplayName: resolvePlanDisplayName(plan, effectivePlanSource),
       trial,
       isTrialActive:      trial?.isActive      ?? false,
       trialDaysRemaining: trial?.daysRemaining  ?? null,
