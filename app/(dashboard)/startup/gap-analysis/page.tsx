@@ -1183,89 +1183,56 @@ export default function GapAnalysisPage() {
         </Button>
       </div>
 
-      {/* Upload + Config Panel */}
-      <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-        {/* Left: Upload */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Upload className="h-5 w-5 text-primary" />
-              Upload Policy Document
-            </CardTitle>
-            <CardDescription>
-              Upload your internal compliance policy, procedure, or framework document.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FileUploadSection
-              file={selectedFile}
-              onFile={setSelectedFile}
-              onRemove={() => setSelectedFile(null)}
-              maxFileSizeBytes={maxFileSizeBytes}
-            />
-          </CardContent>
-        </Card>
+      {/* Configuration Panel — single-column unified layout */}
+      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
 
-        {/* Right: Config */}
-        <Card className="border-border/50">
-          <CardHeader className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Shield className="h-5 w-5 text-primary" />
-                  Analysis Configuration
-                </CardTitle>
-                <CardDescription className="mt-1">
-                  Set the scope once, then run the comparison against your uploaded document.
-                </CardDescription>
-              </div>
-              <Badge variant="outline" className="w-fit border-primary/30 bg-primary/10 text-primary">
-                {selectedFrameworks.length} selected
-              </Badge>
-            </div>
+        {/* ─── Left Column: Document Context + Target ─── */}
+        <div className="flex flex-col gap-6">
+          {/* Section 1: Source Material — Document Context */}
+          <Card className="border-border/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Upload className="h-5 w-5 text-primary" />
+                Document Context
+              </CardTitle>
+              <CardDescription className="text-sm text-slate-400">
+                Upload your internal compliance policy, procedure, or framework document.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FileUploadSection
+                file={selectedFile}
+                onFile={setSelectedFile}
+                onRemove={() => setSelectedFile(null)}
+                maxFileSizeBytes={maxFileSizeBytes}
+              />
+            </CardContent>
+          </Card>
 
-            <div className="grid gap-2 sm:grid-cols-3">
-              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Frameworks</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">
-                  {selectedFrameworks.length || "None"}
-                </p>
-              </div>
-              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Depth</p>
-                <p className="mt-1 truncate text-sm font-semibold text-foreground">{selectedDepthLabel}</p>
-              </div>
-              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Focus</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">
-                  {selectedFocusAreas.length > 0 ? `${selectedFocusAreas.length} areas` : "All areas"}
-                </p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Frameworks */}
-            <div className="rounded-xl border border-border/50 bg-background">
-              <div className="flex items-start gap-3 border-b border-border/50 p-4">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                  1
-                </div>
-                <div className="min-w-0">
-                  <Label>Regulatory Frameworks <span className="text-destructive">*</span></Label>
-                  <p className="mt-1 text-xs text-muted-foreground">Select one or more sources for the comparison.</p>
-                </div>
-              </div>
+          {/* Section 2: Target — Framework & Regional Focus */}
+          <Card className="border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Shield className="h-5 w-5 text-primary" />
+                Target Framework
+              </CardTitle>
+              <CardDescription className="text-sm text-slate-400">
+                Select the regulatory framework(s) to compare against.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Frameworks list */}
               {frameworksLoading ? (
-                <div className="space-y-2 p-4">
+                <div className="space-y-2">
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-12 w-3/4" />
                 </div>
               ) : groupedFrameworks.length > 0 ? (
-                <div className="space-y-4 p-4">
+                <div className="space-y-5">
                   {groupedFrameworks.map(([category, fws]) => (
                     <div key={category} className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{category}</p>
+                      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{category}</p>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {fws.map((fw: FrameworkOption) => {
                           const isSelected = selectedFrameworks.includes(fw.slug)
@@ -1274,7 +1241,7 @@ export default function GapAnalysisPage() {
                               <div
                                 key={fw.slug}
                                 title={`Upgrade to ${fw.tier.charAt(0) + fw.tier.slice(1).toLowerCase()} to access`}
-                                className="flex min-h-12 items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/40 px-3 py-2 text-left text-sm text-muted-foreground cursor-not-allowed select-none"
+                                className="flex min-h-12 items-center justify-between gap-3 rounded-lg bg-muted/30 px-3 py-2 text-left text-sm text-muted-foreground cursor-not-allowed select-none"
                               >
                                 <span className="leading-snug">{fw.name}</span>
                                 <Lock className="h-3.5 w-3.5 shrink-0" />
@@ -1291,10 +1258,10 @@ export default function GapAnalysisPage() {
                                 )
                               }
                               className={cn(
-                                "flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+                                "flex min-h-12 w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition-all duration-150",
                                 isSelected
-                                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                                  : "border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/50"
+                                  ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary"
+                                  : "bg-muted/30 text-foreground hover:bg-muted/60"
                               )}
                             >
                               <span className="leading-snug">{fw.name}</span>
@@ -1307,164 +1274,231 @@ export default function GapAnalysisPage() {
                   ))}
                 </div>
               ) : (
-                <p className="p-4 text-xs text-muted-foreground">No frameworks available.</p>
+                <p className="text-sm text-slate-400">No frameworks available.</p>
               )}
               {selectedFrameworks.length === 0 && !frameworksLoading && (
-                <p className="border-t border-border/50 px-4 py-3 text-xs text-muted-foreground">
+                <p className="text-xs text-slate-400">
                   Select at least one framework to analyse against.
                 </p>
               )}
-            </div>
 
-            {/* Analysis Depth */}
-            <div className="rounded-xl border border-border/50 bg-background p-4">
-              <div className="mb-3 flex items-start gap-3">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                  2
-                </div>
-                <div>
-                  <Label>Analysis Depth</Label>
-                  <p className="mt-1 text-xs text-muted-foreground">Choose how detailed the AI review should be.</p>
-                </div>
+              {/* Subtle divider */}
+              <div className="border-b border-slate-700/50" />
+
+              {/* Regional Focus — Focus Areas */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setFocusAreasOpen(!focusAreasOpen)}
+                  className="flex w-full items-center justify-between gap-3"
+                >
+                  <div>
+                    <Label className="cursor-pointer text-sm font-medium text-foreground">Regional Focus <span className="text-slate-400 text-xs font-normal">(optional)</span></Label>
+                    <p className="mt-1 text-sm text-slate-400">Narrow the review to specific regulatory areas.</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {selectedFocusAreas.length > 0 && (
+                      <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
+                        {selectedFocusAreas.length}
+                      </Badge>
+                    )}
+                    <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", focusAreasOpen && "rotate-180")} />
+                  </div>
+                </button>
+                {focusAreasOpen && (
+                  <div className="grid gap-2 pt-4 sm:grid-cols-2">
+                    {FOCUS_AREAS.map((area) => {
+                      const isSelected = selectedFocusAreas.includes(area)
+                      return (
+                        <button
+                          key={area}
+                          type="button"
+                          onClick={() =>
+                            setSelectedFocusAreas((prev) =>
+                              prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
+                            )
+                          }
+                          className={cn(
+                            "flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs transition-all duration-150",
+                            isSelected
+                              ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                              : "bg-muted/30 text-muted-foreground hover:bg-muted/60"
+                          )}
+                        >
+                          <span>{area}</span>
+                          {isSelected && <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
-              <div className="grid gap-2 md:grid-cols-3">
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* ─── Right Column: Parameters + CTA ─── */}
+        <Card className="border-border/50 flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              Analysis Parameters
+            </CardTitle>
+            <CardDescription className="text-sm text-slate-400">
+              Configure the depth, scope, and output preferences.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-1 flex-col space-y-6">
+            {/* Analysis Depth — Segmented Control */}
+            <div className="space-y-3">
+              <div>
+                <Label className="text-sm font-medium text-foreground">Analysis Depth</Label>
+                <p className="mt-1 text-sm text-slate-400">Choose how detailed the AI review should be.</p>
+              </div>
+              <div className="flex rounded-lg bg-slate-900 p-1">
                 {ANALYSIS_DEPTHS.map((d) => (
                   <button
                     key={d.value}
                     type="button"
                     onClick={() => setAnalysisDepth(d.value as "quick" | "standard" | "deep")}
                     className={cn(
-                      "flex min-h-24 flex-col rounded-lg border p-3 text-left transition-colors",
+                      "flex-1 rounded-md px-3 py-2.5 text-center text-sm font-medium transition-all duration-200",
                       analysisDepth === d.value
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:border-primary/40 hover:bg-muted/50"
+                        ? "bg-slate-700 text-foreground shadow-sm"
+                        : "text-slate-400 hover:text-slate-300"
                     )}
                   >
-                    <span className="mb-2 flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium text-foreground">{d.label}</span>
-                      {analysisDepth === d.value && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
-                    </span>
-                    <p className="text-xs text-muted-foreground mt-0.5">{d.description}</p>
+                    {d.label}
                   </button>
                 ))}
               </div>
+              <p className="text-sm text-slate-400">
+                {ANALYSIS_DEPTHS.find((d) => d.value === analysisDepth)?.description}
+              </p>
             </div>
 
-            {/* Focus Areas */}
-            <details
-              className="group rounded-xl border border-border/50 bg-background"
-              open={focusAreasOpen}
-              onToggle={(event) => setFocusAreasOpen(event.currentTarget.open)}
-            >
-              <summary className="flex cursor-pointer list-none items-start justify-between gap-3 p-4 marker:hidden">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                    3
-                  </div>
-                  <div>
-                    <Label className="cursor-pointer">Focus Areas <span className="text-muted-foreground text-xs">(optional)</span></Label>
-                    <p className="mt-1 text-xs text-muted-foreground">Narrow the review when you need a targeted pass.</p>
-                  </div>
+            {/* Subtle divider */}
+            <div className="border-b border-slate-700/50" />
+
+            {/* Scope Summary */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-foreground">Scope</Label>
+              <div className="rounded-lg bg-slate-800/30 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">Frameworks</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {selectedFrameworks.length > 0 ? `${selectedFrameworks.length} selected` : "None"}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  {selectedFocusAreas.length > 0 && (
-                    <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
-                      {selectedFocusAreas.length}
-                    </Badge>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">Depth</span>
+                  <span className="text-sm font-medium text-foreground">{selectedDepthLabel}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">Focus Areas</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {selectedFocusAreas.length > 0 ? `${selectedFocusAreas.length} areas` : "All areas"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Subtle divider */}
+            <div className="border-b border-slate-700/50" />
+
+            {/* Include Industry Benchmarks toggle */}
+            <div className="flex items-center justify-between w-full">
+              <div>
+                <Label className="text-sm font-medium text-foreground">Include Industry Benchmarks</Label>
+                <p className="mt-0.5 text-sm text-slate-400">Compare against sector-specific best practices.</p>
+              </div>
+              {/* Toggle switch */}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={selectedFocusAreas.length > 0}
+                onClick={() => {
+                  if (selectedFocusAreas.length > 0) {
+                    setSelectedFocusAreas([])
+                  } else {
+                    setFocusAreasOpen(true)
+                  }
+                }}
+                className={cn(
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200",
+                  selectedFocusAreas.length > 0 ? "bg-primary" : "bg-slate-700"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200",
+                    selectedFocusAreas.length > 0 ? "translate-x-6" : "translate-x-1"
                   )}
-                  <ChevronDown className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-                </div>
-              </summary>
-              <div className="grid gap-2 border-t border-border/50 p-4 sm:grid-cols-2">
-                {FOCUS_AREAS.map((area) => {
-                  const isSelected = selectedFocusAreas.includes(area)
-                  return (
-                    <button
-                      key={area}
-                      type="button"
-                      onClick={() =>
-                        setSelectedFocusAreas((prev) =>
-                          prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
-                        )
-                      }
-                      className={cn(
-                        "flex min-h-10 items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-colors",
-                        isSelected
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:bg-muted/50"
-                      )}
-                    >
-                      <span>{area}</span>
-                      {isSelected && <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />}
-                    </button>
-                  )
-                })}
-              </div>
-            </details>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Cross-border data processing consent */}
-      <div className="rounded-lg border border-border/50 bg-muted/30 px-4 py-3">
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={consentChecked}
-            onChange={(e) => setConsentChecked(e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-input accent-primary cursor-pointer"
-          />
-          <span className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-            I understand that my document will be processed using AI services hosted outside Kenya,
-            in accordance with SheriaBot&apos;s Privacy Policy and the Data Protection Act 2019.
-          </span>
-        </label>
-      </div>
-
-      {/* Run Analysis Button */}
-      <Card className="border-border/50">
-        <CardContent className="pt-6">
-          {runMutation.isPending ? (
-            <div className="flex items-center justify-center gap-3 py-3">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-hidden="true" />
-              <p className="text-sm text-muted-foreground">Uploading document...</p>
+                />
+              </button>
             </div>
-          ) : (
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                {!canRun && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <AlertTriangle className="h-4 w-4 text-warning" />
-                    {!selectedFile
-                      ? "Upload a document to continue"
-                      : selectedFrameworks.length === 0
-                      ? "Select at least one regulatory framework"
-                      : "Confirm the data processing consent above to continue"}
-                  </div>
-                )}
-                {canRun && (
-                  <div className="flex min-w-0 items-center gap-2 text-sm text-secondary">
-                    <CheckCircle2 className="h-4 w-4 shrink-0" />
-                    <span className="truncate">
-                      Ready: {selectedFile?.name} against {selectedFrameworks.length} framework{selectedFrameworks.length > 1 ? "s" : ""}
-                    </span>
-                  </div>
-                )}
+
+            {/* Spacer to push CTA to bottom */}
+            <div className="flex-1" />
+
+            {/* Subtle divider before CTA */}
+            <div className="border-b border-slate-700/50" />
+
+            {/* Cross-border data processing consent — inline */}
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consentChecked}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-input accent-primary cursor-pointer"
+              />
+              <span className="text-sm text-slate-400 leading-relaxed">
+                I understand that my document will be processed using AI services hosted outside Kenya,
+                in accordance with SheriaBot&apos;s Privacy Policy and the Data Protection Act 2019.
+              </span>
+            </label>
+
+            {/* Status messaging */}
+            {!canRun && (
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
+                {!selectedFile
+                  ? "Upload a document to continue"
+                  : selectedFrameworks.length === 0
+                  ? "Select at least one regulatory framework"
+                  : "Confirm the data processing consent above to continue"}
               </div>
+            )}
+            {canRun && (
+              <div className="flex min-w-0 items-center gap-2 text-sm text-secondary">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span className="truncate">
+                  Ready: {selectedFile?.name} against {selectedFrameworks.length} framework{selectedFrameworks.length > 1 ? "s" : ""}
+                </span>
+              </div>
+            )}
+
+            {/* CTA — Run Analysis, anchored at bottom, full-width */}
+            {runMutation.isPending ? (
+              <div className="flex items-center justify-center gap-3 py-3">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-hidden="true" />
+                <p className="text-sm text-muted-foreground">Uploading document...</p>
+              </div>
+            ) : (
               <LoadingButton
                 onClick={handleRunAnalysis}
                 disabled={!canRun}
                 loading={runMutation.isPending}
                 loadingText="Uploading..."
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-base font-semibold"
               >
-                <TrendingUp className="mr-2 h-4 w-4" />
+                <TrendingUp className="mr-2 h-5 w-5" />
                 Run Gap Analysis
               </LoadingButton>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Analysis History */}
       <div>
