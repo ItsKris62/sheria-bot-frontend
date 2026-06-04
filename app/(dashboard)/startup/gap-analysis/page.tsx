@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
+import { MultiSelect, type Option } from "@/components/ui/multi-select"
 import { toast } from "sonner"
 import { trpc } from "@/lib/trpc"
 import { cn } from "@/lib/utils"
@@ -262,6 +263,12 @@ type AnalysisResultData = {
     criticalGaps: number
     highGaps: number
     analysisDate: string
+    selectedBenchmarkDocuments?: Array<{
+      id: string
+      title: string
+      documentType?: string | null
+      regulatoryBody?: string | null
+    }>
   }
 }
 
@@ -353,7 +360,11 @@ function AnalysisResultsView({
 
   const { overallScore, executiveSummary, frameworks, crossCuttingStrengths, actionPlan, metadata } = results
   const scoreConfig = getScoreColor(overallScore)
+  const selectedBenchmarkDocuments = metadata.selectedBenchmarkDocuments ?? []
   const allGaps = frameworks.flatMap((f) => f.gaps.map((g) => ({ ...g, frameworkName: f.name })))
+  const verifiedGapCount = allGaps.filter((gap) => gap.verificationStatus === "verified").length
+  const unverifiedGapCount = allGaps.filter((gap) => gap.verificationStatus === "unverified").length
+  const notCheckedGapCount = allGaps.length - verifiedGapCount - unverifiedGapCount
   const sortedGaps = [...allGaps].sort((a, b) => {
     const order = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 }
     return (order[a.severity] ?? 3) - (order[b.severity] ?? 3)
@@ -448,6 +459,43 @@ function AnalysisResultsView({
           </p>
         </div>
       )}
+
+      {selectedBenchmarkDocuments.length > 0 && (
+        <Card className="border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Benchmark Documents
+            </CardTitle>
+            <CardDescription>Legal corpus documents selected for this analysis</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {selectedBenchmarkDocuments.map((doc) => (
+                <Badge key={doc.id} variant="outline" className="bg-muted/40">
+                  {doc.title}
+                  {doc.regulatoryBody ? ` - ${doc.regulatoryBody}` : ""}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800">
+          <CheckCircle2 className="mr-1 h-3 w-3" />
+          {verifiedGapCount} verified
+        </Badge>
+        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
+          <AlertTriangle className="mr-1 h-3 w-3" />
+          {unverifiedGapCount} unverified
+        </Badge>
+        <Badge variant="outline" className="bg-muted text-muted-foreground">
+          <AlertCircle className="mr-1 h-3 w-3" />
+          {notCheckedGapCount} not checked
+        </Badge>
+      </div>
 
       {/* Executive Summary Card */}
       <Card className={`border-2 ${scoreConfig.ring}`}>
@@ -988,6 +1036,7 @@ export default function GapAnalysisPage() {
   const [activeView, setActiveView] = useState<{ id: string; name: string } | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([])
+  const [selectedBenchmarkDocumentIds, setSelectedBenchmarkDocumentIds] = useState<string[]>([])
   const [analysisDepth, setAnalysisDepth] = useState<"quick" | "standard" | "deep">("standard")
   const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>([])
   const [focusAreasOpen, setFocusAreasOpen] = useState(false)
@@ -1013,6 +1062,10 @@ export default function GapAnalysisPage() {
   )
   const { data: gapLimits } = trpc.gapAnalysis.getGapAnalysisLimits.useQuery(
     undefined,
+    { enabled: !!user }
+  )
+  const { data: legalDocumentsData, isLoading: legalDocumentsLoading } = trpc.document.list.useQuery(
+    { page: 1, limit: 100 },
     { enabled: !!user }
   )
   const maxFileSizeBytes = (gapLimits?.maxFileSizeMB ?? 10) * 1024 * 1024
@@ -1087,6 +1140,7 @@ export default function GapAnalysisPage() {
   const resetForm = () => {
     setSelectedFile(null)
     setSelectedFrameworks([])
+    setSelectedBenchmarkDocumentIds([])
     setAnalysisDepth("standard")
     setSelectedFocusAreas([])
     setFocusAreasOpen(false)
@@ -1107,6 +1161,7 @@ export default function GapAnalysisPage() {
         fileType: ext as "pdf" | "docx" | "doc" | "txt",
         fileContent: base64,
         regulatoryFrameworks: selectedFrameworks,
+        benchmarkDocumentIds: selectedBenchmarkDocumentIds.length > 0 ? selectedBenchmarkDocumentIds : undefined,
         analysisDepth,
         focusAreas: selectedFocusAreas.length > 0 ? selectedFocusAreas : undefined,
       })
@@ -1166,6 +1221,17 @@ export default function GapAnalysisPage() {
       )
     : []
   const selectedDepthLabel = ANALYSIS_DEPTHS.find((d) => d.value === analysisDepth)?.label ?? "Standard Analysis"
+  const legalDocumentOptions: Option[] = (legalDocumentsData?.documents ?? []).map((doc: {
+    id: string
+    title: string | null
+    actName?: string | null
+    documentType: string
+    regulatoryBody?: string | null
+  }) => ({
+    value: doc.id,
+    label: doc.title ?? doc.actName ?? doc.id,
+    group: doc.regulatoryBody ?? doc.documentType?.replace(/_/g, " ") ?? "Legal documents",
+  }))
 
   return (
     <FeatureGate feature="gapAnalysis">
@@ -1286,6 +1352,29 @@ export default function GapAnalysisPage() {
               <div className="border-b border-slate-700/50" />
 
               {/* Regional Focus — Focus Areas */}
+              <div className="space-y-2">
+                <div>
+                  <Label className="text-sm font-medium text-foreground">Benchmark Documents <span className="text-slate-400 text-xs font-normal">(optional)</span></Label>
+                  <p className="mt-1 text-sm text-slate-400">Limit regulatory grounding to specific legal corpus documents.</p>
+                </div>
+                <MultiSelect
+                  options={legalDocumentOptions}
+                  selected={selectedBenchmarkDocumentIds}
+                  onChange={(next) => setSelectedBenchmarkDocumentIds(next.slice(0, 10))}
+                  placeholder={legalDocumentsLoading ? "Loading legal documents..." : "Select benchmark documents"}
+                  emptyText="No legal documents available."
+                  disabled={legalDocumentsLoading || legalDocumentOptions.length === 0}
+                  className="bg-slate-900 text-left"
+                />
+                {selectedBenchmarkDocumentIds.length > 0 ? (
+                  <p className="text-xs text-slate-400">
+                    {selectedBenchmarkDocumentIds.length} benchmark document{selectedBenchmarkDocumentIds.length > 1 ? "s" : ""} selected.
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="border-b border-slate-700/50" />
+
               <div>
                 <button
                   type="button"
@@ -1398,6 +1487,12 @@ export default function GapAnalysisPage() {
                   <span className="text-sm text-slate-400">Focus Areas</span>
                   <span className="text-sm font-medium text-foreground">
                     {selectedFocusAreas.length > 0 ? `${selectedFocusAreas.length} areas` : "All areas"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">Benchmark Docs</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {selectedBenchmarkDocumentIds.length > 0 ? `${selectedBenchmarkDocumentIds.length} selected` : "All corpus"}
                   </span>
                 </div>
               </div>

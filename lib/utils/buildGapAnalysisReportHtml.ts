@@ -20,6 +20,8 @@ export interface GapAnalysisReportGap {
   evidenceRequired?: string[];
   responsibleRole?: string;
   regulatoryDeadline?: string;
+  verificationStatus?: 'verified' | 'unverified' | 'not_checked';
+  citationVerified?: boolean;
 }
 
 export interface GapAnalysisReportFramework {
@@ -56,6 +58,12 @@ export interface GapAnalysisReportResult {
     lowGaps?: number;
     chunksProcessed?: number;
     analysisDate?: string;
+    selectedBenchmarkDocuments?: Array<{
+      id: string;
+      title: string;
+      documentType?: string | null;
+      regulatoryBody?: string | null;
+    }>;
   };
 }
 
@@ -133,6 +141,18 @@ function formatDepth(depth: string): string {
   }
 }
 
+function verificationLabel(status: GapAnalysisReportGap['verificationStatus']): string {
+  if (status === 'verified') return 'Verified';
+  if (status === 'unverified') return 'Unverified';
+  return 'Not checked';
+}
+
+function verificationColor(status: GapAnalysisReportGap['verificationStatus']): string {
+  if (status === 'verified') return '#00875A';
+  if (status === 'unverified') return '#D97706';
+  return '#718096';
+}
+
 /** Split on double newlines and render as <p> tags. */
 function renderParagraphs(text: string): string {
   return text
@@ -204,6 +224,10 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
   }
 
   const sortedActionPlan = [...actionPlan].sort((a, b) => a.priority - b.priority);
+  const selectedBenchmarkDocuments = metadata.selectedBenchmarkDocuments ?? [];
+  const verifiedGapCount = allGaps.filter((gap) => gap.verificationStatus === 'verified').length;
+  const unverifiedGapCount = allGaps.filter((gap) => gap.verificationStatus === 'unverified').length;
+  const notCheckedGapCount = allGaps.length - verifiedGapCount - unverifiedGapCount;
 
   // ─── CSS ────────────────────────────────────────────────────────────────
 
@@ -260,6 +284,7 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
     .score-lbl   { font-size: 9pt; color: #4A5568; margin-top: 3px; }
     .fw-badges   { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
     .fw-badge    { background: #00875A; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 9pt; font-weight: 500; }
+    .doc-badge   { display: inline-block; background: #F7F8FA; color: #1A2B4A; padding: 4px 10px; border: 1px solid #CBD5E0; border-radius: 16px; font-size: 8.5pt; margin: 0 6px 6px 0; }
     .cover-foot  { font-size: 9pt; color: #718096; border-top: 1px solid #E2E8F0; padding-top: 12px; margin-top: 20px; }
 
     /* Metrics */
@@ -396,6 +421,13 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
     </div>
   </div>
 
+  <p style="font-size:10pt;color:#4A5568;margin:18px 0 6px;font-weight:bold;">Citation Verification:</p>
+  <p style="font-size:9.5pt;color:#4A5568;margin-bottom:12px;">
+    <span style="color:#00875A;font-weight:bold;">${verifiedGapCount} verified</span> &bull;
+    <span style="color:#D97706;font-weight:bold;">${unverifiedGapCount} unverified</span> &bull;
+    <span style="color:#718096;font-weight:bold;">${notCheckedGapCount} not checked</span>
+  </p>
+
   ${topRisks.length > 0 ? `
   <h3 style="margin-top:24px;">Top Risks</h3>
   ${topRisks.map((gap) => `
@@ -430,6 +462,10 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
       <tr><td>Analysis Depth</td><td>${escapeHtml(formatDepth(analysisDepth))}</td></tr>
       <tr><td>Chunks Processed</td><td>${escapeHtml(String(chunksProcessed))} ${chunksProcessed > 1 ? '(Full document multi-pass analysis)' : '(Single-pass analysis)'}</td></tr>
       <tr><td>Frameworks Assessed</td><td>${frameworks.map((f) => escapeHtml(f.name)).join(', ')}</td></tr>
+      <tr><td>Benchmark Documents</td><td>${selectedBenchmarkDocuments.length > 0
+        ? selectedBenchmarkDocuments.map((doc) => escapeHtml(`${doc.title}${doc.regulatoryBody ? ` (${doc.regulatoryBody})` : ''}`)).join(', ')
+        : 'All available corpus documents'
+      }</td></tr>
       <tr><td>Regulatory Grounding</td><td>${ragGrounded
         ? '<span style="color:#00875A;font-weight:bold;">Grounded in SheriaBot regulatory document database</span>'
         : '<span style="color:#D97706;font-weight:bold;">Warning: Limited grounding &mdash; AI knowledge only</span>'
@@ -460,6 +496,7 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
           <th style="width:140px;">Gap Title</th>
           <th style="width:72px;">Severity</th>
           <th style="width:120px;">Regulatory Reference</th>
+          <th style="width:70px;">Verification</th>
           <th style="width:115px;">Current State</th>
           <th style="width:125px;">Recommendation</th>
           <th style="width:110px;">Evidence Required</th>
@@ -484,6 +521,7 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
               ${gap.regulatoryDeadline ? `<br/><span style="font-size:7.5pt;color:#4A5568;">Due: ${escapeHtml(gap.regulatoryDeadline)}</span>` : ''}
             </td>
             <td style="font-size:8.5pt;">${escapeHtml(gap.regulatoryBasis)}</td>
+            <td style="font-size:8.5pt;color:${verificationColor(gap.verificationStatus)};font-weight:bold;">${escapeHtml(verificationLabel(gap.verificationStatus))}</td>
             <td style="font-size:8.5pt;">${escapeHtml(gap.policyCurrentState)}</td>
             <td style="font-size:8.5pt;">${escapeHtml(gap.recommendation)}</td>
             <td style="font-size:8.5pt;">${evidenceHtml}</td>
