@@ -112,7 +112,9 @@ interface LockedFeatureCardProps {
 
 const FEATURE_LABELS: Partial<Record<FeatureKey, string>> = {
   gapAnalysis:          "Gap Analysis",
+  benchmarkDocuments:   "Benchmark Documents",
   policyGeneration:     "AI Policy Generator",
+  customFrameworks:     "Custom Frameworks",
   customIntegrations:   "Custom Integrations",
   teamCollaboration:    "Team Collaboration",
   apiAccess:            "API Access",
@@ -126,8 +128,12 @@ const FEATURE_LABELS: Partial<Record<FeatureKey, string>> = {
 const FEATURE_DESCRIPTIONS: Partial<Record<FeatureKey, string>> = {
   gapAnalysis:
     "Identify compliance gaps in your operations and get actionable remediation steps powered by AI.",
+  benchmarkDocuments:
+    "Select benchmark regulations and reference documents during gap analysis.",
   policyGeneration:
-    "Automatically generate CBK-compliant policies, SOPs, and regulatory documents tailored to your business.",
+    "Generate structured compliance policies grounded in SheriaBot's legal corpus, with citations and review support.",
+  customFrameworks:
+    "Configure organization-owned compliance frameworks for enterprise workflows.",
   customIntegrations:
     "Connect SheriaBot to your internal systems via webhooks and a dedicated REST API.",
   teamCollaboration:
@@ -143,7 +149,7 @@ const FEATURE_DESCRIPTIONS: Partial<Record<FeatureKey, string>> = {
   sso:
     "Enable enterprise Single Sign-On (SSO) via SAML / OIDC for seamless access management.",
   complianceCalendar:
-    "Track upcoming regulatory deadlines, schedule audits, and get automated reminders — available on Startup and above.",
+    "Track upcoming regulatory deadlines, schedule audits, and get automated reminders.",
 };
 
 /**

@@ -58,7 +58,7 @@ export const regulatorNav: NavGroup[] = [
   {
     title: "Policy Tools",
     items: [
-      { title: "Policy Generator", href: "/regulator/policy-generator", icon: Sparkles, badge: "AI" },
+      { title: "Policy Generator", href: "/regulator/policy-generator", icon: Sparkles, badge: "AI", lockedFeature: "policyGeneration" },
       { title: "Legal Corpus", href: "/regulator/legal-corpus", icon: BookOpen },
       { title: "Frameworks", href: "/regulator/frameworks", icon: FileText },
     ],

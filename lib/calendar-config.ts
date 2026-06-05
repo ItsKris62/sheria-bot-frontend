@@ -25,11 +25,14 @@ export type KenyanRegulation = typeof KENYAN_REGULATIONS[number];
 // ─── Event category display config ───────────────────────────────────────────
 
 export const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
-  CUSTOM:   { label: "Custom",   color: "bg-muted text-muted-foreground" },
-  FILING:   { label: "Filing",   color: "bg-warning/10 text-warning" },
-  AUDIT:    { label: "Audit",    color: "bg-primary/10 text-primary" },
-  RENEWAL:  { label: "Renewal",  color: "bg-destructive/10 text-destructive" },
-  REVIEW:   { label: "Review",   color: "bg-primary/10 text-primary" },
+  CUSTOM:              { label: "Custom",              color: "bg-muted text-muted-foreground" },
+  FILING:              { label: "Filing",              color: "bg-warning/10 text-warning" },
+  AUDIT:               { label: "Audit",               color: "bg-primary/10 text-primary" },
+  RENEWAL:             { label: "Renewal",             color: "bg-destructive/10 text-destructive" },
+  REVIEW:              { label: "Review",              color: "bg-primary/10 text-primary" },
+  REGULATORY_DEADLINE: { label: "Regulatory Deadline", color: "bg-warning/10 text-warning" },
+  DOCUMENT_EXPIRY:     { label: "Document Expiry",     color: "bg-destructive/10 text-destructive" },
+  COMPLIANCE_TASK:     { label: "Compliance Task",     color: "bg-primary/10 text-primary" },
 };
 
 // ─── Priority display config ──────────────────────────────────────────────────

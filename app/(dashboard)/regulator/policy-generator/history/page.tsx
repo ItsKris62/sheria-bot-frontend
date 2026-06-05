@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
+import { FeatureGate, LockedFeatureCard } from "@/components/plan/feature-gate"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,85 +31,69 @@ import {
   Loader2,
   AlertCircle,
   Eye,
-  Download,
   Trash2,
   Plus,
 } from "lucide-react"
+import {
+  type EnterprisePolicyStatus,
+  useEnterprisePolicies,
+  useEnterprisePolicyActions,
+} from "@/hooks/use-enterprise-policies"
+import { getErrorMessage } from "@/lib/trpc"
+import { toast } from "sonner"
 
-const policyHistory = [
-  {
-    id: "pol-001",
-    title: "Digital Credit Provider Consumer Protection Policy",
-    category: "Consumer Protection",
-    status: "completed",
-    createdAt: "2025-01-15T10:30:00Z",
-    citations: 4,
-  },
-  {
-    id: "pol-002",
-    title: "AML/CFT Compliance Framework for Payment Providers",
-    category: "AML/CFT",
-    status: "completed",
-    createdAt: "2025-01-12T14:20:00Z",
-    citations: 6,
-  },
-  {
-    id: "pol-003",
-    title: "Data Protection Policy for Mobile Money Operators",
-    category: "Data Protection",
-    status: "completed",
-    createdAt: "2025-01-10T09:15:00Z",
-    citations: 5,
-  },
-  {
-    id: "pol-004",
-    title: "Cybersecurity Risk Management Framework",
-    category: "Cybersecurity",
-    status: "processing",
-    createdAt: "2025-01-08T16:45:00Z",
-    citations: 0,
-  },
-  {
-    id: "pol-005",
-    title: "Regulatory Sandbox Participation Guidelines",
-    category: "Licensing",
-    status: "completed",
-    createdAt: "2025-01-05T11:00:00Z",
-    citations: 3,
-  },
-  {
-    id: "pol-006",
-    title: "Foreign Exchange Bureau Compliance Manual",
-    category: "Forex",
-    status: "failed",
-    createdAt: "2025-01-03T08:30:00Z",
-    citations: 0,
-  },
-]
-
-const statusConfig = {
-  completed: { icon: CheckCircle2, label: "Completed", className: "text-secondary border-secondary/50" },
-  processing: { icon: Loader2, label: "Processing", className: "text-primary border-primary/50" },
-  failed: { icon: AlertCircle, label: "Failed", className: "text-destructive border-destructive/50" },
+type PolicyHistoryItem = {
+  id: string
+  title: string
+  policyType: string
+  status: EnterprisePolicyStatus
+  progress: number
+  createdAt: Date | string
+  completedAt?: Date | string | null
 }
 
-export default function PolicyHistoryPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+const statusConfig: Record<EnterprisePolicyStatus, { icon: typeof CheckCircle2; label: string; className: string; spin?: boolean }> = {
+  INITIALIZING: { icon: Loader2, label: "Initializing", className: "text-primary border-primary/50", spin: true },
+  OUTLINING: { icon: Loader2, label: "Outlining", className: "text-primary border-primary/50", spin: true },
+  DRAFTING: { icon: Loader2, label: "Drafting", className: "text-primary border-primary/50", spin: true },
+  REVIEWING: { icon: Loader2, label: "Reviewing", className: "text-primary border-primary/50", spin: true },
+  COMPLETED: { icon: CheckCircle2, label: "Completed", className: "text-secondary border-secondary/50" },
+  FAILED: { icon: AlertCircle, label: "Failed", className: "text-destructive border-destructive/50" },
+  ARCHIVED: { icon: FileText, label: "Archived", className: "text-muted-foreground border-muted-foreground/50" },
+}
 
-  const filteredHistory = policyHistory.filter((policy) => {
-    const matchesSearch = policy.title.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === "all" || policy.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+function PolicyHistoryContent() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState<EnterprisePolicyStatus | "all">("all")
+  const queryStatus = statusFilter === "all" ? undefined : statusFilter
+  const { data, isLoading, isError, error } = useEnterprisePolicies({ limit: 50, status: queryStatus })
+  const { deletePolicy, isDeleting } = useEnterprisePolicyActions()
+  const policies = (data?.items ?? []) as PolicyHistoryItem[]
+
+  const filteredHistory = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+    if (!query) return policies
+    return policies.filter((policy) =>
+      policy.title.toLowerCase().includes(query) ||
+      policy.policyType.toLowerCase().replace(/_/g, " ").includes(query)
+    )
+  }, [policies, searchQuery])
+
+  const handleDelete = async (policyId: string) => {
+    try {
+      await deletePolicy({ policyId })
+      toast.success("Policy archived")
+    } catch (err) {
+      toast.error("Archive failed", { description: getErrorMessage(err) })
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <Link 
-            href="/regulator/policy-generator" 
+          <Link
+            href="/regulator/policy-generator"
             className="mb-2 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -116,7 +101,7 @@ export default function PolicyHistoryPage() {
           </Link>
           <h1 className="text-2xl font-bold text-foreground">Policy Generation History</h1>
           <p className="mt-1 text-muted-foreground">
-            View and manage your previously generated policies
+            View and manage generated Enterprise policy drafts.
           </p>
         </div>
         <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -127,7 +112,6 @@ export default function PolicyHistoryPage() {
         </Button>
       </div>
 
-      {/* Filters */}
       <Card className="border-border/50">
         <CardContent className="p-4">
           <div className="flex flex-col gap-4 sm:flex-row">
@@ -140,22 +124,24 @@ export default function PolicyHistoryPage() {
                 className="pl-9"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as EnterprisePolicyStatus | "all")}>
+              <SelectTrigger className="w-full sm:w-[190px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="INITIALIZING">Initializing</SelectItem>
+                <SelectItem value="OUTLINING">Outlining</SelectItem>
+                <SelectItem value="DRAFTING">Drafting</SelectItem>
+                <SelectItem value="REVIEWING">Reviewing</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="FAILED">Failed</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Results */}
       <Card className="border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -164,16 +150,31 @@ export default function PolicyHistoryPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {filteredHistory.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Loading generated policies...
+            </div>
+          ) : isError ? (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+              {getErrorMessage(error)}
+            </div>
+          ) : filteredHistory.length === 0 ? (
             <div className="py-12 text-center">
               <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <p className="mt-4 text-muted-foreground">No policies found matching your criteria</p>
-              <Button variant="outline" className="mt-4 bg-transparent" onClick={() => {
-                setSearchQuery("")
-                setStatusFilter("all")
-              }}>
-                Clear Filters
-              </Button>
+              <p className="mt-4 text-muted-foreground">
+                {searchQuery || statusFilter !== "all"
+                  ? "No policies found matching your criteria."
+                  : "No generated policies yet. Create your first Enterprise policy draft to get started."}
+              </p>
+              {(searchQuery || statusFilter !== "all") ? (
+                <Button variant="outline" className="mt-4 bg-transparent" onClick={() => {
+                  setSearchQuery("")
+                  setStatusFilter("all")
+                }}>
+                  Clear Filters
+                </Button>
+              ) : null}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -181,21 +182,21 @@ export default function PolicyHistoryPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Policy Title</TableHead>
-                    <TableHead>Category</TableHead>
+                    <TableHead>Type</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Citations</TableHead>
+                    <TableHead>Progress</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredHistory.map((policy) => {
-                    const status = statusConfig[policy.status as keyof typeof statusConfig]
+                    const status = statusConfig[policy.status] ?? statusConfig.INITIALIZING
                     const StatusIcon = status.icon
                     return (
                       <TableRow key={policy.id}>
                         <TableCell>
-                          <Link 
+                          <Link
                             href={`/regulator/policy-generator/${policy.id}`}
                             className="font-medium text-foreground hover:text-primary"
                           >
@@ -203,15 +204,15 @@ export default function PolicyHistoryPage() {
                           </Link>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{policy.category}</Badge>
+                          <Badge variant="outline">{policy.policyType.replace(/_/g, " ")}</Badge>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={status.className}>
-                            <StatusIcon className={`mr-1 h-3 w-3 ${policy.status === "processing" ? "animate-spin" : ""}`} />
+                            <StatusIcon className={`mr-1 h-3 w-3 ${status.spin ? "animate-spin" : ""}`} />
                             {status.label}
                           </Badge>
                         </TableCell>
-                        <TableCell>{policy.citations}</TableCell>
+                        <TableCell>{policy.progress}%</TableCell>
                         <TableCell>
                           <span className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Clock className="h-3 w-3" />
@@ -228,10 +229,13 @@ export default function PolicyHistoryPage() {
                                 <Eye className="h-4 w-4" />
                               </Link>
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" disabled={policy.status !== "completed"}>
-                              <Download className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              disabled={isDeleting}
+                              onClick={() => void handleDelete(policy.id)}
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -246,5 +250,23 @@ export default function PolicyHistoryPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function PolicyHistoryPage() {
+  return (
+    <FeatureGate
+      feature="policyGeneration"
+      fallback={(
+        <LockedFeatureCard
+          feature="policyGeneration"
+          requiredPlan="ENTERPRISE"
+          title="AI Policy Generator is available on Enterprise plans."
+          description="Generate structured compliance policies grounded in SheriaBot's legal corpus, with citations and review support."
+        />
+      )}
+    >
+      <PolicyHistoryContent />
+    </FeatureGate>
   )
 }

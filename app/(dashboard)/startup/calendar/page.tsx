@@ -114,8 +114,8 @@ export default function CalendarPage() {
           <LockedFeatureCard
             feature="complianceCalendar"
             title="Compliance Calendar"
-            description="Create and manage org-scoped regulatory deadline events, get automated reminders, and never miss a filing date. Available on the Startup plan and above."
-            requiredPlan="STARTUP"
+            description="Create and manage org-scoped regulatory deadline events, get automated reminders, and never miss a filing date. Available on the Business plan and above."
+            requiredPlan="BUSINESS"
             className="max-w-lg"
           />
         </div>

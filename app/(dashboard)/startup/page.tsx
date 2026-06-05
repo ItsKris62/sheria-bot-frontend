@@ -341,8 +341,8 @@ export default function StartupDashboard() {
             <LockedFeatureCard
               feature="complianceCalendar"
               title="Upcoming Deadlines"
-              description="Track upcoming regulatory deadlines. Available on the Startup plan and above."
-              requiredPlan="STARTUP"
+              description="Track upcoming regulatory deadlines. Available on the Business plan and above."
+              requiredPlan="BUSINESS"
             />
           }
         >

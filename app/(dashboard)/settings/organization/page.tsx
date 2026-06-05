@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Building2, Loader2, Save, Info } from "lucide-react"
+import { Building2, Loader2, Save, Info, Users } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useProfile } from "@/hooks/use-user"
 
@@ -72,6 +72,9 @@ export default function OrganizationSettingsPage() {
   const isRegulator = profile?.role === "REGULATOR"
 
   const { data: orgData, isLoading } = trpc.organization.getSettings.useQuery(undefined, {
+    enabled: !isRegulator,
+  })
+  const { data: seatUsage } = trpc.organization.getSeatUsage.useQuery(undefined, {
     enabled: !isRegulator,
   })
 
@@ -168,6 +171,51 @@ export default function OrganizationSettingsPage() {
       )}
 
       <div className="grid gap-6">
+        {seatUsage && (
+          <Card className="border-border/50 bg-card/50 backdrop-blur">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    <Users className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <CardTitle>Seats</CardTitle>
+                  <CardDescription>
+                    {seatUsage.seatLimit === -1
+                      ? `${seatUsage.usedSeats} seats used`
+                      : `${seatUsage.usedSeats} of ${seatUsage.seatLimit} seats used`}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 text-sm sm:grid-cols-3">
+                <div className="rounded-md border border-border/50 bg-muted/30 p-3">
+                  <p className="text-muted-foreground">Active members</p>
+                  <p className="mt-1 font-semibold text-foreground">{seatUsage.activeMembers}</p>
+                </div>
+                <div className="rounded-md border border-border/50 bg-muted/30 p-3">
+                  <p className="text-muted-foreground">Pending invites</p>
+                  <p className="mt-1 font-semibold text-foreground">{seatUsage.pendingInvites}</p>
+                </div>
+                <div className="rounded-md border border-border/50 bg-muted/30 p-3">
+                  <p className="text-muted-foreground">Available seats</p>
+                  <p className="mt-1 font-semibold text-foreground">
+                    {seatUsage.availableSeats === -1 ? "Unlimited" : seatUsage.availableSeats}
+                  </p>
+                </div>
+              </div>
+              {seatUsage.seatLimit !== -1 && seatUsage.availableSeats === 0 && (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Your plan includes {seatUsage.seatLimit} seats. Revoke a pending invite or remove a member before inviting another user.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="border-border/50 bg-card/50 backdrop-blur">
           <CardHeader>
             <div className="flex items-center gap-4">

@@ -42,7 +42,9 @@ export interface PlanEntitlements {
   checklistGenerations: QuotaEntitlement;
   apiAccess:            ApiAccessEntitlement;
   gapAnalysis:          QuotaEntitlement;
+  benchmarkDocuments:   boolean;
   policyGeneration:     boolean;
+  customFrameworks:     boolean;
   customIntegrations:   boolean;
   teamCollaboration:    boolean;
   regulatoryDashboard:  boolean;

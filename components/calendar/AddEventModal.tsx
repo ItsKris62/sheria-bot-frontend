@@ -126,7 +126,7 @@ export function AddEventModal({ open, onClose }: AddEventModalProps) {
       description: form.description.trim() || undefined,
       dueDate:     dueDateISO,
       priority:    form.priority as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
-      category:    form.category as "CUSTOM" | "FILING" | "AUDIT" | "RENEWAL" | "REVIEW",
+      category:    form.category as "CUSTOM" | "FILING" | "AUDIT" | "RENEWAL" | "REVIEW" | "REGULATORY_DEADLINE" | "DOCUMENT_EXPIRY" | "COMPLIANCE_TASK",
       regulation:  form.regulation && form.regulation !== "__none__" ? form.regulation : undefined,
       recurrence:  form.recurrence as "NONE" | "MONTHLY" | "QUARTERLY" | "ANNUALLY",
       assigneeId:  undefined, // assignee dropdown omitted for now — org members query is separate
@@ -226,9 +226,12 @@ export function AddEventModal({ open, onClose }: AddEventModalProps) {
                 <SelectContent>
                   <SelectItem value="CUSTOM">Custom</SelectItem>
                   <SelectItem value="FILING">Filing</SelectItem>
+                  <SelectItem value="REGULATORY_DEADLINE">Regulatory Deadline</SelectItem>
                   <SelectItem value="AUDIT">Audit</SelectItem>
                   <SelectItem value="RENEWAL">Renewal</SelectItem>
                   <SelectItem value="REVIEW">Review</SelectItem>
+                  <SelectItem value="DOCUMENT_EXPIRY">Document Expiry</SelectItem>
+                  <SelectItem value="COMPLIANCE_TASK">Compliance Task</SelectItem>
                 </SelectContent>
               </Select>
             </div>

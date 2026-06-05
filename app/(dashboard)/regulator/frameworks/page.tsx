@@ -1,96 +1,57 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
+import { Card, CardContent } from "@/components/ui/card"
+import { getErrorMessage, trpc } from "@/lib/trpc"
 import {
-  Plus,
-  Layers,
+  AlertCircle,
+  ArrowRight,
   CheckCircle2,
   Clock,
-  Edit,
-  Eye,
-  Trash2,
-  Copy,
-  ArrowRight,
+  Layers,
+  Plus,
 } from "lucide-react"
 
-const frameworks = [
-  {
-    id: "fw-001",
-    name: "Digital Credit Provider Compliance Framework",
-    description: "Comprehensive framework for DCP licensing and ongoing compliance",
-    status: "published",
-    version: "2.0",
-    modules: 8,
-    completedModules: 8,
-    lastUpdated: "2025-01-10",
-    usageCount: 45,
-  },
-  {
-    id: "fw-002",
-    name: "AML/CFT Risk Assessment Framework",
-    description: "Risk-based approach to anti-money laundering compliance",
-    status: "published",
-    version: "1.5",
-    modules: 6,
-    completedModules: 6,
-    lastUpdated: "2024-12-15",
-    usageCount: 32,
-  },
-  {
-    id: "fw-003",
-    name: "Mobile Money Operator Framework",
-    description: "Regulatory requirements for mobile money services",
-    status: "draft",
-    version: "0.8",
-    modules: 10,
-    completedModules: 7,
-    lastUpdated: "2025-01-08",
-    usageCount: 0,
-  },
-  {
-    id: "fw-004",
-    name: "Data Protection Compliance Framework",
-    description: "Framework aligned with Kenya's Data Protection Act 2019",
-    status: "under_review",
-    version: "1.0",
-    modules: 5,
-    completedModules: 5,
-    lastUpdated: "2024-12-20",
-    usageCount: 12,
-  },
-]
+const tierBadgeClass: Record<string, string> = {
+  STARTUP: "border-secondary/50 text-secondary bg-secondary/10",
+  BUSINESS: "border-primary/50 text-primary bg-primary/10",
+  ENTERPRISE: "border-accent/50 text-accent bg-accent/10",
+}
 
-const statusConfig = {
-  published: { label: "Published", className: "border-secondary/50 text-secondary bg-secondary/10" },
-  draft: { label: "Draft", className: "border-muted-foreground/50 text-muted-foreground bg-muted/30" },
-  under_review: { label: "Under Review", className: "border-accent/50 text-accent bg-accent/10" },
+function formatDate(value: Date | string) {
+  return new Date(value).toLocaleDateString("en-KE", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
 }
 
 export default function FrameworksPage() {
+  const frameworksQuery = trpc.framework.list.useQuery()
+  const frameworks = frameworksQuery.data ?? []
+  const activeCount = frameworks.filter((framework) => framework.isActive).length
+  const enterpriseCount = frameworks.filter((framework) => framework.tier === "ENTERPRISE").length
+  const documentCount = frameworks.reduce((sum, framework) => sum + framework.documentCount, 0)
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Compliance Frameworks</h1>
+          <h1 className="text-2xl font-bold text-foreground">Framework Library</h1>
           <p className="mt-1 text-muted-foreground">
-            Build and manage regulatory compliance frameworks for fintech entities
+            Browse the regulatory frameworks available to your organization based on your plan.
           </p>
         </div>
         <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Link href="/regulator/frameworks/new">
             <Plus className="mr-2 h-4 w-4" />
-            New Framework
+            Custom Framework
           </Link>
         </Button>
       </div>
 
-      {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-4">
         <Card className="border-border/50">
           <CardContent className="p-4">
@@ -100,7 +61,7 @@ export default function FrameworksPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{frameworks.length}</p>
-                <p className="text-sm text-muted-foreground">Total Frameworks</p>
+                <p className="text-sm text-muted-foreground">Visible Frameworks</p>
               </div>
             </div>
           </CardContent>
@@ -112,10 +73,8 @@ export default function FrameworksPage() {
                 <CheckCircle2 className="h-5 w-5 text-secondary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {frameworks.filter((f) => f.status === "published").length}
-                </p>
-                <p className="text-sm text-muted-foreground">Published</p>
+                <p className="text-2xl font-bold text-foreground">{activeCount}</p>
+                <p className="text-sm text-muted-foreground">Active</p>
               </div>
             </div>
           </CardContent>
@@ -127,10 +86,8 @@ export default function FrameworksPage() {
                 <Clock className="h-5 w-5 text-accent" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {frameworks.filter((f) => f.status === "draft" || f.status === "under_review").length}
-                </p>
-                <p className="text-sm text-muted-foreground">In Progress</p>
+                <p className="text-2xl font-bold text-foreground">{enterpriseCount}</p>
+                <p className="text-sm text-muted-foreground">Enterprise</p>
               </div>
             </div>
           </CardContent>
@@ -142,22 +99,48 @@ export default function FrameworksPage() {
                 <ArrowRight className="h-5 w-5 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {frameworks.reduce((sum, f) => sum + f.usageCount, 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">Total Uses</p>
+                <p className="text-2xl font-bold text-foreground">{documentCount}</p>
+                <p className="text-sm text-muted-foreground">Corpus Docs</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Frameworks List */}
-      <div className="grid gap-4">
-        {frameworks.map((framework) => {
-          const status = statusConfig[framework.status as keyof typeof statusConfig]
-          const progress = (framework.completedModules / framework.modules) * 100
-          return (
+      {frameworksQuery.isLoading ? (
+        <div className="grid gap-4">
+          {[0, 1, 2].map((item) => (
+            <Card key={item} className="border-border/50">
+              <CardContent className="p-6">
+                <div className="h-5 w-2/3 rounded bg-muted" />
+                <div className="mt-3 h-4 w-full rounded bg-muted" />
+                <div className="mt-2 h-4 w-1/2 rounded bg-muted" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : frameworksQuery.isError ? (
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="flex items-start gap-3 p-6">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+            <div>
+              <h2 className="font-semibold text-foreground">Unable to load frameworks</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{getErrorMessage(frameworksQuery.error)}</p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : frameworks.length === 0 ? (
+        <Card className="border-border/50">
+          <CardContent className="p-6">
+            <h2 className="font-semibold text-foreground">No frameworks available</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Frameworks will appear here when they are active and available to your current plan.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {frameworks.map((framework) => (
             <Card key={framework.id} className="group border-border/50 transition-all hover:border-primary/50">
               <CardContent className="p-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -167,72 +150,63 @@ export default function FrameworksPage() {
                         <Layers className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <Link 
-                            href={`/regulator/frameworks/${framework.id}`}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            href={`/regulator/frameworks/${framework.slug}`}
                             className="text-lg font-semibold text-foreground hover:text-primary"
                           >
                             {framework.name}
                           </Link>
-                          <Badge variant="outline" className={status.className}>
-                            {status.label}
+                          <Badge variant="outline" className={tierBadgeClass[framework.tier] ?? "text-xs"}>
+                            {framework.tier}
                           </Badge>
-                          <Badge variant="outline" className="text-xs">v{framework.version}</Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {framework.category}
+                          </Badge>
+                          {framework.version && (
+                            <Badge variant="outline" className="text-xs">
+                              v{framework.version}
+                            </Badge>
+                          )}
                         </div>
-                        <p className="mt-1 text-sm text-muted-foreground">{framework.description}</p>
+                        {framework.description && (
+                          <p className="mt-1 text-sm text-muted-foreground">{framework.description}</p>
+                        )}
                         <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                          <span>{framework.modules} modules</span>
-                          <span>{framework.usageCount} times used</span>
+                          <span>{framework.documentCount} corpus documents</span>
+                          <span>{framework.isCustom ? "Custom" : "SheriaBot global"}</span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            Updated {new Date(framework.lastUpdated).toLocaleDateString("en-KE", {
-                              month: "short",
-                              day: "numeric",
-                            })}
+                            Updated {formatDate(framework.updatedAt)}
                           </span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3 lg:items-end">
-                    {framework.status === "draft" && (
-                      <div className="w-full lg:w-48">
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>Progress</span>
-                          <span>{Math.round(progress)}%</span>
-                        </div>
-                        <Progress value={progress} className="mt-1 h-2" />
-                      </div>
-                    )}
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="bg-transparent" asChild>
-                        <Link href={`/regulator/frameworks/${framework.id}`}>
-                          <Eye className="mr-1 h-3 w-3" />
-                          View
-                        </Link>
-                      </Button>
-                      <Button variant="outline" size="sm" className="bg-transparent" asChild>
-                        <Link href={`/regulator/frameworks/${framework.id}?edit=true`}>
-                          <Edit className="mr-1 h-3 w-3" />
-                          Edit
-                        </Link>
-                      </Button>
-                      <Button variant="outline" size="sm" className="bg-transparent">
-                        <Copy className="mr-1 h-3 w-3" />
-                        Clone
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
+                  <div className="flex gap-2 lg:justify-end">
+                    <Button variant="outline" size="sm" className="bg-transparent" asChild>
+                      <Link href={`/regulator/frameworks/${framework.slug}`}>
+                        View
+                        <ArrowRight className="ml-2 h-3 w-3" />
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      )}
+
+      <Card className="border-dashed border-border/70 bg-muted/20">
+        <CardContent className="p-5">
+          <p className="text-sm text-muted-foreground">
+            Custom frameworks are available on Enterprise plans. Custom framework creation is coming soon.
+            Enterprise customers can contact SheriaBot to configure private frameworks.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   )
 }

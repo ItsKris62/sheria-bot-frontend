@@ -1064,8 +1064,8 @@ export default function GapAnalysisPage() {
     undefined,
     { enabled: !!user }
   )
-  const { data: legalDocumentsData, isLoading: legalDocumentsLoading } = trpc.document.list.useQuery(
-    { page: 1, limit: 100 },
+  const { data: benchmarkDocumentsData, isLoading: benchmarkDocumentsLoading } = trpc.document.listBenchmarkDocuments.useQuery(
+    undefined,
     { enabled: !!user }
   )
   const maxFileSizeBytes = (gapLimits?.maxFileSizeMB ?? 10) * 1024 * 1024
@@ -1221,16 +1221,17 @@ export default function GapAnalysisPage() {
       )
     : []
   const selectedDepthLabel = ANALYSIS_DEPTHS.find((d) => d.value === analysisDepth)?.label ?? "Standard Analysis"
-  const legalDocumentOptions: Option[] = (legalDocumentsData?.documents ?? []).map((doc: {
+  const legalDocumentOptions: Option[] = (benchmarkDocumentsData?.documents ?? []).map((doc: {
     id: string
-    title: string | null
-    actName?: string | null
+    title: string
+    source?: string | null
+    frameworkSlug?: string | null
     documentType: string
-    regulatoryBody?: string | null
+    isGlobal: boolean
   }) => ({
     value: doc.id,
-    label: doc.title ?? doc.actName ?? doc.id,
-    group: doc.regulatoryBody ?? doc.documentType?.replace(/_/g, " ") ?? "Legal documents",
+    label: doc.title,
+    group: `${doc.isGlobal ? "SheriaBot Legal Corpus" : "Organization Documents"} - ${doc.source ?? doc.frameworkSlug ?? doc.documentType}`,
   }))
 
   return (
@@ -1355,15 +1356,15 @@ export default function GapAnalysisPage() {
               <div className="space-y-2">
                 <div>
                   <Label className="text-sm font-medium text-foreground">Benchmark Documents <span className="text-slate-400 text-xs font-normal">(optional)</span></Label>
-                  <p className="mt-1 text-sm text-slate-400">Limit regulatory grounding to specific legal corpus documents.</p>
+                  <p className="mt-1 text-sm text-slate-400">Select the legal or regulatory documents SheriaBot should use as benchmarks for this analysis.</p>
                 </div>
                 <MultiSelect
                   options={legalDocumentOptions}
                   selected={selectedBenchmarkDocumentIds}
                   onChange={(next) => setSelectedBenchmarkDocumentIds(next.slice(0, 10))}
-                  placeholder={legalDocumentsLoading ? "Loading legal documents..." : "Select benchmark documents"}
-                  emptyText="No legal documents available."
-                  disabled={legalDocumentsLoading || legalDocumentOptions.length === 0}
+                  placeholder={benchmarkDocumentsLoading ? "Loading benchmark documents..." : "Select benchmark documents"}
+                  emptyText="No benchmark documents available."
+                  disabled={benchmarkDocumentsLoading || legalDocumentOptions.length === 0}
                   className="bg-slate-900 text-left"
                 />
                 {selectedBenchmarkDocumentIds.length > 0 ? (
