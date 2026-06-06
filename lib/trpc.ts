@@ -2,7 +2,7 @@
 
 import { createTRPCReact } from "@trpc/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
-import type { AppRouter } from "../../fintech-regulatory-backend/dist/server/trpc/router";
+import type { AppRouter } from "@sheriabot/api-types";
 
 export const trpc = createTRPCReact<AppRouter>();
 
