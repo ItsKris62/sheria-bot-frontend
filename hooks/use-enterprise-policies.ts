@@ -53,6 +53,13 @@ export function useEnterprisePolicyStatus(policyId: string, enabled = true) {
   );
 }
 
+export function useEnterprisePolicyVersionHistory(policyId: string, enabled = true) {
+  return trpc.enterprisePolicy.getVersionHistory.useQuery(
+    { policyId },
+    { enabled: enabled && !!policyId },
+  );
+}
+
 export function useEnterprisePolicyActions() {
   const utils = trpc.useUtils();
 
@@ -68,6 +75,22 @@ export function useEnterprisePolicyActions() {
     },
   });
 
+  const exportMutation = trpc.enterprisePolicy.exportPolicy.useMutation();
+
+  const updateContentMutation = trpc.enterprisePolicy.updateSectionContent.useMutation({
+    onSuccess: (_data, variables) => {
+      utils.enterprisePolicy.getPolicy.invalidate({ policyId: variables.policyId });
+      utils.enterprisePolicy.getVersionHistory.invalidate({ policyId: variables.policyId });
+    },
+  });
+
+  const updateStatusMutation = trpc.enterprisePolicy.updateSectionStatus.useMutation({
+    onSuccess: (_data, variables) => {
+      utils.enterprisePolicy.getPolicy.invalidate({ policyId: variables.policyId });
+      utils.enterprisePolicy.getVersionHistory.invalidate({ policyId: variables.policyId });
+    },
+  });
+
   return {
     createDraft: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
@@ -75,5 +98,11 @@ export function useEnterprisePolicyActions() {
     createResult: createMutation.data,
     deletePolicy: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
+    exportPolicy: exportMutation.mutateAsync,
+    isExporting: exportMutation.isPending,
+    updateSectionContent: updateContentMutation.mutateAsync,
+    isUpdatingSectionContent: updateContentMutation.isPending,
+    updateSectionStatus: updateStatusMutation.mutateAsync,
+    isUpdatingSectionStatus: updateStatusMutation.isPending,
   };
 }
