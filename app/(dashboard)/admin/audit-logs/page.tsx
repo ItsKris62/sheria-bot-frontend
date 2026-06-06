@@ -41,7 +41,7 @@ interface LogEntry {
   userId: string | null
   ipAddress: string | null
   metadata: unknown
-  createdAt: Date
+  createdAt: string
 }
 
 export default function AuditLogsPage() {
@@ -78,7 +78,7 @@ export default function AuditLogsPage() {
     onError: (err) => toast.error(err.message ?? "Export failed. Please try again."),
   })
 
-  const logs: LogEntry[] = (data as { items?: LogEntry[] })?.items ?? []
+  const logs: LogEntry[] = (data as unknown as { items?: LogEntry[] })?.items ?? []
   const total: number = (data as { total?: number })?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / limit))
 

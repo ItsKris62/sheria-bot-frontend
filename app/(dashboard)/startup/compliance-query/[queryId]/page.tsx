@@ -437,11 +437,11 @@ export default function QueryDetailPage() {
   }
 
   // Record
-  const q = queryRecord as {
+  const q = queryRecord as unknown as {
     id: string
     query: string
     response: string | null
-    createdAt: Date
+    createdAt: string
     regulatoryAreas?: unknown
     citations?: unknown
     confidence?: number | null

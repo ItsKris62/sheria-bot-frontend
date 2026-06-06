@@ -23,8 +23,12 @@ export default function AdminDashboard() {
   const users = mockData.users
   const orgs = mockData.fintechOrganizations
   const auditLogs = mockData.auditLogs.slice(0, 10)
-  const revenueData = mockData.timeSeriesData.revenue.slice(-30)
-  const userGrowthData = mockData.timeSeriesData.users.slice(-30)
+  const revenueData = mockData.timeSeriesData.revenue
+    .slice(-30)
+    .map((point) => ({ date: point.date, value: point.value, compare: point.compare }))
+  const userGrowthData = mockData.timeSeriesData.users
+    .slice(-30)
+    .map((point) => ({ name: point.date, value: point.value, compare: point.compare }))
 
   const activeUsers = users.filter((u) => u.status === 'active').length
   const activeOrgs = orgs.filter((o) => o.status === 'active').length

@@ -358,6 +358,17 @@ function AnalysisResultsView({
     )
   }
 
+  const analysisData = data as unknown as {
+    organizationName: string | null
+    userName: string | null
+    documentName: string
+    createdAt: string
+    analysisDepth: string | null
+    ragGrounded: boolean | null
+    chunksProcessed: number | null
+    regulatoryFrameworks: unknown
+  }
+  const regulatoryFrameworks = analysisData.regulatoryFrameworks as unknown
   const { overallScore, executiveSummary, frameworks, crossCuttingStrengths, actionPlan, metadata } = results
   const scoreConfig = getScoreColor(overallScore)
   const selectedBenchmarkDocuments = metadata.selectedBenchmarkDocuments ?? []
@@ -380,14 +391,16 @@ function AnalysisResultsView({
   function handleExportPdf() {
     const html = buildGapAnalysisReportHtml({
       analysisId,
-      organizationName: data.organizationName ?? undefined,
-      userName: data.userName ?? undefined,
-      documentName: data.documentName,
-      createdAt: data.createdAt,
-      analysisDepth: data.analysisDepth ?? "standard",
-      ragGrounded: data.ragGrounded ?? false,
-      chunksProcessed: data.chunksProcessed ?? 0,
-      regulatoryFrameworks: data.regulatoryFrameworks ?? [],
+      organizationName: analysisData.organizationName ?? undefined,
+      userName: analysisData.userName ?? undefined,
+      documentName: analysisData.documentName,
+      createdAt: analysisData.createdAt,
+      analysisDepth: analysisData.analysisDepth ?? "standard",
+      ragGrounded: analysisData.ragGrounded ?? false,
+      chunksProcessed: analysisData.chunksProcessed ?? 0,
+      regulatoryFrameworks: Array.isArray(regulatoryFrameworks)
+        ? regulatoryFrameworks.filter((item): item is string => typeof item === "string")
+        : [],
       result: results as unknown as GapAnalysisReportResult,
     })
     const printWindow = window.open("", "_blank")
@@ -954,7 +967,7 @@ function AnalysisHistoryItem({
     overallScore: number | null
     status: string
     analysisDepth: string
-    createdAt: Date
+    createdAt: Date | string
     progress?: number
   }
   onView: (id: string, name: string) => void
@@ -1075,7 +1088,7 @@ export default function GapAnalysisPage() {
     { id: activeAnalysisId! },
     {
       enabled: !!user && isAwaitingResult && activeAnalysisId !== null,
-      refetchInterval: (query) => {
+      refetchInterval: (query: { state: { data?: { status?: string } } }) => {
         const status = query.state.data?.status
         if (status === "COMPLETED" || status === "FAILED") return false
         return 3000
@@ -1210,7 +1223,16 @@ export default function GapAnalysisPage() {
     )
   }
 
-  const analysisHistory = analyses ?? []
+  const analysisHistory = (analyses ?? []) as Array<{
+    id: string
+    documentName: string
+    documentType: string
+    overallScore: number | null
+    status: string
+    analysisDepth: string
+    createdAt: string
+    progress: number
+  }>
   const groupedFrameworks = frameworksData && frameworksData.length > 0
     ? Object.entries(
         (frameworksData as FrameworkOption[]).reduce<Record<string, FrameworkOption[]>>((acc, fw) => {
@@ -1636,7 +1658,7 @@ export default function GapAnalysisPage() {
               overallScore: number | null
               status: string
               analysisDepth: string
-              createdAt: Date
+              createdAt: string
               progress: number
             }) => (
               <AnalysisHistoryItem

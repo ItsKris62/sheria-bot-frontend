@@ -45,7 +45,7 @@ interface DocumentForEdit {
   name: string
   description: string | null
   category: DocumentCategory
-  expiryDate: Date | null
+  expiryDate: Date | string | null
   tags: string[]
   notes: string | null
 }

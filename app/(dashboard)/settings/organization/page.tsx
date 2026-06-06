@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Building2, Loader2, Save, Info, Users } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useProfile } from "@/hooks/use-user"
+import { useAuthStore } from "@/lib/auth-store"
 
 type OrgFormData = {
   name: string
@@ -69,7 +70,8 @@ function isDirty(form: OrgFormData, original: OrgFormData): boolean {
 
 export default function OrganizationSettingsPage() {
   const { data: profile } = useProfile()
-  const isRegulator = profile?.role === "REGULATOR"
+  const authRole = useAuthStore((s) => s.user?.role)
+  const isRegulator = authRole === "REGULATOR"
 
   const { data: orgData, isLoading } = trpc.organization.getSettings.useQuery(undefined, {
     enabled: !isRegulator,

@@ -15,9 +15,9 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { token: string } },
+  { params }: { params: Promise<{ token: string }> },
 ) {
-  const { token } = params;
+  const { token } = await params;
 
   if (!token) {
     return NextResponse.json({ error: "Missing token" }, { status: 400 });

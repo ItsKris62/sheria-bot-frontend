@@ -4,7 +4,11 @@ import { trpc } from "@/lib/trpc";
 
 /** Hook for organization data */
 export function useOrganization(id?: string) {
-  return trpc.organization.get.useQuery(
+  const useQuery = trpc.organization.get.useQuery as unknown as (
+    input: { id: string },
+    opts: { enabled: boolean },
+  ) => unknown;
+  return useQuery(
     { id: id! },
     { enabled: !!id },
   );
@@ -13,10 +17,16 @@ export function useOrganization(id?: string) {
 /** Hook for organization mutations */
 export function useOrganizationActions() {
   const utils = trpc.useUtils();
+  const useMutation = trpc.organization.update.useMutation as unknown as (opts: {
+    onSuccess: (_: unknown, variables: { id: string }) => void;
+  }) => {
+    mutateAsync: (input: unknown) => Promise<unknown>;
+    isPending: boolean;
+  };
 
-  const updateMutation = trpc.organization.update.useMutation({
+  const updateMutation = useMutation({
     onSuccess: (_, variables) => {
-      utils.organization.get.invalidate({ id: variables.id });
+      void utils.organization.get.invalidate({ id: variables.id });
     },
   });
 

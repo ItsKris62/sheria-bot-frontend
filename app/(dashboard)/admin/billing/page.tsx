@@ -95,8 +95,8 @@ interface FailedPaymentRow {
   subscriptionPlan: string | null
   description: string | null
   metadata: Record<string, unknown> | null
-  paidAt: Date | null
-  createdAt: Date
+  paidAt: string | null
+  createdAt: string
 }
 
 function FailedPaymentsPanel() {
@@ -444,7 +444,7 @@ export default function AdminBillingPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {recentPayments.map((p: { id: string; invoiceNumber: string | null; orgName: string; subscriptionPlan: string | null; provider: string; amount: number; status: string; paidAt: Date | null }) => {
+                      {recentPayments.map((p: { id: string; invoiceNumber: string | null; orgName: string; subscriptionPlan: string | null; provider: string; amount: number; status: string; paidAt: string | null }) => {
                         const style = STATUS_STYLES[p.status] ?? STATUS_STYLES.PENDING
                         const Icon = style.icon
                         return (

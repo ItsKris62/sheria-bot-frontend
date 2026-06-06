@@ -568,9 +568,9 @@ function RecentQueriesCard() {
     { page: 1, limit: 3 }
   )
 
-  type QueryItem = { id: string; query: string; createdAt: Date }
+  type QueryItem = { id: string; query: string; createdAt: string }
   const queries: QueryItem[] =
-    Array.isArray(data?.queries) ? (data.queries as QueryItem[]) : []
+    Array.isArray(data?.queries) ? (data.queries as unknown as QueryItem[]) : []
 
   return (
     <>

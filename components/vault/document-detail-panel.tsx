@@ -57,8 +57,8 @@ interface VaultDocument {
   storageKey: string
   category: DocumentCategory
   status: VaultDocumentStatus
-  expiryDate: Date | null
-  verifiedAt: Date | null
+  expiryDate: Date | string | null
+  verifiedAt: Date | string | null
   verifiedBy: string | null
   uploadedById: string
   organizationId: string
@@ -66,8 +66,8 @@ interface VaultDocument {
   version: number
   isArchived: boolean
   notes: string | null
-  createdAt: Date
-  updatedAt: Date
+  createdAt: Date | string
+  updatedAt: Date | string
   uploadedBy: {
     id: string
     fullName: string
@@ -95,7 +95,7 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
-function formatDate(date: Date | null | undefined): string {
+function formatDate(date: Date | string | null | undefined): string {
   if (!date) return "—"
   return new Date(date).toLocaleDateString("en-KE", {
     day: "numeric",
@@ -150,7 +150,7 @@ function FileTypeIcon({ mimeType, className }: { mimeType: string; className?: s
   return <FileText className={className} />
 }
 
-function isExpiringSoon(expiryDate: Date | null, status: VaultDocumentStatus): boolean {
+function isExpiringSoon(expiryDate: Date | string | null, status: VaultDocumentStatus): boolean {
   if (!expiryDate || status === "EXPIRED") return false
   const thirtyDays = 30 * 24 * 60 * 60 * 1000
   return new Date(expiryDate).getTime() - Date.now() <= thirtyDays && new Date(expiryDate).getTime() > Date.now()

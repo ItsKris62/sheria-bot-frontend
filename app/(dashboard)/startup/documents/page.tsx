@@ -99,7 +99,7 @@ function formatDate(date: Date | string): string {
   })
 }
 
-function isExpiringSoon(expiryDate: Date | null | undefined, status: string): boolean {
+function isExpiringSoon(expiryDate: Date | string | null | undefined, status: string): boolean {
   if (!expiryDate || status === "EXPIRED") return false
   const thirtyDays = 30 * 24 * 60 * 60 * 1000
   const t = new Date(expiryDate).getTime()
@@ -130,8 +130,8 @@ type VaultDoc = {
   storageKey: string
   category: "CORPORATE" | "COMPLIANCE" | "FINANCIAL" | "LICENSE" | "OPERATIONS" | "TAX" | "OTHER"
   status: "PENDING" | "VERIFIED" | "EXPIRED"
-  expiryDate: Date | null
-  verifiedAt: Date | null
+  expiryDate: string | null
+  verifiedAt: string | null
   verifiedBy: string | null
   uploadedById: string
   organizationId: string
@@ -139,8 +139,8 @@ type VaultDoc = {
   version: number
   isArchived: boolean
   notes: string | null
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
   uploadedBy: { id: string; fullName: string; email: string }
 }
 

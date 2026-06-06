@@ -225,10 +225,10 @@ export default function AIConfigPage() {
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {[
-              ["All-time attempted", checklistMetrics.alltime?.attempted ?? 0],
-              ["All-time succeeded", checklistMetrics.alltime?.succeeded ?? 0],
-              ["Today attempted", checklistMetrics.today?.attempted ?? 0],
-              ["Today succeeded", checklistMetrics.today?.succeeded ?? 0],
+              ["All-time attempted", checklistMetrics.alltime?.attempts ?? 0],
+              ["All-time succeeded", checklistMetrics.alltime?.totalSuccess ?? 0],
+              ["Today attempted", checklistMetrics.today?.attempts ?? 0],
+              ["Today succeeded", checklistMetrics.today?.totalSuccess ?? 0],
             ].map(([label, value]) => (
               <div key={String(label)} className="rounded-xl border border-border/50 bg-muted/40 p-4 text-center">
                 <p className="text-xl font-semibold text-foreground">{Number(value).toLocaleString()}</p>

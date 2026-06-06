@@ -102,6 +102,11 @@ const EMPTY_FORM: UploadFormState = {
 const TAG_PATTERN = /^[A-Za-z0-9_-]+$/
 const MIME_ACCEPT = ALLOWED_VAULT_MIME_TYPES.join(",")
 const ALLOWED_MIME_SET = new Set<string>(ALLOWED_VAULT_MIME_TYPES)
+type AllowedVaultMimeType = (typeof ALLOWED_VAULT_MIME_TYPES)[number]
+
+function isAllowedVaultMimeType(value: string): value is AllowedVaultMimeType {
+  return ALLOWED_MIME_SET.has(value)
+}
 
 function FileTypeIcon({ mimeType, className }: { mimeType: string; className?: string }) {
   if (mimeType.startsWith("image/")) return <ImageIcon className={className} />
@@ -157,7 +162,7 @@ function validateForm(form: UploadFormState, maxFileSizeBytes: number): FormErro
 
   if (!form.file) {
     errors.file = "Choose one file to upload."
-  } else if (!ALLOWED_MIME_SET.has(form.file.type)) {
+  } else if (!isAllowedVaultMimeType(form.file.type)) {
     errors.file = "This file type is not supported."
   } else if (form.file.size < 1024) {
     errors.file = "File must be at least 1 KB."
@@ -413,7 +418,7 @@ export function UploadDocumentModal({ open, onOpenChange, onSuccess }: UploadDoc
       setStage("presigning")
       const presign = await getUploadUrl.mutateAsync({
         declaredFilename: submitForm.file.name,
-        declaredMimeType: submitForm.file.type,
+        declaredMimeType: submitForm.file.type as AllowedVaultMimeType,
         declaredSize: submitForm.file.size,
         category: submitForm.category,
         tags: submitForm.tags,

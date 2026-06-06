@@ -73,8 +73,8 @@ type SubState = {
   emailEnabled: boolean
   emailFrequency: "REALTIME" | "DAILY" | "WEEKLY"
   severityThreshold: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
-  regulatoryBodies: string[]
-  categories: string[]
+  regulatoryBodies: Array<(typeof REGULATORY_BODIES)[number]>
+  categories: Array<(typeof ALERT_CATEGORIES)[number]>
 }
 
 const DEFAULT_SUB: SubState = {
@@ -124,14 +124,14 @@ function AlertSubscriptionSection() {
     setIsDirty(true)
   }
 
-  function toggleBody(body: string) {
+  function toggleBody(body: (typeof REGULATORY_BODIES)[number]) {
     const next = form.regulatoryBodies.includes(body)
       ? form.regulatoryBodies.filter((b) => b !== body)
       : [...form.regulatoryBodies, body]
     patch({ regulatoryBodies: next })
   }
 
-  function toggleCategory(cat: string) {
+  function toggleCategory(cat: (typeof ALERT_CATEGORIES)[number]) {
     const next = form.categories.includes(cat)
       ? form.categories.filter((c) => c !== cat)
       : [...form.categories, cat]

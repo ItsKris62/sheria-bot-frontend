@@ -195,10 +195,10 @@ type ChecklistDetailLocal = {
   status: string
   summary: ChecklistSummaryMetadata | null
   metadata: ChecklistMetadata | null
-  generatedAt: Date | null
-  createdAt: Date
-  updatedAt: Date
-  completedAt: Date | null
+  generatedAt: string | null
+  createdAt: string
+  updatedAt: string
+  completedAt: string | null
   isNormalized: true
   categories: ChecklistCategoryLocal[]
 }
@@ -210,7 +210,7 @@ type ChecklistStatusLocal = {
   completedItems: number
   totalItems: number
   title: string
-  createdAt: Date
+  createdAt: string
   isNormalized: boolean
   productType: string | null
   businessStage: string | null
@@ -231,8 +231,8 @@ type ChecklistSummaryLocal = {
   criticalItems: number
   status: string
   metadata: ChecklistMetadata | null
-  generatedAt: Date | null
-  createdAt: Date
+  generatedAt: Date | string | null
+  createdAt: Date | string
   updatedAt: Date
   isNormalized: boolean
 }
@@ -1296,8 +1296,8 @@ function NormalizedChecklistDetailView({
         title:         detailData.title,
         productType:   detailData.productType,
         businessStage: detailData.businessStage,
-        generatedAt:   detailData.generatedAt,
-        createdAt:     detailData.createdAt,
+        generatedAt:   detailData.generatedAt ? new Date(detailData.generatedAt) : null,
+        createdAt:     new Date(detailData.createdAt),
         progress:      detailData.progress,
         completedItems: detailData.completedItems,
         totalItems:    detailData.totalItems,
@@ -1863,7 +1863,7 @@ function LegacyChecklistDetailView({
         title:         data.title,
         productType:   data.productType,
         businessStage: data.businessStage,
-        createdAt:     data.createdAt,
+        createdAt:     new Date(data.createdAt),
         checklistData,
         itemProgress,
       })

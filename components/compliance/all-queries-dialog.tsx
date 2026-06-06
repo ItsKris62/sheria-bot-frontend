@@ -31,7 +31,7 @@ interface AllQueriesDialogProps {
 type QueryRow = {
     id: string
     query: string
-    createdAt: Date
+    createdAt: string
 }
 
 export function AllQueriesDialog({ open, onOpenChange }: AllQueriesDialogProps) {
@@ -46,7 +46,7 @@ export function AllQueriesDialog({ open, onOpenChange }: AllQueriesDialogProps) 
         )
 
     const queries: QueryRow[] = useMemo(
-        () => (Array.isArray(data?.queries) ? (data.queries as QueryRow[]) : []),
+        () => (Array.isArray(data?.queries) ? (data.queries as unknown as QueryRow[]) : []),
         [data]
     )
 

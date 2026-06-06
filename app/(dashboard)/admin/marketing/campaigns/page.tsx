@@ -198,7 +198,15 @@ function NewCampaignDialog({
     { enabled: open },
   );
 
-  const createMutation = trpc.adminMarketing.campaigns.create.useMutation({
+  const useCreateCampaignMutation = trpc.adminMarketing.campaigns.create.useMutation as unknown as (opts: {
+    onSuccess: () => void;
+    onError: (err: { message: string }) => void;
+  }) => {
+    mutate: (input: unknown) => void;
+    isPending: boolean;
+  };
+
+  const createMutation = useCreateCampaignMutation({
     onSuccess: () => {
       toast.success("Campaign created successfully");
       void utils.adminMarketing.campaigns.list.invalidate();
@@ -419,7 +427,17 @@ export default function CampaignsPage() {
     skip:   page * PAGE_SIZE,
   });
 
-  const cancelMutation = trpc.adminMarketing.campaigns.cancel.useMutation({
+  const useCampaignActionMutation = <Input,>(hook: unknown) => (
+    hook as (opts: {
+      onSuccess: () => void;
+      onError: (err: { message: string }) => void;
+    }) => {
+      mutate: (input: Input) => void;
+      isPending: boolean;
+    }
+  );
+
+  const cancelMutation = useCampaignActionMutation<{ campaignId: string }>(trpc.adminMarketing.campaigns.cancel.useMutation)({
     onSuccess: () => {
       toast.success("Campaign cancelled");
       void utils.adminMarketing.campaigns.list.invalidate();
@@ -428,7 +446,7 @@ export default function CampaignsPage() {
     onError: (err) => toast.error(err.message),
   });
 
-  const duplicateMutation = trpc.adminMarketing.campaigns.duplicate.useMutation({
+  const duplicateMutation = useCampaignActionMutation<{ campaignId: string }>(trpc.adminMarketing.campaigns.duplicate.useMutation)({
     onSuccess: () => {
       toast.success("Campaign duplicated as DRAFT");
       void utils.adminMarketing.campaigns.list.invalidate();
@@ -436,8 +454,9 @@ export default function CampaignsPage() {
     onError: (err) => toast.error(err.message),
   });
 
-  const campaigns = (data?.items ?? []) as CampaignListItem[];
-  const total     = data?.total ?? 0;
+  const listData = data as unknown as { items?: CampaignListItem[]; total?: number } | undefined;
+  const campaigns = listData?.items ?? [];
+  const total     = listData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const filtered = search

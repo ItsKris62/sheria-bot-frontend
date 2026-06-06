@@ -104,7 +104,7 @@ export default function AdminDashboard() {
 
   const stats = rawStats as StatsShape | undefined
 
-  const recentLogs = (logsData as { items?: Array<{ id: string; action: string; userId: string | null; entityType: string | null; createdAt: Date }> })?.items ?? []
+  const recentLogs = (logsData as unknown as { items?: Array<{ id: string; action: string; userId: string | null; entityType: string | null; createdAt: string }> })?.items ?? []
   const userTotal = resolveCount(stats?.users?.total, usersFallback?.pagination?.total)
   const activeUserTotal = resolveCount(stats?.users?.active, activeUsersFallback?.pagination?.total)
   const organizationTotal = resolveCount(stats?.organizations?.total, organizationsFallback?.total)
