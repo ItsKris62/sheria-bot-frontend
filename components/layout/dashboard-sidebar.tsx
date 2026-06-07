@@ -29,6 +29,7 @@ import {
   Sparkles,
   Lock,
   Megaphone,
+  BadgeCheck,
 } from "lucide-react"
 import { usePlan } from "@/lib/plan-context"
 import type { FeatureKey } from "@/lib/plan-context"
@@ -98,6 +99,7 @@ export const startupNav: NavGroup[] = [
     title: "Management",
     items: [
       { title: "Applications", href: "/startup/applications", icon: FileText },
+      { title: "Licenses", href: "/startup/licenses", icon: BadgeCheck, lockedFeature: "licenseManagement" },
       { title: "Calendar", href: "/startup/calendar", icon: Calendar },
       { title: "Documents", href: "/startup/documents", icon: Folder, lockedFeature: "documentRepository" },
       { title: "Monitor", href: "/startup/monitor", icon: Bell, badge: 3 },

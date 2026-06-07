@@ -123,6 +123,7 @@ const FEATURE_LABELS: Partial<Record<FeatureKey, string>> = {
   analytics:            "Advanced Analytics",
   sso:                  "Single Sign-On (SSO)",
   complianceCalendar:   "Compliance Calendar",
+  licenseManagement:    "License Management",
 };
 
 const FEATURE_DESCRIPTIONS: Partial<Record<FeatureKey, string>> = {
@@ -150,6 +151,8 @@ const FEATURE_DESCRIPTIONS: Partial<Record<FeatureKey, string>> = {
     "Enable enterprise Single Sign-On (SSO) via SAML / OIDC for seamless access management.",
   complianceCalendar:
     "Track upcoming regulatory deadlines, schedule audits, and get automated reminders.",
+  licenseManagement:
+    "Manage organization licenses, renewal dates, owners, evidence links, fees, and license-generated calendar events.",
 };
 
 /**

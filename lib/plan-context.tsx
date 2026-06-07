@@ -51,6 +51,8 @@ export interface PlanEntitlements {
   regulatoryAlerts:     boolean;
   /** Compliance Calendar -- create/manage org-scoped deadline events */
   complianceCalendar:   boolean;
+  /** License Management -- manage org-scoped licenses, renewals, evidence links, and fees */
+  licenseManagement:    boolean;
   documentRepository:   StorageEntitlement;
   maxSeats:             number;
   supportTier:          SupportTier;

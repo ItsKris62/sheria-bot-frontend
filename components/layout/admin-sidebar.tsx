@@ -32,6 +32,7 @@ import {
   ListFilter,
   Ban,
   ThumbsUp,
+  BadgeCheck,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -72,6 +73,7 @@ export const adminNav: AdminNavGroup[] = [
     title: "Support",
     items: [
       { title: "Support Tickets", href: "/admin/support", icon: MessageSquare, badgeQuery: "supportOpen" },
+      { title: "Licenses", href: "/admin/licenses", icon: BadgeCheck },
     ],
   },
   {
