@@ -53,6 +53,9 @@ type SendStatus =
   | "SUPPRESSED_SKIPPED"
   | "NO_CONSENT_SKIPPED"
 
+type DuplicateCampaignResult = { id: string }
+type MutationError = { message?: string }
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -361,12 +364,15 @@ export default function CampaignDetailPage() {
   const [sendDialogOpen, setSendDialogOpen] = useState(false)
 
   // ── Duplicate mutation ────────────────────────────────────────────────────
-  const duplicateMutation = trpc.adminMarketing.campaigns.duplicate.useMutation({
+  const duplicateMutation = (trpc.adminMarketing.campaigns.duplicate.useMutation as unknown as (options: {
+    onSuccess: (data: DuplicateCampaignResult) => void
+    onError: (err: MutationError) => void
+  }) => { mutate: (input: { campaignId: string }) => void; isPending: boolean })({
     onSuccess: (data) => {
       toast.success("Campaign duplicated as DRAFT")
       router.push(`/admin/marketing/campaigns/${data.id}`)
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(err.message ?? "Failed to duplicate campaign."),
   })
 
   // ── Queries ──────────────────────────────────────────────────────────────
