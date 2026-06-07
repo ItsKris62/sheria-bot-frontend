@@ -93,6 +93,7 @@ export const startupNav: NavGroup[] = [
       { title: "Compliance Query", href: "/startup/compliance-query", icon: Search, badge: "AI" },
       { title: "Checklists", href: "/startup/checklists", icon: ClipboardCheck },
       { title: "Gap Analysis", href: "/startup/gap-analysis", icon: AlertTriangle, lockedFeature: "gapAnalysis" },
+      { title: "Custom Frameworks", href: "/startup/custom-frameworks", icon: FileText, lockedFeature: "customFrameworks" },
     ],
   },
   {

@@ -134,6 +134,12 @@ export interface PlanData {
   billing:      PlanBilling;
   trial:        FrontendTrialStatus | null;
   effectivePlanSource: EffectivePlanSource;
+  appliedOverrides: Array<{
+    key: string;
+    source: "enterprise_contract";
+    contractId: string;
+    overrideId: string;
+  }>;
   pilot: {
     isPilot: boolean;
     pilotStatus: "ACTIVE" | "EXPIRED" | "REVOKED" | "CONVERTED" | null;

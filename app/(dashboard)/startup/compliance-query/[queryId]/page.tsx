@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -158,6 +158,21 @@ type FollowUpEntry = {
   createdAt?: Date | string
 }
 
+type QueryRecordLite = {
+  id?: string
+  query?: string | null
+  response?: string | null
+  citations?: unknown
+  regulatoryAreas?: unknown
+  confidence?: number | null
+  createdAt?: string | Date
+  updatedAt?: string | Date
+  processingTime?: number | null
+  tokensUsed?: number | null
+  model?: string | null
+  status?: string | null
+}
+
 function FollowUpSourcesDisclosure({ citations }: { citations: CitationItem[] }) {
   const [open, setOpen] = useState(false)
 
@@ -191,19 +206,20 @@ export default function QueryDetailPage() {
   const [followUpQuestion, setFollowUpQuestion] = useState("")
   const [followUpError, setFollowUpError] = useState<string | null>(null)
   const [followUps, setFollowUps] = useState<FollowUpEntry[]>([])
-  const [feedback, setFeedback] = useState<"up" | "down" | null>(null)
-  const [saved, setSaved] = useState(false)
+  const [feedbackOverride, setFeedbackOverride] = useState<"up" | "down" | null | undefined>(undefined)
+  const [savedOverride, setSavedOverride] = useState<boolean | undefined>(undefined)
   const [copied, setCopied] = useState(false)
   const followUpTextareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   const utils = trpc.useUtils()
 
   const {
-    data: queryRecord,
+    data: rawQueryRecord,
     isLoading,
     isError,
     error,
   } = trpc.compliance.get.useQuery({ id: queryId })
+  const queryRecord = rawQueryRecord as QueryRecordLite | null | undefined
 
   const { data: feedbackStatus } = trpc.compliance.getFeedbackStatus.useQuery(
     { queryId },
@@ -222,16 +238,8 @@ export default function QueryDetailPage() {
   const followUpMutation = trpc.compliance.followUp.useMutation()
   const exportMutation = trpc.compliance.exportQueryDocx.useMutation()
 
-  useEffect(() => {
-    setFeedback(feedbackStatus?.rating ?? null)
-  }, [feedbackStatus?.rating])
-
-  useEffect(() => {
-    setSaved(savedStatus?.saved ?? false)
-  }, [savedStatus?.saved])
-
-  useEffect(() => {
-    const persisted = Array.isArray(persistedFollowUps?.followUps)
+  const persistedFollowUpEntries = useMemo<FollowUpEntry[]>(() => {
+    return Array.isArray(persistedFollowUps?.followUps)
       ? persistedFollowUps.followUps.map((item) => ({
           id: item.id,
           question: item.query,
@@ -241,12 +249,20 @@ export default function QueryDetailPage() {
           createdAt: item.createdAt,
         }))
       : []
-
-    setFollowUps((current) => {
-      const pending = current.filter((item) => item.isLoading)
-      return [...persisted, ...pending]
-    })
-  }, [persistedFollowUps?.followUps])
+  }, [persistedFollowUps])
+  const persistedFollowUpIds = useMemo(
+    () => new Set(persistedFollowUpEntries.map((item) => item.id)),
+    [persistedFollowUpEntries],
+  )
+  const visibleFollowUps = useMemo(
+    () => [
+      ...persistedFollowUpEntries,
+      ...followUps.filter((item) => item.isLoading || !persistedFollowUpIds.has(item.id)),
+    ],
+    [followUps, persistedFollowUpEntries, persistedFollowUpIds],
+  )
+  const feedback = feedbackOverride !== undefined ? feedbackOverride : feedbackStatus?.rating ?? null
+  const saved = savedOverride !== undefined ? savedOverride : savedStatus?.saved ?? false
 
   // Derived values
   const isNotFound = (error as { data?: { code?: string } } | null)?.data?.code === "NOT_FOUND"
@@ -296,14 +312,14 @@ export default function QueryDetailPage() {
 
   const handleSave = async () => {
     const previous = saved
-    setSaved(!previous)
+    setSavedOverride(!previous)
     try {
       const result = await saveMutation.mutateAsync({ queryId })
-      setSaved(result.saved)
+      setSavedOverride(result.saved)
       void utils.compliance.getSavedStatus.invalidate({ queryId })
       toast(result.saved ? "Response saved" : "Removed from saved")
     } catch (err) {
-      setSaved(previous)
+      setSavedOverride(previous)
       toast.error("Couldn't update saved response", { description: getErrorMessage(err) })
     }
   }
@@ -312,14 +328,14 @@ export default function QueryDetailPage() {
     const previous = feedback
     const optimistic = previous === rating ? null : rating
 
-    setFeedback(optimistic)
+    setFeedbackOverride(optimistic)
 
     try {
       const result = await feedbackMutation.mutateAsync({ queryId, rating })
-      setFeedback(result.rating)
+      setFeedbackOverride(result.rating)
       void utils.compliance.getFeedbackStatus.invalidate({ queryId })
     } catch (err) {
-      setFeedback(previous)
+      setFeedbackOverride(previous)
       toast.error("Couldn't save feedback", { description: getErrorMessage(err) })
     }
   }
@@ -583,10 +599,10 @@ export default function QueryDetailPage() {
                 </p>
               )}
 
-              {followUps.length > 0 ? (
+              {visibleFollowUps.length > 0 ? (
                 <div className="mt-6 space-y-4">
                   <h3 className="text-base font-semibold text-foreground">Follow-ups</h3>
-                  {followUps.map((item) => (
+                  {visibleFollowUps.map((item) => (
                     <div
                       key={item.id}
                       className="rounded-lg border border-border/50 bg-muted/30 p-4"
