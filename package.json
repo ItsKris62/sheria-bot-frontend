@@ -40,7 +40,7 @@
     "@supabase/supabase-js": "^2.104.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tanstack/react-query": "^5.90.21",
-    "@sheriabot/api-types": "^1.0.0",
+    "@sheriabot/api-types": "file:../fintech-regulatory-backend/api-types",
     "@trpc/client": "^11.10.0",
     "@trpc/react-query": "^11.10.0",
     "@vercel/analytics": "^1.6.1",
@@ -73,6 +73,8 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "eslint": "^9.39.2",
+    "eslint-config-next": "16.1.6",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^22",
     "@types/react": "^19",

@@ -39,7 +39,10 @@ export default function IntelligenceFeedPage() {
     limit: 50,
   })
 
-  const alerts: AlertItem[] = Array.isArray(data?.alerts) ? (data.alerts as AlertItem[]) : []
+  const alerts: AlertItem[] = useMemo(
+    () => Array.isArray(data?.alerts) ? (data.alerts as unknown as AlertItem[]) : [],
+    [data],
+  )
   const categories = useMemo(
     () => Array.from(new Set(alerts.map((item) => item.category).filter(Boolean))).sort(),
     [alerts],

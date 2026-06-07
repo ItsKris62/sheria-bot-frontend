@@ -188,7 +188,7 @@ export default function UsersPage() {
     status: string; emailVerified: boolean; lastLoginAt: Date | string | null
     organization?: { name: string } | null
   }
-  const users = ((data as { users?: UserRow[] })?.users ?? []) as UserRow[]
+  const users = ((data as unknown as { users?: UserRow[] })?.users ?? []) as UserRow[]
   const total: number = (data as { pagination?: { total?: number } })?.pagination?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / limit))
 

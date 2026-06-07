@@ -30,21 +30,42 @@ interface ContactListItem {
   _count: { memberships: number };
 }
 
+interface PreviewResult {
+  count: number;
+  sample: { id: string; firstName?: string | null; lastName?: string | null; email: string }[];
+}
+
+interface MarketingListsFacade {
+  create: {
+    useMutation: (opts: {
+      onSuccess: () => void;
+      onError: (err: { message: string }) => void;
+    }) => { mutate: (input: unknown) => void; isPending: boolean };
+  };
+  previewDynamic: {
+    useQuery: (
+      input: { filterCriteria: Record<string, unknown> },
+      opts: { enabled: boolean },
+    ) => { refetch: () => Promise<{ data?: PreviewResult }>; isFetching: boolean };
+  };
+}
+
 // ---------------------------------------------------------------------------
 // New List Dialog
 // ---------------------------------------------------------------------------
 
 function NewListDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const utils = trpc.useUtils();
+  const marketingLists = trpc.adminMarketing.lists as unknown as MarketingListsFacade;
   const [step,        setStep]        = useState(1);
   const [name,        setName]        = useState("");
   const [description, setDescription] = useState("");
   const [isDynamic,   setIsDynamic]   = useState(false);
   const [filterJson,  setFilterJson]  = useState("{}");
   const [jsonError,   setJsonError]   = useState("");
-  const [preview,     setPreview]     = useState<{ count: number; sample: { id: string; firstName?: string | null; lastName?: string | null; email: string }[] } | null>(null);
+  const [preview,     setPreview]     = useState<PreviewResult | null>(null);
 
-  const createMutation = trpc.adminMarketing.lists.create.useMutation({
+  const createMutation = marketingLists.create.useMutation({
     onSuccess: () => {
       toast.success("List created");
       void utils.adminMarketing.lists.list.invalidate();
@@ -54,7 +75,7 @@ function NewListDialog({ open, onClose }: { open: boolean; onClose: () => void }
     onError: (err) => toast.error(err.message),
   });
 
-  const previewQuery = trpc.adminMarketing.lists.previewDynamic.useQuery(
+  const previewQuery = marketingLists.previewDynamic.useQuery(
     { filterCriteria: (() => { try { return JSON.parse(filterJson) as Record<string, unknown>; } catch { return {}; } })() },
     { enabled: false },
   );
@@ -106,7 +127,7 @@ function NewListDialog({ open, onClose }: { open: boolean; onClose: () => void }
 
         {step === 2 && isDynamic && (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">Define filter criteria as JSON. Supported fields: <code>consentStatus</code>, <code>suppressedAt</code> ("null"/"not_null"), <code>companyId</code>, <code>role</code></p>
+            <p className="text-sm text-muted-foreground">Define filter criteria as JSON. Supported fields: <code>consentStatus</code>, <code>suppressedAt</code> (&quot;null&quot;/&quot;not_null&quot;), <code>companyId</code>, <code>role</code></p>
             <textarea
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono min-h-[120px]"
               value={filterJson}

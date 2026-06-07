@@ -174,6 +174,7 @@ export default function StartupDashboard() {
   const {
     data: upcomingDeadlines = [],
     isLoading: deadlinesLoading,
+    dataUpdatedAt: upcomingDeadlinesUpdatedAt,
   } = trpc.calendar.upcoming.useQuery(
     { daysAhead: 30 },
     { staleTime: 5 * 60 * 1000, enabled: calendarEnabled },
@@ -198,7 +199,7 @@ export default function StartupDashboard() {
     isRead: boolean
   }
   const regulatoryAlerts: AlertItem[] = Array.isArray(alertsData?.alerts)
-    ? (alertsData.alerts as AlertItem[])
+    ? (alertsData.alerts as unknown as AlertItem[])
     : []
 
   const overallTheme = dashboardData
@@ -382,7 +383,7 @@ export default function StartupDashboard() {
                     regulation: string | null
                   }>).map((event) => {
                     const dueDate = new Date(event.dueDate)
-                    const daysUntil = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                    const daysUntil = Math.ceil((dueDate.getTime() - upcomingDeadlinesUpdatedAt) / (1000 * 60 * 60 * 24))
                     const isUrgent = daysUntil <= 3 && daysUntil > 0
                     const isOverdue = daysUntil <= 0
                     const priCfg = PRIORITY_CONFIG[event.priority as keyof typeof PRIORITY_CONFIG]
