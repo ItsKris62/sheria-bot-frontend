@@ -1,6 +1,3 @@
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -9,6 +6,9 @@ import {
   ThumbsUp,
   ThumbsDown,
   BookOpen,
+  Calendar,
+  Clock,
+  CheckCircle2,
 } from "lucide-react"
 
 const knowledgeBaseArticles: Record<string, {
@@ -229,152 +229,170 @@ export default async function KnowledgeBaseArticlePage({ params }: PageProps) {
 
   if (!article) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
-        <BookOpen className="h-12 w-12 text-muted-foreground" />
-        <h1 className="mt-4 text-2xl font-bold text-foreground">Article Not Found</h1>
-        <p className="mt-2 text-muted-foreground">The article you&apos;re looking for doesn&apos;t exist.</p>
-        <Button asChild className="mt-6 bg-primary text-primary-foreground">
-          <Link href="/knowledge-base">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Knowledge Base
-          </Link>
-        </Button>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4 font-sans text-zinc-400 selection:bg-emerald-500/30 selection:text-emerald-200">
+        <div className="w-16 h-16 rounded-full bg-zinc-900/50 border border-zinc-800 flex items-center justify-center mb-6">
+          <BookOpen strokeWidth={1.5} className="h-8 w-8 text-zinc-500" />
+        </div>
+        <h1 className="mt-4 text-3xl font-medium text-white tracking-tight">Article Not Found</h1>
+        <p className="mt-3 text-zinc-500">The framework or document you&apos;re looking for doesn&apos;t exist.</p>
+        <Link 
+          href="/knowledge-base"
+          className="mt-8 flex items-center gap-2 px-6 py-3 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+        >
+          <ArrowLeft strokeWidth={1.5} className="w-4 h-4" />
+          Back to Knowledge Base
+        </Link>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col">
-      {/* Header */}
-      <section className="border-b border-border py-12">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-black text-zinc-400 font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
+      {/* --- HEADER SECTION --- */}
+      <div className="max-w-3xl mx-auto px-6 pt-20 md:pt-28 pb-12">
+        <header>
           <Link 
             href="/knowledge-base" 
-            className="inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="group inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-emerald-400 transition-colors mb-12 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-md"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft strokeWidth={1.5} className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             Back to Knowledge Base
           </Link>
 
-          <Badge variant="outline" className="mt-6 block w-fit">
+          <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-medium uppercase tracking-widest text-zinc-400 mb-6">
             {article.category}
-          </Badge>
+          </div>
 
-          <h1 className="mt-4 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight leading-tight mb-8">
             {article.title}
           </h1>
 
-          <p className="mt-4 text-sm text-muted-foreground">
-            Last updated: {new Date(article.lastUpdated).toLocaleDateString("en-KE", { 
-              month: "long", 
-              day: "numeric", 
-              year: "numeric" 
-            })}
-          </p>
-        </div>
-      </section>
-
-      {/* Content */}
-      <section className="py-12">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="prose prose-invert max-w-none">
-            {article.content.map((block, index) => {
-              if (block.type === "heading") {
-                return (
-                  <h2 key={index} className="mb-4 mt-8 text-xl font-semibold text-foreground">
-                    {block.text}
-                  </h2>
-                )
-              }
-              if (block.type === "paragraph") {
-                return (
-                  <p key={index} className="mb-4 text-muted-foreground leading-relaxed">
-                    {block.text}
-                  </p>
-                )
-              }
-              if (block.type === "list") {
-                return (
-                  <div key={index} className="mb-4">
-                    <p className="mb-2 text-muted-foreground">{block.text}</p>
-                    <ul className="space-y-2 pl-6">
-                      {block.items?.map((item, itemIndex) => (
-                        <li key={itemIndex} className="flex items-start gap-2 text-muted-foreground">
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )
-              }
-              return null
-            })}
+          <div className="flex flex-wrap items-center gap-6 text-sm text-zinc-500 pb-12 border-b border-zinc-900/80">
+            <div className="flex items-center gap-2">
+              <Calendar strokeWidth={1.5} className="w-4 h-4 text-zinc-600" />
+              <span>
+                Last updated: {new Date(article.lastUpdated).toLocaleDateString("en-KE", { 
+                  month: "long", 
+                  day: "numeric", 
+                  year: "numeric" 
+                })}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock strokeWidth={1.5} className="w-4 h-4 text-zinc-600" />
+              <span>5 min read</span>
+            </div>
           </div>
+        </header>
 
-          {/* Feedback */}
-          <Card className="mt-12 border-border/50 bg-card/50">
-            <CardContent className="p-6">
-              <p className="text-sm text-muted-foreground">Was this article helpful?</p>
-              <div className="mt-3 flex gap-2">
-                <Button variant="outline" size="sm" className="bg-transparent">
-                  <ThumbsUp className="mr-2 h-4 w-4" />
-                  Yes
-                </Button>
-                <Button variant="outline" size="sm" className="bg-transparent">
-                  <ThumbsDown className="mr-2 h-4 w-4" />
-                  No
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {/* --- CONTENT AREA --- */}
+        <div className="py-12">
+          {article.content.map((block, index) => {
+            if (block.type === "heading") {
+              return (
+                <h2 key={index} className="text-2xl md:text-3xl font-medium text-white mb-6 mt-12 tracking-tight leading-snug">
+                  {block.text}
+                </h2>
+              )
+            }
+            if (block.type === "paragraph") {
+              return (
+                <p key={index} className="text-lg text-zinc-400 leading-relaxed mb-6">
+                  {block.text}
+                </p>
+              )
+            }
+            if (block.type === "list") {
+              return (
+                <div key={index} className="mb-10 mt-6 bg-zinc-950/30 p-6 md:p-8 rounded-3xl border border-zinc-800/50">
+                  <p className="text-lg font-medium text-zinc-200 mb-6">{block.text}</p>
+                  <ul className="space-y-4">
+                    {block.items?.map((item, itemIndex) => (
+                      <li key={itemIndex} className="flex items-start gap-4">
+                        <div className="mt-0.5 w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                          <CheckCircle2 strokeWidth={1.5} className="w-3.5 h-3.5 text-emerald-400" />
+                        </div>
+                        <span className="text-zinc-300 leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            }
+            return null
+          })}
+
+          {/* --- FEEDBACK MODULE --- */}
+          <div className="mt-20 bg-zinc-950 border border-zinc-800/80 rounded-3xl p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl">
+            <div>
+              <h3 className="text-white font-medium mb-1">Was this article helpful?</h3>
+              <p className="text-sm text-zinc-500">Your feedback helps us improve our compliance corpus.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                <ThumbsUp strokeWidth={1.5} className="w-4 h-4" />
+                <span className="text-sm font-medium">Yes</span>
+              </button>
+              <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-all focus:outline-none focus:ring-2 focus:ring-red-500/50">
+                <ThumbsDown strokeWidth={1.5} className="w-4 h-4" />
+                <span className="text-sm font-medium">No</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
 
-      {/* Related Articles */}
-      <section className="border-t border-border bg-muted/30 py-12">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-semibold text-foreground">Related Articles</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+      {/* --- RELATED ARTICLES --- */}
+      <div className="py-24 border-t border-zinc-900 bg-black">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="mb-10 text-2xl font-medium text-white tracking-tight">Related Frameworks</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {article.relatedArticles.map((related) => (
-              <Link key={related.slug} href={`/knowledge-base/${related.slug}`}>
-                <Card className="group h-full border-border/50 bg-card/50 transition-all hover:border-primary/50">
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                      <FileText className="h-5 w-5 text-primary" />
+              <Link key={related.slug} href={`/knowledge-base/${related.slug}`} className="group outline-none">
+                <article className="relative bg-zinc-950/40 border border-zinc-800/60 rounded-3xl p-7 flex flex-col h-full hover:-translate-y-1.5 hover:shadow-[0_12px_40px_rgba(0,135,90,0.08)] hover:border-emerald-500/30 transition-all duration-500 focus-within:ring-2 focus-within:ring-emerald-500/50">
+                  <div className="mb-6">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-900/80 border border-zinc-800/80 group-hover:border-emerald-500/30 transition-colors duration-500 shadow-inner">
+                      <FileText strokeWidth={1.5} className="w-5 h-5 text-zinc-300 group-hover:text-emerald-400 transition-colors" />
                     </div>
-                    <span className="font-medium text-foreground transition-colors group-hover:text-primary">
-                      {related.title}
-                    </span>
-                  </CardContent>
-                </Card>
+                  </div>
+                  <h3 className="text-xl font-medium text-white mb-3 tracking-tight leading-snug group-hover:text-emerald-50 transition-colors duration-300">
+                    {related.title}
+                  </h3>
+                  <div className="mt-auto pt-6 flex items-center text-emerald-400 text-sm font-medium">
+                    Read article <ArrowRight strokeWidth={1.5} className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </article>
               </Link>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* CTA */}
-      <section className="py-12">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <Card className="border-primary/50 bg-gradient-to-br from-primary/10 via-card to-secondary/10">
-            <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold text-foreground">
-                Need More Specific Guidance?
-              </h2>
-              <p className="mx-auto mt-2 max-w-lg text-muted-foreground">
-                SheriaBot can answer your specific compliance questions with AI-powered analysis.
-              </p>
-              <Button asChild className="mt-6 bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link href="/register">
-                  Try SheriaBot Free
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+      {/* --- CTA SECTION --- */}
+      <div className="pb-24 px-6 max-w-7xl mx-auto">
+        <div className="relative overflow-hidden bg-zinc-950 border border-zinc-800/60 rounded-3xl p-10 md:p-16 text-center shadow-2xl">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,135,90,0.1)_0%,transparent_70%)] pointer-events-none" />
+          <div className="relative z-10 max-w-2xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-4">
+              Need More Specific Guidance?
+            </h2>
+            <p className="text-zinc-400 text-lg mb-8 leading-relaxed">
+              SheriaBot can answer your specific compliance questions with AI-powered analysis tailored to your fintech model.
+            </p>
+            <Link 
+              href="/register" 
+              className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:ring-offset-2 focus:ring-offset-zinc-950 shadow-[0_0_20px_rgba(0,135,90,0.3)] hover:shadow-[0_0_30px_rgba(0,135,90,0.5)] hover:-translate-y-0.5"
+            >
+              Try SheriaBot Free
+              <ArrowRight strokeWidth={1.5} className="ml-2 w-5 h-5" />
+            </Link>
+          </div>
         </div>
-      </section>
+      </div>
     </div>
+  )
+}
+  )
+}
   )
 }
