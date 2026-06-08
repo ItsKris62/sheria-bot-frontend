@@ -2,6 +2,7 @@
 
 import { type MouseEvent, type ReactNode, useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { DemoModal } from "@/components/landing/demo-modal"
 import { PricingSection } from "@/components/landing/pricing-section"
 import { ComplianceEvidenceSection } from "@/components/landing/compliance-evidence-section"
@@ -18,14 +19,25 @@ import {
   Shield,
   FileText,
   ArrowRight,
+  Bell,
   BookOpen,
+  Calendar,
+  LayoutDashboard,
+  Search,
+  ClipboardCheck,
+  Folder,
+  HelpCircle,
   Lock,
   ChevronRight,
   X,
   CheckCircle2,
   AlertTriangle,
+  Circle,
+  Scale,
   Upload,
   FileDown,
+  Send,
+  Settings,
   Sparkles,
   Quote,
 } from "lucide-react"
@@ -417,6 +429,331 @@ function HeroMockup() {
    Feature card visual snippets
    ────────────────────────────────────────────────────────── */
 
+function ProductHeroMockup() {
+  const navGroups = [
+    {
+      label: "Overview",
+      items: [{ label: "Dashboard", icon: LayoutDashboard }],
+    },
+    {
+      label: "Compliance",
+      items: [
+        { label: "Compliance Query", icon: Search, active: true, badge: "AI" },
+        { label: "Checklists", icon: ClipboardCheck },
+        { label: "Gap Analysis", icon: AlertTriangle },
+      ],
+    },
+    {
+      label: "Management",
+      items: [
+        { label: "Applications", icon: FileText },
+        { label: "Calendar", icon: Calendar },
+        { label: "Documents", icon: Folder },
+      ],
+    },
+  ]
+
+  const suggestedQueryPills = [
+    "What are the KYC requirements for digital lenders in Kenya?",
+    "How do I comply with the Data Protection Act for mobile money services?",
+    "What are the CBK reporting requirements for payment service providers?",
+  ]
+
+  const sidebarSuggestions = [
+    "What are the KYC requirements for digital lenders in Kenya?",
+    "How do I comply with the Data Protection Act for mobile money services?",
+    "What are the CBK reporting requirements for payment service providers?",
+    "Which AML controls apply before onboarding new customers?",
+  ]
+
+  const recentQueries = [
+    "What consumer protection obligations apply to fintech companies in Kenya?",
+    "What are the KYC requirements for digital lenders in Kenya?",
+  ]
+
+  return (
+    <div className="relative mx-auto mt-14 max-w-7xl px-3 sm:px-6 lg:px-0" data-parallax="0.04">
+      <div
+        className="pointer-events-none absolute -inset-x-8 -inset-y-7 rounded-[32px] bg-[radial-gradient(circle_at_48%_0%,rgba(30,215,96,0.22),transparent_43%),radial-gradient(circle_at_92%_36%,rgba(198,161,91,0.11),transparent_34%)] blur-2xl"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute inset-x-10 -bottom-7 h-14 rounded-[100%] bg-black/70 blur-2xl"
+        aria-hidden="true"
+      />
+
+      <div className="relative overflow-hidden rounded-2xl border border-[#26342F] bg-[#020403] shadow-[0_48px_140px_rgba(0,0,0,0.78),0_18px_56px_rgba(30,215,96,0.12),inset_0_1px_0_rgba(255,255,255,0.08)]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+        <div className="flex items-center gap-3 border-b border-[#1D2925] bg-[#070A08] px-3 py-2.5 sm:px-4">
+          <div className="flex shrink-0 gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]/80" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]/80" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]/80" />
+          </div>
+          <div className="flex h-7 min-w-0 flex-1 items-center rounded-md border border-[#1D2925] bg-[#0D1411] px-3 text-[11px] text-[#7F8A85]">
+            <Lock className="mr-2 h-3 w-3 shrink-0 text-[#1ED760]/80" />
+            <span className="truncate">app.sheriabot.com/startup/compliance-query</span>
+          </div>
+          <div className="hidden items-center gap-2 rounded-md border border-[#1ED760]/20 bg-[#1ED760]/10 px-2.5 py-1 text-[10px] font-semibold text-[#1ED760] sm:flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#1ED760] shadow-[0_0_10px_rgba(30,215,96,0.85)]" />
+            Legal corpus live
+          </div>
+        </div>
+
+        <div className="grid min-h-[560px] grid-cols-1 bg-[#020403] lg:grid-cols-[204px_minmax(0,1fr)_250px] xl:grid-cols-[224px_minmax(0,1fr)_280px]">
+          <aside className="hidden border-r border-[#1D2925] bg-[#020403] p-4 lg:flex lg:flex-col">
+            <div className="mb-7 flex items-center gap-3">
+              <Image
+                src="/favicon-logo.png"
+                alt=""
+                width={36}
+                height={36}
+                className="h-9 w-9 rounded-xl border border-[#1ED760]/25 bg-[#1ED760]/10 object-contain p-1.5 shadow-glow-green-sm"
+                aria-hidden="true"
+              />
+              <div className="min-w-0">
+                <p className="brand-wordmark text-sm font-bold text-[#F5F7F6]">
+                  Sheria<span className="text-brand-green">Bot</span>
+                </p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1ED760]/80">
+                  Dashboard
+                </p>
+              </div>
+            </div>
+
+            <nav className="space-y-5" aria-label="SheriaBot product preview navigation">
+              {navGroups.map((group) => (
+                <div key={group.label}>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-[#0FA958]">
+                    {group.label}
+                  </p>
+                  <div className="space-y-1">
+                    {group.items.map((item) => (
+                      <div
+                        key={item.label}
+                        className={`relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[11px] font-medium transition-colors ${
+                          item.active ? "bg-[#1ED760]/15 text-[#1ED760]" : "text-[#8F9994]"
+                        }`}
+                      >
+                        {item.active && (
+                          <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[#1ED760]" />
+                        )}
+                        <item.icon className={`h-3.5 w-3.5 shrink-0 ${item.active ? "text-[#1ED760]" : "text-[#7F8A85]"}`} />
+                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                        {item.badge && (
+                          <span className="rounded-full bg-[#1ED760]/20 px-1.5 py-0.5 text-[9px] font-bold text-[#1ED760]">
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </nav>
+
+            <div className="mt-auto border-t border-[#1D2925] pt-4">
+              {[
+                { label: "Settings", icon: Settings },
+                { label: "Support", icon: HelpCircle },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[11px] font-medium text-[#8F9994]">
+                  <item.icon className="h-3.5 w-3.5" />
+                  {item.label}
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          <main className="min-w-0 bg-[#050706]">
+            <div className="flex min-h-full flex-col">
+              <div className="flex items-center justify-between gap-3 border-b border-[#1D2925] px-4 py-3 sm:px-5">
+                <div className="flex min-w-0 items-center gap-3 lg:hidden">
+                  <Image
+                    src="/favicon-logo.png"
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 rounded-lg border border-[#1ED760]/25 bg-[#1ED760]/10 object-contain p-1"
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <p className="brand-wordmark text-sm font-bold text-[#F5F7F6]">
+                      Sheria<span className="text-brand-green">Bot</span>
+                    </p>
+                    <p className="text-[10px] text-[#1ED760]">Compliance Query</p>
+                  </div>
+                </div>
+                <div className="hidden h-9 w-full max-w-sm items-center gap-2 rounded-lg border border-[#1D2925] bg-[#020403] px-3 text-xs text-[#7F8A85] md:flex">
+                  <Search className="h-3.5 w-3.5 text-[#1ED760]" />
+                  Search regulations, queries, documents...
+                </div>
+                <div className="ml-auto flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="hidden h-8 w-8 items-center justify-center rounded-lg border border-[#1D2925] bg-[#0D1411] text-[#B8C0BC] sm:flex"
+                    aria-label="Notifications"
+                  >
+                    <Bell className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    className="hidden h-8 w-8 items-center justify-center rounded-lg border border-[#1D2925] bg-[#0D1411] text-[#B8C0BC] sm:flex"
+                    aria-label="Help"
+                  >
+                    <HelpCircle className="h-3.5 w-3.5" />
+                  </button>
+                  <div className="flex items-center gap-2 rounded-full border border-[#1D2925] bg-[#0D1411] py-1 pl-1 pr-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1ED760] text-[10px] font-bold text-[#041008]">
+                      CR
+                    </span>
+                    <span className="hidden text-[11px] font-medium leading-none text-[#F5F7F6] sm:inline">
+                      Startup
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 p-4 sm:p-5">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-[#F5F7F6] sm:text-2xl">Compliance Query</h3>
+                  <p className="mt-1 max-w-2xl text-xs leading-5 text-[#B8C0BC] sm:text-sm">
+                    Ask questions about Kenya&apos;s fintech regulations and get AI-powered answers with legal citations
+                  </p>
+                </div>
+
+                <div className="flex min-h-[390px] flex-col overflow-hidden rounded-2xl border border-[#1D2925] bg-[#080D0B] shadow-[0_18px_50px_rgba(0,0,0,0.28)] sm:min-h-[430px]">
+                  <div className="flex flex-1 flex-col items-center justify-center px-4 py-10 text-center sm:px-8">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#1ED760]/25 bg-[#1ED760]/10 shadow-[0_0_24px_rgba(30,215,96,0.14),inset_0_1px_0_rgba(245,247,246,0.08)]">
+                      <Image
+                        src="/favicon-logo.png"
+                        alt=""
+                        width={44}
+                        height={44}
+                        className="h-10 w-10 object-contain"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <h4 className="mt-5 text-xl font-semibold text-[#F5F7F6] sm:text-2xl">
+                      Ask a Compliance Question
+                    </h4>
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-[#B8C0BC]">
+                      Get instant answers about Kenya&apos;s fintech regulations, CBK guidelines, data protection requirements, and more.
+                    </p>
+
+                    <div className="mt-7 w-full max-w-2xl">
+                      <p className="mb-3 text-xs font-medium text-[#8F9994]">Suggested queries:</p>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {suggestedQueryPills.map((query) => (
+                          <button
+                            key={query}
+                            type="button"
+                            className="max-w-full rounded-full border border-[#2D3B35] bg-[#121817] px-3.5 py-2 text-xs leading-5 text-[#F5F7F6] transition-colors hover:border-[#1ED760]/35 hover:bg-[#1ED760]/10 sm:max-w-[330px]"
+                          >
+                            {query}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-[#1D2925] p-3 sm:p-4">
+                    <div className="flex gap-2">
+                      <div className="flex min-h-11 flex-1 items-center rounded-xl border border-[#1ED760]/25 bg-[#020403] px-3 text-left text-xs leading-5 text-[#B8C0BC] shadow-[0_0_0_1px_rgba(30,215,96,0.05),0_0_18px_rgba(30,215,96,0.10)] sm:text-sm">
+                        Ask about KYC requirements, data protection, CBK guidelines...
+                      </div>
+                      <button
+                        type="button"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1ED760] text-[#041008] shadow-[0_14px_30px_rgba(30,215,96,0.20)]"
+                        aria-label="Ask SheriaBot"
+                      >
+                        <Send className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <p className="mt-2 text-[11px] leading-5 text-[#7F8A85]">
+                      Answers are AI-generated based on Kenya&apos;s legal corpus. Always verify with official sources.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+
+          <aside className="grid gap-3 border-t border-[#1D2925] bg-[#020403] p-4 md:grid-cols-3 lg:block lg:space-y-4 lg:border-l lg:border-t-0 xl:p-5">
+            <div className="rounded-2xl border border-[#1D2925] bg-[#080D0B] p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Search className="h-4 w-4 text-[#1ED760]" />
+                <p className="text-sm font-semibold text-[#F5F7F6]">Suggested Queries</p>
+              </div>
+              <div className="space-y-2">
+                {sidebarSuggestions.map((query) => (
+                  <button
+                    key={query}
+                    type="button"
+                    className="flex w-full items-start gap-2 rounded-xl border border-[#1D2925] bg-[#050706] p-2.5 text-left text-[11px] leading-4 text-[#B8C0BC]"
+                  >
+                    <Search className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#7F8A85]" />
+                    <span className="line-clamp-2">{query}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#1D2925] bg-[#080D0B] p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <ClockIcon />
+                <p className="text-sm font-semibold text-[#F5F7F6]">Recent Queries</p>
+              </div>
+              <div className="space-y-2">
+                {recentQueries.map((query, index) => (
+                  <div key={query} className="rounded-xl border border-[#1D2925] bg-[#050706] p-3">
+                    <p className="line-clamp-2 text-[11px] leading-4 text-[#F5F7F6]">{query}</p>
+                    <p className="mt-1.5 text-[10px] text-[#7F8A85]">{index === 0 ? "2h ago" : "Yesterday"}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#1ED760]/20 bg-[#1ED760]/[0.06] p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#1ED760]/25 bg-[#1ED760]/10">
+                  <BookOpen className="h-5 w-5 text-[#1ED760]" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#F5F7F6]">Legal Corpus</p>
+                  <p className="text-xs font-medium text-[#1ED760]">50+ Kenyan laws indexed</p>
+                </div>
+              </div>
+              <p className="mt-3 text-[11px] leading-5 text-[#B8C0BC]">
+                Our AI is trained on CBK guidelines, Data Protection Act, National Payment System Act, and other relevant Kenyan legislation.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ClockIcon() {
+  return (
+    <svg
+      className="h-4 w-4 text-[#1ED760]"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  )
+}
+
 function CitationSnippet() {
   return (
     <div className="mt-4 rounded-lg border border-[#1D2925] bg-[#050706] p-3">
@@ -779,7 +1116,7 @@ export default function LandingPage() {
           </div>
 
           {/* Hero product mockup */}
-          <HeroMockup />
+          <ProductHeroMockup />
         </div>
       </AmbientSection>
 

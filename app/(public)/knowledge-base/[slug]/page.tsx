@@ -392,7 +392,3 @@ export default async function KnowledgeBaseArticlePage({ params }: PageProps) {
     </div>
   )
 }
-  )
-}
-  )
-}
