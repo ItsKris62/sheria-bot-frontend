@@ -34,17 +34,17 @@ const plans: PricingPlan[] = [
     name: "Startup",
     tone: "startup",
     description:
-      "For fintech teams preparing licensing, policies, and basic compliance workflows.",
+      "For pre-seed and seed fintech teams.",
     bestFor:
-      "Replacing manual regulatory research and spreadsheet-based compliance tracking.",
+      "Replacing manual regulatory research with AI-cited answers and basic compliance tracking.",
     monthlyPrice: 4999,
     yearlyPrice: 49790,
     features: [
-      "Unlimited compliance queries",
-      "5 checklist generations/month",
-      "Regulatory alerts",
-      "Basic analytics",
-      "Email support",
+      "Basic RAG compliance queries",
+      "Standard compliance checklists",
+      "1 admin seat",
+      "Kenyan regulatory source citations",
+      "Closed pilot access",
     ],
     cta: "Start Compliance Trial",
     href: "/register?plan=startup",
@@ -52,20 +52,19 @@ const plans: PricingPlan[] = [
   {
     name: "Business",
     tone: "business",
-    label: "Recommended for Operating Fintechs",
+    label: "Most Popular",
     description:
-      "For operating fintech teams managing recurring compliance tasks, checklists, reporting, and gap analysis.",
+      "For Series A and scaling fintech teams.",
     bestFor:
       "Teams needing audit-ready workflows, recurring monitoring, and operational compliance visibility.",
     monthlyPrice: 44999,
     yearlyPrice: 448190,
     features: [
-      "Everything in Startup",
+      "Advanced Gap Analysis",
       "Unlimited checklist generations",
-      "Gap analysis workspace",
       "API access",
-      "Advanced analytics",
-      "Priority support",
+      "6 team seats",
+      "Priority compliance workflows",
     ],
     cta: "Run Business Compliance Trial",
     href: "/register?plan=business",
@@ -74,20 +73,18 @@ const plans: PricingPlan[] = [
     name: "Enterprise",
     tone: "enterprise",
     description:
-      "For regulated institutions needing governance, audit logs, legal review workflows, and custom integrations.",
+      "For banks, PSPs, and regulated institutions.",
     bestFor:
-      "Organizations requiring institutional-grade compliance operations and oversight.",
+      "Organizations requiring institutional-grade compliance operations, custom ingestion, and oversight.",
     monthlyPrice: "Custom",
     yearlyPrice: "Custom",
     features: [
       "Everything in Business",
-      "Dedicated compliance workspace",
-      "Policy generation workflows",
-      "Legal corpus management",
-      "Role-based access controls",
-      "Custom integrations",
-      "Audit logs",
-      "Priority onboarding",
+      "On-premise deployment options",
+      "Custom regulatory ingestion",
+      "Dedicated account manager",
+      "Enterprise controls and reporting",
+      "Multi-organization support",
     ],
     cta: "Book Enterprise Demo",
     href: "/contact?subject=enterprise",
@@ -420,10 +417,10 @@ export function PricingSection({ showEnterpriseReassurance = true }: { showEnter
             Pricing
           </p>
           <h2 className="mx-auto mt-6 max-w-[22rem] text-balance text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-[#F5F7F6] sm:max-w-3xl sm:text-5xl lg:text-6xl">
-            Simple, transparent <span className="block sm:inline">pricing</span>
+            Enterprise-Grade Compliance. <span className="block sm:inline">Startup-Friendly Pricing.</span>
           </h2>
           <p className="mx-auto mt-6 max-w-[20rem] text-base leading-7 text-[#B8C0BC] sm:max-w-xl sm:text-lg sm:leading-8">
-            Start with a 14-day free trial. No credit card required.
+            Lock in our early-adopter rates during the closed pilot phase.
           </p>
 
           <div className="mt-10 flex justify-center">
@@ -433,7 +430,7 @@ export function PricingSection({ showEnterpriseReassurance = true }: { showEnter
             {activePriceNarrative}
           </p>
           <p className="mx-auto mt-4 max-w-[20rem] text-sm leading-6 text-[#7F8A85] sm:max-w-none">
-            Built for fintech teams at every stage of compliance maturity.
+            Early-adopter pricing. Subject to change after pilot.
           </p>
         </div>
 
