@@ -90,8 +90,8 @@ importers:
         specifier: ^10.55.0
         version: 10.55.0(@opentelemetry/core@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.1(@opentelemetry/api@1.9.1))(next@16.1.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(webpack@5.107.2(postcss@8.5.6))
       '@sheriabot/api-types':
-        specifier: file:../fintech-regulatory-backend/api-types
-        version: file:../fintech-regulatory-backend/api-types(@prisma/client@7.8.0(typescript@5.7.3))(@trpc/server@11.10.0(typescript@5.7.3))
+        specifier: file:./api-types
+        version: file:api-types(@prisma/client@7.8.0(typescript@5.7.3))(@trpc/server@11.10.0(typescript@5.7.3))
       '@supabase/ssr':
         specifier: ^0.10.2
         version: 0.10.2(@supabase/supabase-js@2.104.0)
@@ -1777,8 +1777,8 @@ packages:
     peerDependencies:
       webpack: '>=5.0.0'
 
-  '@sheriabot/api-types@file:../fintech-regulatory-backend/api-types':
-    resolution: {directory: ../fintech-regulatory-backend/api-types, type: directory}
+  '@sheriabot/api-types@file:api-types':
+    resolution: {directory: api-types, type: directory}
     peerDependencies:
       '@prisma/client': ^7.4.0
       '@trpc/server': ^11.9.0
@@ -6051,7 +6051,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@sheriabot/api-types@file:../fintech-regulatory-backend/api-types(@prisma/client@7.8.0(typescript@5.7.3))(@trpc/server@11.10.0(typescript@5.7.3))':
+  '@sheriabot/api-types@file:api-types(@prisma/client@7.8.0(typescript@5.7.3))(@trpc/server@11.10.0(typescript@5.7.3))':
     dependencies:
       '@prisma/client': 7.8.0(typescript@5.7.3)
       '@trpc/server': 11.10.0(typescript@5.7.3)

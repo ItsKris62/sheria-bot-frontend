@@ -850,7 +850,7 @@ function ExportSnippet() {
   )
 }
 
-const featureSnippets: Record<string, () => JSX.Element> = {
+const featureSnippets: Record<string, () => ReactNode> = {
   "zero-hallucinations": CitationSnippet,
   "gap-analysis": GapAnalysisSnippet,
   "tailored-checklists": ChecklistSnippet,
