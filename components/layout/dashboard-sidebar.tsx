@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React, { useEffect, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -34,6 +34,7 @@ import {
 import { usePlan } from "@/lib/plan-context"
 import type { FeatureKey } from "@/lib/plan-context"
 import { useSidebar } from "@/lib/sidebar-context"
+import { useAlertNotifications } from "@/hooks/use-alert-notifications"
 
 export interface NavItem {
   title: string
@@ -103,7 +104,7 @@ export const startupNav: NavGroup[] = [
       { title: "Licenses", href: "/startup/licenses", icon: BadgeCheck, lockedFeature: "licenseManagement" },
       { title: "Calendar", href: "/startup/calendar", icon: Calendar },
       { title: "Documents", href: "/startup/documents", icon: Folder, lockedFeature: "documentRepository" },
-      { title: "Monitor", href: "/startup/monitor", icon: Bell, badge: 3 },
+      { title: "Monitor", href: "/startup/monitor", icon: Bell },
       { title: "Regulatory Alerts", href: "/dashboard/alerts", icon: Megaphone },
     ],
   },
@@ -117,8 +118,23 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
   const pathname = usePathname()
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar()
   const { hasFeature } = usePlan()
+  const { alertUnreadCount } = useAlertNotifications()
 
-  const navGroups = userType === "regulator" ? regulatorNav : startupNav
+  const baseNavGroups = userType === "regulator" ? regulatorNav : startupNav
+
+  // Inject the live alert unread count into the Monitor nav item badge
+  const navGroups = useMemo(() => {
+    if (userType !== "startup" || alertUnreadCount <= 0) return baseNavGroups
+
+    return baseNavGroups.map((group) => ({
+      ...group,
+      items: group.items.map((item) =>
+        item.href === "/startup/monitor"
+          ? { ...item, badge: alertUnreadCount }
+          : item
+      ),
+    }))
+  }, [baseNavGroups, userType, alertUnreadCount])
 
   // Auto-close mobile drawer on navigation
   useEffect(() => {
