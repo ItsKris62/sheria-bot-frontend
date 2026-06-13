@@ -290,6 +290,12 @@ export default function StartupDashboard() {
                     {trendInfo.points} pts vs 30 days ago
                   </Badge>
                 )}
+                
+                {dashboardData.lastUpdated && (
+                  <p className="mt-2 text-[10px] text-muted-foreground/60">
+                    Updated {formatDistanceToNow(new Date(dashboardData.lastUpdated), { addSuffix: true })}
+                  </p>
+                )}
               </div>
             </div>
           </CardHeader>
