@@ -65,17 +65,17 @@ const faqs = [
   {
     question: "What industries does SheriaBot support?",
     answer:
-      "SheriaBot is purpose-built for Kenya's financial services sector — digital lenders, payment processors, mobile money operators, microfinance institutions, investment platforms, and insurance fintechs. We cover the full regulatory stack: CBK licensing requirements, ODPC data protection obligations, CMA capital markets rules, and international frameworks like ISO 27001 and PCI-DSS that apply to Kenyan operators.",
+      "SheriaBot is purpose-built for Kenya's financial services sector digital lenders, payment processors, mobile money operators, microfinance institutions, investment platforms, and insurance fintechs. We cover the full regulatory stack: CBK licensing requirements, ODPC data protection obligations, CMA capital markets rules, and international frameworks like ISO 27001 and PCI-DSS that apply to Kenyan operators.",
   },
   {
     question: "Is there a free trial?",
     answer:
-      "Yes. All plans include a 14-day free trial with no credit card required. You get full access to compliance queries, checklist generation, and gap analysis during the trial so you can evaluate SheriaBot against your actual regulatory obligations — not a sandbox of dummy data.",
+      "Yes. All plans include a 14-day free trial with no credit card required. You get full access to compliance queries, checklist generation, and gap analysis during the trial so you can evaluate SheriaBot against your actual regulatory obligations not a sandbox of dummy data.",
   },
   {
     question: "How does SheriaBot stay current with regulatory changes?",
     answer:
-      "Our regulatory intelligence pipeline monitors official sources including the CBK website, Kenya Gazette, ODPC publications, CMA notices, and the National Council for Law Reporting. When new guidance is issued — whether a circular, a statutory instrument, or an enforcement notice — our team reviews and ingests it into the knowledge base within 48 hours. Users receive alerts for changes relevant to their compliance profile.",
+      "Our regulatory intelligence pipeline monitors official sources including the CBK website, Kenya Gazette, ODPC publications, CMA notices, and the National Council for Law Reporting. When new guidance is issued whether a circular, a statutory instrument, or an enforcement notice our team reviews and ingests it into the knowledge base within 48 hours. Users receive alerts for changes relevant to their compliance profile.",
   },
   {
     question: "Can SheriaBot integrate with our existing compliance tools?",
@@ -389,7 +389,7 @@ export default function ContactPage() {
                 Common Questions
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Quick answers before you reach out — though we&apos;re always happy to go deeper.
+                Quick answers before you reach out though we&apos;re always happy to go deeper.
               </p>
             </div>
 
@@ -419,7 +419,7 @@ export default function ContactPage() {
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
                 Join over 100 fintechs already using SheriaBot to navigate Kenya&apos;s regulatory
-                landscape — no compliance team required.
+                landscape no compliance team required.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">

@@ -44,7 +44,6 @@ const navigation: NavItem[] = [
   { name: "Features", href: "/#features", sectionId: "features" },
   { name: "Solutions", href: "/#solutions", sectionId: "solutions" },
   { name: "Pricing", href: "/#pricing", sectionId: "pricing" },
-  { name: "Testimonials", href: "/#testimonials", sectionId: "testimonials" },
   { name: "Knowledge Base", href: "/knowledge-base" },
   { name: "Blog", href: "/blog" },
 ]

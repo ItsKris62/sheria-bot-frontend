@@ -281,7 +281,7 @@ export default function CareersPage() {
                 Interested? Let&apos;s Talk.
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-                Whether you see a fit in our open roles or just want to introduce yourself — reach out.
+                Whether you see a fit in our open roles or just want to introduce yourself reach out.
                 We respond to every application personally.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">

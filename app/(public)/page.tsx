@@ -1033,17 +1033,6 @@ export default function LandingPage() {
       <AmbientSection className="relative flex flex-col items-center justify-center pt-28 pb-20 overflow-hidden min-h-[85vh]" density="normal">
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex flex-col items-center justify-center">
           <div className="mx-auto max-w-4xl text-center flex flex-col items-center">
-            {/* Trust badge */}
-            <div className="mb-8 animate-fade-up">
-              <Badge
-                variant="outline"
-                className="border-brand-green/25 bg-brand-green/5 text-brand-green px-4 py-1.5 text-xs font-medium tracking-wide"
-              >
-                <Lock className="mr-1.5 h-3 w-3" />
-                Encrypted workflows for Kenyan compliance teams.
-              </Badge>
-            </div>
-
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.08] animate-fade-up">
               <span className="text-balance">
@@ -1349,7 +1338,7 @@ export default function LandingPage() {
                 <span className="text-brand-green">built for Kenya&apos;s regulatory reality</span>?
               </h2>
               <p className="mt-6 text-lg text-foreground-muted max-w-2xl mx-auto">
-                Get cited answers, actionable checklists, and automated gap analyses — designed for Kenyan fintechs, PSPs, and compliance teams.
+                Get cited answers, actionable checklists, and automated gap analyses designed for Kenyan fintechs, PSPs, and compliance teams.
               </p>
               <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button 

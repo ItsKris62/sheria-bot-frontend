@@ -131,8 +131,7 @@ export function SecurityPolicyContent() {
       {/* Section 1 — Commitment */}
       <DocSection id="commitment" number="1" title="Our Commitment to Security">
         <p>
-          SheriaBot processes sensitive regulatory and compliance data on behalf of Kenya&apos;s fintech sector —
-          including CBK licence information, internal compliance documents, regulatory gap analyses, and AI
+          SheriaBot processes sensitive regulatory and compliance data on behalf of Kenya&apos;s fintech sector           including CBK licence information, internal compliance documents, regulatory gap analyses, and AI
           compliance assessments. This makes security foundational to our operations, not an afterthought.
         </p>
         <p>
