@@ -24,6 +24,7 @@ import {
   Bookmark,
   BookmarkCheck,
   AlertCircle,
+  FileQuestion,
 } from "lucide-react"
 import {
   useComplianceStream,
@@ -36,6 +37,7 @@ import { ThinkingIndicator } from "@/components/compliance/thinking-indicator"
 import { AbstainCard } from "@/components/compliance/abstain-card"
 import { UngroundedBanner } from "@/components/compliance/ungrounded-banner"
 import { AllQueriesDialog } from "@/components/compliance/all-queries-dialog"
+import { ReportMissingDocumentDialog } from "@/components/corpus-gap-report/report-missing-document-dialog"
 import { isRegulatoryArea, REGULATORY_AREA_NAMES } from "@/lib/compliance/compliance.types"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
@@ -510,6 +512,16 @@ export default function ComplianceQueryPage() {
                               <p className="mb-2 text-xs leading-relaxed text-muted-foreground">
                                 {VERIFIED_HELPER_TEXT}
                               </p>
+                              <div className="mb-3">
+                                <ReportMissingDocumentDialog
+                                  trigger={
+                                    <Button variant="outline" size="sm" className="h-8">
+                                      <FileQuestion className="mr-1 h-3 w-3" />
+                                      Report Missing Document
+                                    </Button>
+                                  }
+                                />
+                              </div>
                               <div className="space-y-2">
                                 {message.citations.map((citation, index) => {
                                   const verification = citationVerificationLabel(citation)

@@ -96,7 +96,14 @@ function getRecentSearches(): string[] {
   if (typeof window === "undefined") return []
   try {
     const stored = localStorage.getItem(RECENT_SEARCHES_KEY)
-    return stored ? (JSON.parse(stored) as string[]).slice(0, MAX_RECENT) : []
+    if (!stored) return []
+
+    const parsed: unknown = JSON.parse(stored)
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+      .filter((item): item is string => typeof item === "string")
+      .slice(0, MAX_RECENT)
   } catch {
     return []
   }
@@ -166,6 +173,8 @@ function buildSearchItems(
 
   for (const group of navGroups) {
     for (const item of group.items) {
+      if (!item.href) continue
+
       items.push({
         id: `nav-${item.href}`,
         title: item.title,
@@ -477,7 +486,8 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
 
   useEffect(() => {
     if (searchOpen) {
-      setRecentSearches(getRecentSearches())
+      const searches = getRecentSearches()
+      setRecentSearches(searches)
       setSearchQuery("")
     }
   }, [searchOpen])

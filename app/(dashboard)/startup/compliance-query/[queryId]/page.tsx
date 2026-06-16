@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   Clock,
   FileText,
+  FileQuestion,
   Bookmark,
   BookmarkCheck,
   ThumbsUp,
@@ -30,6 +31,7 @@ import {
   Check,
 } from "lucide-react"
 import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
+import { ReportMissingDocumentDialog } from "@/components/corpus-gap-report/report-missing-document-dialog"
 import { RelatedTopics } from "@/components/compliance/related-topics"
 import { SourcesList } from "@/components/compliance/sources-list"
 import type { CitationItem } from "@/hooks/use-compliance"
@@ -702,10 +704,20 @@ export default function QueryDetailPage() {
         <div className="space-y-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur">
             <CardHeader>
-              <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-                Sources & References
-              </CardTitle>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  Sources & References
+                </CardTitle>
+                <ReportMissingDocumentDialog
+                  trigger={
+                    <Button variant="outline" size="sm">
+                      <FileQuestion className="h-4 w-4 mr-2" />
+                      Report Missing Document
+                    </Button>
+                  }
+                />
+              </div>
             </CardHeader>
             <CardContent>
               <SourcesList citations={citations} />

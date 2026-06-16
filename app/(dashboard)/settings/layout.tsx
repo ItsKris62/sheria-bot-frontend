@@ -18,6 +18,7 @@ import {
   CreditCard,
   Key,
   ChevronLeft,
+  FileQuestion,
 } from "lucide-react"
 
 const settingsNav = [
@@ -26,6 +27,7 @@ const settingsNav = [
   { title: "Security", href: "/settings/security", icon: Shield },
   { title: "Notifications", href: "/settings/notifications", icon: Bell },
   { title: "Billing", href: "/settings/billing", icon: CreditCard },
+  { title: "Corpus Reports", href: "/settings/corpus-reports", icon: FileQuestion },
   { title: "API Keys", href: "/settings/api-keys", icon: Key },
 ]
 

@@ -33,6 +33,7 @@ import {
   Ban,
   ThumbsUp,
   BadgeCheck,
+  FileQuestion,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -82,6 +83,7 @@ export const adminNav: AdminNavGroup[] = [
       { title: "Knowledge Base", href: "/admin/content/knowledge-base", icon: BookOpen },
       { title: "Blog", href: "/admin/content/blog", icon: Newspaper },
       { title: "Regulatory Alerts", href: "/admin/alerts", icon: Megaphone },
+      { title: "Corpus Gap Reports", href: "/admin/corpus-gap-reports", icon: FileQuestion },
     ],
   },
   {
@@ -117,7 +119,7 @@ export function AdminSidebar() {
   const { data: statsData } = trpc.adminSupport.stats.useQuery(undefined, {
     refetchInterval: 60_000, // refresh every minute
   })
-  const openCount = (statsData as any)?.open ?? 0
+  const openCount = (statsData as { open?: number } | undefined)?.open ?? 0
 
   // Auto-close mobile drawer on navigation
   useEffect(() => {

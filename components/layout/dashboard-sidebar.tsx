@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useMemo } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -30,20 +30,28 @@ import {
   Lock,
   Megaphone,
   BadgeCheck,
+  FileQuestion,
 } from "lucide-react"
 import { usePlan } from "@/lib/plan-context"
 import type { FeatureKey } from "@/lib/plan-context"
 import { useSidebar } from "@/lib/sidebar-context"
 import { useAlertNotifications } from "@/hooks/use-alert-notifications"
+import { ReportMissingDocumentDialog } from "@/components/corpus-gap-report/report-missing-document-dialog"
 
-export interface NavItem {
+type NavAction = "reportMissingDocument"
+
+type BaseNavItem = {
   title: string
-  href: string
   icon: React.ComponentType<{ className?: string }>
   badge?: string | number
   /** When set, the item is visually locked when the user's plan lacks this feature. */
   lockedFeature?: FeatureKey
 }
+
+export type NavItem = BaseNavItem & (
+  | { href: string; action?: never }
+  | { href?: never; action: NavAction }
+)
 
 export interface NavGroup {
   title: string
@@ -79,6 +87,12 @@ export const regulatorNav: NavGroup[] = [
       { title: "Regulatory Alerts", href: "/dashboard/alerts", icon: Megaphone },
     ],
   },
+  {
+    title: "Help us improve",
+    items: [
+      { title: "Report Missing Document", action: "reportMissingDocument", icon: FileQuestion },
+    ],
+  },
 ]
 
 export const startupNav: NavGroup[] = [
@@ -108,6 +122,12 @@ export const startupNav: NavGroup[] = [
       { title: "Regulatory Alerts", href: "/dashboard/alerts", icon: Megaphone },
     ],
   },
+  {
+    title: "Help us improve",
+    items: [
+      { title: "Report Missing Document", action: "reportMissingDocument", icon: FileQuestion },
+    ],
+  },
 ]
 
 interface DashboardSidebarProps {
@@ -119,6 +139,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar()
   const { hasFeature } = usePlan()
   const { alertUnreadCount } = useAlertNotifications()
+  const [reportDialogOpen, setReportDialogOpen] = useState(false)
 
   const baseNavGroups = userType === "regulator" ? regulatorNav : startupNav
 
@@ -152,11 +173,35 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
         )}
         <div className="flex flex-col gap-1">
           {group.items.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+            const isAction = item.action === "reportMissingDocument"
+            const itemKey = item.href ?? item.action
+            const isActive = item.href ? pathname === item.href || pathname.startsWith(item.href + "/") : false
             const isLocked = item.lockedFeature ? !hasFeature(item.lockedFeature) : false
+
+            if (isAction) {
+              return (
+                <button
+                  key={itemKey}
+                  type="button"
+                  className={cn(
+                    "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                    opts.showCollapsed && "justify-center px-2"
+                  )}
+                  title={opts.showCollapsed ? item.title : undefined}
+                  onClick={() => {
+                    setReportDialogOpen(true)
+                    setMobileOpen(false)
+                  }}
+                >
+                  <item.icon className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:text-primary" />
+                  {!opts.showCollapsed && <span className="flex-1">{item.title}</span>}
+                </button>
+              )
+            }
+
             return (
               <Link
-                key={item.href}
+                key={itemKey}
                 href={item.href}
                 className={cn(
                   "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
@@ -367,6 +412,10 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
           </div>
         </SheetContent>
       </Sheet>
+      <ReportMissingDocumentDialog
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
+      />
     </>
   )
 }
