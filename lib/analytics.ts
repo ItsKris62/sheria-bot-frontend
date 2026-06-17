@@ -21,7 +21,19 @@ export type SafeEventProperties = {
   source?: string;
   is_pilot_feature?: boolean;
 
-  [key: string]: string | number | boolean | null | undefined;
+  // Additional safe metadata
+  type?: string;
+  reason?: string;
+  depth?: string;
+  framework_count?: number;
+  new_status?: string;
+  target_plan?: string;
+  feature?: string;
+  limit_type?: string;
+  current_plan?: string;
+  required_plan?: string;
+  document_type?: string;
+  jurisdiction?: string;
 };
 
 // Strongly typed event names based on requirements
@@ -47,23 +59,70 @@ export type AnalyticsEvent =
   | "plan_limit_reached"
   | "upgrade_clicked"
   | "billing_page_opened"
+  // Feature Gates
+  | "feature_gate_viewed"
+  | "feature_gate_upgrade_clicked"
   // Pilot Access
   | "pilot_access_activated"
   | "pilot_feature_used"
   | "pilot_feedback_submitted";
 
+// A strict allowlist of keys that are permitted in the payload.
+// Any key not in this list will be silently dropped before sending to PostHog.
+const ALLOWED_PROPERTY_KEYS = new Set([
+  "plan",
+  "role",
+  "pilot_status",
+  "country",
+  "framework_slug",
+  "file_type",
+  "analysis_type",
+  "citation_count",
+  "duration_ms",
+  "error_category",
+  "status",
+  "source",
+  "is_pilot_feature",
+  "type",
+  "reason",
+  "depth",
+  "framework_count",
+  "new_status",
+  "target_plan",
+  "feature",
+  "limit_type",
+  "current_plan",
+  "required_plan",
+  "document_type",
+  "jurisdiction",
+]);
+
 /**
  * Safely track an event in PostHog.
  * Will fail silently if PostHog is blocked, uninitialized, or errors out.
+ * Silently drops any property keys not explicitly allowlisted.
  */
 export function trackEvent(eventName: AnalyticsEvent, properties?: SafeEventProperties) {
   try {
     // Only capture if running in browser and PostHog is initialized
     if (typeof window !== "undefined" && posthog.__loaded) {
-      posthog.capture(eventName, properties);
+      
+      let safeProperties: Record<string, any> | undefined = undefined;
+      
+      if (properties) {
+        safeProperties = {};
+        for (const key of Object.keys(properties)) {
+          if (ALLOWED_PROPERTY_KEYS.has(key)) {
+            safeProperties[key] = (properties as any)[key];
+          }
+        }
+      }
+      
+      posthog.capture(eventName, safeProperties);
     }
   } catch (error) {
     // Fail silently so we don't break the user workflow
     console.warn("[Analytics] Failed to track event", error);
   }
 }
+

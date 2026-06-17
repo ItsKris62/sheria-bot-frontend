@@ -1115,8 +1115,9 @@ export default function GapAnalysisPage() {
       setActiveView({ id: d.id, name: d.documentName })
       utils.gapAnalysis.getGapAnalyses.invalidate()
       resetForm()
+      const fc = Array.isArray((d as any).regulatoryFrameworks) ? (d as any).regulatoryFrameworks.length : 0;
       trackEvent("gap_analysis_completed", {
-        framework_count: d.regulatoryFrameworks?.length || 0,
+        framework_count: fc,
       })
       toast.success("Analysis complete", { description: `Overall score: ${d.overallScore ?? "N/A"}/100` })
     }

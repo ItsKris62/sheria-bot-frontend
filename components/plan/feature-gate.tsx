@@ -180,10 +180,15 @@ export function LockedFeatureCard({
   const featureDesc   = description ?? FEATURE_DESCRIPTIONS[feature] ?? "Upgrade your plan to unlock this feature.";
 
   React.useEffect(() => {
+    trackEvent("feature_gate_viewed", { 
+      feature: String(feature), 
+      required_plan: upgradePlan 
+    });
+
     if (trialCapHit) {
       trackEvent("plan_limit_reached", { feature: String(feature), limit_type: "trial_cap" })
     }
-  }, [trialCapHit, feature])
+  }, [trialCapHit, feature, upgradePlan])
 
   return (
     <Card
@@ -241,6 +246,16 @@ interface UsageIndicatorProps {
  * Hidden when `limit === -1` (unlimited). Shows "Unavailable" when `limit === 0`.
  */
 export function UsageIndicator({ label, current, limit, period = "month", className }: UsageIndicatorProps) {
+  const pct     = limit > 0 ? Math.min(100, Math.round((current / limit) * 100)) : 0;
+  const isHigh  = pct >= 80;
+  const isFull  = pct >= 100;
+
+  React.useEffect(() => {
+    if (limit > 0 && isFull) {
+      trackEvent("plan_limit_reached", { feature: label, limit_type: period })
+    }
+  }, [isFull, limit, label, period]);
+
   if (limit === -1) {
     // Unlimited — show a simple "Unlimited" pill instead of a bar
     return (
@@ -260,21 +275,13 @@ export function UsageIndicator({ label, current, limit, period = "month", classN
     );
   }
 
-  const pct     = Math.min(100, Math.round((current / limit) * 100));
-  const isHigh  = pct >= 80;
-  const isFull  = pct >= 100;
+
 
   const barColor = isFull
     ? "bg-destructive"
     : isHigh
     ? "bg-amber-500"
     : "bg-primary";
-
-  React.useEffect(() => {
-    if (isFull) {
-      trackEvent("plan_limit_reached", { feature: label, limit_type: period })
-    }
-  }, [isFull, label, period])
 
   return (
     <div className={`space-y-1 ${className ?? ""}`}>
@@ -369,7 +376,7 @@ export function UpgradeBanner({
             Upgrade to <span className="font-medium text-foreground">{upgradeLabel}</span>
           </span>
         </div>
-        <Button size="sm" variant="default" asChild>
+        <Button size="sm" variant="default" asChild onClick={() => trackEvent("feature_gate_upgrade_clicked", { target_plan: requiredPlan })}>
           <a href="/settings/billing">Upgrade</a>
         </Button>
       </div>
@@ -400,7 +407,7 @@ export function UpgradeBanner({
         </div>
 
         <div className="flex gap-2">
-          <Button size="sm" className="flex-1" asChild>
+          <Button size="sm" className="flex-1" asChild onClick={() => trackEvent("feature_gate_upgrade_clicked", { target_plan: requiredPlan })}>
             <a href="/settings/billing">
               <Zap className="mr-1.5 h-3.5 w-3.5" />
               Upgrade Plan
