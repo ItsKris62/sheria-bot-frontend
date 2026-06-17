@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { getErrorMessage, trpc } from "@/lib/trpc"
+import { trackEvent } from "@/lib/analytics"
 
 type CorpusGapDocumentType =
   | "LEGISLATION"
@@ -121,6 +122,10 @@ export function ReportMissingDocumentDialog({
       }
 
       setDialogOpen(false)
+      trackEvent("corpus_gap_report_submitted", { 
+        document_type: form.documentType,
+        jurisdiction: form.jurisdiction
+      })
       toast.success(SUBMITTED_TOAST)
     },
     onError: (error) => {
@@ -146,6 +151,8 @@ export function ReportMissingDocumentDialog({
   useEffect(() => {
     if (!actualOpen) {
       resetForm()
+    } else {
+      trackEvent("corpus_gap_report_opened")
     }
   }, [actualOpen])
 

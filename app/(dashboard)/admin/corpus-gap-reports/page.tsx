@@ -36,6 +36,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { getErrorMessage, trpc } from "@/lib/trpc"
+import { trackEvent } from "@/lib/analytics"
 
 type CorpusGapReportStatus =
   | "PENDING"
@@ -199,7 +200,8 @@ export default function AdminCorpusGapReportsPage() {
   })
 
   const updateStatusMutation = trpc.corpusGapReport.adminUpdateStatus.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      trackEvent("admin_corpus_gap_report_status_updated", { new_status: variables.status })
       toast.success("Corpus gap report updated")
       setUpdateTarget(null)
       void utils.corpusGapReport.adminListReports.invalidate()

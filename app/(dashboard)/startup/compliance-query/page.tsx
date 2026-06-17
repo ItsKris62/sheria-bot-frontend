@@ -33,6 +33,7 @@ import {
 } from "@/hooks/use-compliance"
 import { formatDistanceToNow } from "date-fns"
 import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
+
 import { ThinkingIndicator } from "@/components/compliance/thinking-indicator"
 import { AbstainCard } from "@/components/compliance/abstain-card"
 import { UngroundedBanner } from "@/components/compliance/ungrounded-banner"
@@ -42,6 +43,7 @@ import { isRegulatoryArea, REGULATORY_AREA_NAMES } from "@/lib/compliance/compli
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { trackEvent } from "@/lib/analytics"
 
 // Types
 
@@ -269,6 +271,12 @@ export default function ComplianceQueryPage() {
     topicPrefillAppliedRef.current = true
 
     const topic = searchParams.get("topic")
+    
+    // Track page open
+    trackEvent("compliance_query_opened", {
+      source: topic ? "topic_link" : "direct"
+    })
+
     if (!isRegulatoryArea(topic)) return
 
     const areaLabel = REGULATORY_AREA_NAMES[topic]
@@ -311,8 +319,17 @@ export default function ComplianceQueryPage() {
           question: pendingQuestionRef.current,
         },
       ])
+
+      trackEvent("compliance_query_completed", {
+        citation_count: result.citations?.length || 0,
+        status: result.abstained ? "abstained" : "answered"
+      })
+
+      if (result.grounded === false || (result.abstained && result.route === "corpus-gap")) {
+        trackEvent("compliance_query_source_insufficient")
+      }
     }
-  }, [streamState.phase, streamState.result])
+  }, [streamState])
 
   // Handlers
 
@@ -320,6 +337,8 @@ export default function ComplianceQueryPage() {
     e.preventDefault()
     const trimmed = query.trim()
     if (!trimmed || isStreaming) return
+
+    trackEvent("compliance_query_started", { source: "manual_input" })
 
     pendingQuestionRef.current = trimmed
     setMessages((prev) => [
@@ -341,6 +360,7 @@ export default function ComplianceQueryPage() {
     suggestionId?: string,
     surface: "empty_state" | "sidebar" = "sidebar",
   ) => {
+    trackEvent("compliance_query_started", { source: "suggestion_" + surface })
     setQuery(suggestionText)
     if (suggestionId) {
       clickTrackingMutation.mutate(

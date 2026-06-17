@@ -5,6 +5,7 @@ import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Providers } from '@/components/providers'
+import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { JsonLd } from '@/components/seo/json-ld'
 
 import './globals.css'
@@ -176,7 +177,9 @@ export default function RootLayout({
         {/* Global JSON-LD: WebSite + Organization schema */}
         <JsonLd />
 
-        <Providers>{children}</Providers>
+        <PostHogProvider>
+          <Providers>{children}</Providers>
+        </PostHogProvider>
 
         {/* Vercel Analytics — tracks page views and custom events */}
         <Analytics />

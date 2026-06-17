@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePlan } from "@/lib/plan-context";
 import type { FeatureKey, PlanName } from "@/lib/plan-context";
+import { trackEvent } from "@/lib/analytics";
 
 // ============================================================================
 // Shared helpers
@@ -178,6 +179,12 @@ export function LockedFeatureCard({
   const featureLabel  = title       ?? FEATURE_LABELS[feature]       ?? String(feature);
   const featureDesc   = description ?? FEATURE_DESCRIPTIONS[feature] ?? "Upgrade your plan to unlock this feature.";
 
+  React.useEffect(() => {
+    if (trialCapHit) {
+      trackEvent("plan_limit_reached", { feature: String(feature), limit_type: "trial_cap" })
+    }
+  }, [trialCapHit, feature])
+
   return (
     <Card
       className={`relative overflow-hidden border-dashed border-muted-foreground/30 bg-muted/20 ${className ?? ""}`}
@@ -262,6 +269,12 @@ export function UsageIndicator({ label, current, limit, period = "month", classN
     : isHigh
     ? "bg-amber-500"
     : "bg-primary";
+
+  React.useEffect(() => {
+    if (isFull) {
+      trackEvent("plan_limit_reached", { feature: label, limit_type: period })
+    }
+  }, [isFull, label, period])
 
   return (
     <div className={`space-y-1 ${className ?? ""}`}>

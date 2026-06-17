@@ -44,6 +44,7 @@ import {
 } from "lucide-react"
 import { LoadingScreen } from "@/components/loading-screen"
 import { useAuthStore } from "@/lib/auth-store"
+import { trackEvent } from "@/lib/analytics"
 
 // Local Types
 
@@ -298,6 +299,7 @@ function AnalysisResultsView({
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
+      trackEvent("gap_analysis_export_generated", { type: "docx" })
       toast.success("Report ready", { description: "Your Word document download has started." })
     },
     onError: (err) => {
@@ -414,6 +416,7 @@ function AnalysisResultsView({
     printWindow.focus()
     setTimeout(() => printWindow.print(), 500)
     logExportMutation.mutate({ analysisId, format: "pdf" })
+    trackEvent("gap_analysis_export_generated", { type: "pdf" })
   }
 
   return (
@@ -1062,6 +1065,13 @@ export default function GapAnalysisPage() {
   const [pendingDocName, setPendingDocName] = useState<string>("")
   const [pendingFrameworks, setPendingFrameworks] = useState<string[]>([])
   const hasCheckedResumption = useRef(false)
+  const trackOpenedRef = useRef(false)
+
+  useEffect(() => {
+    if (trackOpenedRef.current) return
+    trackOpenedRef.current = true
+    trackEvent("gap_analysis_opened")
+  }, [])
 
   const utils = trpc.useUtils()
 
@@ -1105,9 +1115,14 @@ export default function GapAnalysisPage() {
       setActiveView({ id: d.id, name: d.documentName })
       utils.gapAnalysis.getGapAnalyses.invalidate()
       resetForm()
+      trackEvent("gap_analysis_completed", {
+        framework_count: d.regulatoryFrameworks?.length || 0,
+      })
       toast.success("Analysis complete", { description: `Overall score: ${d.overallScore ?? "N/A"}/100` })
     }
-    // FAILED: stay on progress view   AnalysisProgressView renders the error + retry UI
+    if (d.status === "FAILED") {
+      trackEvent("gap_analysis_failed", { reason: d.errorMessage || "unknown_polling_error" })
+    }
   }, [pollingQuery.data?.status, isAwaitingResult]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Page-refresh resumption   detect in-progress analyses on first load
@@ -1134,6 +1149,7 @@ export default function GapAnalysisPage() {
       toast.success("Analysis queued", { description: "Your document is being processed. This may take 1-3 minutes." })
     },
     onError: (err) => {
+      trackEvent("gap_analysis_failed", { reason: err.message || "mutation_error" })
       toast.error("Analysis failed", {
         description: err.message || "Failed to run gap analysis. Please try again.",
       })
@@ -1150,7 +1166,7 @@ export default function GapAnalysisPage() {
     },
   })
 
-  const resetForm = () => {
+  function resetForm() {
     setSelectedFile(null)
     setSelectedFrameworks([])
     setSelectedBenchmarkDocumentIds([])
@@ -1168,6 +1184,12 @@ export default function GapAnalysisPage() {
     reader.onload = () => {
       const base64 = (reader.result as string).split(",")[1]
       const ext = selectedFile.name.split(".").pop()?.toLowerCase() ?? "pdf"
+
+      trackEvent("gap_analysis_started", { 
+        depth: analysisDepth,
+        framework_count: selectedFrameworks.length,
+        file_type: ext
+      })
 
       runMutation.mutate({
         fileName: selectedFile.name,
@@ -1291,7 +1313,10 @@ export default function GapAnalysisPage() {
             <CardContent>
               <FileUploadSection
                 file={selectedFile}
-                onFile={setSelectedFile}
+                onFile={(file) => {
+                  setSelectedFile(file)
+                  trackEvent("gap_analysis_file_uploaded", { file_type: file.name.split('.').pop()?.toLowerCase() || "unknown" })
+                }}
                 onRemove={() => setSelectedFile(null)}
                 maxFileSizeBytes={maxFileSizeBytes}
               />

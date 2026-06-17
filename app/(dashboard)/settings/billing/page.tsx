@@ -54,6 +54,7 @@ import {
   PLAN_COMPARISON_ROWS,
   type PlanId,
 } from "@/lib/config/plans"
+import { trackEvent } from "@/lib/analytics"
 
 // -- Local type helpers -----------------------------------------------------
 
@@ -318,6 +319,13 @@ export default function BillingSettingsPage() {
   const [usageCompareOpen, setUsageCompareOpen] = useState(false)
   const [enterpriseForm, setEnterpriseForm] = useState<EnterpriseFormState>({ name: "", email: "", message: "" })
   const [enterpriseSuccess, setEnterpriseSuccess] = useState(false)
+  const trackOpenedRef = useRef(false)
+
+  useEffect(() => {
+    if (trackOpenedRef.current) return
+    trackOpenedRef.current = true
+    trackEvent("billing_page_opened")
+  }, [])
 
   // Invoice modal state
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null)
@@ -367,6 +375,7 @@ export default function BillingSettingsPage() {
   )
 
   function startCheckout(selectedPlan: "STARTUP" | "BUSINESS") {
+    trackEvent("upgrade_clicked", { target_plan: selectedPlan })
     const input: CheckoutInput = { plan: selectedPlan }
     checkoutMutation.mutate(input)
   }

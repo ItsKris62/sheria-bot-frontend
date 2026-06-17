@@ -17,3 +17,4 @@ tsconfig.tsbuildinfo
 *.key
 *.cert
 secrets/
+.env.local
