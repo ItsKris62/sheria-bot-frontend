@@ -22,6 +22,11 @@ export interface CitationItem {
   verified?: boolean;
   /** Verification status: "verified" = confirmed in corpus, "unverified" = not found, "not_checked" = verification not attempted. */
   verificationStatus?: "verified" | "unverified" | "not_checked";
+  regulator?: string;
+  sectionTitle?: string;
+  sectionNumber?: string;
+  pageNumber?: number;
+  chunkId?: string;
 }
 
 /** Full orchestrated-path shape returned by both tRPC and SSE paths. */
@@ -66,6 +71,7 @@ export interface ComplianceStreamInput {
   organizationType?: string;
   industry?: string;
   context?: string;
+  answerDetail?: "standard" | "detailed";
 }
 
 // Discriminated union — one type per SSE event the backend emits

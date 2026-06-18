@@ -224,6 +224,7 @@ export default function ComplianceQueryPage() {
   const searchParams = useSearchParams()
   const [query, setQuery] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
+  const [answerDetail, setAnswerDetail] = useState<"standard" | "detailed">("standard")
 
   const [feedbackState, setFeedbackState] = useState<Record<string, FeedbackRating>>({})
   const [savedState, setSavedState] = useState<Record<string, boolean>>({})
@@ -238,6 +239,8 @@ export default function ComplianceQueryPage() {
   const feedbackMutation = trpc.compliance.submitFeedback.useMutation()
   const saveMutation = trpc.compliance.toggleSave.useMutation()
   const clickTrackingMutation = trpc.compliance.recordSuggestionClick.useMutation()
+
+  const { data: planData } = trpc.billing.getPlanAndUsage.useQuery()
 
   // Suggested queries - server-driven personalised list, 1h client cache
   const {
@@ -322,7 +325,12 @@ export default function ComplianceQueryPage() {
 
       trackEvent("compliance_query_completed", {
         citation_count: result.citations?.length || 0,
-        status: result.abstained ? "abstained" : "answered"
+        status: result.abstained ? "abstained" : "answered",
+        answer_detail: answerDetail,
+        usage_units_consumed: result.abstained ? 0 : (answerDetail === "detailed" ? 2 : 1),
+        fallback_triggered: result.abstained,
+        fallback_reason: result.abstained ? result.route : undefined,
+        response_word_count: result.answer.split(/\s+/).length,
       })
 
       if (result.grounded === false || (result.abstained && result.route === "corpus-gap")) {
@@ -351,7 +359,7 @@ export default function ComplianceQueryPage() {
       },
     ])
     setQuery("")
-    streamSubmit({ question: trimmed })
+    streamSubmit({ question: trimmed, answerDetail })
     scrollChatToBottom()
   }
 
@@ -527,7 +535,7 @@ export default function ComplianceQueryPage() {
                           {message.citations && message.citations.length > 0 && (
                             <div className="mt-4 border-t border-[#D4AF37]/30 pt-4">
                               <p className="mb-2 text-xs font-semibold text-[#D4AF37]">
-                                Legal Citations ({message.citations.length}):
+                                Referenced Documents ({message.citations.length}):
                               </p>
                               <p className="mb-2 text-xs leading-relaxed text-muted-foreground">
                                 {VERIFIED_HELPER_TEXT}
@@ -578,9 +586,13 @@ export default function ComplianceQueryPage() {
                                             </span>
                                           ) : null}
                                         </div>
-                                        {citation.section && (
+                                        {citation.section ? (
                                           <p className="text-xs text-muted-foreground">
                                             {citation.section}
+                                          </p>
+                                        ) : (
+                                          <p className="text-xs text-muted-foreground italic">
+                                            Section not available in indexed metadata
                                           </p>
                                         )}
                                         {citation.textSnippet && (
@@ -651,7 +663,40 @@ export default function ComplianceQueryPage() {
             )}
 
             {/* Input Area */}
-            <div className="border-t border-border p-4">
+            <div className="border-t border-border p-4 space-y-3">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span className="font-medium">Detail Level:</span>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="answerDetail"
+                    value="standard"
+                    checked={answerDetail === "standard"}
+                    onChange={(e) => setAnswerDetail(e.target.value as "standard" | "detailed")}
+                    className="accent-primary"
+                  />
+                  Standard (1 credit)
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="answerDetail"
+                    value="detailed"
+                    checked={answerDetail === "detailed"}
+                    onChange={(e) => setAnswerDetail(e.target.value as "standard" | "detailed")}
+                    className="accent-primary"
+                  />
+                  Detailed (2 credits)
+                </label>
+              </div>
+
+              {answerDetail === "detailed" && planData?.usage?.complianceQueries?.remaining === 1 && (
+                <div className="flex items-center gap-2 rounded-lg border border-warning/50 bg-warning/10 p-2 text-xs text-warning">
+                  <AlertCircle className="h-3 w-3 shrink-0" aria-hidden="true" />
+                  You need 2 query credits for Detailed answers. Please switch to Standard or upgrade your plan.
+                </div>
+              )}
+
               <form ref={formRef} onSubmit={handleSubmit} className="flex gap-2">
                 <Input
                   value={query}
@@ -668,7 +713,7 @@ export default function ComplianceQueryPage() {
                 />
                 <LoadingButton
                   type="submit"
-                  disabled={!query.trim()}
+                  disabled={!query.trim() || (answerDetail === "detailed" && planData?.usage?.complianceQueries?.remaining === 1)}
                   loading={isStreaming}
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
