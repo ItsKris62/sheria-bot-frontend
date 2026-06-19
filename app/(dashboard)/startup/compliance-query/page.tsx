@@ -30,6 +30,7 @@ import {
   useComplianceStream,
   useComplianceHistory,
   type CitationItem,
+  type ComplianceFallbackReason,
 } from "@/hooks/use-compliance"
 import { formatDistanceToNow } from "date-fns"
 import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
@@ -60,6 +61,7 @@ interface Message {
   route?: string | null
   runId?: string | null
   grounded?: boolean
+  fallbackReason?: ComplianceFallbackReason | null
   /** User question that produced this response - used by AbstainCard for authority matching */
   question?: string
 }
@@ -319,6 +321,7 @@ export default function ComplianceQueryPage() {
           route: result.route,
           runId: result.runId,
           grounded: result.grounded,
+          fallbackReason: result.fallbackReason ?? null,
           question: pendingQuestionRef.current,
         },
       ])
@@ -329,7 +332,7 @@ export default function ComplianceQueryPage() {
         answer_detail: answerDetail,
         usage_units_consumed: result.abstained ? 0 : (answerDetail === "detailed" ? 2 : 1),
         fallback_triggered: result.abstained,
-        fallback_reason: result.abstained ? result.route : undefined,
+        fallback_reason: result.fallbackReason ?? (result.abstained ? result.route ?? undefined : undefined),
         response_word_count: result.answer.split(/\s+/).length,
       })
 
@@ -506,6 +509,7 @@ export default function ComplianceQueryPage() {
                           runId={message.runId ?? null}
                           question={message.question ?? ""}
                           route={message.route ?? null}
+                          fallbackReason={message.fallbackReason ?? null}
                           className="w-full max-w-[85%]"
                         />
                       ) : (

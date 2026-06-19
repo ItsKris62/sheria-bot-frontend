@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import type { ComplianceFallbackReason } from "@/hooks/use-compliance";
 
 // ── Authority registry ────────────────────────────────────────────────────────
 
@@ -49,6 +50,7 @@ export interface AbstainCardProps {
   question: string;
   /** Determines which copy variant to show */
   route: string | null;
+  fallbackReason?: ComplianceFallbackReason | null;
   className?: string;
 }
 
@@ -172,10 +174,35 @@ function GapForm({ queryId, runId, onClose }: GapFormProps) {
 
 // ── AbstainCard ───────────────────────────────────────────────────────────────
 
-export function AbstainCard({ queryId, runId, question, route, className }: AbstainCardProps) {
+function getFallbackCopy(fallbackReason: ComplianceFallbackReason | null | undefined): {
+  title: string;
+  body: string;
+} {
+  if (fallbackReason === "NO_RAG_CHUNKS") {
+    return {
+      title: "No sufficiently relevant indexed documents were retrieved",
+      body: "No sufficiently relevant indexed documents were retrieved for this question.",
+    };
+  }
+
+  if (fallbackReason === "ALL_CHUNKS_FAILED_VERIFICATION") {
+    return {
+      title: "Retrieved sources were not strong enough",
+      body: "SheriaBot found potentially related documents, but they were not strong enough to support a verified answer.",
+    };
+  }
+
+  return {
+    title: "No sufficiently verified source was found",
+    body: "SheriaBot could not find a sufficiently verified source in the indexed corpus for this specific question.",
+  };
+}
+
+export function AbstainCard({ queryId, runId, question, route, fallbackReason, className }: AbstainCardProps) {
   const [formOpen, setFormOpen] = useState(false);
 
-  const isRouteScopeAbstain = route === "abstain";
+  const isRouteScopeAbstain = route === "abstain" || fallbackReason === "OUT_OF_SCOPE";
+  const fallbackCopy = getFallbackCopy(fallbackReason);
   const authorityCodes = isRouteScopeAbstain ? [] : selectAuthorityCodes(question);
   const authorities = AUTHORITIES.filter((a) => authorityCodes.includes(a.code));
 
@@ -199,7 +226,7 @@ export function AbstainCard({ queryId, runId, question, route, className }: Abst
           ) : (
             <>
               <BookOpen className="h-4 w-4 text-blue-500 shrink-0" aria-hidden="true" />
-              <span>This regulation isn't currently in SheriaBot's indexed corpus</span>
+              <span>{fallbackCopy.title}</span>
             </>
           )}
         </CardTitle>
@@ -215,10 +242,7 @@ export function AbstainCard({ queryId, runId, question, route, className }: Abst
           </p>
         ) : (
           <>
-            <p>
-              SheriaBot grounds every answer in specific cited regulatory documents. The relevant
-              regulation hasn't been indexed yet, so we can't provide a verified answer.
-            </p>
+            <p>{fallbackCopy.body}</p>
 
             <div>
               <p className="font-medium text-foreground mb-2">Consider checking directly with:</p>

@@ -43,7 +43,15 @@ export interface ComplianceQueryResponse {
   abstained: boolean;
   /** null on legacy path or double-failure edge case; disables reportGap button */
   runId: string | null;
+  fallbackReason?: ComplianceFallbackReason | null;
 }
+
+export type ComplianceFallbackReason =
+  | "NO_RAG_CHUNKS"
+  | "ALL_CHUNKS_FAILED_VERIFICATION"
+  | "LOW_RELEVANCE"
+  | "OUT_OF_SCOPE"
+  | "ROUTE_ERROR";
 
 // ── useComplianceStream types ─────────────────────────────────────────────────
 
@@ -79,7 +87,7 @@ type SSEEvent =
   | { type: "connected"; queryId: string; ragSources: number }
   | { type: "chunk"; text: string }
   | { type: "synthesis_complete" }
-  | { type: "done"; queryId: string; route: string; grounded: boolean; abstained: boolean; runId: string | null; citations: CitationItem[]; confidence: number | null }
+  | { type: "done"; queryId: string; route: string; grounded: boolean; abstained: boolean; runId: string | null; citations: CitationItem[]; confidence: number | null; fallbackReason?: ComplianceFallbackReason | null }
   | { type: "error"; message: string };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -239,6 +247,7 @@ export function useComplianceStream() {
                     grounded: event.grounded,
                     abstained: event.abstained,
                     runId: event.runId,
+                    fallbackReason: event.fallbackReason ?? null,
                   },
                 }));
                 break;

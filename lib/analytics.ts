@@ -15,6 +15,11 @@ export type SafeEventProperties = {
   citation_count?: number;
   duration_ms?: number;
   error_category?: string;
+  answer_detail?: "standard" | "detailed";
+  usage_units_consumed?: number;
+  fallback_triggered?: boolean;
+  fallback_reason?: string;
+  response_word_count?: number;
 
   // Specific flags for UI interactions
   status?: string;
@@ -80,6 +85,11 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "citation_count",
   "duration_ms",
   "error_category",
+  "answer_detail",
+  "usage_units_consumed",
+  "fallback_triggered",
+  "fallback_reason",
+  "response_word_count",
   "status",
   "source",
   "is_pilot_feature",
@@ -125,4 +135,3 @@ export function trackEvent(eventName: AnalyticsEvent, properties?: SafeEventProp
     console.warn("[Analytics] Failed to track event", error);
   }
 }
-
