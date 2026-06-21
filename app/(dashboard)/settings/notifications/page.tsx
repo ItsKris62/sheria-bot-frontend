@@ -305,7 +305,20 @@ function AlertSubscriptionSection() {
   )
 }
 
-// -----------------------------------------------------------------------------
+const DEFAULT_NOTIFICATION_PREFERENCES = {
+  regulatoryUpdates: true,
+  deadlineReminders: true,
+  reportReady: true,
+  supportResponses: true,
+  paymentDueReminder: true,
+  complianceQueryReady: true,
+  policyDocumentReady: true,
+  documentIngestionComplete: true,
+  realTimeAlerts: true,
+  inAppSoundsEnabled: true,
+  emailDigestEnabled: false,
+  digestFrequency: "weekly" as const,
+}
 
 interface CategoryPref {
   id: string;
@@ -316,6 +329,7 @@ interface CategoryPref {
 }
 
 export default function NotificationSettingsPage() {
+  const utils = trpc.useUtils()
   // Existing DB-backed email/channel preferences
   const { data: prefs, isLoading } = trpc.user.getNotificationPreferences.useQuery()
 
@@ -324,11 +338,33 @@ export default function NotificationSettingsPage() {
   const updateCategoryPref = useUpdateCategoryPreference()
 
   const updateMutation = trpc.user.updateNotificationPreferences.useMutation({
-    onSuccess: () => toast.success("Preferences saved"),
-    onError: (error) => toast.error(error.message || "Failed to save preferences"),
+    async onMutate(input) {
+      await utils.user.getNotificationPreferences.cancel()
+
+      const previousPrefs = utils.user.getNotificationPreferences.getData()
+
+      utils.user.getNotificationPreferences.setData(undefined, (old) => ({
+        ...(old ?? DEFAULT_NOTIFICATION_PREFERENCES),
+        ...input,
+      }))
+
+      return { previousPrefs }
+    },
+    onError(error, _input, context) {
+      if (context?.previousPrefs) {
+        utils.user.getNotificationPreferences.setData(undefined, context.previousPrefs)
+      }
+      toast.error(error.message || "Could not save notification preference. Please try again.")
+    },
+    onSuccess() {
+      // Toast omitted here intentionally to prevent spamming the user on rapid toggle clicks.
+    },
+    onSettled() {
+      void utils.user.getNotificationPreferences.invalidate()
+    },
   })
 
-  function toggle(field: string, value: boolean | string) {
+  function toggle(field: keyof typeof DEFAULT_NOTIFICATION_PREFERENCES, value: boolean | string) {
     updateMutation.mutate({ [field]: value } as Parameters<typeof updateMutation.mutate>[0])
   }
 
@@ -394,18 +430,18 @@ export default function NotificationSettingsPage() {
                   ].map((item) => {
                     const Icon = item.icon
                     return (
-                      <div key={item.field} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                        <div className="flex items-center gap-3">
-                          <Icon className="h-5 w-5 text-primary" />
-                          <div>
-                            <p className="font-medium text-foreground">{item.title}</p>
-                            <p className="text-sm text-muted-foreground">{item.desc}</p>
+                      <div key={item.field} className="flex items-center justify-between gap-4 p-4 rounded-lg bg-muted/30">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <Icon className="h-5 w-5 text-primary shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-foreground truncate">{item.title}</p>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{item.desc}</p>
                           </div>
                         </div>
                         <Switch
+                          className="shrink-0"
                           checked={item.value}
-                          disabled={updateMutation.isPending}
-                          onCheckedChange={(v) => toggle(item.field, v)}
+                          onCheckedChange={(v) => toggle(item.field as keyof typeof DEFAULT_NOTIFICATION_PREFERENCES, v)}
                         />
                       </div>
                     )
@@ -461,18 +497,18 @@ export default function NotificationSettingsPage() {
                   ].map((item) => {
                     const Icon = item.icon
                     return (
-                      <div key={item.field} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                        <div className="flex items-center gap-3">
-                          <Icon className="h-5 w-5 text-primary" />
-                          <div>
-                            <p className="font-medium text-foreground">{item.title}</p>
-                            <p className="text-sm text-muted-foreground">{item.desc}</p>
+                      <div key={item.field} className="flex items-center justify-between gap-4 p-4 rounded-lg bg-muted/30">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <Icon className="h-5 w-5 text-primary shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-foreground truncate">{item.title}</p>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{item.desc}</p>
                           </div>
                         </div>
                         <Switch
+                          className="shrink-0"
                           checked={item.value}
-                          disabled={updateMutation.isPending}
-                          onCheckedChange={(v) => toggle(item.field, v)}
+                          onCheckedChange={(v) => toggle(item.field as keyof typeof DEFAULT_NOTIFICATION_PREFERENCES, v)}
                         />
                       </div>
                     )
@@ -496,33 +532,33 @@ export default function NotificationSettingsPage() {
               ? loadingRows(2)
               : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                    <div>
-                      <p className="font-medium text-foreground">Real-time Alerts</p>
-                      <p className="text-sm text-muted-foreground">
+                  <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-muted/30">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-foreground truncate">Real-time Alerts</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         Show notifications for important updates in real-time
                       </p>
                     </div>
                     <Switch
+                      className="shrink-0"
                       checked={prefs?.realTimeAlerts ?? true}
-                      disabled={updateMutation.isPending}
                       onCheckedChange={(v) => toggle("realTimeAlerts", v)}
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                    <div className="flex items-center gap-3">
-                      <Volume2 className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="font-medium text-foreground">In-app sounds</p>
-                        <p className="text-sm text-muted-foreground">
+                  <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <Volume2 className="h-5 w-5 text-primary shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-foreground truncate">In-app sounds</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
                           Play short sounds for notifications, alerts, confirmations, and AI completions
                         </p>
                       </div>
                     </div>
                     <Switch
+                      className="shrink-0"
                       checked={prefs?.inAppSoundsEnabled ?? true}
-                      disabled={updateMutation.isPending}
                       onCheckedChange={(v) => toggle("inAppSoundsEnabled", v)}
                     />
                   </div>
@@ -546,14 +582,14 @@ export default function NotificationSettingsPage() {
               : (
                 <>
                   {/* Master toggle */}
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                    <div>
-                      <p className="font-medium text-foreground">Email Digest</p>
-                      <p className="text-sm text-muted-foreground">Receive periodic summary emails</p>
+                  <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-muted/30">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-foreground truncate">Email Digest</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2">Receive periodic summary emails</p>
                     </div>
                     <Switch
+                      className="shrink-0"
                       checked={prefs?.emailDigestEnabled ?? false}
-                      disabled={updateMutation.isPending}
                       onCheckedChange={(v) => toggle("emailDigestEnabled", v)}
                     />
                   </div>
@@ -570,14 +606,15 @@ export default function NotificationSettingsPage() {
                     return (
                       <div
                         key={freq}
-                        className={`flex items-center justify-between p-4 rounded-lg bg-muted/30 transition-opacity ${
+                        className={`flex items-center justify-between gap-4 p-4 rounded-lg bg-muted/30 transition-opacity ${
                           !digestEnabled ? "opacity-40 pointer-events-none" : ""
                         }`}
                       >
-                        <p className="font-medium text-foreground">{labels[freq]}</p>
+                        <p className="font-medium text-foreground min-w-0 flex-1 truncate">{labels[freq]}</p>
                         <Switch
+                          className="shrink-0"
                           checked={isSelected}
-                          disabled={updateMutation.isPending || !digestEnabled}
+                          disabled={!digestEnabled}
                           onCheckedChange={() => {
                             if (!isSelected) toggle("digestFrequency", freq)
                           }}

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { CitationItem } from "@/hooks/use-compliance"
 import { Scale } from "lucide-react"
+import { trackEvent } from "@/lib/analytics"
 
 type SourceCitation = Partial<CitationItem> | null | undefined
 
@@ -159,7 +160,10 @@ export function SourcesList({ citations }: SourcesListProps) {
       })}
 
       {hiddenCount > 0 ? (
-        <Button variant="ghost" size="sm" onClick={() => setExpanded(true)}>
+        <Button variant="ghost" size="sm" onClick={() => {
+          setExpanded(true)
+          trackEvent("compliance_query_citation_expanded")
+        }}>
           + {hiddenCount} more
         </Button>
       ) : null}
