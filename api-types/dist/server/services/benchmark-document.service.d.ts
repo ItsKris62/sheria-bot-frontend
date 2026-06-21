@@ -31,6 +31,13 @@ type RegulatoryBenchmarkRow = {
     documentType: string;
     authorityStatus: string;
     version: string | null;
+    officialUrl: string | null;
+    effectiveDate: Date | null;
+    effectiveEndDate: Date | null;
+    isBinding: boolean;
+    indexVersion: string;
+    sourceDocumentVersionId: string | null;
+    status: string;
     updatedAt: Date;
 };
 export type AuthorizedBenchmarkDocument = {
@@ -41,6 +48,13 @@ export type AuthorizedBenchmarkDocument = {
     documentType: string;
     authorityStatus: string | null;
     version: string | null;
+    officialUrl: string | null;
+    effectiveDate: Date | null;
+    effectiveEndDate: Date | null;
+    isBinding: boolean | null;
+    indexVersion: string | null;
+    sourceDocumentVersionId: string | null;
+    sourceStatus: string | null;
     organizationId: string | null;
     isGlobal: boolean;
     updatedAt: Date;

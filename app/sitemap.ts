@@ -1,48 +1,54 @@
 import type { MetadataRoute } from 'next'
+import { getSiteUrl, absoluteUrl } from '@/lib/site-url'
 
-const BASE_URL = 'https://sheriabot.com'
+async function getPublishedSlugs() {
+  const url = new URL(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/trpc/blog.publicSlugs`)
+  
+  try {
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const json = await res.json()
+    return json.result.data.map((post: any) => ({
+      slug: post.slug,
+      updatedAt: post.updatedAt,
+      publishedAt: post.publishedAt
+    }))
+  } catch (error) {
+    throw error // Let the main sitemap function handle the failure
+  }
+}
 
-// Keep this list in sync with your actual blog slugs.
-// When you move to a CMS or DB-backed blog, replace this with a fetch call.
-const blogSlugs = [
-  'cbk-digital-credit-providers-regulations-2024',
-  'aml-kyc-best-practices-kenya-fintechs',
-  'data-protection-act-fintech-compliance',
-  'sandbox-regulatory-framework-kenya',
-  'mpesa-integration-compliance-checklist',
-]
-
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
 
   // ── Static public pages ───────────────────────────────────────────────────
   const staticRoutes: MetadataRoute.Sitemap = [
     {
-      url: BASE_URL,
+      url: getSiteUrl(),
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 1.0,
     },
     {
-      url: `${BASE_URL}/pricing`,
+      url: absoluteUrl('/pricing'),
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/about`,
+      url: absoluteUrl('/about'),
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
-      url: `${BASE_URL}/blog`,
+      url: absoluteUrl('/blog'),
       lastModified: now,
-      changeFrequency: 'weekly',
+      changeFrequency: 'daily',
       priority: 0.9,
     },
     {
-      url: `${BASE_URL}/knowledge-base`,
+      url: absoluteUrl('/knowledge-base'),
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.8,
@@ -50,12 +56,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ]
 
   // ── Dynamic blog post pages ───────────────────────────────────────────────
-  const blogRoutes: MetadataRoute.Sitemap = blogSlugs.map((slug) => ({
-    url: `${BASE_URL}/blog/${slug}`,
-    lastModified: now,
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }))
+  try {
+    const posts = await getPublishedSlugs()
+    
+    const blogRoutes: MetadataRoute.Sitemap = posts.map((post: any) => ({
+      url: absoluteUrl(`/blog/${post.slug}`),
+      lastModified: post.updatedAt ? new Date(post.updatedAt) : now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }))
 
-  return [...staticRoutes, ...blogRoutes]
+    return [...staticRoutes, ...blogRoutes]
+  } catch (error) {
+    console.warn("[sitemap] Failed to fetch blog slugs; returning static routes only")
+    return staticRoutes
+  }
 }

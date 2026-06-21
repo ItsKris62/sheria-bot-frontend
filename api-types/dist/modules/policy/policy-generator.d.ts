@@ -45,14 +45,6 @@ export declare class PolicyGenerator {
      */
     private extractCitations;
     /**
-     * Calculate confidence score for a citation
-     */
-    private calculateCitationConfidence;
-    /**
-     * Find additional citations using AI
-     */
-    private findAdditionalCitations;
-    /**
      * Verify citations against regulatory database
      */
     private verifyCitations;

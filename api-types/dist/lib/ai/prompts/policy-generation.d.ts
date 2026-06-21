@@ -12,6 +12,7 @@ export interface PolicyGenerationParams {
     specificRequirements?: string;
     targetAudience?: string;
     existingPolicies?: string;
+    ragContext?: string;
 }
 /**
  * Generate system prompt for policy generation

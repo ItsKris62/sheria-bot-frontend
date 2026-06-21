@@ -139,14 +139,14 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
             id: string;
         };
         output: {
+            publisher: {
+                id: string;
+                fullName: string;
+            } | null;
             author: {
                 id: string;
                 fullName: string;
                 avatar: string | null;
-            } | null;
-            publisher: {
-                id: string;
-                fullName: string;
             } | null;
         } & {
             id: string;

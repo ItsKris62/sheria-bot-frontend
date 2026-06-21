@@ -190,10 +190,6 @@ declare class ComplianceModule {
      */
     private buildQueryContext;
     /**
-     * Extract citations from RAG results
-     */
-    private extractCitationsFromRag;
-    /**
      * Detect regulatory areas from response
      */
     private detectRegulatoryAreas;

@@ -1,9 +1,4 @@
-/**
- * BlogPosting JSON-LD — rendered inside each /blog/[slug] page.
- * Gives Google rich result eligibility (author, date, headline).
- */
-
-const BASE_URL = 'https://sheriabot.com'
+import { getSiteUrl, absoluteUrl } from '@/lib/site-url'
 
 interface BlogPostJsonLdProps {
   slug: string
@@ -12,7 +7,10 @@ interface BlogPostJsonLdProps {
   author: string
   authorRole: string
   datePublished: string   // ISO 8601 string, e.g. "2025-01-15"
+  dateModified: string
   readTime: string
+  category?: string
+  sources?: { url?: string | null }[]
 }
 
 export function BlogPostJsonLd({
@@ -22,19 +20,26 @@ export function BlogPostJsonLd({
   author,
   authorRole,
   datePublished,
+  dateModified,
   readTime,
+  category,
+  sources,
 }: BlogPostJsonLdProps) {
-  const schema = {
+  const url = absoluteUrl(`/blog/${slug}`)
+  const validCitations = sources?.map(s => s.url).filter(Boolean) as string[]
+
+  const schema: any = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: title,
     description: excerpt,
-    url: `${BASE_URL}/blog/${slug}`,
+    url,
     datePublished: new Date(datePublished).toISOString(),
-    dateModified: new Date(datePublished).toISOString(),
-    image: `${BASE_URL}/og-image.png`,
+    dateModified: new Date(dateModified).toISOString(),
+    image: absoluteUrl('/og-image.png'),
     inLanguage: 'en-KE',
     timeRequired: readTime,
+    isAccessibleForFree: true,
     author: {
       '@type': 'Person',
       name: author,
@@ -45,14 +50,22 @@ export function BlogPostJsonLd({
       name: 'SheriaBot',
       logo: {
         '@type': 'ImageObject',
-        url: `${BASE_URL}/colored-logo.svg`,
+        url: absoluteUrl('/colored-logo.svg'),
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `${BASE_URL}/blog/${slug}`,
+      '@id': url,
     },
     keywords: ['Kenya fintech', 'regulatory compliance', 'CBK', 'AML', 'KYC'],
+  }
+
+  if (category) {
+    schema.articleSection = category
+  }
+
+  if (validCitations.length > 0) {
+    schema.citation = validCitations
   }
 
   return (
@@ -62,3 +75,4 @@ export function BlogPostJsonLd({
     />
   )
 }
+

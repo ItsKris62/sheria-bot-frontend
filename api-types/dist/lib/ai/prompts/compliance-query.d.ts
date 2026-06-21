@@ -4,6 +4,12 @@
  */
 /**
  * Compliance query request parameters
+/**
+ * Compliance Query Prompt Templates
+ * Answers specific regulatory compliance questions with citations
+ */
+/**
+ * Compliance query request parameters
  */
 export interface ComplianceQueryParams {
     question: string;
@@ -12,11 +18,12 @@ export interface ComplianceQueryParams {
     context?: string;
     urgency?: 'LOW' | 'MEDIUM' | 'HIGH';
     ragContext?: string;
+    answerDetail?: 'standard' | 'detailed';
 }
 /**
  * Generate system prompt for compliance queries
  */
-export declare function generateComplianceSystemPrompt(): string;
+export declare function generateComplianceSystemPrompt(answerDetail?: 'standard' | 'detailed'): string;
 /**
  * Generate user prompt for compliance query
  */

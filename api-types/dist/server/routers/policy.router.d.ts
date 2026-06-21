@@ -169,7 +169,16 @@ export declare const policyRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             id: string;
         };
-        output: import("../../lib/ai/client").AICompletionResult;
+        output: {
+            content: string;
+            model: string;
+            inputTokens: number;
+            outputTokens: number;
+            cost: number;
+            citationCount: number;
+            verified: number;
+            failed: number;
+        };
         meta: object;
     }>;
     /**

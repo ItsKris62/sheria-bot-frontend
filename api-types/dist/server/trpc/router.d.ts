@@ -927,7 +927,16 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 id: string;
             };
-            output: import("../../lib/ai/client").AICompletionResult;
+            output: {
+                content: string;
+                model: string;
+                inputTokens: number;
+                outputTokens: number;
+                cost: number;
+                citationCount: number;
+                verified: number;
+                failed: number;
+            };
             meta: object;
         }>;
         getStatus: import("@trpc/server").TRPCQueryProcedure<{
@@ -990,47 +999,22 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 organizationType?: "OTHER" | "FINTECH" | "BANK" | "TELECOM" | "INSURANCE" | undefined;
                 industry?: string | undefined;
                 context?: string | undefined;
+                answerDetail?: "standard" | "detailed" | undefined;
             };
             output: {
                 queryId: any;
                 answer: string;
-                citations: {
-                    documentId: string | null;
-                    documentTitle: string;
-                    section: string;
-                    textSnippet: string;
-                    score: number;
-                    citation: string | null;
-                    authorityStatus: string;
-                    isBinding: boolean;
-                    source: string | null;
-                    version: string | null;
-                    verified: boolean;
-                    verificationStatus: "verified" | "unverified" | "not_checked";
-                }[];
+                citations: import("../../lib/source-grounding/citations").SourceCitation[];
                 confidence: number | null;
                 suggestedFollowUps: never[];
                 route: string;
                 grounded: boolean;
-                abstained: boolean;
+                abstained: false;
                 runId: string | null;
             } | {
                 queryId: any;
                 answer: string;
-                citations: {
-                    documentId: string | null;
-                    documentTitle: string;
-                    section: string;
-                    textSnippet: string;
-                    score: number;
-                    citation: string | null;
-                    authorityStatus: string;
-                    isBinding: boolean;
-                    source: string | null;
-                    version: string | null;
-                    verified: boolean;
-                    verificationStatus: "verified" | "unverified" | "not_checked";
-                }[];
+                citations: import("../../lib/source-grounding/citations").SourceCitation[];
                 confidence: null;
                 suggestedFollowUps: never[];
                 route: string | null;
@@ -1048,20 +1032,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             output: {
                 queryId: any;
                 answer: string;
-                citations: {
-                    documentId: string | null;
-                    documentTitle: string;
-                    section: string;
-                    textSnippet: string;
-                    score: number;
-                    citation: string | null;
-                    authorityStatus: string;
-                    isBinding: boolean;
-                    source: string | null;
-                    version: string | null;
-                    verified: boolean;
-                    verificationStatus: "verified" | "unverified" | "not_checked";
-                }[];
+                citations: import("../../lib/source-grounding/citations").SourceCitation[];
             };
             meta: object;
         }>;
@@ -1699,14 +1670,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 id: string;
             };
             output: {
+                publisher: {
+                    id: string;
+                    fullName: string;
+                } | null;
                 author: {
                     id: string;
                     fullName: string;
                     avatar: string | null;
-                } | null;
-                publisher: {
-                    id: string;
-                    fullName: string;
                 } | null;
             } & {
                 id: string;
@@ -4050,7 +4021,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 fileContent: string;
                 regulatoryFrameworks: string[];
                 benchmarkDocumentIds?: string[] | undefined;
-                analysisDepth?: "quick" | "standard" | "deep" | undefined;
+                analysisDepth?: "standard" | "quick" | "deep" | undefined;
                 focusAreas?: string[] | undefined;
             };
             output: {
@@ -8044,6 +8015,417 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     email: string;
                     fullName: string;
                 };
+            };
+            meta: object;
+        }>;
+    }>>;
+    blog: import("@trpc/server").TRPCBuiltRouter<{
+        ctx: import("./context").Context;
+        meta: object;
+        errorShape: {
+            message: string;
+            data: {
+                stack: string | undefined;
+                fieldErrors: Record<string, string> | null;
+                code: import("@trpc/server").TRPC_ERROR_CODE_KEY;
+                httpStatus: number;
+                path?: string;
+            };
+            code: import("@trpc/server").TRPC_ERROR_CODE_NUMBER;
+        };
+        transformer: false;
+    }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
+        publicList: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                category?: string | undefined;
+                search?: string | undefined;
+                tag?: string | undefined;
+                page?: number | undefined;
+                limit?: number | undefined;
+                featured?: boolean | undefined;
+            };
+            output: {
+                posts: {
+                    readingTime: number;
+                    sourceCount: number;
+                    id: string;
+                    title: string;
+                    updatedAt: Date;
+                    category: string;
+                    excerpt: string | null;
+                    publishedAt: Date | null;
+                    slug: string;
+                    tags: string[];
+                    coverImageUrl: string | null;
+                    featured: boolean;
+                    lastReviewedAt: Date | null;
+                    author: {
+                        id: string;
+                        fullName: string;
+                    };
+                }[];
+                pagination: {
+                    page: number;
+                    limit: number;
+                    total: number;
+                    pages: number;
+                };
+            };
+            meta: object;
+        }>;
+        publicGetBySlug: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                slug: string;
+            };
+            output: {
+                readingTime: number;
+                author: {
+                    id: string;
+                    fullName: string;
+                };
+                sources: {
+                    id: string;
+                    title: string;
+                    url: string | null;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    publishedAt: Date | null;
+                    notes: string | null;
+                    sourceType: import("@prisma/client").$Enums.BlogSourceType;
+                    postId: string;
+                    publisher: string | null;
+                    accessedAt: Date;
+                }[];
+                id: string;
+                title: string;
+                status: import("@prisma/client").$Enums.BlogPostStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                deletedAt: Date | null;
+                content: string | null;
+                authorId: string;
+                category: string;
+                excerpt: string | null;
+                htmlContent: string | null;
+                publishedAt: Date | null;
+                seoDescription: string | null;
+                seoTitle: string | null;
+                slug: string;
+                tags: string[];
+                jurisdiction: string;
+                archivedAt: Date | null;
+                coverImageUrl: string | null;
+                featured: boolean;
+                relatedRegulations: string[];
+                canonicalUrl: string | null;
+                ogImageUrl: string | null;
+                reviewerId: string | null;
+                updatedById: string | null;
+                lastReviewedAt: Date | null;
+            };
+            meta: object;
+        }>;
+        getFeatured: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                limit?: number | undefined;
+            };
+            output: {
+                readingTime: number;
+                sourceCount: number;
+                id: string;
+                title: string;
+                updatedAt: Date;
+                category: string;
+                excerpt: string | null;
+                publishedAt: Date | null;
+                slug: string;
+                tags: string[];
+                coverImageUrl: string | null;
+                featured: boolean;
+                lastReviewedAt: Date | null;
+                author: {
+                    id: string;
+                    fullName: string;
+                };
+            }[];
+            meta: object;
+        }>;
+        publicSlugs: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                updatedAt: Date;
+                publishedAt: Date | null;
+                slug: string;
+            }[];
+            meta: object;
+        }>;
+        adminList: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                status?: "DRAFT" | "ARCHIVED" | "PUBLISHED" | "IN_REVIEW" | undefined;
+                category?: string | undefined;
+                search?: string | undefined;
+                page?: number | undefined;
+                limit?: number | undefined;
+            };
+            output: {
+                posts: {
+                    sourceCount: number;
+                    _count: {
+                        sources: number;
+                    };
+                    author: {
+                        id: string;
+                        fullName: string;
+                    };
+                    reviewer: {
+                        id: string;
+                        fullName: string;
+                    } | null;
+                    id: string;
+                    title: string;
+                    status: import("@prisma/client").$Enums.BlogPostStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    content: string | null;
+                    authorId: string;
+                    category: string;
+                    excerpt: string | null;
+                    htmlContent: string | null;
+                    publishedAt: Date | null;
+                    seoDescription: string | null;
+                    seoTitle: string | null;
+                    slug: string;
+                    tags: string[];
+                    jurisdiction: string;
+                    archivedAt: Date | null;
+                    coverImageUrl: string | null;
+                    featured: boolean;
+                    relatedRegulations: string[];
+                    canonicalUrl: string | null;
+                    ogImageUrl: string | null;
+                    reviewerId: string | null;
+                    updatedById: string | null;
+                    lastReviewedAt: Date | null;
+                }[];
+                pagination: {
+                    page: number;
+                    limit: number;
+                    total: number;
+                    pages: number;
+                };
+            };
+            meta: object;
+        }>;
+        adminGetById: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                id: string;
+            };
+            output: {
+                sources: {
+                    id: string;
+                    title: string;
+                    url: string | null;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    publishedAt: Date | null;
+                    notes: string | null;
+                    sourceType: import("@prisma/client").$Enums.BlogSourceType;
+                    postId: string;
+                    publisher: string | null;
+                    accessedAt: Date;
+                }[];
+            } & {
+                id: string;
+                title: string;
+                status: import("@prisma/client").$Enums.BlogPostStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                deletedAt: Date | null;
+                content: string | null;
+                authorId: string;
+                category: string;
+                excerpt: string | null;
+                htmlContent: string | null;
+                publishedAt: Date | null;
+                seoDescription: string | null;
+                seoTitle: string | null;
+                slug: string;
+                tags: string[];
+                jurisdiction: string;
+                archivedAt: Date | null;
+                coverImageUrl: string | null;
+                featured: boolean;
+                relatedRegulations: string[];
+                canonicalUrl: string | null;
+                ogImageUrl: string | null;
+                reviewerId: string | null;
+                updatedById: string | null;
+                lastReviewedAt: Date | null;
+            };
+            meta: object;
+        }>;
+        adminCreate: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                title: string;
+                slug?: string | undefined;
+                excerpt?: string | undefined;
+                category?: string | undefined;
+            };
+            output: {
+                id: string;
+                title: string;
+                status: import("@prisma/client").$Enums.BlogPostStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                deletedAt: Date | null;
+                content: string | null;
+                authorId: string;
+                category: string;
+                excerpt: string | null;
+                htmlContent: string | null;
+                publishedAt: Date | null;
+                seoDescription: string | null;
+                seoTitle: string | null;
+                slug: string;
+                tags: string[];
+                jurisdiction: string;
+                archivedAt: Date | null;
+                coverImageUrl: string | null;
+                featured: boolean;
+                relatedRegulations: string[];
+                canonicalUrl: string | null;
+                ogImageUrl: string | null;
+                reviewerId: string | null;
+                updatedById: string | null;
+                lastReviewedAt: Date | null;
+            };
+            meta: object;
+        }>;
+        adminUpdate: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                id: string;
+                title?: string | undefined;
+                slug?: string | undefined;
+                excerpt?: string | null | undefined;
+                content?: string | null | undefined;
+                coverImageUrl?: string | null | undefined;
+                category?: string | undefined;
+                tags?: string[] | undefined;
+                jurisdiction?: string | undefined;
+                relatedRegulations?: string[] | undefined;
+                featured?: boolean | undefined;
+                seoTitle?: string | null | undefined;
+                seoDescription?: string | null | undefined;
+                canonicalUrl?: string | null | undefined;
+                ogImageUrl?: string | null | undefined;
+                reviewerId?: string | null | undefined;
+                sources?: {
+                    sourceType: "INTERNATIONAL_STANDARD" | "OFFICIAL" | "THIRD_PARTY" | "INTERNAL" | "MEDIA";
+                    title: string;
+                    id?: string | undefined;
+                    publisher?: string | null | undefined;
+                    url?: string | null | undefined;
+                    publishedAt?: Date | null | undefined;
+                    notes?: string | null | undefined;
+                }[] | undefined;
+            };
+            output: {
+                id: string;
+                title: string;
+                status: import("@prisma/client").$Enums.BlogPostStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                deletedAt: Date | null;
+                content: string | null;
+                authorId: string;
+                category: string;
+                excerpt: string | null;
+                htmlContent: string | null;
+                publishedAt: Date | null;
+                seoDescription: string | null;
+                seoTitle: string | null;
+                slug: string;
+                tags: string[];
+                jurisdiction: string;
+                archivedAt: Date | null;
+                coverImageUrl: string | null;
+                featured: boolean;
+                relatedRegulations: string[];
+                canonicalUrl: string | null;
+                ogImageUrl: string | null;
+                reviewerId: string | null;
+                updatedById: string | null;
+                lastReviewedAt: Date | null;
+            };
+            meta: object;
+        }>;
+        adminSetStatus: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                id: string;
+                status: "DRAFT" | "ARCHIVED" | "PUBLISHED" | "IN_REVIEW";
+            };
+            output: {
+                id: string;
+                title: string;
+                status: import("@prisma/client").$Enums.BlogPostStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                deletedAt: Date | null;
+                content: string | null;
+                authorId: string;
+                category: string;
+                excerpt: string | null;
+                htmlContent: string | null;
+                publishedAt: Date | null;
+                seoDescription: string | null;
+                seoTitle: string | null;
+                slug: string;
+                tags: string[];
+                jurisdiction: string;
+                archivedAt: Date | null;
+                coverImageUrl: string | null;
+                featured: boolean;
+                relatedRegulations: string[];
+                canonicalUrl: string | null;
+                ogImageUrl: string | null;
+                reviewerId: string | null;
+                updatedById: string | null;
+                lastReviewedAt: Date | null;
+            };
+            meta: object;
+        }>;
+        adminDelete: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                id: string;
+            };
+            output: {
+                id: string;
+                title: string;
+                status: import("@prisma/client").$Enums.BlogPostStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                deletedAt: Date | null;
+                content: string | null;
+                authorId: string;
+                category: string;
+                excerpt: string | null;
+                htmlContent: string | null;
+                publishedAt: Date | null;
+                seoDescription: string | null;
+                seoTitle: string | null;
+                slug: string;
+                tags: string[];
+                jurisdiction: string;
+                archivedAt: Date | null;
+                coverImageUrl: string | null;
+                featured: boolean;
+                relatedRegulations: string[];
+                canonicalUrl: string | null;
+                ogImageUrl: string | null;
+                reviewerId: string | null;
+                updatedById: string | null;
+                lastReviewedAt: Date | null;
             };
             meta: object;
         }>;

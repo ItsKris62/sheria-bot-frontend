@@ -39,6 +39,12 @@ export type SafeEventProperties = {
   required_plan?: string;
   document_type?: string;
   jurisdiction?: string;
+  
+  // Blog specific
+  blog_category?: string;
+  blog_slug?: string;
+  read_time_seconds?: number;
+  share_platform?: string;
 };
 
 // Strongly typed event names based on requirements
@@ -70,7 +76,10 @@ export type AnalyticsEvent =
   // Pilot Access
   | "pilot_access_activated"
   | "pilot_feature_used"
-  | "pilot_feedback_submitted";
+  | "pilot_feedback_submitted"
+  // Blog
+  | "blog_post_viewed"
+  | "blog_post_shared";
 
 // A strict allowlist of keys that are permitted in the payload.
 // Any key not in this list will be silently dropped before sending to PostHog.
@@ -105,6 +114,10 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "required_plan",
   "document_type",
   "jurisdiction",
+  "blog_category",
+  "blog_slug",
+  "read_time_seconds",
+  "share_platform",
 ]);
 
 /**

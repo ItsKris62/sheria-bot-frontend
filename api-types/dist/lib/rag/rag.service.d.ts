@@ -14,8 +14,14 @@ export interface DocumentToIndex {
     isBinding?: boolean;
     source?: string;
     version?: string;
+    effectiveDate?: Date;
     metadata?: Record<string, any>;
     framework?: string;
+    officialUrl?: string;
+    sourceDocumentVersionId?: string;
+    indexVersion?: string;
+    effectiveEndDate?: string;
+    documentChecksum?: string;
 }
 /**
  * Search result with context
@@ -36,6 +42,21 @@ export interface SearchResult {
     framework?: string;
     frameworkSlug?: string;
     legalDocumentId?: string;
+    officialUrl?: string;
+    sourceDocumentVersionId?: string;
+    indexVersion?: string;
+    pageStart?: number;
+    pageEnd?: number;
+    sectionNumber?: string;
+    clauseNumber?: string;
+    scheduleNumber?: string;
+    headingPath?: string[] | string;
+    provisionId?: string;
+    contentHash?: string;
+    documentChecksum?: string;
+    effectiveDate?: string;
+    effectiveEndDate?: string;
+    sourceLimited?: boolean;
 }
 /**
  * Search options
@@ -49,6 +70,13 @@ export interface SearchOptions {
     fallbackIfTooFew?: {
         minResults: number;
         relaxedFilter?: Record<string, any>;
+    };
+    preferActiveSources?: boolean;
+    sourceIndexMode?: 'v1' | 'v2' | 'prefer-v2';
+    preferV2FallbackConfig?: {
+        minV2Results?: number;
+        minV2TopScore?: number;
+        minV2DocumentDiversity?: number;
     };
 }
 /**

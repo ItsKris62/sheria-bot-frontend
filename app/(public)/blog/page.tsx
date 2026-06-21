@@ -1,123 +1,78 @@
-"use client"
-
-import { useState } from "react"
+import { Metadata } from "next"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import {
-  ArrowRight,
-  Search,
-  Calendar,
-  Clock,
-  User,
-} from "lucide-react"
+import { ArrowRight, Calendar, User } from "lucide-react"
+import { BlogFilters } from "@/components/blog/blog-filters"
 
-const categories = [
-  "All",
-  "Regulatory Updates",
-  "Compliance Tips",
-  "Industry News",
-  "Product Updates",
-  "Case Studies",
-]
+import { getSiteUrl, absoluteUrl } from "@/lib/site-url"
 
-const blogPosts = [
-  {
-    slug: "cbk-digital-credit-providers-regulations-2024",
-    title: "Understanding the CBK Digital Credit Providers Regulations 2024",
-    excerpt: "A comprehensive breakdown of the new regulations affecting digital lenders in Kenya, including licensing requirements and consumer protection measures.",
-    category: "Regulatory Updates",
-    author: "Dr. Amina Ochieng",
-    date: "2025-01-15",
-    readTime: "8 min read",
-    featured: true,
-  },
-  {
-    slug: "aml-kyc-best-practices-kenya-fintechs",
-    title: "AML/KYC Best Practices for Kenya Fintechs",
-    excerpt: "Learn the essential AML and KYC procedures every fintech must implement to stay compliant with Kenya's financial regulations.",
-    category: "Compliance Tips",
-    author: "Grace Wanjiru",
-    date: "2025-01-10",
-    readTime: "6 min read",
-    featured: true,
-  },
-  {
-    slug: "data-protection-act-fintech-compliance",
-    title: "Data Protection Act Compliance: A Fintech Guide",
-    excerpt: "How Kenya's Data Protection Act 2019 affects fintech operations and what steps you need to take for compliance.",
-    category: "Compliance Tips",
-    author: "Peter Kamau",
-    date: "2025-01-05",
-    readTime: "10 min read",
-    featured: false,
-  },
-  {
-    slug: "sandbox-regulatory-framework-kenya",
-    title: "Navigating Kenya's Regulatory Sandbox Framework",
-    excerpt: "Everything you need to know about applying for and operating within the CBK's regulatory sandbox for innovative financial products.",
-    category: "Regulatory Updates",
-    author: "Dr. Amina Ochieng",
-    date: "2024-12-20",
-    readTime: "7 min read",
-    featured: false,
-  },
-  {
-    slug: "mpesa-integration-compliance-checklist",
-    title: "M-Pesa Integration Compliance Checklist",
-    excerpt: "A step-by-step checklist for fintechs integrating with M-Pesa, covering all regulatory and technical requirements.",
-    category: "Compliance Tips",
-    author: "David Mwangi",
-    date: "2024-12-15",
-    readTime: "5 min read",
-    featured: false,
-  },
-  {
-    slug: "sheriabot-policy-generator-launch",
-    title: "Introducing SheriaBot's AI Policy Generator",
-    excerpt: "We're excited to announce our new AI-powered policy generator, designed to help regulators create comprehensive compliance frameworks.",
-    category: "Product Updates",
-    author: "Peter Kamau",
-    date: "2024-12-10",
-    readTime: "4 min read",
-    featured: false,
-  },
-  {
-    slug: "finpay-compliance-transformation-case-study",
-    title: "How FinPay Reduced Compliance Time by 70%",
-    excerpt: "A case study on how one of Kenya's leading payment providers transformed their compliance process with SheriaBot.",
-    category: "Case Studies",
-    author: "Grace Wanjiru",
-    date: "2024-12-01",
-    readTime: "6 min read",
-    featured: false,
-  },
-  {
-    slug: "kenya-fintech-regulatory-outlook-2025",
-    title: "Kenya Fintech Regulatory Outlook 2025",
-    excerpt: "Our predictions for the regulatory changes that will shape Kenya's fintech sector in the coming year.",
-    category: "Industry News",
-    author: "Dr. Amina Ochieng",
-    date: "2024-11-25",
-    readTime: "9 min read",
-    featured: false,
-  },
-]
+export function generateMetadata(): Metadata {
+  const url = absoluteUrl('/blog');
+  
+  return {
+    title: "Regulatory Insights & Compliance News | SheriaBot",
+    description: "Source-backed regulatory updates, compliance guides, and fintech compliance insights for Kenya's financial services sector.",
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: "Regulatory Insights & Compliance News | SheriaBot",
+      description: "Source-backed regulatory updates, compliance guides, and fintech compliance insights for Kenya's financial services sector.",
+      url,
+      siteName: "SheriaBot",
+      images: [
+        {
+          url: absoluteUrl('/og-image.png'),
+          width: 1200,
+          height: 630,
+        }
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Regulatory Insights & Compliance News | SheriaBot",
+      description: "Source-backed regulatory updates, compliance guides, and fintech compliance insights for Kenya's financial services sector.",
+      images: [absoluteUrl('/og-image.png')],
+    },
+  };
+}
 
-export default function BlogPage() {
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [searchQuery, setSearchQuery] = useState("")
+async function getPosts(searchParams: { q?: string, category?: string, page?: string }) {
+  const query = searchParams.q || ""
+  const category = searchParams.category === "All" ? "" : (searchParams.category || "")
+  const page = parseInt(searchParams.page || "1", 10)
+  
+  const url = new URL(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/trpc/blog.publicList`)
+  const input = {
+    search: query || undefined,
+    category: category || undefined,
+    page,
+    limit: 20
+  }
+  url.searchParams.set("input", JSON.stringify(input))
+  
+  try {
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } })
+    if (!res.ok) return { posts: [], pagination: { total: 0 } }
+    const json = await res.json()
+    return json.result.data
+  } catch (error) {
+    console.error("Failed to fetch blog posts", error)
+    return { posts: [], pagination: { total: 0 } }
+  }
+}
 
-  const filteredPosts = blogPosts.filter((post) => {
-    const matchesCategory = selectedCategory === "All" || post.category === selectedCategory
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
-
-  const featuredPosts = blogPosts.filter((post) => post.featured)
+export default async function BlogPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
+  const resolvedSearchParams = await searchParams
+  const data = await getPosts(resolvedSearchParams)
+  
+  const filteredPosts = data.posts || []
+  const featuredPosts = filteredPosts.filter((post: any) => post.featured).slice(0, 2)
+  const selectedCategory = resolvedSearchParams.category || "All"
 
   return (
     <div className="flex flex-col">
@@ -142,79 +97,51 @@ export default function BlogPage() {
       </section>
 
       {/* Featured Posts */}
-      <section className="pb-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-semibold text-foreground">Featured Articles</h2>
-          <div className="grid gap-6 lg:grid-cols-2">
-            {featuredPosts.map((post) => (
-              <Link key={post.slug} href={`/blog/${post.slug}`}>
-                <Card className="group h-full border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
-                  <CardContent className="p-6">
-                    <Badge variant="outline" className="mb-3 text-xs">
-                      {post.category}
-                    </Badge>
-                    <h3 className="text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
-                      {post.title}
-                    </h3>
-                    <p className="mt-2 line-clamp-2 text-muted-foreground">
-                      {post.excerpt}
-                    </p>
-                    <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        {post.author}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {new Date(post.date).toLocaleDateString("en-KE", { 
-                          month: "short", 
-                          day: "numeric", 
-                          year: "numeric" 
-                        })}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {post.readTime}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+      {featuredPosts.length > 0 && (
+        <section className="pb-12">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="mb-6 text-xl font-semibold text-foreground">Featured Articles</h2>
+            <div className="grid gap-6 lg:grid-cols-2">
+              {featuredPosts.map((post: any) => (
+                <Link key={post.slug} href={`/blog/${post.slug}`}>
+                  <Card className="group h-full border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
+                    <CardContent className="p-6">
+                      <Badge variant="outline" className="mb-3 text-xs">
+                        {post.category || "General"}
+                      </Badge>
+                      <h3 className="text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
+                        {post.title}
+                      </h3>
+                      <p className="mt-2 line-clamp-2 text-muted-foreground">
+                        {post.excerpt}
+                      </p>
+                      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <User className="h-4 w-4" />
+                          {post.author?.name || "Editorial Team"}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("en-KE", { 
+                            month: "short", 
+                            day: "numeric", 
+                            year: "numeric" 
+                          }) : "Recently"}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Search and Filters */}
       <section className="border-y border-border bg-muted/30 py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="relative max-w-sm flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search articles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className={selectedCategory === category 
-                    ? "bg-primary text-primary-foreground" 
-                    : "bg-transparent"
-                  }
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-          </div>
+          <BlogFilters />
         </div>
       </section>
 
@@ -224,7 +151,7 @@ export default function BlogPage() {
           <h2 className="mb-6 text-xl font-semibold text-foreground">
             {selectedCategory === "All" ? "All Articles" : selectedCategory}
             <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({filteredPosts.length} {filteredPosts.length === 1 ? "article" : "articles"})
+              ({data.pagination?.total || 0} {(data.pagination?.total || 0) === 1 ? "article" : "articles"})
             </span>
           </h2>
 
@@ -235,23 +162,20 @@ export default function BlogPage() {
                 <Button 
                   variant="outline" 
                   className="mt-4 bg-transparent"
-                  onClick={() => {
-                    setSelectedCategory("All")
-                    setSearchQuery("")
-                  }}
+                  asChild
                 >
-                  Clear Filters
+                  <Link href="/blog">Clear Filters</Link>
                 </Button>
               </CardContent>
             </Card>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredPosts.map((post) => (
+              {filteredPosts.map((post: any) => (
                 <Link key={post.slug} href={`/blog/${post.slug}`}>
                   <Card className="group h-full border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
                     <CardContent className="p-6">
                       <Badge variant="outline" className="mb-3 text-xs">
-                        {post.category}
+                        {post.category || "General"}
                       </Badge>
                       <h3 className="font-semibold text-foreground transition-colors group-hover:text-primary">
                         {post.title}
@@ -260,8 +184,10 @@ export default function BlogPage() {
                         {post.excerpt}
                       </p>
                       <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{post.author}</span>
-                        <span>{post.readTime}</span>
+                        <span>{post.author?.name || "Editorial Team"}</span>
+                        <span>
+                          {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("en-KE") : "Recently"}
+                        </span>
                       </div>
                     </CardContent>
                   </Card>

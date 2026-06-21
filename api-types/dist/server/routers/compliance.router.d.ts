@@ -1,18 +1,4 @@
-type CitationVerificationStatus = 'verified' | 'unverified' | 'not_checked';
-type ComplianceCitation = {
-    documentId: string | null;
-    documentTitle: string;
-    section: string;
-    textSnippet: string;
-    score: number;
-    citation: string | null;
-    authorityStatus: string;
-    isBinding: boolean;
-    source: string | null;
-    version: string | null;
-    verified: boolean;
-    verificationStatus: CitationVerificationStatus;
-};
+import { type SourceCitation } from '@/lib/source-grounding/citations';
 /**
  * Compliance Router
  *
@@ -47,21 +33,22 @@ export declare const complianceRouter: import("@trpc/server").TRPCBuiltRouter<{
             organizationType?: "OTHER" | "FINTECH" | "BANK" | "TELECOM" | "INSURANCE" | undefined;
             industry?: string | undefined;
             context?: string | undefined;
+            answerDetail?: "standard" | "detailed" | undefined;
         };
         output: {
             queryId: any;
             answer: string;
-            citations: ComplianceCitation[];
+            citations: SourceCitation[];
             confidence: number | null;
             suggestedFollowUps: never[];
             route: string;
             grounded: boolean;
-            abstained: boolean;
+            abstained: false;
             runId: string | null;
         } | {
             queryId: any;
             answer: string;
-            citations: ComplianceCitation[];
+            citations: SourceCitation[];
             confidence: null;
             suggestedFollowUps: never[];
             route: string | null;
@@ -85,7 +72,7 @@ export declare const complianceRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             queryId: any;
             answer: string;
-            citations: ComplianceCitation[];
+            citations: SourceCitation[];
         };
         meta: object;
     }>;
@@ -554,5 +541,4 @@ export declare const complianceRouter: import("@trpc/server").TRPCBuiltRouter<{
         meta: object;
     }>;
 }>>;
-export {};
 //# sourceMappingURL=compliance.router.d.ts.map

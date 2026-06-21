@@ -37,7 +37,8 @@ declare class ChecklistService {
      *
      * Tier 1  -  Full:       full prompt, up to 12 RAG passages (≤8000 token budget), 8192 max_tokens, 240s
      * Tier 2  -  Simplified: shorter prompt, top-6 passages (≤3000 token budget),   6144 max_tokens, 200s
-     * Tier 3  -  Minimal:    minimal prompt, no RAG,                                  4096 max_tokens, 150s
+     * Tier 3  -  Minimal:    source-insufficiency prompt only; service-level guard
+     *                       prevents legal generation when no RAG passages exist.
      *
      * Each tier streams via executeChecklistStream() and validates via parseWithTierSchema()
      * (per-category Zod validation  -  no unvalidated data reaches the database).

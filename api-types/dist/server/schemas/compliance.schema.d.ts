@@ -26,6 +26,10 @@ export declare const complianceQuerySchema: z.ZodObject<{
     }>>;
     industry: z.ZodOptional<z.ZodString>;
     context: z.ZodOptional<z.ZodString>;
+    answerDetail: z.ZodDefault<z.ZodEnum<{
+        standard: "standard";
+        detailed: "detailed";
+    }>>;
 }, z.core.$strip>;
 export type ComplianceQueryInput = z.infer<typeof complianceQuerySchema>;
 /**

@@ -11,6 +11,12 @@ export interface DocumentIngestionInput {
     authorityStatus?: 'DRAFT' | 'IN_FORCE' | 'SUPERSEDED' | 'CONSULTATION';
     isBinding?: boolean;
     supersedesDocumentId?: string;
+    officialUrl?: string;
+    publicationDate?: Date;
+    retrievedAt?: Date;
+    effectiveEndDate?: Date;
+    sourceRegistryId?: string;
+    sourceDocumentVersionId?: string;
 }
 export interface IngestionResult {
     documentId: string;
