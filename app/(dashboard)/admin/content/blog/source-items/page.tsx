@@ -47,8 +47,7 @@ export default function BlogSourceItemsPage() {
       search: search || undefined,
       status: statusFilter !== 'ALL' ? (statusFilter as any) : undefined,
       jurisdiction: jurisdictionFilter !== 'ALL' ? (jurisdictionFilter as any) : undefined,
-    },
-    { keepPreviousData: true }
+    }
   );
 
   const dismissMutation = trpc.blogAutomation.adminDismissSourceItem.useMutation({
@@ -326,7 +325,7 @@ export default function BlogSourceItemsPage() {
 
               <div className="pt-4 border-t flex justify-end gap-2">
                 {selectedItem.status !== 'DISMISSED' && (
-                  <Button variant="destructive" onClick={handleDismiss} disabled={dismissMutation.isLoading}>
+                  <Button variant="destructive" onClick={handleDismiss} disabled={dismissMutation.isPending}>
                     <XCircle className="mr-2 h-4 w-4" />
                     Dismiss Item
                   </Button>
