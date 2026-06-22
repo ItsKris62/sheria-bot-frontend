@@ -16,18 +16,18 @@ export declare const CountryEnum: z.ZodEnum<{
 }>;
 export type Country = z.infer<typeof CountryEnum>;
 export declare const JurisdictionCodeEnum: z.ZodEnum<{
-    EU: "EU";
+    KE: "KE";
     MW: "MW";
     NG: "NG";
-    KE: "KE";
-    INTL: "INTL";
     GLOBAL: "GLOBAL";
+    EU: "EU";
+    INTL: "INTL";
 }>;
 export type JurisdictionCode = z.infer<typeof JurisdictionCodeEnum>;
 export declare const ScopeEnum: z.ZodEnum<{
+    REGIONAL: "REGIONAL";
     COUNTRY: "COUNTRY";
     INTERNATIONAL: "INTERNATIONAL";
-    REGIONAL: "REGIONAL";
 }>;
 export type Scope = z.infer<typeof ScopeEnum>;
 export declare const CategoryEnum: z.ZodEnum<{
@@ -102,17 +102,17 @@ export declare const CorpusManifestEntrySchema: z.ZodObject<{
         International: "International";
     }>;
     jurisdictionCode: z.ZodEnum<{
-        EU: "EU";
+        KE: "KE";
         MW: "MW";
         NG: "NG";
-        KE: "KE";
-        INTL: "INTL";
         GLOBAL: "GLOBAL";
+        EU: "EU";
+        INTL: "INTL";
     }>;
     scope: z.ZodEnum<{
+        REGIONAL: "REGIONAL";
         COUNTRY: "COUNTRY";
         INTERNATIONAL: "INTERNATIONAL";
-        REGIONAL: "REGIONAL";
     }>;
     category: z.ZodEnum<{
         other: "other";
@@ -198,12 +198,12 @@ export declare const CorpusManifestSchema: z.ZodObject<{
         International: "International";
     }>;
     jurisdictionCode: z.ZodEnum<{
-        EU: "EU";
+        KE: "KE";
         MW: "MW";
         NG: "NG";
-        KE: "KE";
-        INTL: "INTL";
         GLOBAL: "GLOBAL";
+        EU: "EU";
+        INTL: "INTL";
     }>;
     entries: z.ZodArray<z.ZodObject<{
         id: z.ZodString;
@@ -214,17 +214,17 @@ export declare const CorpusManifestSchema: z.ZodObject<{
             International: "International";
         }>;
         jurisdictionCode: z.ZodEnum<{
-            EU: "EU";
+            KE: "KE";
             MW: "MW";
             NG: "NG";
-            KE: "KE";
-            INTL: "INTL";
             GLOBAL: "GLOBAL";
+            EU: "EU";
+            INTL: "INTL";
         }>;
         scope: z.ZodEnum<{
+            REGIONAL: "REGIONAL";
             COUNTRY: "COUNTRY";
             INTERNATIONAL: "INTERNATIONAL";
-            REGIONAL: "REGIONAL";
         }>;
         category: z.ZodEnum<{
             other: "other";

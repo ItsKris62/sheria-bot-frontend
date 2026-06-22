@@ -19,7 +19,7 @@ export function SocialShare({ title, url, excerpt, slug, category }: SocialShare
   const fullUrl = typeof window !== 'undefined' ? window.location.href : url
 
   useEffect(() => {
-    if (typeof navigator !== "undefined" && navigator.share) {
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
       setHasNativeShare(true)
     }
   }, [])

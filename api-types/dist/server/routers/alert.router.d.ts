@@ -27,7 +27,7 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
             title: string;
             summary: string;
             body: string;
-            regulatoryBody: "CBK" | "CMA" | "ODPC" | "CA" | "GAZETTE";
+            regulatoryBody: "GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA";
             category: "DATA_PROTECTION" | "AML_CFT" | "PRUDENTIAL" | "LICENSING" | "CAPITAL_MARKETS" | "GENERAL";
             sourceUrl?: string | undefined;
             severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
@@ -64,7 +64,7 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             page?: number | undefined;
             limit?: number | undefined;
-            regulatoryBody?: "CBK" | "CMA" | "ODPC" | "CA" | "GAZETTE" | undefined;
+            regulatoryBody?: "GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA" | undefined;
             severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
             unreadOnly?: boolean | undefined;
         };
@@ -99,7 +99,7 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
     }>;
     upsertSubscription: import("@trpc/server").TRPCMutationProcedure<{
         input: {
-            regulatoryBodies: ("CBK" | "CMA" | "ODPC" | "CA" | "GAZETTE")[];
+            regulatoryBodies: ("GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA")[];
             categories: ("DATA_PROTECTION" | "AML_CFT" | "PRUDENTIAL" | "LICENSING" | "CAPITAL_MARKETS" | "GENERAL")[];
             severityThreshold: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
             emailEnabled: boolean;

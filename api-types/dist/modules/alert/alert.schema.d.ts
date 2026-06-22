@@ -9,11 +9,11 @@ export declare const createAlertSchema: z.ZodObject<{
     body: z.ZodString;
     sourceUrl: z.ZodOptional<z.ZodString>;
     regulatoryBody: z.ZodEnum<{
+        GAZETTE: "GAZETTE";
         CBK: "CBK";
         CMA: "CMA";
         ODPC: "ODPC";
         CA: "CA";
-        GAZETTE: "GAZETTE";
     }>;
     category: z.ZodEnum<{
         DATA_PROTECTION: "DATA_PROTECTION";
@@ -36,11 +36,11 @@ export declare const getAlertsSchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
     regulatoryBody: z.ZodOptional<z.ZodEnum<{
+        GAZETTE: "GAZETTE";
         CBK: "CBK";
         CMA: "CMA";
         ODPC: "ODPC";
         CA: "CA";
-        GAZETTE: "GAZETTE";
     }>>;
     severity: z.ZodOptional<z.ZodEnum<{
         LOW: "LOW";
@@ -52,11 +52,11 @@ export declare const getAlertsSchema: z.ZodObject<{
 }, z.core.$strip>;
 export declare const upsertSubscriptionSchema: z.ZodObject<{
     regulatoryBodies: z.ZodArray<z.ZodEnum<{
+        GAZETTE: "GAZETTE";
         CBK: "CBK";
         CMA: "CMA";
         ODPC: "ODPC";
         CA: "CA";
-        GAZETTE: "GAZETTE";
     }>>;
     categories: z.ZodArray<z.ZodEnum<{
         DATA_PROTECTION: "DATA_PROTECTION";

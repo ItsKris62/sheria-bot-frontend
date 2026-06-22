@@ -21,11 +21,11 @@ export type SourceJurisdictionCode = z.infer<typeof SourceJurisdictionCodeEnum>;
 export declare const SourceTypeEnum: z.ZodEnum<{
     REGULATOR: "REGULATOR";
     OTHER: "OTHER";
+    LEGAL_DATABASE: "LEGAL_DATABASE";
     FIU: "FIU";
     DATA_PROTECTION_AUTHORITY: "DATA_PROTECTION_AUTHORITY";
     SECURITIES_REGULATOR: "SECURITIES_REGULATOR";
     CONSUMER_PROTECTION_AUTHORITY: "CONSUMER_PROTECTION_AUTHORITY";
-    LEGAL_DATABASE: "LEGAL_DATABASE";
     GOVERNMENT_PORTAL: "GOVERNMENT_PORTAL";
 }>;
 export type SourceType = z.infer<typeof SourceTypeEnum>;
@@ -57,11 +57,11 @@ export declare const SourceRegistryEntrySchema: z.ZodObject<{
     sourceType: z.ZodEnum<{
         REGULATOR: "REGULATOR";
         OTHER: "OTHER";
+        LEGAL_DATABASE: "LEGAL_DATABASE";
         FIU: "FIU";
         DATA_PROTECTION_AUTHORITY: "DATA_PROTECTION_AUTHORITY";
         SECURITIES_REGULATOR: "SECURITIES_REGULATOR";
         CONSUMER_PROTECTION_AUTHORITY: "CONSUMER_PROTECTION_AUTHORITY";
-        LEGAL_DATABASE: "LEGAL_DATABASE";
         GOVERNMENT_PORTAL: "GOVERNMENT_PORTAL";
     }>;
     baseUrl: z.ZodString;
@@ -106,11 +106,11 @@ export declare const SourceRegistrySchema: z.ZodObject<{
         sourceType: z.ZodEnum<{
             REGULATOR: "REGULATOR";
             OTHER: "OTHER";
+            LEGAL_DATABASE: "LEGAL_DATABASE";
             FIU: "FIU";
             DATA_PROTECTION_AUTHORITY: "DATA_PROTECTION_AUTHORITY";
             SECURITIES_REGULATOR: "SECURITIES_REGULATOR";
             CONSUMER_PROTECTION_AUTHORITY: "CONSUMER_PROTECTION_AUTHORITY";
-            LEGAL_DATABASE: "LEGAL_DATABASE";
             GOVERNMENT_PORTAL: "GOVERNMENT_PORTAL";
         }>;
         baseUrl: z.ZodString;
