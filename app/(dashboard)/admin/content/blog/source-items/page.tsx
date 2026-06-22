@@ -61,6 +61,21 @@ export default function BlogSourceItemsPage() {
     },
   });
 
+  const scoreMutation = trpc.blogAutomation.adminScoreSourceItem.useMutation({
+    onSuccess: (res: any) => {
+      if (res.createdSuggestion) {
+        toast.success('Suggestion created successfully!');
+      } else {
+        toast.info(`Scored ${res.scoringResult.relevanceScore}/100. Below threshold or duplicate.`);
+      }
+      setIsDrawerOpen(false);
+      refetch();
+    },
+    onError: (err: any) => {
+      toast.error(`Failed to score: ${err.message}`);
+    },
+  });
+
   const handleDismiss = () => {
     if (!selectedItem) return;
     const reason = prompt('Reason for dismissal?');
@@ -324,6 +339,16 @@ export default function BlogSourceItemsPage() {
               )}
 
               <div className="pt-4 border-t flex justify-end gap-2">
+                {['NEW', 'READY_FOR_SCORING', 'SCORED'].includes(selectedItem.status) && (
+                  <Button 
+                    className="bg-secondary hover:bg-[#007a50] text-white" 
+                    onClick={() => scoreMutation.mutate({ sourceItemId: selectedItem.id })}
+                    disabled={scoreMutation.isPending}
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Score & Suggest
+                  </Button>
+                )}
                 {selectedItem.status !== 'DISMISSED' && (
                   <Button variant="destructive" onClick={handleDismiss} disabled={dismissMutation.isPending}>
                     <XCircle className="mr-2 h-4 w-4" />

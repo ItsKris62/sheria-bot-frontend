@@ -36,6 +36,7 @@ import {
   FileQuestion,
   Database,
   ListOrdered,
+  Lightbulb,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -86,6 +87,7 @@ export const adminNav: AdminNavGroup[] = [
       { title: "Blog", href: "/admin/content/blog", icon: Newspaper, exact: true },
       { title: "Blog Sources", href: "/admin/content/blog/sources", icon: Database },
       { title: "Source Items", href: "/admin/content/blog/source-items", icon: ListOrdered },
+      { title: "Blog Suggestions", href: "/admin/content/blog/suggestions", icon: Lightbulb },
       { title: "Regulatory Alerts", href: "/admin/alerts", icon: Megaphone },
       { title: "Corpus Gap Reports", href: "/admin/corpus-gap-reports", icon: FileQuestion },
     ],
