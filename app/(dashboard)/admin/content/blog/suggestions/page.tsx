@@ -15,7 +15,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
-import { Search, MoreVertical, FileText, CheckCircle2, XCircle, FileSearch, RefreshCw, AlertTriangle } from "lucide-react"
+import { Search, MoreVertical, FileText, CheckCircle2, XCircle, FileSearch, RefreshCw, AlertTriangle, ExternalLink } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"

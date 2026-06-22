@@ -58,6 +58,34 @@ export declare const blogDiscoveryRunStatusSchema: z.ZodEnum<{
     FAILED: "FAILED";
     SKIPPED_LOCKED: "SKIPPED_LOCKED";
 }>;
+export declare const blogSuggestionPrioritySchema: z.ZodEnum<{
+    LOW: "LOW";
+    MEDIUM: "MEDIUM";
+    HIGH: "HIGH";
+    URGENT: "URGENT";
+}>;
+export declare const blogSuggestionStatusSchema: z.ZodEnum<{
+    PENDING_REVIEW: "PENDING_REVIEW";
+    APPROVED_FOR_DRAFT: "APPROVED_FOR_DRAFT";
+    DRAFT_CREATED: "DRAFT_CREATED";
+    DISMISSED: "DISMISSED";
+    DUPLICATE: "DUPLICATE";
+    NEEDS_MORE_SOURCES: "NEEDS_MORE_SOURCES";
+}>;
+export declare const blogArticleTypeSchema: z.ZodEnum<{
+    SINGLE_JURISDICTION_UPDATE: "SINGLE_JURISDICTION_UPDATE";
+    COUNTRY_SPECIFIC_GUIDE: "COUNTRY_SPECIFIC_GUIDE";
+    CROSS_COUNTRY_COMPARISON: "CROSS_COUNTRY_COMPARISON";
+    REGIONAL_TREND_ANALYSIS: "REGIONAL_TREND_ANALYSIS";
+    EVERGREEN_EXPLAINER: "EVERGREEN_EXPLAINER";
+    PRODUCT_EDUCATION: "PRODUCT_EDUCATION";
+}>;
+export declare const blogSourceQualitySchema: z.ZodEnum<{
+    LOW: "LOW";
+    MEDIUM: "MEDIUM";
+    HIGH: "HIGH";
+    OFFICIAL: "OFFICIAL";
+}>;
 export declare const adminListMonitorsSchema: z.ZodObject<{
     jurisdiction: z.ZodOptional<z.ZodEnum<{
         KE: "KE";
@@ -302,5 +330,81 @@ export declare const adminListDiscoveryRunsSchema: z.ZodObject<{
     }>>;
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const adminScoreSourceItemSchema: z.ZodObject<{
+    sourceItemId: z.ZodString;
+    minScore: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const adminScoreEligibleSourceItemsSchema: z.ZodObject<{
+    minScore: z.ZodOptional<z.ZodNumber>;
+    limit: z.ZodOptional<z.ZodNumber>;
+    jurisdiction: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+        REGIONAL: "REGIONAL";
+        GLOBAL: "GLOBAL";
+    }>>;
+    monitorId: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>;
+export declare const adminListSuggestionsSchema: z.ZodObject<{
+    status: z.ZodOptional<z.ZodEnum<{
+        PENDING_REVIEW: "PENDING_REVIEW";
+        APPROVED_FOR_DRAFT: "APPROVED_FOR_DRAFT";
+        DRAFT_CREATED: "DRAFT_CREATED";
+        DISMISSED: "DISMISSED";
+        DUPLICATE: "DUPLICATE";
+        NEEDS_MORE_SOURCES: "NEEDS_MORE_SOURCES";
+    }>>;
+    priority: z.ZodOptional<z.ZodEnum<{
+        LOW: "LOW";
+        MEDIUM: "MEDIUM";
+        HIGH: "HIGH";
+        URGENT: "URGENT";
+    }>>;
+    jurisdiction: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+        REGIONAL: "REGIONAL";
+        GLOBAL: "GLOBAL";
+    }>>;
+    category: z.ZodOptional<z.ZodString>;
+    articleType: z.ZodOptional<z.ZodEnum<{
+        SINGLE_JURISDICTION_UPDATE: "SINGLE_JURISDICTION_UPDATE";
+        COUNTRY_SPECIFIC_GUIDE: "COUNTRY_SPECIFIC_GUIDE";
+        CROSS_COUNTRY_COMPARISON: "CROSS_COUNTRY_COMPARISON";
+        REGIONAL_TREND_ANALYSIS: "REGIONAL_TREND_ANALYSIS";
+        EVERGREEN_EXPLAINER: "EVERGREEN_EXPLAINER";
+        PRODUCT_EDUCATION: "PRODUCT_EDUCATION";
+    }>>;
+    search: z.ZodOptional<z.ZodString>;
+    page: z.ZodDefault<z.ZodNumber>;
+    limit: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const adminGetSuggestionSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminDismissSuggestionSchema: z.ZodObject<{
+    id: z.ZodString;
+    reason: z.ZodString;
+}, z.core.$strip>;
+export declare const adminApproveSuggestionForDraftSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminMarkSuggestionNeedsMoreSourcesSchema: z.ZodObject<{
+    id: z.ZodString;
+    reason: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>;
+export declare const adminDeleteSuggestionSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminCreateDraftFromSuggestionSchema: z.ZodObject<{
+    suggestionId: z.ZodString;
+}, z.core.$strip>;
+export declare const adminGenerateAiDraftSchema: z.ZodObject<{
+    blogPostId: z.ZodString;
 }, z.core.$strip>;
 //# sourceMappingURL=blog-automation.schema.d.ts.map
