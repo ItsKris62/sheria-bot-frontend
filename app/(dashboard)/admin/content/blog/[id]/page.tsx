@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, CheckCircle2, XCircle } from "lucide-react"
+import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, CheckCircle2, XCircle, Sparkles } from "lucide-react"
 
 export default function BlogEditorPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -22,6 +22,17 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
   const updateMutation = trpc.blog.adminUpdate.useMutation({
     onSuccess: () => {
       toast.success("Saved successfully")
+      void utils.blog.adminGetById.invalidate({ id: params.id })
+    },
+    onError: (err) => toast.error(err.message),
+  })
+
+  const aiDraftMutation = trpc.blogAutomation.adminGenerateAiDraft.useMutation({
+    onSuccess: (res) => {
+      toast.success("AI draft generation successful")
+      if (res.reviewerNotes) {
+        toast.info("AI Notes: " + res.reviewerNotes)
+      }
       void utils.blog.adminGetById.invalidate({ id: params.id })
     },
     onError: (err) => toast.error(err.message),
@@ -202,6 +213,31 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
         </div>
 
         <div className="space-y-6">
+          {(post.status === "DRAFT" || post.status === "IN_REVIEW") && (
+            <Card className="border-purple-200 bg-purple-50/30">
+              <CardHeader>
+                <CardTitle className="text-purple-800 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" /> AI Assisted Drafting
+                </CardTitle>
+                <CardDescription>
+                  Generate markdown content automatically using attached sources. Existing content will be overwritten.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  onClick={() => aiDraftMutation.mutate({ blogPostId: post.id })}
+                  disabled={aiDraftMutation.isPending || sources.length === 0}
+                >
+                  {aiDraftMutation.isPending ? "Generating..." : "Generate Draft"}
+                </Button>
+                {sources.length === 0 && (
+                  <p className="text-xs text-red-500 mt-2 text-center">At least 1 source is required to use AI generation.</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <Card className={isPublishReady ? "border-green-500/50" : "border-amber-500/50"}>
             <CardHeader>
               <CardTitle>Publish Readiness</CardTitle>

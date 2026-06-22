@@ -90,6 +90,14 @@ export default function BlogSuggestionsPage() {
     onError: (err: any) => toast.error(err.message),
   })
 
+  const createDraftMutation = trpc.blogAutomation.adminCreateDraftFromSuggestion.useMutation({
+    onSuccess: (res) => {
+      toast.success("Draft created from suggestion.")
+      window.location.href = `/admin/content/blog/${res.blogPostId}`
+    },
+    onError: (err: any) => toast.error(err.message),
+  })
+
   const totalPages = data ? data.pagination.pages : 1
 
   return (
@@ -220,6 +228,16 @@ export default function BlogSuggestionsPage() {
                                   <XCircle className="mr-2 h-4 w-4 text-gray-500" /> Dismiss Suggestion
                                 </DropdownMenuItem>
                               </>
+                            )}
+                            {suggestion.status === "APPROVED_FOR_DRAFT" && !suggestion.blogPostId && (
+                              <DropdownMenuItem onClick={() => createDraftMutation.mutate({ suggestionId: suggestion.id })}>
+                                <FileText className="mr-2 h-4 w-4 text-purple-600" /> Create Draft
+                              </DropdownMenuItem>
+                            )}
+                            {suggestion.status === "DRAFT_CREATED" && suggestion.blogPostId && (
+                              <DropdownMenuItem onClick={() => window.location.href = `/admin/content/blog/${suggestion.blogPostId}`}>
+                                <ExternalLink className="mr-2 h-4 w-4 text-purple-600" /> Open Draft
+                              </DropdownMenuItem>
                             )}
                             <DropdownMenuItem onClick={() => window.location.href = `/admin/content/blog/suggestions/${suggestion.id}`}>
                               <FileText className="mr-2 h-4 w-4" /> View Details

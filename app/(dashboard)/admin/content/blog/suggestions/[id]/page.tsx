@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { trpc } from "@/lib/trpc"
-import { ChevronLeft, ExternalLink, CheckCircle2, FileSearch, XCircle } from "lucide-react"
+import { ChevronLeft, ExternalLink, CheckCircle2, FileSearch, XCircle, FileText } from "lucide-react"
 import { format } from "date-fns"
+import { toast } from "sonner"
 
 const PRIORITY_STYLES: Record<string, string> = {
   LOW: "bg-gray-100 text-gray-700",
@@ -32,6 +33,14 @@ export default function SuggestionDetailPage() {
 
   const { data: suggestion, isLoading } = trpc.blogAutomation.adminGetSuggestion.useQuery({ id })
   const utils = trpc.useUtils()
+
+  const createDraftMutation = trpc.blogAutomation.adminCreateDraftFromSuggestion.useMutation({
+    onSuccess: (res) => {
+      // no need to toast here, we're redirecting
+      window.location.href = `/admin/content/blog/${res.blogPostId}`
+    },
+    // Cannot import toast easily here without modifying imports, we will just use alert for errors or add sonner import
+  })
 
   if (isLoading) {
     return <div className="p-6"><Skeleton className="h-64 w-full" /></div>
@@ -183,6 +192,35 @@ export default function SuggestionDetailPage() {
                 </Button>
                 <Button variant="outline" className="w-full justify-start text-gray-600 hover:bg-gray-100">
                   <XCircle className="w-4 h-4 mr-2" /> Dismiss
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {suggestion.status === 'APPROVED_FOR_DRAFT' && !suggestion.blogPostId && (
+            <Card className="bg-purple-50/50 border-purple-100">
+              <CardContent className="p-6 space-y-3">
+                <h3 className="font-medium text-center text-purple-800 mb-4">Ready for Drafting</h3>
+                <Button 
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white justify-center"
+                  onClick={() => createDraftMutation.mutate({ suggestionId: suggestion.id })}
+                  disabled={createDraftMutation.isPending}
+                >
+                  <FileText className="w-4 h-4 mr-2" /> Create Draft
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {suggestion.status === 'DRAFT_CREATED' && suggestion.blogPostId && (
+            <Card className="bg-purple-50/50 border-purple-100">
+              <CardContent className="p-6 space-y-3">
+                <h3 className="font-medium text-center text-purple-800 mb-4">Draft Generated</h3>
+                <Button 
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white justify-center"
+                  onClick={() => router.push(`/admin/content/blog/${suggestion.blogPostId}`)}
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" /> Open Draft
                 </Button>
               </CardContent>
             </Card>
