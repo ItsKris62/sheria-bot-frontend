@@ -102,18 +102,29 @@ export default function BlogSuggestionsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Blog Topic Suggestions</h1>
-          <p className="text-sm text-gray-500 mt-1">Review topics automatically suggested from regulatory sources.</p>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+          <a href="/admin/content/blog/sources" className="hover:text-foreground transition-colors flex items-center gap-1">
+            <span className="text-blue-500">Source Monitors</span>
+          </a>
+          <span>/</span>
+          <a href="/admin/content/blog/source-items" className="hover:text-foreground transition-colors flex items-center gap-1">
+            <span className="text-blue-500">Source Items</span>
+          </a>
         </div>
-        <Button 
-          className="bg-secondary hover:bg-[#007a50] text-white gap-2" 
-          onClick={() => scoreItemsMutation.mutate({})}
-          disabled={scoreItemsMutation.isPending}
-        >
-          <RefreshCw className={`w-4 h-4 ${scoreItemsMutation.isPending ? 'animate-spin' : ''}`} /> Run Scoring Engine
-        </Button>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Blog Topic Suggestions</h1>
+            <p className="text-sm text-gray-500 mt-1">Review topics automatically suggested from regulatory sources.</p>
+          </div>
+          <Button 
+            className="bg-secondary hover:bg-[#007a50] text-white gap-2" 
+            onClick={() => scoreItemsMutation.mutate({})}
+            disabled={scoreItemsMutation.isPending}
+          >
+            <RefreshCw className={`w-4 h-4 ${scoreItemsMutation.isPending ? 'animate-spin' : ''}`} /> Run Scoring Engine
+          </Button>
+        </div>
       </div>
 
       <Card className="border-border">

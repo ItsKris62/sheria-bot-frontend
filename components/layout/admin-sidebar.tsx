@@ -88,6 +88,7 @@ export const adminNav: AdminNavGroup[] = [
       { title: "Blog Sources", href: "/admin/content/blog/sources", icon: Database },
       { title: "Source Items", href: "/admin/content/blog/source-items", icon: ListOrdered },
       { title: "Blog Suggestions", href: "/admin/content/blog/suggestions", icon: Lightbulb },
+      { title: "Blog Digests", href: "/admin/content/blog/digests", icon: Activity },
       { title: "Regulatory Alerts", href: "/admin/alerts", icon: Megaphone },
       { title: "Corpus Gap Reports", href: "/admin/corpus-gap-reports", icon: FileQuestion },
     ],

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, CheckCircle2, XCircle, Sparkles } from "lucide-react"
+import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, CheckCircle2, XCircle, Sparkles, Shield, ShieldCheck, ShieldAlert } from "lucide-react"
 
 export default function BlogEditorPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -19,9 +19,30 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
   
   const { data: post, isLoading } = trpc.blog.adminGetById.useQuery({ id: params.id })
   
+  const { data: latestVerificationResponse, refetch: refetchVerification } = trpc.blogAutomation.adminGetLatestBlogVerification.useQuery({ blogPostId: params.id })
+  const latestVerification = latestVerificationResponse?.run
+  const isStale = latestVerificationResponse?.isStale || false
+  const isAiStale = latestVerificationResponse?.isAiStale || false
+
+  const verificationMutation = trpc.blogAutomation.adminRunBlogVerification.useMutation({
+    onSuccess: (res: any) => {
+      toast.success(`Verification completed: ${res.status}`)
+      refetchVerification()
+    },
+    onError: (err: any) => toast.error(err.message),
+  })
+  
   const updateMutation = trpc.blog.adminUpdate.useMutation({
     onSuccess: () => {
       toast.success("Saved successfully")
+      void utils.blog.adminGetById.invalidate({ id: params.id })
+    },
+    onError: (err) => toast.error(err.message),
+  })
+
+  const publishMutation = trpc.blog.adminSetStatus.useMutation({
+    onSuccess: () => {
+      toast.success("Published successfully")
       void utils.blog.adminGetById.invalidate({ id: params.id })
     },
     onError: (err) => toast.error(err.message),
@@ -101,11 +122,13 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
   if (!post) return <div className="p-6">Post not found</div>
 
   const needsOfficialSource = ["Regulatory Updates", "Enforcement & Penalties"].includes(form.category)
-  const hasOfficialSource = sources.some(s => ["OFFICIAL", "INTERNATIONAL_STANDARD"].includes(s.sourceType)) // Added INTERNATIONAL_STANDARD for completeness
+  const hasOfficialSource = sources.some(s => ["OFFICIAL", "INTERNATIONAL_STANDARD"].includes(s.sourceType))
 
   const googleTitle = form.seoTitle || form.title || "Untitled"
   const googleDescription = form.seoDescription || form.excerpt || "No description provided."
   const googleUrl = form.canonicalUrl || `https://sheriabot.com/blog/${form.slug}`
+
+  const isVerificationBlocked = latestVerification ? latestVerification.status === "BLOCKED" : false
 
   const publishChecks = [
     { label: "Title present", passed: !!form.title },
@@ -115,7 +138,9 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
     { label: "Category selected", passed: !!form.category },
     { label: "At least 1 source", passed: sources.length > 0 },
     { label: "Official source (if req)", passed: !needsOfficialSource || hasOfficialSource },
-    { label: "Image available", passed: !!(form.coverImageUrl || form.ogImageUrl) }
+    { label: "Image available", passed: !!(form.coverImageUrl || form.ogImageUrl) },
+    { label: "Verification Passed/Needs Review", passed: latestVerification ? !isVerificationBlocked : false },
+    { label: "AI draft not stale", passed: !isAiStale },
   ]
   
   const isPublishReady = publishChecks.every(c => c.passed)
@@ -132,10 +157,27 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
             <p className="text-sm text-gray-500">Status: {post.status}</p>
           </div>
         </div>
-        <Button onClick={handleSave} disabled={updateMutation.isPending} className="bg-secondary hover:bg-[#007a50]">
-          <Save className="w-4 h-4 mr-2" />
-          {updateMutation.isPending ? "Saving..." : "Save Draft"}
-        </Button>
+        <div className="flex items-center gap-2">
+          {post.status !== 'PUBLISHED' && (
+            <Button
+              variant="default"
+              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={!isPublishReady || updateMutation.isPending || publishMutation.isPending}
+              onClick={() => {
+                publishMutation.mutate({
+                  id: params.id,
+                  status: 'PUBLISHED'
+                })
+              }}
+            >
+              Publish
+            </Button>
+          )}
+          <Button onClick={handleSave} disabled={updateMutation.isPending} className="bg-secondary hover:bg-[#007a50]">
+            <Save className="w-4 h-4 mr-2" />
+            {updateMutation.isPending ? "Saving..." : "Save Draft"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -238,6 +280,64 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
             </Card>
           )}
 
+          <Card className={latestVerification?.status === 'BLOCKED' ? "border-red-500/50" : latestVerification?.status === 'PASSED' ? "border-green-500/50" : ""}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {latestVerification?.status === 'PASSED' ? <ShieldCheck className="w-5 h-5 text-green-500" /> : latestVerification?.status === 'BLOCKED' ? <ShieldAlert className="w-5 h-5 text-red-500" /> : <Shield className="w-5 h-5" />}
+                Source & Claim Verification
+              </CardTitle>
+              <CardDescription>
+                {latestVerification ? `Last run: ${new Date(latestVerification.createdAt).toLocaleString()}` : "No verification run yet."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {latestVerification && (
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span>Status:</span> <span className="font-bold">{latestVerification.status}</span></div>
+                  <div className="flex justify-between"><span>Quality Score:</span> <span>{latestVerification.qualityScore}/100</span></div>
+                  {latestVerification.summary && <p className="text-xs text-muted-foreground mt-2">{latestVerification.summary}</p>}
+                  
+                  {latestVerification.issues && latestVerification.issues.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <h4 className="font-semibold text-xs uppercase text-muted-foreground">Issues</h4>
+                      <div className="max-h-40 overflow-y-auto space-y-2">
+                        {latestVerification.issues.map((issue: any) => (
+                          <div key={issue.id} className={`p-2 text-xs rounded border ${issue.severity === 'BLOCKING' ? 'bg-red-50 border-red-200 text-red-800' : issue.severity === 'WARNING' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+                            <strong>[{issue.severity}] {issue.title}</strong>
+                            <p className="mt-1">{issue.description}</p>
+                            {issue.excerpt && <p className="mt-1 italic text-[10px]">"{issue.excerpt}"</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isStale && !isAiStale && (
+                <div className="mt-2 text-amber-600 text-xs bg-amber-50 p-2 rounded flex gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  This verification may be outdated because the article or its sources were modified after the run.
+                </div>
+              )}
+              {isAiStale && (
+                <div className="mt-2 text-red-600 text-xs bg-red-50 p-2 rounded flex gap-2">
+                  <ShieldAlert className="w-4 h-4 shrink-0" />
+                  An AI draft was generated after the last verification run. You must run verification again before publishing.
+                </div>
+              )}
+              
+              <Button 
+                variant="outline"
+                className="w-full"
+                onClick={() => verificationMutation.mutate({ blogPostId: params.id })}
+                disabled={verificationMutation.isPending || sources.length === 0}
+              >
+                {verificationMutation.isPending ? "Running..." : "Run Verification"}
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card className={isPublishReady ? "border-green-500/50" : "border-amber-500/50"}>
             <CardHeader>
               <CardTitle>Publish Readiness</CardTitle>
@@ -250,8 +350,56 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
                   {check.passed ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-red-500" />}
                 </div>
               ))}
+              {isStale && !isAiStale && (
+                <div className="flex items-center justify-between mt-2 pt-2 border-t">
+                  <span className="text-amber-600">Verification is stale</span>
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {post.automationSuggestion && (
+            <Card className="border-blue-200 bg-blue-50/30">
+              <CardHeader>
+                <CardTitle className="text-blue-800 text-sm flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" /> Automation Origin
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  This draft was created from an automated suggestion.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-xs">
+                <div>
+                  <span className="font-semibold text-muted-foreground block mb-1">Suggestion ID:</span>
+                  <span className="font-mono">{post.automationSuggestion.id}</span>
+                </div>
+                <div>
+                  <span className="font-semibold text-muted-foreground block mb-1">Reason:</span>
+                  <span className="line-clamp-2">{post.automationSuggestion.reason || "N/A"}</span>
+                </div>
+                {post.automationSuggestion.sources && post.automationSuggestion.sources.length > 0 && (
+                  <div>
+                    <span className="font-semibold text-muted-foreground block mb-1">Source Monitors:</span>
+                    <ul className="list-disc list-inside space-y-1">
+                      {post.automationSuggestion.sources.map((s: any) => (
+                        <li key={s.sourceItemId} className="truncate">
+                          {s.sourceItem?.monitor?.name || "Unknown Monitor"}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <Button 
+                  variant="link" 
+                  className="p-0 h-auto text-blue-600"
+                  onClick={() => router.push(`/admin/content/blog/suggestions?search=${post.automationSuggestion.id}`)}
+                >
+                  View Original Suggestion →
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader><CardTitle>Settings</CardTitle></CardHeader>

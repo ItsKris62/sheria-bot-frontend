@@ -263,6 +263,9 @@ export default function BlogSourcesPage() {
                                 <Play className="w-4 h-4 mr-2 text-green-600" /> {runMonitorMutation.isPending ? 'Running...' : 'Run Discovery Now'}
                               </DropdownMenuItem>
                             )}
+                            <DropdownMenuItem onClick={() => window.location.href = `/admin/content/blog/source-items?monitorId=${item.id}`}>
+                              <Eye className="w-4 h-4 mr-2 text-gray-600" /> View Items
+                            </DropdownMenuItem>
                             <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget({ id: item.id, name: item.name })}>
                               <Trash2 className="w-4 h-4 mr-2" /> Delete
                             </DropdownMenuItem>

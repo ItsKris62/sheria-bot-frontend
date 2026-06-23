@@ -45,6 +45,13 @@ export type SafeEventProperties = {
   blog_slug?: string;
   read_time_seconds?: number;
   share_platform?: string;
+  
+  // Blog Automation Admin
+  blog_automation_action?: string;
+  blog_automation_type?: string;
+  blog_automation_priority?: string;
+  blog_automation_status?: string;
+  blog_source_region?: string;
 };
 
 // Strongly typed event names based on requirements
@@ -79,7 +86,16 @@ export type AnalyticsEvent =
   | "pilot_feedback_submitted"
   // Blog
   | "blog_post_viewed"
-  | "blog_post_shared";
+  | "blog_post_shared"
+  // Blog Automation
+  | "blog_automation_monitor_created"
+  | "blog_automation_monitor_failed"
+  | "blog_automation_suggestion_approved"
+  | "blog_automation_suggestion_rejected"
+  | "blog_automation_draft_generated"
+  | "blog_automation_draft_verified"
+  | "blog_automation_draft_published"
+  | "blog_automation_digest_generated";
 
 // A strict allowlist of keys that are permitted in the payload.
 // Any key not in this list will be silently dropped before sending to PostHog.
@@ -118,6 +134,11 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "blog_slug",
   "read_time_seconds",
   "share_platform",
+  "blog_automation_action",
+  "blog_automation_type",
+  "blog_automation_priority",
+  "blog_automation_status",
+  "blog_source_region",
 ]);
 
 /**

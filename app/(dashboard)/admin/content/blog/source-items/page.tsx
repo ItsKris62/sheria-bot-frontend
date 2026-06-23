@@ -86,6 +86,11 @@ export default function BlogSourceItemsPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+          <a href="/admin/content/blog/sources" className="hover:text-foreground transition-colors flex items-center gap-1">
+            <span className="text-blue-500">← Back to Source Monitors</span>
+          </a>
+        </div>
         <h1 className="text-3xl font-bold tracking-tight">Source Items</h1>
         <p className="text-muted-foreground flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
