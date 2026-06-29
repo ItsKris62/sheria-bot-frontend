@@ -63,6 +63,16 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
         meta: object;
     }>;
     /**
+     * Get pilot-monitoring operational overview metrics.
+     *
+     * @admin
+     */
+    getOperationalOverview: import("@trpc/server").TRPCQueryProcedure<{
+        input: void;
+        output: import("@/modules/admin").AdminOperationalOverview;
+        meta: object;
+    }>;
+    /**
      * List all users with pagination
      *
      * @admin

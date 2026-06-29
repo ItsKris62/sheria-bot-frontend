@@ -1,4 +1,17 @@
 import { z } from 'zod';
+export declare const blogVerificationStatusSchema: z.ZodEnum<{
+    PENDING: "PENDING";
+    RUNNING: "RUNNING";
+    PASSED: "PASSED";
+    NEEDS_REVIEW: "NEEDS_REVIEW";
+    BLOCKED: "BLOCKED";
+    FAILED: "FAILED";
+}>;
+export declare const blogVerificationRunTypeSchema: z.ZodEnum<{
+    MANUAL: "MANUAL";
+    PRE_PUBLISH: "PRE_PUBLISH";
+    SYSTEM: "SYSTEM";
+}>;
 export declare const blogJurisdictionSchema: z.ZodEnum<{
     KE: "KE";
     MW: "MW";
@@ -406,5 +419,45 @@ export declare const adminCreateDraftFromSuggestionSchema: z.ZodObject<{
 }, z.core.$strip>;
 export declare const adminGenerateAiDraftSchema: z.ZodObject<{
     blogPostId: z.ZodString;
+}, z.core.$strip>;
+export declare const adminRunBlogVerificationSchema: z.ZodObject<{
+    blogPostId: z.ZodString;
+    runType: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
+        MANUAL: "MANUAL";
+        PRE_PUBLISH: "PRE_PUBLISH";
+        SYSTEM: "SYSTEM";
+    }>>>;
+    useAiReview: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+}, z.core.$strip>;
+export declare const adminListBlogVerificationRunsSchema: z.ZodObject<{
+    blogPostId: z.ZodOptional<z.ZodString>;
+    status: z.ZodOptional<z.ZodEnum<{
+        PENDING: "PENDING";
+        RUNNING: "RUNNING";
+        PASSED: "PASSED";
+        NEEDS_REVIEW: "NEEDS_REVIEW";
+        BLOCKED: "BLOCKED";
+        FAILED: "FAILED";
+    }>>;
+    page: z.ZodDefault<z.ZodNumber>;
+    limit: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const adminGetBlogVerificationRunSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminGetLatestBlogVerificationSchema: z.ZodObject<{
+    blogPostId: z.ZodString;
+}, z.core.$strip>;
+export declare const adminListEditorialDigestsSchema: z.ZodObject<{
+    page: z.ZodDefault<z.ZodNumber>;
+    limit: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const adminGetEditorialDigestSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminGenerateEditorialDigestSchema: z.ZodObject<{
+    force: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+    periodStart: z.ZodOptional<z.ZodDate>;
+    periodEnd: z.ZodOptional<z.ZodDate>;
 }, z.core.$strip>;
 //# sourceMappingURL=blog-automation.schema.d.ts.map

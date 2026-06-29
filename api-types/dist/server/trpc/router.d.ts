@@ -1843,6 +1843,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        getOperationalOverview: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: import("../../modules/admin").AdminOperationalOverview;
+            meta: object;
+        }>;
         listUsers: import("@trpc/server").TRPCQueryProcedure<{
             input: {
                 page?: number | undefined;
@@ -8235,6 +8240,101 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     publisher: string | null;
                     accessedAt: Date;
                 }[];
+                automationSuggestion: ({
+                    sources: ({
+                        sourceItem: {
+                            monitor: {
+                                id: string;
+                                description: string | null;
+                                status: import("@prisma/client").$Enums.BlogMonitorStatus;
+                                createdAt: Date;
+                                updatedAt: Date;
+                                deletedAt: Date | null;
+                                name: string;
+                                verificationStatus: string;
+                                verifiedAt: Date | null;
+                                keywords: string[];
+                                notes: string | null;
+                                isActive: boolean;
+                                jurisdiction: import("@prisma/client").$Enums.BlogJurisdiction;
+                                authorityType: import("@prisma/client").$Enums.BlogAuthorityType;
+                                baseUrl: string;
+                                createdById: string | null;
+                                sourceType: import("@prisma/client").$Enums.BlogSourceType;
+                                updatedById: string | null;
+                                countryLabel: string | null;
+                                monitoringMethod: import("@prisma/client").$Enums.BlogMonitoringMethod;
+                                feedUrl: string | null;
+                                topics: string[];
+                                lastRunStatus: import("@prisma/client").$Enums.BlogMonitorLastRunStatus;
+                                isOfficial: boolean;
+                                lastCheckedAt: Date | null;
+                                lastSuccessfulRunAt: Date | null;
+                                lastFailureAt: Date | null;
+                                failureCount: number;
+                                lastFailureReason: string | null;
+                                maxItemsPerRun: number;
+                                fetchTimeoutMs: number;
+                                respectRobots: boolean;
+                                verifiedById: string | null;
+                            };
+                        } & {
+                            id: string;
+                            title: string;
+                            url: string;
+                            status: import("@prisma/client").$Enums.BlogSourceItemStatus;
+                            createdAt: Date;
+                            updatedAt: Date;
+                            deletedAt: Date | null;
+                            summary: string | null;
+                            failureReason: string | null;
+                            jurisdiction: import("@prisma/client").$Enums.BlogJurisdiction;
+                            publicationDate: Date | null;
+                            contentHash: string;
+                            authorityType: import("@prisma/client").$Enums.BlogAuthorityType;
+                            sourceType: import("@prisma/client").$Enums.BlogSourceType;
+                            publisher: string | null;
+                            monitorId: string;
+                            normalizedUrl: string;
+                            discoveredAt: Date;
+                            rawContentHash: string | null;
+                            dismissedReason: string | null;
+                        };
+                    } & {
+                        createdAt: Date;
+                        suggestionId: string;
+                        sourceItemId: string;
+                    })[];
+                } & {
+                    id: string;
+                    title: string;
+                    status: import("@prisma/client").$Enums.BlogSuggestionStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    targetAudience: string[];
+                    summary: string | null;
+                    category: string;
+                    priority: import("@prisma/client").$Enums.BlogSuggestionPriority;
+                    jurisdiction: import("@prisma/client").$Enums.BlogJurisdiction;
+                    reason: string | null;
+                    approvedAt: Date | null;
+                    dismissedReason: string | null;
+                    blogPostId: string | null;
+                    suggestedSlug: string | null;
+                    jurisdictions: import("@prisma/client").$Enums.BlogJurisdiction[];
+                    articleType: import("@prisma/client").$Enums.BlogArticleType;
+                    relevanceScore: number;
+                    sourceQuality: import("@prisma/client").$Enums.BlogSourceQuality;
+                    recommendedTags: string[];
+                    suggestedNextAction: string | null;
+                    requiresOfficialSource: boolean;
+                    requiresHumanReview: boolean;
+                    needsMoreSources: boolean;
+                    dismissedAt: Date | null;
+                    dismissedById: string | null;
+                    approvedById: string | null;
+                }) | null;
             } & {
                 id: string;
                 title: string;
@@ -9050,6 +9150,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     reason: string | null;
                     approvedAt: Date | null;
                     dismissedReason: string | null;
+                    blogPostId: string | null;
                     suggestedSlug: string | null;
                     jurisdictions: import("@prisma/client").$Enums.BlogJurisdiction[];
                     articleType: import("@prisma/client").$Enums.BlogArticleType;
@@ -9063,7 +9164,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     dismissedAt: Date | null;
                     dismissedById: string | null;
                     approvedById: string | null;
-                    blogPostId: string | null;
                 };
                 reason?: undefined;
             };
@@ -9146,6 +9246,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     reason: string | null;
                     approvedAt: Date | null;
                     dismissedReason: string | null;
+                    blogPostId: string | null;
                     suggestedSlug: string | null;
                     jurisdictions: import("@prisma/client").$Enums.BlogJurisdiction[];
                     articleType: import("@prisma/client").$Enums.BlogArticleType;
@@ -9159,7 +9260,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     dismissedAt: Date | null;
                     dismissedById: string | null;
                     approvedById: string | null;
-                    blogPostId: string | null;
                 })[];
                 pagination: {
                     page: number;
@@ -9262,6 +9362,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 reason: string | null;
                 approvedAt: Date | null;
                 dismissedReason: string | null;
+                blogPostId: string | null;
                 suggestedSlug: string | null;
                 jurisdictions: import("@prisma/client").$Enums.BlogJurisdiction[];
                 articleType: import("@prisma/client").$Enums.BlogArticleType;
@@ -9275,7 +9376,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 dismissedAt: Date | null;
                 dismissedById: string | null;
                 approvedById: string | null;
-                blogPostId: string | null;
             };
             meta: object;
         }>;
@@ -9299,6 +9399,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 reason: string | null;
                 approvedAt: Date | null;
                 dismissedReason: string | null;
+                blogPostId: string | null;
                 suggestedSlug: string | null;
                 jurisdictions: import("@prisma/client").$Enums.BlogJurisdiction[];
                 articleType: import("@prisma/client").$Enums.BlogArticleType;
@@ -9312,7 +9413,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 dismissedAt: Date | null;
                 dismissedById: string | null;
                 approvedById: string | null;
-                blogPostId: string | null;
             };
             meta: object;
         }>;
@@ -9335,6 +9435,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 reason: string | null;
                 approvedAt: Date | null;
                 dismissedReason: string | null;
+                blogPostId: string | null;
                 suggestedSlug: string | null;
                 jurisdictions: import("@prisma/client").$Enums.BlogJurisdiction[];
                 articleType: import("@prisma/client").$Enums.BlogArticleType;
@@ -9348,7 +9449,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 dismissedAt: Date | null;
                 dismissedById: string | null;
                 approvedById: string | null;
-                blogPostId: string | null;
             };
             meta: object;
         }>;
@@ -9372,6 +9472,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 reason: string | null;
                 approvedAt: Date | null;
                 dismissedReason: string | null;
+                blogPostId: string | null;
                 suggestedSlug: string | null;
                 jurisdictions: import("@prisma/client").$Enums.BlogJurisdiction[];
                 articleType: import("@prisma/client").$Enums.BlogArticleType;
@@ -9385,7 +9486,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 dismissedAt: Date | null;
                 dismissedById: string | null;
                 approvedById: string | null;
-                blogPostId: string | null;
             };
             meta: object;
         }>;
@@ -9408,6 +9508,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 reason: string | null;
                 approvedAt: Date | null;
                 dismissedReason: string | null;
+                blogPostId: string | null;
                 suggestedSlug: string | null;
                 jurisdictions: import("@prisma/client").$Enums.BlogJurisdiction[];
                 articleType: import("@prisma/client").$Enums.BlogArticleType;
@@ -9421,7 +9522,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 dismissedAt: Date | null;
                 dismissedById: string | null;
                 approvedById: string | null;
-                blogPostId: string | null;
             };
             meta: object;
         }>;
@@ -9471,6 +9571,294 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 runId: string;
                 reviewerNotes: string;
                 uncertaintyFlags: string[];
+            };
+            meta: object;
+        }>;
+        adminRunBlogVerification: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                blogPostId: string;
+                runType?: "SYSTEM" | "MANUAL" | "PRE_PUBLISH" | undefined;
+                useAiReview?: boolean | undefined;
+            };
+            output: {
+                issues: {
+                    id: string;
+                    title: string;
+                    description: string;
+                    severity: import("@prisma/client").$Enums.BlogVerificationIssueSeverity;
+                    createdAt: Date;
+                    excerpt: string | null;
+                    claimText: string | null;
+                    sourceId: string | null;
+                    sourceUrl: string | null;
+                    runId: string;
+                    issueType: import("@prisma/client").$Enums.BlogVerificationIssueType;
+                    recommendation: string | null;
+                    paragraphIndex: number | null;
+                    sentenceIndex: number | null;
+                }[];
+            } & {
+                id: string;
+                status: import("@prisma/client").$Enums.BlogVerificationStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                summary: string | null;
+                errorMessage: string | null;
+                completedAt: Date | null;
+                startedAt: Date;
+                blogPostId: string;
+                draftGenerationRunId: string | null;
+                runType: import("@prisma/client").$Enums.BlogVerificationRunType;
+                qualityScore: number;
+                sourceScore: number;
+                claimRiskScore: number;
+                jurisdictionScore: number;
+                readinessScore: number;
+                blockingIssueCount: number;
+                warningIssueCount: number;
+                infoIssueCount: number;
+                recommendedAction: string | null;
+                requestedById: string | null;
+            };
+            meta: object;
+        }>;
+        adminListBlogVerificationRuns: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                blogPostId?: string | undefined;
+                status?: "FAILED" | "PENDING" | "RUNNING" | "PASSED" | "NEEDS_REVIEW" | "BLOCKED" | undefined;
+                page?: number | undefined;
+                limit?: number | undefined;
+            };
+            output: {
+                runs: ({
+                    requestedBy: {
+                        id: string;
+                        fullName: string;
+                    } | null;
+                } & {
+                    id: string;
+                    status: import("@prisma/client").$Enums.BlogVerificationStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    summary: string | null;
+                    errorMessage: string | null;
+                    completedAt: Date | null;
+                    startedAt: Date;
+                    blogPostId: string;
+                    draftGenerationRunId: string | null;
+                    runType: import("@prisma/client").$Enums.BlogVerificationRunType;
+                    qualityScore: number;
+                    sourceScore: number;
+                    claimRiskScore: number;
+                    jurisdictionScore: number;
+                    readinessScore: number;
+                    blockingIssueCount: number;
+                    warningIssueCount: number;
+                    infoIssueCount: number;
+                    recommendedAction: string | null;
+                    requestedById: string | null;
+                })[];
+                pagination: {
+                    page: number;
+                    limit: number;
+                    total: number;
+                    pages: number;
+                };
+            };
+            meta: object;
+        }>;
+        adminGetBlogVerificationRun: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                id: string;
+            };
+            output: {
+                issues: {
+                    id: string;
+                    title: string;
+                    description: string;
+                    severity: import("@prisma/client").$Enums.BlogVerificationIssueSeverity;
+                    createdAt: Date;
+                    excerpt: string | null;
+                    claimText: string | null;
+                    sourceId: string | null;
+                    sourceUrl: string | null;
+                    runId: string;
+                    issueType: import("@prisma/client").$Enums.BlogVerificationIssueType;
+                    recommendation: string | null;
+                    paragraphIndex: number | null;
+                    sentenceIndex: number | null;
+                }[];
+                blogPost: {
+                    id: string;
+                    title: string;
+                };
+                requestedBy: {
+                    id: string;
+                    fullName: string;
+                } | null;
+            } & {
+                id: string;
+                status: import("@prisma/client").$Enums.BlogVerificationStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                summary: string | null;
+                errorMessage: string | null;
+                completedAt: Date | null;
+                startedAt: Date;
+                blogPostId: string;
+                draftGenerationRunId: string | null;
+                runType: import("@prisma/client").$Enums.BlogVerificationRunType;
+                qualityScore: number;
+                sourceScore: number;
+                claimRiskScore: number;
+                jurisdictionScore: number;
+                readinessScore: number;
+                blockingIssueCount: number;
+                warningIssueCount: number;
+                infoIssueCount: number;
+                recommendedAction: string | null;
+                requestedById: string | null;
+            };
+            meta: object;
+        }>;
+        adminGetLatestBlogVerification: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                blogPostId: string;
+            };
+            output: {
+                run: null;
+                isStale: boolean;
+                isAiStale: boolean;
+            } | {
+                run: {
+                    issues: {
+                        id: string;
+                        title: string;
+                        description: string;
+                        severity: import("@prisma/client").$Enums.BlogVerificationIssueSeverity;
+                        createdAt: Date;
+                        excerpt: string | null;
+                        claimText: string | null;
+                        sourceId: string | null;
+                        sourceUrl: string | null;
+                        runId: string;
+                        issueType: import("@prisma/client").$Enums.BlogVerificationIssueType;
+                        recommendation: string | null;
+                        paragraphIndex: number | null;
+                        sentenceIndex: number | null;
+                    }[];
+                } & {
+                    id: string;
+                    status: import("@prisma/client").$Enums.BlogVerificationStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    summary: string | null;
+                    errorMessage: string | null;
+                    completedAt: Date | null;
+                    startedAt: Date;
+                    blogPostId: string;
+                    draftGenerationRunId: string | null;
+                    runType: import("@prisma/client").$Enums.BlogVerificationRunType;
+                    qualityScore: number;
+                    sourceScore: number;
+                    claimRiskScore: number;
+                    jurisdictionScore: number;
+                    readinessScore: number;
+                    blockingIssueCount: number;
+                    warningIssueCount: number;
+                    infoIssueCount: number;
+                    recommendedAction: string | null;
+                    requestedById: string | null;
+                };
+                isStale: boolean;
+                isAiStale: boolean;
+            };
+            meta: object;
+        }>;
+        adminListEditorialDigests: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                page?: number | undefined;
+                limit?: number | undefined;
+            };
+            output: {
+                items: {
+                    id: string;
+                    status: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    errorMessage: string | null;
+                    generatedAt: Date;
+                    periodStart: Date;
+                    periodEnd: Date;
+                    sentAt: Date | null;
+                    sourceMonitorsChecked: number;
+                    sourceItemsDiscovered: number;
+                    highPrioritySuggestions: number;
+                    urgentSuggestions: number;
+                    approvedAwaitingDraft: number;
+                    draftsAwaitingVerification: number;
+                    blockedDrafts: number;
+                    failingMonitors: number;
+                    summaryJson: import("@prisma/client/runtime/client").JsonValue | null;
+                }[];
+                total: number;
+                page: number;
+                limit: number;
+                totalPages: number;
+            };
+            meta: object;
+        }>;
+        adminGetEditorialDigest: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                id: string;
+            };
+            output: {
+                id: string;
+                status: string;
+                createdAt: Date;
+                updatedAt: Date;
+                errorMessage: string | null;
+                generatedAt: Date;
+                periodStart: Date;
+                periodEnd: Date;
+                sentAt: Date | null;
+                sourceMonitorsChecked: number;
+                sourceItemsDiscovered: number;
+                highPrioritySuggestions: number;
+                urgentSuggestions: number;
+                approvedAwaitingDraft: number;
+                draftsAwaitingVerification: number;
+                blockedDrafts: number;
+                failingMonitors: number;
+                summaryJson: import("@prisma/client/runtime/client").JsonValue | null;
+            };
+            meta: object;
+        }>;
+        adminGenerateEditorialDigest: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                force?: boolean | undefined;
+                periodStart?: Date | undefined;
+                periodEnd?: Date | undefined;
+            };
+            output: {
+                id: string;
+                status: string;
+                createdAt: Date;
+                updatedAt: Date;
+                errorMessage: string | null;
+                generatedAt: Date;
+                periodStart: Date;
+                periodEnd: Date;
+                sentAt: Date | null;
+                sourceMonitorsChecked: number;
+                sourceItemsDiscovered: number;
+                highPrioritySuggestions: number;
+                urgentSuggestions: number;
+                approvedAwaitingDraft: number;
+                draftsAwaitingVerification: number;
+                blockedDrafts: number;
+                failingMonitors: number;
+                summaryJson: import("@prisma/client/runtime/client").JsonValue | null;
             };
             meta: object;
         }>;

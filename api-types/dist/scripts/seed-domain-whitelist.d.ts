@@ -6,5 +6,5 @@
  *
  * Safe to run multiple times  -  uses upsert.
  */
-export {};
+import 'dotenv/config';
 //# sourceMappingURL=seed-domain-whitelist.d.ts.map

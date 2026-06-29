@@ -1,4 +1,7 @@
-export declare function createSuggestionFromSourceItem({ sourceItemId, minScore, }: {
+import type { prisma as appPrisma } from '@/lib/prisma/client';
+type BlogAutomationPrisma = typeof appPrisma;
+export declare function createSuggestionFromSourceItem(params: {
+    prisma: BlogAutomationPrisma;
     sourceItemId: string;
     minScore?: number;
     createdByUserId?: string;
@@ -30,6 +33,7 @@ export declare function createSuggestionFromSourceItem({ sourceItemId, minScore,
         reason: string | null;
         approvedAt: Date | null;
         dismissedReason: string | null;
+        blogPostId: string | null;
         suggestedSlug: string | null;
         jurisdictions: import("@prisma/client").$Enums.BlogJurisdiction[];
         articleType: import("@prisma/client").$Enums.BlogArticleType;
@@ -43,8 +47,8 @@ export declare function createSuggestionFromSourceItem({ sourceItemId, minScore,
         dismissedAt: Date | null;
         dismissedById: string | null;
         approvedById: string | null;
-        blogPostId: string | null;
     };
     reason?: undefined;
 }>;
+export {};
 //# sourceMappingURL=suggestion-builder.d.ts.map

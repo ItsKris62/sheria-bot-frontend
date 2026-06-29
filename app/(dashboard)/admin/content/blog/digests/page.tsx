@@ -25,8 +25,8 @@ export default function BlogDigestsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Weekly Editorial Digests</h1>
-        <Button onClick={() => generateMutation.mutate({})} disabled={generateMutation.isLoading}>
-          {generateMutation.isLoading ? 'Generating...' : 'Generate Digest'}
+        <Button onClick={() => generateMutation.mutate({})} disabled={generateMutation.isPending}>
+          {generateMutation.isPending ? 'Generating...' : 'Generate Digest'}
         </Button>
       </div>
 

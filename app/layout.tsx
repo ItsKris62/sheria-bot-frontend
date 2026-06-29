@@ -1,6 +1,5 @@
 import React from "react"
 import type { Metadata, Viewport } from 'next'
-import { Caveat } from 'next/font/google'
 import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -37,11 +36,6 @@ const generalSans = localFont({
   preload: true,
 })
 
-const caveat = Caveat({
-  subsets: ['latin'],
-  variable: '--font-caveat',
-  display: 'swap',
-})
 
 const basicaline = localFont({
   src: './fonts/Basicaline.otf',
@@ -167,7 +161,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${satoshi.variable} ${cabinetGrotesk.variable} ${generalSans.variable} ${basicaline.variable} ${jetbrainsMono.variable} ${caveat.variable} dark bg-background`}
+      className={`${satoshi.variable} ${cabinetGrotesk.variable} ${generalSans.variable} ${basicaline.variable} ${jetbrainsMono.variable} dark bg-background`}
       suppressHydrationWarning
     >
       <body

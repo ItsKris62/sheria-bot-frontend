@@ -6,7 +6,7 @@
  * All destructive operations are logged to the AuditLog with before/after state.
  * Impersonation tokens are short-lived (15 min) and stored only in Redis.
  */
-import { type AdminUserFilters, type AdminOrgFilters, type AdminUserDetail, type AdminOrgDetail, type PaginatedUsers, type PaginatedOrganizations, type ModerationFilters, type ImpersonationToken, type SystemConfig, type FeatureFlags, type MaintenanceStatus, type SystemHealth, type DatabaseStats, type CacheStats, type VectorDBStats, type StorageStats, type ConnectionStats, type ErrorLogFilters, type PaginatedErrorLog, type AuditLogFilters, type AuditLogEntry, type PaginatedAuditLog, type RegulatoryFramework, type FrameworkParams, type PendingInvitation, type BillingPlanCatalog, type BillingPlanCatalogUpdateInput, type SubscriptionPlan, type Subscription, type SubscriptionOverview, type CreateUserInput, type UpdateOrganizationInput, type UserGrowthData, type RevenueMetrics, type AIUsageMetrics, type SubscriptionBreakdown, type LoginHistoryFilters, type LoginHistoryEntry, type PaginatedLoginHistory, type ContentFilters, type ContentItem, type PaginatedContent, type OrganizationStats, type PaymentSummary, type OrgPaymentHistory, type SessionSummary, type AuditLogExportFilters } from './admin.types';
+import { type AdminUserFilters, type AdminOrgFilters, type AdminUserDetail, type AdminOrgDetail, type PaginatedUsers, type PaginatedOrganizations, type ModerationFilters, type ImpersonationToken, type SystemConfig, type FeatureFlags, type MaintenanceStatus, type SystemHealth, type DatabaseStats, type CacheStats, type VectorDBStats, type StorageStats, type ConnectionStats, type ErrorLogFilters, type PaginatedErrorLog, type AuditLogFilters, type AuditLogEntry, type PaginatedAuditLog, type RegulatoryFramework, type FrameworkParams, type PendingInvitation, type BillingPlanCatalog, type BillingPlanCatalogUpdateInput, type SubscriptionPlan, type Subscription, type SubscriptionOverview, type CreateUserInput, type UpdateOrganizationInput, type UserGrowthData, type RevenueMetrics, type AIUsageMetrics, type SubscriptionBreakdown, type LoginHistoryFilters, type LoginHistoryEntry, type PaginatedLoginHistory, type ContentFilters, type ContentItem, type PaginatedContent, type OrganizationStats, type PaymentSummary, type OrgPaymentHistory, type SessionSummary, type AuditLogExportFilters, type AdminOperationalOverview } from './admin.types';
 declare class AdminModule {
     getAllUsers(filters: AdminUserFilters): Promise<PaginatedUsers>;
     getUserDetails(userId: string): Promise<AdminUserDetail>;
@@ -320,6 +320,7 @@ declare class AdminModule {
     getMaintenanceMode(): Promise<MaintenanceStatus>;
     setMaintenanceMode(adminId: string, enabled: boolean, message?: string): Promise<MaintenanceStatus>;
     getSystemHealth(): Promise<SystemHealth>;
+    getOperationalOverview(): Promise<AdminOperationalOverview>;
     getDatabaseStats(): Promise<DatabaseStats>;
     getCacheStats(): Promise<CacheStats>;
     getVectorDBStats(): Promise<VectorDBStats>;

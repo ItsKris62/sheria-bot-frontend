@@ -1,4 +1,7 @@
-export declare function runSourceDiscoveryForMonitor({ monitorId, triggeredBy, triggeredByUserId, }: {
+import type { prisma as appPrisma } from '@/lib/prisma/client';
+type BlogAutomationPrisma = typeof appPrisma;
+export declare function runSourceDiscoveryForMonitor({ prisma, monitorId, triggeredBy, triggeredByUserId, }: {
+    prisma: BlogAutomationPrisma;
     monitorId: string;
     triggeredBy: 'ADMIN' | 'CRON' | 'SYSTEM';
     triggeredByUserId?: string;
@@ -19,4 +22,5 @@ export declare function runSourceDiscoveryForMonitor({ monitorId, triggeredBy, t
     errorMessage: string | null;
     message?: undefined;
 }>;
+export {};
 //# sourceMappingURL=source-discovery.service.d.ts.map
