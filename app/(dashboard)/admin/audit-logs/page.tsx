@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Activity, User, Settings, FileText, Shield, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Download } from "lucide-react"
-import { trpc } from "@/lib/trpc"
+import { trpc, getErrorMessage } from "@/lib/trpc"
 import { toast } from "sonner"
 
 type TypeConfigEntry = { label: string; icon: React.ElementType; color: string }
@@ -39,6 +39,10 @@ interface LogEntry {
   entityType: string | null
   entityId: string | null
   userId: string | null
+  actorName: string | null
+  actorEmail: string | null
+  actorOrganization: string | null
+  severity: 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO'
   ipAddress: string | null
   metadata: unknown
   createdAt: string
@@ -47,8 +51,10 @@ interface LogEntry {
 export default function AuditLogsPage() {
   const [page, setPage] = useState(1)
   const [entityTypeFilter, setEntityTypeFilter] = useState("all")
+  const [severityFilter, setSeverityFilter] = useState("all")
   const [actionFilter, setActionFilter] = useState("")
   const [userIdFilter, setUserIdFilter] = useState("")
+  const [searchFilter, setSearchFilter] = useState("")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -58,8 +64,10 @@ export default function AuditLogsPage() {
     page,
     limit,
     ...(entityTypeFilter !== "all" ? { entityType: entityTypeFilter } : {}),
+    ...(severityFilter !== "all" ? { severity: severityFilter as "LOW" | "MEDIUM" | "HIGH" | "INFO" } : {}),
     ...(actionFilter ? { action: actionFilter } : {}),
     ...(userIdFilter ? { userId: userIdFilter } : {}),
+    ...(searchFilter ? { search: searchFilter } : {}),
     ...(dateFrom ? { dateFrom: new Date(`${dateFrom}T00:00:00.000Z`).toISOString() } : {}),
     ...(dateTo ? { dateTo: new Date(`${dateTo}T23:59:59.999Z`).toISOString() } : {}),
   })
@@ -75,7 +83,7 @@ export default function AuditLogsPage() {
       document.body.removeChild(a)
       toast.success("Audit log exported successfully.")
     },
-    onError: (err) => toast.error(err.message ?? "Export failed. Please try again."),
+    onError: (err) => toast.error(getErrorMessage(err) ?? "Export failed. Please try again."),
   })
 
   const logs: LogEntry[] = (data as unknown as { items?: LogEntry[] })?.items ?? []
@@ -86,8 +94,10 @@ export default function AuditLogsPage() {
     exportMutation.mutate({
       format,
       ...(entityTypeFilter !== "all" ? { entityType: entityTypeFilter } : {}),
+      ...(severityFilter !== "all" ? { severity: severityFilter as "LOW" | "MEDIUM" | "HIGH" | "INFO" } : {}),
       ...(actionFilter ? { action: actionFilter } : {}),
       ...(userIdFilter ? { userId: userIdFilter } : {}),
+      ...(searchFilter ? { search: searchFilter } : {}),
       // Zod schema expects ISO datetime strings, not Date objects
       ...(dateFrom ? { dateFrom: new Date(`${dateFrom}T00:00:00.000Z`).toISOString() } : {}),
       ...(dateTo ? { dateTo: new Date(`${dateTo}T23:59:59.999Z`).toISOString() } : {}),
@@ -132,7 +142,13 @@ export default function AuditLogsPage() {
         </CardHeader>
         <CardContent>
           {/* Filters */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+          <div className="flex flex-col gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <Input
+                placeholder="Search logs..."
+                value={searchFilter}
+                onChange={(e) => { setSearchFilter(e.target.value); setPage(1) }}
+              />
             <Select value={entityTypeFilter} onValueChange={(v) => { setEntityTypeFilter(v); setPage(1) }}>
               <SelectTrigger><SelectValue placeholder="Entity Type" /></SelectTrigger>
               <SelectContent>
@@ -151,6 +167,18 @@ export default function AuditLogsPage() {
                 <SelectItem value="Resource">Resource</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={severityFilter} onValueChange={(v) => { setSeverityFilter(v); setPage(1) }}>
+              <SelectTrigger><SelectValue placeholder="Severity" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Severities</SelectItem>
+                <SelectItem value="HIGH">High</SelectItem>
+                <SelectItem value="MEDIUM">Medium</SelectItem>
+                <SelectItem value="LOW">Low</SelectItem>
+                <SelectItem value="INFO">Info</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Input
               placeholder="Action filter..."
               value={actionFilter}
@@ -174,6 +202,7 @@ export default function AuditLogsPage() {
               className="text-sm"
             />
           </div>
+        </div>
 
           {/* Entries */}
           <div className="space-y-2">
@@ -204,9 +233,14 @@ export default function AuditLogsPage() {
                           <Icon className="h-3.5 w-3.5" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground text-sm truncate">{log.action}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-foreground text-sm truncate">{log.action}</p>
+                            {log.severity === 'HIGH' && <Badge variant="destructive" className="text-[10px] h-4 px-1.5">HIGH</Badge>}
+                            {log.severity === 'MEDIUM' && <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-amber-600 border-amber-200 bg-amber-50">MED</Badge>}
+                          </div>
                           <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5 flex-wrap">
-                            <span>{log.userId ?? "System"}</span>
+                            <span>{log.actorName ? `${log.actorName} (${log.actorEmail})` : (log.userId ?? "System")}</span>
+                            {log.actorOrganization && <span className="font-mono bg-gray-100 px-1 rounded">{log.actorOrganization}</span>}
                             {log.entityId && <span className="font-mono">{log.entityId.slice(0, 8)}</span>}
                             {log.ipAddress && <span>- {log.ipAddress}</span>}
                           </div>

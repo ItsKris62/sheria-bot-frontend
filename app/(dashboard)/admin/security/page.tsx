@@ -16,7 +16,7 @@ import {
   Monitor, Globe, Clock, LogOut, Laptop, Loader2, Download, Search,
   Activity, FileText, RefreshCw, Lock, Eye,
 } from "lucide-react"
-import { trpc } from "@/lib/trpc"
+import { trpc, getErrorMessage } from "@/lib/trpc"
 import { format } from "date-fns"
 import { toast } from "sonner"
 import {
@@ -380,7 +380,7 @@ function SessionManagementTab() {
       setLookedUpUserId("")
       setUserIdInput("")
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   return (
@@ -517,7 +517,7 @@ function AuditLogTab() {
       if (d?.url) window.open(d.url, "_blank")
       toast.success("Audit log export ready")
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   const { data, isLoading, isFetching, refetch } = trpc.admin.getLogs.useQuery({
@@ -702,6 +702,8 @@ function AuditLogTab() {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SecurityPage() {
+  const { data: summary, isLoading: summaryLoading } = trpc.admin.getSecuritySummary.useQuery()
+
   return (
     <div className="space-y-6 p-6">
       <div>
@@ -714,6 +716,22 @@ export default function SecurityPage() {
         </p>
       </div>
 
+      {summary?.warnings?.length ? (
+        <div className="space-y-3">
+          {summary.warnings.map((w: { id: string; title: string; message: string }) => (
+            <div key={w.id} className="rounded-lg border border-yellow-300 bg-yellow-50 dark:bg-yellow-900/10 p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-semibold text-yellow-800 dark:text-yellow-400">{w.title}</h4>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-500 mt-1">{w.message}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       {/* Security overview cards */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="border-border/50">
@@ -724,7 +742,13 @@ export default function SecurityPage() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Security Status</p>
-                <p className="text-lg font-bold text-foreground">Monitoring</p>
+                {summaryLoading ? (
+                  <Skeleton className="h-6 w-20 mt-1" />
+                ) : (
+                  <p className="text-lg font-bold text-foreground capitalize">
+                    {summary?.overallStatus ?? "Unknown"}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -737,7 +761,13 @@ export default function SecurityPage() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Audit Logging</p>
-                <p className="text-lg font-bold text-foreground">Active</p>
+                {summaryLoading ? (
+                  <Skeleton className="h-6 w-20 mt-1" />
+                ) : (
+                  <p className="text-lg font-bold text-foreground">
+                    {summary?.audit?.auditLoggingAvailable ? "Active" : "Unavailable"}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -750,7 +780,13 @@ export default function SecurityPage() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Session Tracking</p>
-                <p className="text-lg font-bold text-foreground">Enabled</p>
+                {summaryLoading ? (
+                  <Skeleton className="h-6 w-20 mt-1" />
+                ) : (
+                  <p className="text-lg font-bold text-foreground">
+                    {summary?.sessions?.activeSessions !== undefined ? "Enabled" : "Unavailable"}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>

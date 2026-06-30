@@ -328,6 +328,7 @@ declare class AdminModule {
     getActiveConnections(): Promise<ConnectionStats>;
     getErrorLog(_filters: ErrorLogFilters): Promise<PaginatedErrorLog>;
     getAuditLog(filters: AuditLogFilters): Promise<PaginatedAuditLog>;
+    getAuditLogDetail(id: string): Promise<AuditLogEntry>;
     getRegulatoryFrameworks(): Promise<RegulatoryFramework[]>;
     createRegulatoryFramework(adminId: string, params: FrameworkParams): Promise<RegulatoryFramework>;
     updateRegulatoryFramework(adminId: string, frameworkId: string, params: Partial<FrameworkParams>): Promise<RegulatoryFramework>;

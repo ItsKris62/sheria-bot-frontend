@@ -1905,12 +1905,24 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 page?: number | undefined;
                 limit?: number | undefined;
                 userId?: string | undefined;
+                actorEmail?: string | undefined;
+                organizationId?: string | undefined;
                 action?: string | undefined;
                 entityType?: string | undefined;
+                entityId?: string | undefined;
+                severity?: "LOW" | "MEDIUM" | "HIGH" | "INFO" | undefined;
+                search?: string | undefined;
                 dateFrom?: string | undefined;
                 dateTo?: string | undefined;
             };
             output: import("../../modules/admin").PaginatedAuditLog;
+            meta: object;
+        }>;
+        getAuditLogDetail: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                id: string;
+            };
+            output: import("../../modules/admin").AuditLogEntry;
             meta: object;
         }>;
         deleteUser: import("@trpc/server").TRPCMutationProcedure<{
@@ -2117,6 +2129,162 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 uptime: number;
                 version: string;
                 checkedAt: Date;
+            };
+            meta: object;
+        }>;
+        getSystemOpsHealth: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                overallStatus: "healthy" | "degraded" | "down";
+                generatedAt: string;
+                checks: {
+                    database: {
+                        status: "healthy" | "degraded" | "down";
+                        label: string;
+                        message: string;
+                        lastCheckedAt: string;
+                    };
+                    redis: {
+                        status: "healthy" | "degraded" | "down";
+                        label: string;
+                        message: string;
+                        lastCheckedAt: string;
+                    };
+                    pinecone: {
+                        status: "healthy" | "degraded" | "down";
+                        label: string;
+                        message: string;
+                        lastCheckedAt: string;
+                    };
+                    storage: {
+                        status: "healthy" | "degraded" | "down";
+                        label: string;
+                        message: string;
+                        lastCheckedAt: string;
+                    };
+                    aiProvider: {
+                        status: "unknown";
+                        label: string;
+                        message: string;
+                    };
+                    emailProvider: {
+                        status: "unknown";
+                        label: string;
+                        message: string;
+                    };
+                    vaultReconciliation: {
+                        status: "not_configured";
+                        label: string;
+                        message: string;
+                    };
+                    malwareScanning: {
+                        status: "not_configured";
+                        label: string;
+                        message: string;
+                    };
+                    webhookHealth: {
+                        status: "unknown";
+                        label: string;
+                        message: string;
+                    };
+                    cronJobs: {
+                        status: "unknown";
+                        label: string;
+                        message: string;
+                    };
+                };
+            };
+            meta: object;
+        }>;
+        getVaultSafetySummary: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                generatedAt: string;
+                overallStatus: "healthy" | "degraded" | "down";
+                malwareScanning: {
+                    status: "healthy" | "degraded" | "not_configured";
+                    enabled: boolean;
+                    configured: boolean;
+                    message: string;
+                    skippedScanCountLast7d: null;
+                    failedScanCountLast7d: null;
+                    evidence: string[];
+                };
+                vaultDocuments: {
+                    total: number;
+                    verified: number;
+                    pending: number;
+                    failed: number;
+                    unverified: number;
+                    missingContentHash: number;
+                    recentlyUploadedLast7d: number;
+                };
+                reconciliation: {
+                    status: "not_configured";
+                    dryRun: null;
+                    lastRunAt: null;
+                    lastSuccessfulRunAt: null;
+                    r2OrphansDetected: null;
+                    dbOrphansDetected: null;
+                    message: string;
+                };
+                storage: {
+                    status: "healthy" | "degraded" | "down" | "unknown" | "not_configured";
+                    message: string;
+                    evidence: never[];
+                };
+                warnings: Array<{
+                    id: string;
+                    severity: "info" | "warning" | "critical";
+                    title: string;
+                    message: string;
+                    actionHref?: string | null;
+                }>;
+                recentEvents: Array<{
+                    id: string;
+                    type: string;
+                    title: string;
+                    severity: "info" | "warning" | "critical";
+                    createdAt: string;
+                    description?: string;
+                }>;
+            };
+            meta: object;
+        }>;
+        getSecuritySummary: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                generatedAt: string;
+                overallStatus: "healthy" | "degraded";
+                loginActivity: {
+                    successfulSessionsLast24h: number;
+                    successfulSessionsLast7d: number;
+                    failedLoginsLast24h: number;
+                    failedLoginTrackingAvailable: boolean;
+                    suspiciousIpCount: number;
+                };
+                sessions: {
+                    activeSessions: number;
+                    expiredSessionsLast7d: number;
+                    revokedSessionsLast7d: null;
+                };
+                accessControl: {
+                    recentRoleChangesLast7d: number;
+                    adminUsers: number;
+                    usersWithTotpEnabled: number;
+                    totpTrackingAvailable: boolean;
+                };
+                audit: {
+                    auditLogsLast24h: number;
+                    securityAuditLogsLast7d: number;
+                    auditLoggingAvailable: boolean;
+                };
+                warnings: {
+                    id: string;
+                    severity: "info" | "warning" | "critical";
+                    title: string;
+                    message: string;
+                }[];
             };
             meta: object;
         }>;
@@ -2457,6 +2625,64 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             output: import("../../modules/admin").BillingPlanCatalog;
             meta: object;
         }>;
+        getBillingOperationsSummary: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                generatedAt: string;
+                overallStatus: "healthy" | "degraded";
+                revenue: {
+                    totalRevenueLast30Days: number;
+                    totalRevenueAllTime: number;
+                    currency: string;
+                };
+                payments: {
+                    successfulLast30Days: number;
+                    failedLast30Days: number;
+                    pendingLast30Days: number;
+                    failedAmountLast30Days: number;
+                    pendingAmountLast30Days: number;
+                };
+                subscriptions: {
+                    active: number;
+                    trialing: number;
+                    pastDue: number;
+                    cancelled: number;
+                    suspended: number;
+                };
+                trials: {
+                    activeTrials: number;
+                    expiringIn7Days: number;
+                    expiredLast7Days: number;
+                };
+                provider: {
+                    name: string;
+                    status: "unknown";
+                    message: string;
+                    lastWebhookAt: null;
+                };
+                problemAccounts: {
+                    organizationId: string | null;
+                    organizationName: string | null;
+                    userId?: string | null;
+                    userEmail?: string | null;
+                    issueType: "failed_payment" | "past_due" | "trial_expiring" | "suspended" | "unknown";
+                    amount?: number | null;
+                    currency?: string | null;
+                    lastEventAt?: string | null;
+                    actionHref?: string | null;
+                }[];
+                recentEvents: {
+                    id: string;
+                    type: string;
+                    title: string;
+                    description?: string;
+                    severity: "info" | "warning" | "critical";
+                    createdAt: string;
+                    actionHref?: string | null;
+                }[];
+            };
+            meta: object;
+        }>;
         getRecentPayments: import("@trpc/server").TRPCQueryProcedure<{
             input: {
                 limit?: number | undefined;
@@ -2551,8 +2777,13 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 format: "docx" | "csv";
                 userId?: string | undefined;
+                actorEmail?: string | undefined;
+                organizationId?: string | undefined;
                 action?: string | undefined;
                 entityType?: string | undefined;
+                entityId?: string | undefined;
+                severity?: "LOW" | "MEDIUM" | "HIGH" | "INFO" | undefined;
+                search?: string | undefined;
                 dateFrom?: string | undefined;
                 dateTo?: string | undefined;
             };
@@ -7987,6 +8218,63 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     total: number;
                     pages: number;
                 };
+            };
+            meta: object;
+        }>;
+        adminGetReport: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                reportId: string;
+            };
+            output: {
+                id: string;
+                status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+                priority: null;
+                createdAt: string;
+                updatedAt: string;
+                resolvedAt: string | null;
+                reporter: {
+                    userId: string;
+                    name: string;
+                    email: string;
+                };
+                organization: {
+                    organizationId: string;
+                    name: string;
+                    type: string;
+                    plan: import("@prisma/client").$Enums.SubscriptionPlan;
+                };
+                query: {
+                    queryId: null;
+                    question: null;
+                    answerPreview: null;
+                    status: null;
+                    createdAt: null;
+                };
+                run: {
+                    runId: null;
+                    route: null;
+                    grounded: null;
+                    verifierVerdict: null;
+                    fallbackReason: null;
+                    unsupportedClaims: null;
+                    acceptedChunkIds: null;
+                    ragSources: null;
+                    createdAt: null;
+                };
+                report: {
+                    suggestedDocument: string;
+                    notes: string | null;
+                    adminNotes: string | null;
+                    missingArea: string;
+                    sourceUrl: string | null;
+                };
+                citations: never[];
+                recommendedActions: {
+                    id: string;
+                    label: string;
+                    description: string;
+                    severity: "info" | "warning" | "critical";
+                }[];
             };
             meta: object;
         }>;

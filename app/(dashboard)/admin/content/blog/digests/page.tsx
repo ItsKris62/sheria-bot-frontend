@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { trpc } from '@/lib/trpc';
+import { trpc, getErrorMessage } from '@/lib/trpc';
 import { trackEvent } from '@/lib/analytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -18,6 +20,9 @@ export default function BlogDigestsPage() {
       trackEvent('blog_automation_digest_generated', {
         blog_automation_action: 'generate_digest',
       });
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err) ?? "Failed to generate digest");
     }
   });
 
@@ -31,8 +36,22 @@ export default function BlogDigestsPage() {
       </div>
 
       <div className="grid gap-4">
-        {isLoading && <p>Loading...</p>}
-        {data?.items.map((digest: any) => (
+        {isLoading && (
+          <div className="space-y-4">
+            <Skeleton className="h-[200px] w-full rounded-xl" />
+            <Skeleton className="h-[200px] w-full rounded-xl" />
+          </div>
+        )}
+        {!isLoading && data?.items?.length === 0 && (
+          <div className="text-center p-8 border rounded-lg bg-muted/20">
+            <p className="text-muted-foreground">No editorial digests found.</p>
+          </div>
+        )}
+        {/* 
+          Using any here because TRPC recursive inference limits strict typing 
+          for deeply nested blog automation structures on the frontend.
+        */}
+        {data?.items?.map((digest: any) => (
           <Card key={digest.id}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-lg font-medium">

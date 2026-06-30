@@ -19,9 +19,9 @@ import {
 } from "recharts"
 import {
   DollarSign, TrendingUp, CreditCard, CheckCircle2, AlertCircle, XCircle,
-  Save, Loader2, Package, AlertTriangle,
+  Save, Loader2, Package, AlertTriangle, Activity, Users, ShieldAlert,
 } from "lucide-react"
-import { trpc } from "@/lib/trpc"
+import { trpc, getErrorMessage } from "@/lib/trpc"
 import { toast } from "sonner"
 
 function formatKES(amount: number) {
@@ -216,6 +216,7 @@ export default function AdminBillingPage() {
   const { data: subBreakdown, isLoading: breakLoading } = trpc.admin.getSubscriptionBreakdown.useQuery({})
   const { data: recentPayments, isLoading: paymentsLoading } = trpc.admin.getRecentPayments.useQuery({ limit: 15 })
   const { data: catalogData, isLoading: catalogLoading } = trpc.admin.getBillingPlanCatalog.useQuery(undefined)
+  const { data: opsSummary, isLoading: opsLoading } = trpc.admin.getBillingOperationsSummary.useQuery()
 
   const updateCatalogMutation = trpc.admin.updateBillingPlanCatalog.useMutation({
     onSuccess: () => {
@@ -223,7 +224,7 @@ export default function AdminBillingPage() {
       toast.success("Plan catalog saved")
       setCatalogDirty(false)
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   const [planEdits, setPlanEdits] = useState<PlanEdit[]>([])
@@ -279,6 +280,7 @@ export default function AdminBillingPage() {
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="operations">Operations</TabsTrigger>
           <TabsTrigger value="failed">Failed Payments</TabsTrigger>
           <TabsTrigger value="catalog">Plan Catalog</TabsTrigger>
         </TabsList>
@@ -667,6 +669,162 @@ export default function AdminBillingPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+        {/* ─── Operations Tab ─────────────────────────────────────────── */}
+        <TabsContent value="operations" className="space-y-6 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Payment Health</p>
+                  <Activity className="h-4 w-4 text-muted-foreground" />
+                </div>
+                {opsLoading ? (
+                  <Skeleton className="h-8 w-1/2" />
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold">
+                      {opsSummary?.overallStatus === 'healthy' ? (
+                        <span className="text-green-600 flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /> Healthy</span>
+                      ) : opsSummary?.overallStatus === 'degraded' ? (
+                        <span className="text-yellow-600 flex items-center gap-2"><AlertTriangle className="h-5 w-5" /> Degraded</span>
+                      ) : (
+                        <span className="text-gray-500">{opsSummary?.overallStatus}</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {opsSummary?.payments.failedLast30Days} failed payments in 30d
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Provider Status</p>
+                  <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+                </div>
+                {opsLoading ? (
+                  <Skeleton className="h-8 w-1/2" />
+                ) : (
+                  <>
+                    <div className="text-lg font-semibold">{opsSummary?.provider.name}</div>
+                    <Badge variant={opsSummary?.provider.status === 'unknown' ? 'secondary' : 'outline'} className="mt-1">
+                      {opsSummary?.provider.message}
+                    </Badge>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Subscriptions</p>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </div>
+                {opsLoading ? (
+                  <Skeleton className="h-8 w-1/2" />
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div><span className="text-gray-500">Active:</span> <span className="font-medium">{opsSummary?.subscriptions.active}</span></div>
+                    <div><span className="text-gray-500">Trialing:</span> <span className="font-medium">{opsSummary?.subscriptions.trialing}</span></div>
+                    <div><span className="text-red-500">Past Due:</span> <span className="font-medium">{opsSummary?.subscriptions.pastDue}</span></div>
+                    <div><span className="text-gray-500">Suspended:</span> <span className="font-medium">{opsSummary?.subscriptions.suspended}</span></div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Trial Expiry</p>
+                  <Activity className="h-4 w-4 text-muted-foreground" />
+                </div>
+                {opsLoading ? (
+                  <Skeleton className="h-8 w-1/2" />
+                ) : (
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between"><span className="text-gray-500">Active Trials:</span> <span className="font-medium">{opsSummary?.trials.activeTrials}</span></div>
+                    <div className="flex justify-between"><span className="text-yellow-600">Expiring 7d:</span> <span className="font-medium">{opsSummary?.trials.expiringIn7Days}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500">Expired 7d:</span> <span className="font-medium">{opsSummary?.trials.expiredLast7Days}</span></div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Problem Accounts</CardTitle>
+                <CardDescription>Accounts needing intervention based on real events</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {opsLoading ? (
+                  <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded" />)}</div>
+                ) : !opsSummary?.problemAccounts.length ? (
+                  <div className="text-center py-6 text-gray-400">
+                    <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-green-400 opacity-80" />
+                    <p className="text-sm font-medium">No problem accounts</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {opsSummary.problemAccounts.map((account, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50/50">
+                        <div>
+                          <div className="font-medium text-sm">{account.organizationName || account.userEmail || 'Unknown Account'}</div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            Issue: <span className="font-semibold">{account.issueType}</span>
+                            {account.amount && ` (${formatKES(account.amount)})`}
+                          </div>
+                        </div>
+                        {account.actionHref && (
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={account.actionHref}>View</a>
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Recent Billing Events</CardTitle>
+                <CardDescription>Latest system-level billing activity</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {opsLoading ? (
+                  <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded" />)}</div>
+                ) : !opsSummary?.recentEvents.length ? (
+                  <div className="text-center py-6 text-gray-400">
+                    <p className="text-sm">No recent events</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {opsSummary.recentEvents.map((evt) => (
+                      <div key={evt.id} className="flex items-start gap-3">
+                        <div className={`mt-0.5 p-1.5 rounded-full ${evt.severity === 'critical' ? 'bg-red-100 text-red-600' : evt.severity === 'warning' ? 'bg-yellow-100 text-yellow-600' : 'bg-blue-100 text-blue-600'}`}>
+                          {evt.severity === 'critical' ? <XCircle className="w-4 h-4" /> : evt.severity === 'warning' ? <AlertCircle className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">{evt.title}</div>
+                          <div className="text-xs text-gray-500">{evt.description}</div>
+                          <div className="text-[10px] text-gray-400 mt-1">{new Date(evt.createdAt).toLocaleString()}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

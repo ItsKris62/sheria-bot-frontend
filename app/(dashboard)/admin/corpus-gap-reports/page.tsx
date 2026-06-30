@@ -15,6 +15,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -188,6 +197,7 @@ export default function AdminCorpusGapReportsPage() {
   const [updateTarget, setUpdateTarget] = useState<AdminReport | null>(null)
   const [updateStatus, setUpdateStatus] = useState<CorpusGapReportStatus>("PENDING")
   const [adminNotes, setAdminNotes] = useState("")
+  const [detailTargetId, setDetailTargetId] = useState<string | null>(null)
 
   const utils = trpc.useUtils()
 
@@ -198,6 +208,11 @@ export default function AdminCorpusGapReportsPage() {
     ...(jurisdictionFilter !== "all" ? { jurisdiction: jurisdictionFilter } : {}),
     ...(documentTypeFilter !== "all" ? { documentType: documentTypeFilter } : {}),
   })
+
+  const detailQuery = trpc.corpusGapReport.adminGetReport.useQuery(
+    { reportId: detailTargetId! },
+    { enabled: !!detailTargetId }
+  )
 
   const updateStatusMutation = trpc.corpusGapReport.adminUpdateStatus.useMutation({
     onSuccess: (_, variables) => {
@@ -420,7 +435,19 @@ export default function AdminCorpusGapReportsPage() {
                             {report.adminNotes || "-"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setDetailTargetId(report.id)
+                              setUpdateStatus(report.status)
+                              setAdminNotes(report.adminNotes ?? "")
+                            }}
+                          >
+                            <FileQuestion className="mr-2 h-4 w-4" />
+                            View Details
+                          </Button>
                           <Button
                             variant="outline"
                             size="sm"
@@ -544,6 +571,171 @@ export default function AdminCorpusGapReportsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Sheet open={detailTargetId !== null} onOpenChange={(open) => { if (!open) setDetailTargetId(null) }}>
+        <SheetContent className="sm:max-w-xl flex flex-col gap-0 p-0">
+          <SheetHeader className="px-6 py-4 border-b">
+            <SheetTitle>Report Details</SheetTitle>
+            <SheetDescription>
+              Detailed view of the corpus gap report and recommended actions.
+            </SheetDescription>
+          </SheetHeader>
+          <ScrollArea className="flex-1 p-6">
+            {detailQuery.isFetching && !detailQuery.data ? (
+              <div className="flex flex-col gap-4">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-40 w-full" />
+                <Skeleton className="h-40 w-full" />
+              </div>
+            ) : detailQuery.isError ? (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{getErrorMessage(detailQuery.error)}</AlertDescription>
+              </Alert>
+            ) : detailQuery.data ? (
+              <div className="flex flex-col gap-8">
+                <div className="flex flex-col gap-4">
+                  <h3 className="text-lg font-semibold">Report Information</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground">Status</span>
+                      <div className="flex"><StatusBadge status={detailQuery.data.status} /></div>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground">Priority</span>
+                      <span className="font-medium">{detailQuery.data.priority ?? "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground">Suggested Document</span>
+                      <span className="font-medium">{detailQuery.data.report.suggestedDocument}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground">Missing Area</span>
+                      <span className="font-medium">{detailQuery.data.report.missingArea}</span>
+                    </div>
+                    {detailQuery.data.report.sourceUrl && (
+                      <div className="flex flex-col gap-1 col-span-2">
+                        <span className="text-muted-foreground">Source URL</span>
+                        <a href={detailQuery.data.report.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
+                          {detailQuery.data.report.sourceUrl}
+                        </a>
+                      </div>
+                    )}
+                    {detailQuery.data.report.notes && (
+                      <div className="flex flex-col gap-1 col-span-2">
+                        <span className="text-muted-foreground">User Notes</span>
+                        <p className="whitespace-pre-wrap rounded-md bg-muted p-3">{detailQuery.data.report.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex flex-col gap-4">
+                  <h3 className="text-lg font-semibold">Reporter & Organization</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground">Reporter</span>
+                      <span className="font-medium">{detailQuery.data.reporter.name} ({detailQuery.data.reporter.email})</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground">Organization</span>
+                      <span className="font-medium">{detailQuery.data.organization.name}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground">Org Type</span>
+                      <span className="font-medium">{detailQuery.data.organization.type ?? "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground">Plan</span>
+                      <span className="font-medium">{detailQuery.data.organization.plan ?? "N/A"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex flex-col gap-4">
+                  <h3 className="text-lg font-semibold">Recommended Actions</h3>
+                  {detailQuery.data.recommendedActions.length > 0 ? (
+                    <div className="flex flex-col gap-3">
+                      {detailQuery.data.recommendedActions.map((action) => (
+                        <Alert key={action.id} variant={action.severity === 'critical' || action.severity === 'warning' ? 'destructive' : 'default'}>
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>
+                            <strong>{action.label}:</strong> {action.description}
+                          </AlertDescription>
+                        </Alert>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No recommended actions.</p>
+                  )}
+                </div>
+
+                <Separator />
+
+                <div className="flex flex-col gap-4">
+                  <h3 className="text-lg font-semibold">Update Status</h3>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
+                      <Label>Status</Label>
+                      <Select
+                        value={updateStatus}
+                        onValueChange={(value) => setUpdateStatus(value as CorpusGapReportStatus)}
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {STATUS_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Label>Admin Notes</Label>
+                      <Textarea
+                        value={adminNotes}
+                        onChange={(e) => setAdminNotes(e.target.value)}
+                        disabled={updateStatusMutation.isPending}
+                        maxLength={2000}
+                        placeholder="Add notes about your review or action taken..."
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        updateStatusMutation.mutate({
+                          reportId: detailTargetId!,
+                          status: updateStatus,
+                          adminNotes: adminNotes.trim() || undefined,
+                        }, {
+                          onSuccess: () => {
+                            void detailQuery.refetch()
+                          }
+                        })
+                      }}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      {updateStatusMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      Save Changes
+                    </Button>
+                  </div>
+                </div>
+
+              </div>
+            ) : null}
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

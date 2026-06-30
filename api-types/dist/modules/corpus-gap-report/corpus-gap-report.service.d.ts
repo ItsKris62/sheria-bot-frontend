@@ -23,6 +23,9 @@ export interface AdminUpdateCorpusGapReportStatusInput {
     status: CorpusGapReportStatus;
     adminNotes?: string;
 }
+export interface AdminGetCorpusGapReportInput {
+    reportId: string;
+}
 export declare class CorpusGapReportService {
     submitReport(params: {
         organizationId: string;
@@ -100,6 +103,59 @@ export declare class CorpusGapReportService {
             total: number;
             pages: number;
         };
+    }>;
+    adminGetReport(params: {
+        input: AdminGetCorpusGapReportInput;
+    }): Promise<{
+        id: string;
+        status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+        priority: null;
+        createdAt: string;
+        updatedAt: string;
+        resolvedAt: string | null;
+        reporter: {
+            userId: string;
+            name: string;
+            email: string;
+        };
+        organization: {
+            organizationId: string;
+            name: string;
+            type: string;
+            plan: import("@prisma/client").$Enums.SubscriptionPlan;
+        };
+        query: {
+            queryId: null;
+            question: null;
+            answerPreview: null;
+            status: null;
+            createdAt: null;
+        };
+        run: {
+            runId: null;
+            route: null;
+            grounded: null;
+            verifierVerdict: null;
+            fallbackReason: null;
+            unsupportedClaims: null;
+            acceptedChunkIds: null;
+            ragSources: null;
+            createdAt: null;
+        };
+        report: {
+            suggestedDocument: string;
+            notes: string | null;
+            adminNotes: string | null;
+            missingArea: string;
+            sourceUrl: string | null;
+        };
+        citations: never[];
+        recommendedActions: {
+            id: string;
+            label: string;
+            description: string;
+            severity: "info" | "warning" | "critical";
+        }[];
     }>;
     adminUpdateStatus(params: {
         adminUserId: string;

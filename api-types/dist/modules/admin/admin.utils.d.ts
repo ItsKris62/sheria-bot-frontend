@@ -57,8 +57,13 @@ export declare const frameworkSchema: z.ZodObject<{
 }, z.core.$strip>;
 export declare const auditLogFiltersSchema: z.ZodObject<{
     userId: z.ZodOptional<z.ZodString>;
+    actorEmail: z.ZodOptional<z.ZodString>;
+    organizationId: z.ZodOptional<z.ZodString>;
     action: z.ZodOptional<z.ZodString>;
     entityType: z.ZodOptional<z.ZodString>;
+    entityId: z.ZodOptional<z.ZodString>;
+    severity: z.ZodOptional<z.ZodString>;
+    search: z.ZodOptional<z.ZodString>;
     dateFrom: z.ZodOptional<z.ZodString>;
     dateTo: z.ZodOptional<z.ZodString>;
     page: z.ZodDefault<z.ZodNumber>;

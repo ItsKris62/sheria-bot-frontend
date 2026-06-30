@@ -11,9 +11,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Settings, Database, Server, Shield, Mail, AlertTriangle, Loader2, Save,
+  Settings, Database, Server, Shield, Mail, AlertTriangle, Loader2, Save, FileCheck2
 } from "lucide-react"
-import { trpc } from "@/lib/trpc"
+import { trpc, getErrorMessage } from "@/lib/trpc"
 import { toast } from "sonner"
 
 interface SystemConfigValues {
@@ -87,7 +87,7 @@ function configInputType(key: string): "boolean" | "number" | "text" {
   return "text"
 }
 
-type ServiceStatus = "healthy" | "degraded" | "down" | "unknown"
+type ServiceStatus = "healthy" | "degraded" | "down" | "unknown" | "not_configured"
 
 interface ServiceHealth {
   status?: string
@@ -96,7 +96,7 @@ interface ServiceHealth {
 }
 
 function normalizeStatus(status?: string): ServiceStatus {
-  if (status === "healthy" || status === "degraded" || status === "down") return status
+  if (status === "healthy" || status === "degraded" || status === "down" || status === "not_configured") return status as ServiceStatus
   return "unknown"
 }
 
@@ -104,6 +104,7 @@ function statusBadgeClass(status: ServiceStatus): string {
   if (status === "healthy") return "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
   if (status === "degraded") return "bg-amber-500/10 text-amber-700 border-amber-500/20"
   if (status === "down") return "bg-destructive/10 text-destructive border-destructive/20"
+  if (status === "not_configured") return "bg-slate-500/10 text-slate-700 border-slate-500/20 dark:text-slate-400"
   return "bg-muted text-muted-foreground border-border"
 }
 
@@ -111,6 +112,7 @@ function statusLabel(status: ServiceStatus): string {
   if (status === "healthy") return "Healthy"
   if (status === "degraded") return "Degraded"
   if (status === "down") return "Down"
+  if (status === "not_configured") return "Not Configured"
   return "Unknown"
 }
 
@@ -123,16 +125,17 @@ function serviceDetail(service?: ServiceHealth): string | null {
 export default function SystemSettingsPage() {
   const utils = trpc.useUtils()
 
-  const { data: health, isLoading: healthLoading } = trpc.admin.getDetailedHealth.useQuery()
+  const { data: healthData, isLoading: healthLoading } = trpc.admin.getSystemOpsHealth.useQuery()
   const { data: featureFlagsData, isLoading: flagsLoading } = trpc.admin.getFeatureFlags.useQuery()
   const { data: systemConfigData, isLoading: configLoading } = trpc.admin.getSystemConfig.useQuery()
+  const { data: vaultSafetyData, isLoading: vaultSafetyLoading } = trpc.admin.getVaultSafetySummary.useQuery()
 
   const updateFlagMutation = trpc.admin.updateFeatureFlag.useMutation({
     onSuccess: () => {
       void utils.admin.getFeatureFlags.invalidate()
       toast.success("Feature flag updated")
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   const updateConfigMutation = trpc.admin.updateSystemConfig.useMutation({
@@ -141,7 +144,7 @@ export default function SystemSettingsPage() {
       toast.success("Configuration saved")
       setDirty(false)
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   const maintenanceMutation = trpc.admin.setMaintenanceMode.useMutation({
@@ -151,7 +154,7 @@ export default function SystemSettingsPage() {
       void utils.admin.getDetailedHealth.invalidate()
       toast.success("Maintenance mode updated")
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   // Local editable state for SystemConfig
@@ -190,25 +193,7 @@ export default function SystemSettingsPage() {
         .map(([name, enabled]) => ({ name, enabled }))
     : []
 
-  const h = health as {
-    status?: "healthy" | "degraded" | "down"
-    services?: {
-      database?: ServiceHealth
-      redis?: ServiceHealth
-      pinecone?: ServiceHealth
-      storage?: ServiceHealth
-    }
-    uptime?: number
-    version?: string
-    checkedAt?: string | Date
-  } | undefined
 
-  const systemStatus = normalizeStatus(h?.status)
-  const dbStatus = normalizeStatus(h?.services?.database?.status)
-  const redisStatus = normalizeStatus(h?.services?.redis?.status)
-  const pineconeStatus = normalizeStatus(h?.services?.pinecone?.status)
-  const storageStatus = normalizeStatus(h?.services?.storage?.status)
-  const checkedAt = h?.checkedAt ? new Date(h.checkedAt).toLocaleString() : null
 
   return (
     <div className="space-y-6">
@@ -220,75 +205,46 @@ export default function SystemSettingsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* System Status */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+        {/* System & Ops Health */}
+        <Card className="border-border/50 bg-card/50 backdrop-blur lg:col-span-2">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Server className="h-5 w-5 text-primary" />System Status
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Server className="h-5 w-5 text-primary" />System & Ops Health
+              </div>
+              {healthData && (
+                <Badge className={statusBadgeClass(normalizeStatus(healthData.overallStatus as string))}>
+                  {statusLabel(normalizeStatus(healthData.overallStatus as string))}
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             {healthLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-24" /><Skeleton className="h-6 w-16" />
-                </div>
-              ))
+              <div className="grid gap-4 md:grid-cols-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20">
+                    <div className="space-y-1"><Skeleton className="h-4 w-24" /><Skeleton className="h-3 w-32" /></div>
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                ))}
+              </div>
+            ) : healthData ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                {Object.entries(healthData.checks).map(([key, check]: [string, any]) => (
+                  <div key={key} className="flex flex-col justify-center p-3 rounded-lg border border-border/50 bg-muted/20 gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">{check.label}</span>
+                      <Badge className={statusBadgeClass(normalizeStatus(check.status))}>
+                        {statusLabel(normalizeStatus(check.status))}
+                      </Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground leading-relaxed">{check.message}</span>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">API Server</span>
-                  <Badge className={statusBadgeClass(systemStatus)}>{statusLabel(systemStatus)}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Database</span>
-                  <div className="flex items-center gap-2">
-                    {serviceDetail(h?.services?.database) && (
-                      <span className="text-xs text-muted-foreground">{serviceDetail(h?.services?.database)}</span>
-                    )}
-                    <Badge className={statusBadgeClass(dbStatus)}>{statusLabel(dbStatus)}</Badge>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">AI / Vector DB</span>
-                  <div className="flex items-center gap-2">
-                    {serviceDetail(h?.services?.pinecone) && (
-                      <span className="text-xs text-muted-foreground">{serviceDetail(h?.services?.pinecone)}</span>
-                    )}
-                    <Badge className={statusBadgeClass(pineconeStatus)}>{statusLabel(pineconeStatus)}</Badge>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Cache</span>
-                  <div className="flex items-center gap-2">
-                    {serviceDetail(h?.services?.redis) && (
-                      <span className="text-xs text-muted-foreground">{serviceDetail(h?.services?.redis)}</span>
-                    )}
-                    <Badge className={statusBadgeClass(redisStatus)}>{statusLabel(redisStatus)}</Badge>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Storage</span>
-                  <div className="flex items-center gap-2">
-                    {serviceDetail(h?.services?.storage) && (
-                      <span className="text-xs text-muted-foreground">{serviceDetail(h?.services?.storage)}</span>
-                    )}
-                    <Badge className={statusBadgeClass(storageStatus)}>{statusLabel(storageStatus)}</Badge>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Uptime</span>
-                  <span className="text-sm font-medium text-foreground">
-                    {h?.uptime ? `${Math.floor(h.uptime / 3600)}h ${Math.floor((h.uptime % 3600) / 60)}m` : "-"}
-                  </span>
-                </div>
-                {checkedAt && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Last Check</span>
-                    <span className="text-xs font-medium text-muted-foreground">{checkedAt}</span>
-                  </div>
-                )}
-              </>
+              <div className="text-sm text-muted-foreground">Could not load system health.</div>
             )}
           </CardContent>
         </Card>
@@ -433,47 +389,7 @@ export default function SystemSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Email Config (read-only from env) */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-primary" />Email Configuration
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Provider</Label>
-              <Input readOnly value="Resend" className="bg-muted/50" />
-            </div>
-            <div className="space-y-2">
-              <Label>From Email</Label>
-              <Input readOnly defaultValue="noreply@sheriabot.com" className="bg-muted/50" />
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Database Info */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-primary" />Database
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Status</span>
-              <Badge className={statusBadgeClass(dbStatus)}>{statusLabel(dbStatus)}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Provider</span>
-              <span className="text-sm font-medium text-foreground">PostgreSQL (Prisma)</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Host</span>
-              <span className="text-sm font-medium text-foreground">Supabase</span>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Maintenance Mode */}
         <Card className="border-border/50 bg-card/50 backdrop-blur lg:col-span-2 border-l-4 border-l-yellow-400">
@@ -520,6 +436,92 @@ export default function SystemSettingsPage() {
             </div>
           </CardContent>
         </Card>
+        {/* Vault & Upload Safety */}
+        <Card className="border-border/50 bg-card/50 backdrop-blur lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FileCheck2 className="h-5 w-5 text-primary" />Vault & Upload Safety
+              </CardTitle>
+              {vaultSafetyData && (
+                <Badge className={statusBadgeClass(normalizeStatus(vaultSafetyData.overallStatus as string))}>
+                  {statusLabel(normalizeStatus(vaultSafetyData.overallStatus as string))}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">Visibility into document upload safety, malware scanning posture, and Vault reconciliation (Pilot visibility only).</p>
+          </CardHeader>
+          <CardContent>
+            {vaultSafetyLoading ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20">
+                    <div className="space-y-1"><Skeleton className="h-4 w-24" /><Skeleton className="h-3 w-32" /></div>
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                ))}
+              </div>
+            ) : vaultSafetyData ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                
+                {/* Malware Scanning */}
+                <div className="flex flex-col justify-center p-3 rounded-lg border border-border/50 bg-muted/20 gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">Malware Scanning</span>
+                    <Badge className={statusBadgeClass(normalizeStatus(vaultSafetyData.malwareScanning.status as string))}>
+                      {statusLabel(normalizeStatus(vaultSafetyData.malwareScanning.status as string))}
+                    </Badge>
+                  </div>
+                  <span className="text-xs text-muted-foreground leading-relaxed">
+                    {vaultSafetyData.malwareScanning.message}
+                    {vaultSafetyData.malwareScanning.skippedScanCountLast7d === null && ' (Scan skip/failure counts are not persisted to DB).'}
+                  </span>
+                </div>
+
+                {/* Vault Documents Status */}
+                <div className="flex flex-col justify-center p-3 rounded-lg border border-border/50 bg-muted/20 gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">Vault Documents</span>
+                    <Badge className="bg-primary/10 text-primary border-primary/20">
+                      {vaultSafetyData.vaultDocuments.total} Total
+                    </Badge>
+                  </div>
+                  <span className="text-xs text-muted-foreground leading-relaxed">
+                    Verified: {vaultSafetyData.vaultDocuments.verified} | Pending: {vaultSafetyData.vaultDocuments.pending} | Failed: {vaultSafetyData.vaultDocuments.failed} | Unverified: {vaultSafetyData.vaultDocuments.unverified}
+                    <br />Missing Content Hash: {vaultSafetyData.vaultDocuments.missingContentHash}
+                    <br />Uploaded Last 7d: {vaultSafetyData.vaultDocuments.recentlyUploadedLast7d}
+                  </span>
+                </div>
+
+                {/* Vault Reconciliation */}
+                <div className="flex flex-col justify-center p-3 rounded-lg border border-border/50 bg-muted/20 gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">Reconciliation Status</span>
+                    <Badge className={statusBadgeClass(normalizeStatus(vaultSafetyData.reconciliation.status as string))}>
+                      {statusLabel(normalizeStatus(vaultSafetyData.reconciliation.status as string))}
+                    </Badge>
+                  </div>
+                  <span className="text-xs text-muted-foreground leading-relaxed">{vaultSafetyData.reconciliation.message}</span>
+                </div>
+
+                {/* Storage Status */}
+                <div className="flex flex-col justify-center p-3 rounded-lg border border-border/50 bg-muted/20 gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">Storage Health</span>
+                    <Badge className={statusBadgeClass(normalizeStatus(vaultSafetyData.storage.status as string))}>
+                      {statusLabel(normalizeStatus(vaultSafetyData.storage.status as string))}
+                    </Badge>
+                  </div>
+                  <span className="text-xs text-muted-foreground leading-relaxed">{vaultSafetyData.storage.message}</span>
+                </div>
+
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">Could not load Vault Safety Data.</div>
+            )}
+          </CardContent>
+        </Card>
+
       </div>
     </div>
   )
