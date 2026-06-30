@@ -32,7 +32,7 @@ export default function BlogDigestsPage() {
 
       <div className="grid gap-4">
         {isLoading && <p>Loading...</p>}
-        {data?.items.map((digest) => (
+        {data?.items.map((digest: any) => (
           <Card key={digest.id}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-lg font-medium">
