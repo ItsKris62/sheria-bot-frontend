@@ -19,6 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { getErrorMessage } from "@/lib/trpc"
 import {
   useEnterprisePolicy,
@@ -31,6 +37,7 @@ import {
   ArrowLeft,
   BookOpen,
   CheckCircle2,
+  ChevronDown,
   Clock,
   Download,
   FileText,
@@ -90,7 +97,27 @@ const SECTION_STATUSES: Array<{ value: SectionStatus; label: string }> = [
 ]
 
 function sectionList(value: unknown): GeneratedPolicySection[] {
-  return Array.isArray(value) ? (value as GeneratedPolicySection[]) : []
+  if (!Array.isArray(value)) return []
+  const seenIds = new Set<string>()
+  const validSections: GeneratedPolicySection[] = []
+  for (const item of value) {
+    if (!item || typeof item !== "object") continue
+    const raw = item as Record<string, unknown>
+    const id = typeof raw.id === "string" ? raw.id : undefined
+    if (!id || seenIds.has(id)) continue
+    seenIds.add(id)
+    validSections.push({
+      id,
+      title: typeof raw.title === "string" ? raw.title : "Untitled Section",
+      content: raw.content,
+      contentMarkdown: typeof raw.contentMarkdown === "string" ? raw.contentMarkdown : undefined,
+      status: typeof raw.status === "string" ? raw.status : "DRAFT",
+      wordCount: typeof raw.wordCount === "number" ? raw.wordCount : undefined,
+      editedAt: typeof raw.editedAt === "string" ? raw.editedAt : undefined,
+      editedByUserId: typeof raw.editedByUserId === "string" ? raw.editedByUserId : undefined,
+    })
+  }
+  return validSections
 }
 
 function readableStatus(value?: string) {
@@ -102,6 +129,14 @@ function sectionMarkdown(section?: GeneratedPolicySection) {
   if (section.contentMarkdown) return section.contentMarkdown
   if (typeof section.content === "string") return section.content
   return ""
+}
+
+function isSectionBroken(section?: GeneratedPolicySection) {
+  if (!section) return false
+  if (!section.contentMarkdown && !section.content) return false
+  if (section.contentMarkdown) return false
+  if (typeof section.content === "string") return false
+  return true
 }
 
 function PolicyViewerContent() {
@@ -134,7 +169,9 @@ function PolicyViewerContent() {
   const isGenerating = !isComplete && !isFailed && status !== "ARCHIVED"
   const canEdit = isComplete
   const canExport = isComplete && sections.length > 0
-  const activeCitations = (policy?.citations ?? []).filter((citation) => citation.sectionId === activeSection?.id)
+  const activeCitations = Array.isArray(policy?.citations)
+    ? policy.citations.filter((citation: any) => citation && typeof citation === "object" && citation.sectionId === activeSection?.id)
+    : []
   const isDirty = editingSectionId === activeSection?.id && draftContent !== sectionMarkdown(activeSection)
 
   async function handleExportDocx() {
@@ -150,6 +187,14 @@ function PolicyViewerContent() {
       toast.success("DOCX export is ready")
     } catch (err) {
       toast.error("Export failed", { description: getErrorMessage(err) })
+    }
+  }
+
+  async function handleExportPdf() {
+    try {
+      await exportPolicy({ policyId, format: "PDF" })
+    } catch (err) {
+      toast.error("PDF Export Unavailable", { description: getErrorMessage(err) })
     }
   }
 
@@ -236,10 +281,23 @@ function PolicyViewerContent() {
             <span>{new Date(policy.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}</span>
           </div>
         </div>
-        <Button variant="outline" size="sm" className="bg-transparent" disabled={!canExport || isExporting} onClick={handleExportDocx}>
-          {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-          {isExporting ? "Exporting..." : "Export DOCX"}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="bg-transparent" disabled={!canExport || isExporting}>
+              {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              {isExporting ? "Exporting..." : "Export"}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleExportDocx}>
+              Export as DOCX
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportPdf}>
+              Export as PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Card className="border-border/50 bg-muted/30">
@@ -363,6 +421,10 @@ function PolicyViewerContent() {
                     onChange={(event) => setDraftContent(event.target.value)}
                     className="min-h-[360px] resize-y font-mono text-sm leading-6"
                   />
+                ) : isSectionBroken(activeSection) ? (
+                  <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+                    This section could not be loaded safely. You can manually edit it or regenerate the policy.
+                  </div>
                 ) : (
                   <div className="whitespace-pre-wrap rounded-md border border-border/50 bg-muted/20 p-4 text-sm leading-7 text-foreground">
                     {sectionMarkdown(activeSection) || "No content recorded for this section."}
