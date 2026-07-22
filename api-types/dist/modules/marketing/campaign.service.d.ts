@@ -103,12 +103,12 @@ export declare class CampaignService {
             firstName: string | null;
             lastName: string | null;
         };
-        status: import("@prisma/client").$Enums.CampaignSendStatus;
+        status: import(".prisma/client").$Enums.CampaignSendStatus;
         errorMessage: string | null;
         sentAt: Date | null;
         contactId: string;
         messageId: string | null;
-        suppressionReason: import("@prisma/client").$Enums.SuppressionReason | null;
+        suppressionReason: import(".prisma/client").$Enums.SuppressionReason | null;
     }[]>;
     private requireCampaign;
 }

@@ -54,7 +54,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                 id: string;
                 email: string;
                 name: string;
-                role: import("@prisma/client").$Enums.UserRole;
+                role: import(".prisma/client").$Enums.UserRole;
                 emailVerified: boolean;
                 mustChangePassword: boolean;
                 organization: {
@@ -85,7 +85,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
             id: string;
             email: string;
             name: string;
-            role: import("@prisma/client").$Enums.UserRole;
+            role: import(".prisma/client").$Enums.UserRole;
             phone: string | null;
             emailVerified: boolean;
             organization: {

@@ -60,7 +60,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 skip?: number | undefined;
             };
             output: {
-                items: import("@prisma/client").MarketingCampaign[];
+                items: import(".prisma/client").MarketingCampaign[];
                 total: number;
             };
             meta: object;
@@ -71,7 +71,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 id: string;
-                status: import("@prisma/client").$Enums.MarketingCampaignStatus;
+                status: import(".prisma/client").$Enums.MarketingCampaignStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
@@ -80,7 +80,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 createdById: string;
                 sentAt: Date | null;
                 listId: string | null;
-                templateKey: import("@prisma/client").$Enums.MarketingTemplateKey;
+                templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
                 templateVariables: import("@prisma/client/runtime/client").JsonValue;
                 scheduledFor: Date | null;
                 segmentFilter: import("@prisma/client/runtime/client").JsonValue | null;
@@ -108,7 +108,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 id: string;
-                status: import("@prisma/client").$Enums.MarketingCampaignStatus;
+                status: import(".prisma/client").$Enums.MarketingCampaignStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
@@ -117,7 +117,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 createdById: string;
                 sentAt: Date | null;
                 listId: string | null;
-                templateKey: import("@prisma/client").$Enums.MarketingTemplateKey;
+                templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
                 templateVariables: import("@prisma/client/runtime/client").JsonValue;
                 scheduledFor: Date | null;
                 segmentFilter: import("@prisma/client/runtime/client").JsonValue | null;
@@ -146,7 +146,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 id: string;
-                status: import("@prisma/client").$Enums.MarketingCampaignStatus;
+                status: import(".prisma/client").$Enums.MarketingCampaignStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
@@ -155,7 +155,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 createdById: string;
                 sentAt: Date | null;
                 listId: string | null;
-                templateKey: import("@prisma/client").$Enums.MarketingTemplateKey;
+                templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
                 templateVariables: import("@prisma/client/runtime/client").JsonValue;
                 scheduledFor: Date | null;
                 segmentFilter: import("@prisma/client/runtime/client").JsonValue | null;
@@ -238,12 +238,12 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     firstName: string | null;
                     lastName: string | null;
                 };
-                status: import("@prisma/client").$Enums.CampaignSendStatus;
+                status: import(".prisma/client").$Enums.CampaignSendStatus;
                 errorMessage: string | null;
                 sentAt: Date | null;
                 contactId: string;
                 messageId: string | null;
-                suppressionReason: import("@prisma/client").$Enums.SuppressionReason | null;
+                suppressionReason: import(".prisma/client").$Enums.SuppressionReason | null;
             }[];
             meta: object;
         }>;
@@ -256,7 +256,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 remaining: number;
                 id: string;
                 failed: number;
-                status: import("@prisma/client").$Enums.CampaignSendJobStatus;
+                status: import(".prisma/client").$Enums.CampaignSendJobStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 errorMessage: string | null;
@@ -277,7 +277,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 id: string;
-                status: import("@prisma/client").$Enums.MarketingCampaignStatus;
+                status: import(".prisma/client").$Enums.MarketingCampaignStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
@@ -286,7 +286,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 createdById: string;
                 sentAt: Date | null;
                 listId: string | null;
-                templateKey: import("@prisma/client").$Enums.MarketingTemplateKey;
+                templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
                 templateVariables: import("@prisma/client/runtime/client").JsonValue;
                 scheduledFor: Date | null;
                 segmentFilter: import("@prisma/client/runtime/client").JsonValue | null;
@@ -351,11 +351,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     firstName: string | null;
                     lastName: string | null;
                     primaryRegulator: string | null;
-                    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
+                    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
                     consentSource: string | null;
                     consentTimestamp: Date | null;
                     suppressedAt: Date | null;
-                    suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
+                    suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
                     lastEmailedAt: Date | null;
                     lastEmailOpenedAt: Date | null;
                 })[];
@@ -377,7 +377,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     id: string;
                     ipAddress: string | null;
                     userAgent: string | null;
-                    action: import("@prisma/client").$Enums.ConsentAction;
+                    action: import(".prisma/client").$Enums.ConsentAction;
                     source: string;
                     contactId: string;
                     occurredAt: Date;
@@ -397,11 +397,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 firstName: string | null;
                 lastName: string | null;
                 primaryRegulator: string | null;
-                consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
+                consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
                 consentSource: string | null;
                 consentTimestamp: Date | null;
                 suppressedAt: Date | null;
-                suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
+                suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
                 lastEmailedAt: Date | null;
                 lastEmailOpenedAt: Date | null;
             };
@@ -432,11 +432,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 firstName: string | null;
                 lastName: string | null;
                 primaryRegulator: string | null;
-                consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
+                consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
                 consentSource: string | null;
                 consentTimestamp: Date | null;
                 suppressedAt: Date | null;
-                suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
+                suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
                 lastEmailedAt: Date | null;
                 lastEmailOpenedAt: Date | null;
             };
@@ -466,11 +466,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 firstName: string | null;
                 lastName: string | null;
                 primaryRegulator: string | null;
-                consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
+                consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
                 consentSource: string | null;
                 consentTimestamp: Date | null;
                 suppressedAt: Date | null;
-                suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
+                suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
                 lastEmailedAt: Date | null;
                 lastEmailOpenedAt: Date | null;
             };
@@ -528,13 +528,13 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             output: {
                 items: ({
                     send: {
-                        status: import("@prisma/client").$Enums.CampaignSendStatus;
+                        status: import(".prisma/client").$Enums.CampaignSendStatus;
                         sentAt: Date | null;
                         campaignId: string;
                     } | null;
                 } & {
                     id: string;
-                    eventType: import("@prisma/client").$Enums.EmailEventType;
+                    eventType: import(".prisma/client").$Enums.EmailEventType;
                     messageId: string | null;
                     sendId: string | null;
                     eventData: import("@prisma/client/runtime/client").JsonValue;
@@ -718,7 +718,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                         email: string;
                         firstName: string | null;
                         lastName: string | null;
-                        consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
+                        consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
                         suppressedAt: Date | null;
                     };
                 } & {
@@ -759,7 +759,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
                     id: string;
                     email: string;
-                    reason: import("@prisma/client").$Enums.SuppressionReason;
+                    reason: import(".prisma/client").$Enums.SuppressionReason;
                     addedAt: Date;
                     addedById: string | null;
                 }[];
@@ -793,7 +793,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 isSuppressed: boolean;
-                reason: import("@prisma/client").$Enums.SuppressionReason | null;
+                reason: import(".prisma/client").$Enums.SuppressionReason | null;
                 addedAt: Date | null;
             };
             meta: object;

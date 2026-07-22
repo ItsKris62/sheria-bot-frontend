@@ -33,6 +33,10 @@ declare const envSchema: z.ZodObject<{
     FROM_EMAIL: z.ZodString;
     ANTHROPIC_API_KEY: z.ZodString;
     ANTHROPIC_MODEL: z.ZodDefault<z.ZodString>;
+    OPENAI_API_KEY: z.ZodOptional<z.ZodString>;
+    OPENAI_MODEL: z.ZodDefault<z.ZodString>;
+    GEMINI_API_KEY: z.ZodOptional<z.ZodString>;
+    GEMINI_MODEL: z.ZodDefault<z.ZodString>;
     PINECONE_API_KEY: z.ZodString;
     PINECONE_ENVIRONMENT: z.ZodDefault<z.ZodString>;
     PINECONE_INDEX_NAME: z.ZodDefault<z.ZodString>;
@@ -45,6 +49,13 @@ declare const envSchema: z.ZodObject<{
     CLAMAV_HOST: z.ZodOptional<z.ZodString>;
     CLAMAV_PORT: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
     CLAMAV_TIMEOUT_MS: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
+    AGENTS_ENABLED: z.ZodDefault<z.ZodCoercedBoolean<unknown>>;
+    AGENT_MAX_COST_PER_RUN_USD: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
+    AGENT_MAX_COST_PER_DAY_USD: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
+    AGENT_MAX_ITERATIONS_PER_RUN: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
+    POSTHOG_PERSONAL_API_KEY: z.ZodOptional<z.ZodString>;
+    POSTHOG_HOST: z.ZodOptional<z.ZodString>;
+    POSTHOG_PROJECT_ID: z.ZodOptional<z.ZodString>;
     RATE_LIMIT_MAX: z.ZodPipe<z.ZodPipe<z.ZodDefault<z.ZodString>, z.ZodTransform<number, string>>, z.ZodNumber>;
     RATE_LIMIT_WINDOW: z.ZodDefault<z.ZodString>;
     ADMIN_EMAIL: z.ZodOptional<z.ZodString>;

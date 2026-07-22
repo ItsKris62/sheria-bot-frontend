@@ -50,7 +50,7 @@ declare class BillingModule {
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
-        metric: import("@prisma/client").$Enums.BillingMetric;
+        metric: import(".prisma/client").$Enums.BillingMetric;
         periodStart: Date;
         periodEnd: Date;
     } | null>;

@@ -12,21 +12,21 @@ export declare function runBlogPostVerification({ prisma, blogPostId, requestedB
         id: string;
         title: string;
         description: string;
-        severity: import("@prisma/client").$Enums.BlogVerificationIssueSeverity;
+        severity: import(".prisma/client").$Enums.BlogVerificationIssueSeverity;
         createdAt: Date;
         excerpt: string | null;
         claimText: string | null;
         sourceId: string | null;
         sourceUrl: string | null;
         runId: string;
-        issueType: import("@prisma/client").$Enums.BlogVerificationIssueType;
+        issueType: import(".prisma/client").$Enums.BlogVerificationIssueType;
         recommendation: string | null;
         paragraphIndex: number | null;
         sentenceIndex: number | null;
     }[];
 } & {
     id: string;
-    status: import("@prisma/client").$Enums.BlogVerificationStatus;
+    status: import(".prisma/client").$Enums.BlogVerificationStatus;
     createdAt: Date;
     updatedAt: Date;
     summary: string | null;
@@ -35,7 +35,7 @@ export declare function runBlogPostVerification({ prisma, blogPostId, requestedB
     startedAt: Date;
     blogPostId: string;
     draftGenerationRunId: string | null;
-    runType: import("@prisma/client").$Enums.BlogVerificationRunType;
+    runType: import(".prisma/client").$Enums.BlogVerificationRunType;
     qualityScore: number;
     sourceScore: number;
     claimRiskScore: number;

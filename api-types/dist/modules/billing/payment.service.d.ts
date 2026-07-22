@@ -43,7 +43,7 @@ declare class PaymentService {
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         id: string;
         description: string | null;
-        status: import("@prisma/client").$Enums.PaymentStatus;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         createdAt: Date;
         updatedAt: Date;
         amount: number;
@@ -51,7 +51,7 @@ declare class PaymentService {
         orgId: string;
         currency: string;
         subscriptionId: string | null;
-        provider: import("@prisma/client").$Enums.PaymentProvider;
+        provider: import(".prisma/client").$Enums.PaymentProvider;
         providerTransactionId: string | null;
         invoiceNumber: string | null;
         subscriptionPlan: string | null;
@@ -67,7 +67,7 @@ declare class PaymentService {
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
             id: string;
             description: string | null;
-            status: import("@prisma/client").$Enums.PaymentStatus;
+            status: import(".prisma/client").$Enums.PaymentStatus;
             createdAt: Date;
             updatedAt: Date;
             amount: number;
@@ -75,7 +75,7 @@ declare class PaymentService {
             orgId: string;
             currency: string;
             subscriptionId: string | null;
-            provider: import("@prisma/client").$Enums.PaymentProvider;
+            provider: import(".prisma/client").$Enums.PaymentProvider;
             providerTransactionId: string | null;
             invoiceNumber: string | null;
             subscriptionPlan: string | null;
@@ -95,7 +95,7 @@ declare class PaymentService {
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         id: string;
         description: string | null;
-        status: import("@prisma/client").$Enums.PaymentStatus;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         createdAt: Date;
         updatedAt: Date;
         amount: number;
@@ -103,7 +103,7 @@ declare class PaymentService {
         orgId: string;
         currency: string;
         subscriptionId: string | null;
-        provider: import("@prisma/client").$Enums.PaymentProvider;
+        provider: import(".prisma/client").$Enums.PaymentProvider;
         providerTransactionId: string | null;
         invoiceNumber: string | null;
         subscriptionPlan: string | null;
@@ -128,7 +128,7 @@ declare class PaymentService {
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         id: string;
         description: string | null;
-        status: import("@prisma/client").$Enums.PaymentStatus;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         createdAt: Date;
         updatedAt: Date;
         amount: number;
@@ -136,7 +136,7 @@ declare class PaymentService {
         orgId: string;
         currency: string;
         subscriptionId: string | null;
-        provider: import("@prisma/client").$Enums.PaymentProvider;
+        provider: import(".prisma/client").$Enums.PaymentProvider;
         providerTransactionId: string | null;
         invoiceNumber: string | null;
         subscriptionPlan: string | null;

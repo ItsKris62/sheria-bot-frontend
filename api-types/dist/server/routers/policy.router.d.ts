@@ -42,7 +42,7 @@ export declare const policyRouter: import("@trpc/server").TRPCBuiltRouter<{
                     email: string;
                     fullName: string;
                 };
-                status: import("@prisma/client").$Enums.PolicyStatus;
+                status: import(".prisma/client").$Enums.PolicyStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 scenario: string;
@@ -196,7 +196,7 @@ export declare const policyRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             policyId: string;
             title: string | null;
-            status: import("@prisma/client").$Enums.PolicyStatus;
+            status: import(".prisma/client").$Enums.PolicyStatus;
             progress: number;
             isComplete: boolean;
             isFailed: boolean;
@@ -224,7 +224,7 @@ export declare const policyRouter: import("@trpc/server").TRPCBuiltRouter<{
             versions: {
                 id: string;
                 title: string | null;
-                status: import("@prisma/client").$Enums.PolicyStatus;
+                status: import(".prisma/client").$Enums.PolicyStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 isLatestVersion: boolean;

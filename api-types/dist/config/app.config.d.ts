@@ -15,6 +15,40 @@ export declare const appConfig: {
     };
     readonly features: {
         readonly orchestratorEnabled: boolean;
+        readonly agentsEnabled: boolean;
+    };
+    readonly agents: {
+        readonly maxCostPerRunUsd: number;
+        readonly maxCostPerDayUsd: number;
+        readonly maxIterationsPerRun: number;
+        readonly automation: {
+            readonly logRateLimitMax: number;
+            readonly logRateLimitWindowSeconds: number;
+            readonly generateRateLimitMax: number;
+            readonly generateRateLimitWindowSeconds: number;
+            readonly hmacSecret: string;
+            readonly metricsRateLimitMax: number;
+            readonly metricsRateLimitWindowSeconds: number;
+            readonly approvalCreateRateLimitMax: number;
+            readonly approvalCreateRateLimitWindowSeconds: number;
+            readonly approvalReadRateLimitMax: number;
+            readonly approvalReadRateLimitWindowSeconds: number;
+            readonly webhookIngress: {
+                readonly header: string;
+                readonly secret: string;
+            };
+            readonly workflowRateLimitMax: number;
+            readonly workflowRateLimitWindowSeconds: number;
+        };
+        readonly trigger: {
+            readonly rateLimitMax: number;
+            readonly rateLimitWindowSeconds: number;
+        };
+    };
+    readonly posthog: {
+        readonly personalApiKey: string | undefined;
+        readonly host: string | undefined;
+        readonly projectId: string | undefined;
     };
     readonly port: number;
     readonly appUrl: string;
@@ -41,6 +75,14 @@ export declare const appConfig: {
     };
     readonly ai: {
         readonly apiKey: string;
+        readonly model: string;
+    };
+    readonly openai: {
+        readonly apiKey: string | undefined;
+        readonly model: string;
+    };
+    readonly gemini: {
+        readonly apiKey: string | undefined;
         readonly model: string;
     };
     readonly pinecone: {

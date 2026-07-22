@@ -18,14 +18,14 @@ export declare const isAuthenticated: import("@trpc/server").TRPCMiddlewareBuild
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -51,8 +51,8 @@ export declare const isAuthenticated: import("@trpc/server").TRPCMiddlewareBuild
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -72,14 +72,14 @@ export declare const isAdmin: import("@trpc/server").TRPCMiddlewareBuilder<impor
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -105,8 +105,8 @@ export declare const isAdmin: import("@trpc/server").TRPCMiddlewareBuilder<impor
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -123,14 +123,14 @@ export declare const isRegulator: import("@trpc/server").TRPCMiddlewareBuilder<i
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -156,8 +156,8 @@ export declare const isRegulator: import("@trpc/server").TRPCMiddlewareBuilder<i
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -174,14 +174,14 @@ export declare const isStartup: import("@trpc/server").TRPCMiddlewareBuilder<imp
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -207,8 +207,8 @@ export declare const isStartup: import("@trpc/server").TRPCMiddlewareBuilder<imp
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -225,14 +225,14 @@ export declare const isEnterprise: import("@trpc/server").TRPCMiddlewareBuilder<
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -258,8 +258,8 @@ export declare const isEnterprise: import("@trpc/server").TRPCMiddlewareBuilder<
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -286,14 +286,14 @@ export declare const rateLimited: (action: string, maxRequests?: number, opts?: 
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -319,8 +319,8 @@ export declare const rateLimited: (action: string, maxRequests?: number, opts?: 
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -342,8 +342,8 @@ export declare const requireOrgMember: import("@trpc/server").TRPCMiddlewareBuil
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -357,14 +357,14 @@ export declare const requireOrgMember: import("@trpc/server").TRPCMiddlewareBuil
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -396,14 +396,14 @@ export declare const requireMemberRole: (allowedRoles: MemberRole[]) => import("
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -429,8 +429,8 @@ export declare const requireMemberRole: (allowedRoles: MemberRole[]) => import("
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -465,14 +465,14 @@ export declare const requireOrgMembership: import("@trpc/server").TRPCMiddleware
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -498,8 +498,8 @@ export declare const requireOrgMembership: import("@trpc/server").TRPCMiddleware
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -523,14 +523,14 @@ export declare const requireOrgMembershipRole: (allowedRoles: MemberRole[]) => i
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -556,8 +556,8 @@ export declare const requireOrgMembershipRole: (allowedRoles: MemberRole[]) => i
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -604,14 +604,14 @@ export declare const withPlanContext: import("@trpc/server").TRPCMiddlewareBuild
     trialState: import("@/modules/trial").TrialContextState | undefined;
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -632,8 +632,8 @@ export declare const withPlanContext: import("@trpc/server").TRPCMiddlewareBuild
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -657,14 +657,14 @@ export declare const requirePlanFeature: (feature: FeatureKey) => import("@trpc/
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -690,8 +690,8 @@ export declare const requirePlanFeature: (feature: FeatureKey) => import("@trpc/
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -732,7 +732,7 @@ export declare const checkUsageLimit: (metric: BillingMetric, opts?: {
 }) => import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
     user: import("./context").User;
     usageInfo: {
-        metric: import("@prisma/client").$Enums.BillingMetric;
+        metric: import(".prisma/client").$Enums.BillingMetric;
         current: number;
         limit: number;
     };
@@ -742,14 +742,14 @@ export declare const checkUsageLimit: (metric: BillingMetric, opts?: {
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
-    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import("@prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
         result: {};
         model: {};
         query: {};
         client: {};
-    }, {}>, import("@prisma/client").Prisma.TypeMapCb<{
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
         adapter: import("@prisma/adapter-pg").PrismaPg;
-        log: (import("@prisma/client").Prisma.LogLevel | import("@prisma/client").Prisma.LogDefinition)[];
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
         errorFormat: "pretty";
     }>, {
         result: {};
@@ -769,8 +769,60 @@ export declare const checkUsageLimit: (metric: BillingMetric, opts?: {
     orgMember: {
         id: string;
         userId: string;
-        role: import("@prisma/client").$Enums.MemberRole;
-        status: import("@prisma/client").$Enums.MemberStatus;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
+        organizationId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        invitedBy: string | null;
+        invitedAt: Date | null;
+        joinedAt: Date;
+    } | undefined;
+    orgMembership: OrgMembershipEntry | undefined;
+}, unknown>;
+export declare const requireAgentCapability: (capability: string) => import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+    agent: import("@/modules/agents/agent-credential.service").AgentIdentity;
+    req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
+    res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
+    user: import("./context").User | null;
+    plan: import("@/types/plan.types").EffectivePlan | undefined;
+    customLimits: Record<string, unknown> | null | undefined;
+    entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+        result: {};
+        model: {};
+        query: {};
+        client: {};
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
+        adapter: import("@prisma/adapter-pg").PrismaPg;
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
+        errorFormat: "pretty";
+    }>, {
+        result: {};
+        model: {};
+        query: {};
+        client: {};
+    }>;
+    aiService: import("../../lib/ai/ai.service").AIService;
+    ragService: import("../../lib/rag/rag.service").RAGService;
+    storageService: import("../../lib/storage/storage.service").StorageService;
+    mailer: import("../../lib/email/mailer.service").MailerService;
+    effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
+    appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
+    pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
+    usageInfo: {
+        metric: string;
+        current: number;
+        limit: number;
+    } | undefined;
+    trialState: import("@/modules/trial").TrialContextState | undefined;
+    incrementUsage: (() => Promise<void>) | undefined;
+    orgMember: {
+        id: string;
+        userId: string;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;

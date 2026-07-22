@@ -128,7 +128,7 @@ export declare function getListMembers(params: GetListMembersParams): Promise<{
         role: string | null;
         firstName: string | null;
         lastName: string | null;
-        consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
+        consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
         suppressedAt: Date | null;
     };
     addedAt: Date;

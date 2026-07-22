@@ -28,8 +28,8 @@ export declare const pilotRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             fullName: string;
             email: string;
-            organizationId: unknown;
-            organizationName: unknown;
+            organizationId?: unknown;
+            organizationName?: unknown;
             role?: "STARTUP" | "ENTERPRISE" | undefined;
             phone?: string | undefined;
             temporaryPassword?: string | undefined;

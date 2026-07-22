@@ -37,6 +37,7 @@ import {
   Database,
   ListOrdered,
   Lightbulb,
+  ClipboardCheck,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -100,6 +101,12 @@ export const adminNav: AdminNavGroup[] = [
       { title: "Contacts",    href: "/admin/marketing/contacts",    icon: Users      },
       { title: "Lists",       href: "/admin/marketing/lists",       icon: ListFilter },
       { title: "Suppression", href: "/admin/marketing/suppression", icon: Ban        },
+    ],
+  },
+  {
+    title: "Automation",
+    items: [
+      { title: "Approvals", href: "/admin/automation/approvals", icon: ClipboardCheck },
     ],
   },
   {

@@ -57,17 +57,17 @@ export declare const CandidateEntrySchema: z.ZodObject<{
         insurance: "insurance";
         banking: "banking";
         cybersecurity: "cybersecurity";
-        core: "core";
-        "aml-cft": "aml-cft";
-        "data-protection": "data-protection";
-        "consumer-protection": "consumer-protection";
-        "capital-markets": "capital-markets";
         "digital-lending": "digital-lending";
+        "data-protection": "data-protection";
+        "capital-markets": "capital-markets";
+        ict: "ict";
+        "aml-cft": "aml-cft";
+        core: "core";
+        "consumer-protection": "consumer-protection";
         "open-banking": "open-banking";
         tax: "tax";
         "ai-governance": "ai-governance";
         cloud: "cloud";
-        ict: "ict";
         accessibility: "accessibility";
     }>;
     suggestedDocumentType: z.ZodEnum<{
@@ -155,17 +155,17 @@ export declare const CandidateManifestSchema: z.ZodObject<{
             insurance: "insurance";
             banking: "banking";
             cybersecurity: "cybersecurity";
-            core: "core";
-            "aml-cft": "aml-cft";
-            "data-protection": "data-protection";
-            "consumer-protection": "consumer-protection";
-            "capital-markets": "capital-markets";
             "digital-lending": "digital-lending";
+            "data-protection": "data-protection";
+            "capital-markets": "capital-markets";
+            ict: "ict";
+            "aml-cft": "aml-cft";
+            core: "core";
+            "consumer-protection": "consumer-protection";
             "open-banking": "open-banking";
             tax: "tax";
             "ai-governance": "ai-governance";
             cloud: "cloud";
-            ict: "ict";
             accessibility: "accessibility";
         }>;
         suggestedDocumentType: z.ZodEnum<{

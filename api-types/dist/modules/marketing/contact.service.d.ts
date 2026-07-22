@@ -92,11 +92,11 @@ export declare function createContact(params: CreateContactParams, userId: strin
     firstName: string | null;
     lastName: string | null;
     primaryRegulator: string | null;
-    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
+    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
     consentSource: string | null;
     consentTimestamp: Date | null;
     suppressedAt: Date | null;
-    suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
+    suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
     lastEmailedAt: Date | null;
     lastEmailOpenedAt: Date | null;
 }>;
@@ -115,11 +115,11 @@ export declare function updateContact(id: string, params: UpdateContactParams, u
     firstName: string | null;
     lastName: string | null;
     primaryRegulator: string | null;
-    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
+    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
     consentSource: string | null;
     consentTimestamp: Date | null;
     suppressedAt: Date | null;
-    suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
+    suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
     lastEmailedAt: Date | null;
     lastEmailOpenedAt: Date | null;
 }>;
@@ -139,11 +139,11 @@ export declare function getContact(id: string): Promise<{
     firstName: string | null;
     lastName: string | null;
     primaryRegulator: string | null;
-    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
+    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
     consentSource: string | null;
     consentTimestamp: Date | null;
     suppressedAt: Date | null;
-    suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
+    suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
     lastEmailedAt: Date | null;
     lastEmailOpenedAt: Date | null;
 }>;
@@ -161,7 +161,7 @@ export declare function listContacts(params?: ListContactsParams): Promise<{
     companyId: string | null;
     firstName: string | null;
     lastName: string | null;
-    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
+    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
     suppressedAt: Date | null;
 }[]>;
 /**

@@ -143,4 +143,20 @@ export declare const updateOrganizationSettingsSchema: z.ZodObject<{
     contactPhone: z.ZodOptional<z.ZodUnion<readonly [z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodLiteral<"">]>>;
 }, z.core.$strip>;
 export type UpdateOrganizationSettingsInput = z.infer<typeof updateOrganizationSettingsSchema>;
+/**
+ * Shared DTO for Organization Members
+ */
+export interface OrganizationMemberDTO {
+    id: string;
+    fullName: string;
+    email: string;
+    /**
+     * @deprecated Use platformRole or orgRole instead
+     */
+    role: string;
+    platformRole: string;
+    orgRole: string;
+    joinedAt: Date;
+    [key: string]: any;
+}
 //# sourceMappingURL=organization.schema.d.ts.map

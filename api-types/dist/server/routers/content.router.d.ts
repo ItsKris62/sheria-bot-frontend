@@ -44,8 +44,8 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             id: string;
             slug: string | null;
-            contentType: import("@prisma/client").$Enums.ContentType;
-            contentStatus: import("@prisma/client").$Enums.ContentStatus;
+            contentType: import(".prisma/client").$Enums.ContentType;
+            contentStatus: import(".prisma/client").$Enums.ContentStatus;
             title: string | null;
             createdAt: Date;
         };
@@ -74,7 +74,7 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             id: string;
             slug: string | null;
-            contentStatus: import("@prisma/client").$Enums.ContentStatus;
+            contentStatus: import(".prisma/client").$Enums.ContentStatus;
             title: string | null;
             updatedAt: Date;
         };
@@ -105,8 +105,8 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
                 version: number;
                 authorId: string | null;
                 category: string | null;
-                contentStatus: import("@prisma/client").$Enums.ContentStatus;
-                contentType: import("@prisma/client").$Enums.ContentType;
+                contentStatus: import(".prisma/client").$Enums.ContentStatus;
+                contentType: import(".prisma/client").$Enums.ContentType;
                 excerpt: string | null;
                 helpfulCount: number;
                 publishedAt: Date | null;
@@ -152,7 +152,7 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
             id: string;
             title: string | null;
             userId: string | null;
-            status: import("@prisma/client").$Enums.DocumentStatus;
+            status: import(".prisma/client").$Enums.DocumentStatus;
             organizationId: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -178,8 +178,8 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
             keywords: string[];
             authorId: string | null;
             category: string | null;
-            contentStatus: import("@prisma/client").$Enums.ContentStatus;
-            contentType: import("@prisma/client").$Enums.ContentType;
+            contentStatus: import(".prisma/client").$Enums.ContentStatus;
+            contentType: import(".prisma/client").$Enums.ContentType;
             excerpt: string | null;
             helpfulCount: number;
             htmlContent: string | null;
@@ -205,7 +205,7 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         output: {
             id: string;
-            contentType: import("@prisma/client").$Enums.ContentType;
+            contentType: import(".prisma/client").$Enums.ContentType;
             title: string | null;
             slug: string | null;
             excerpt: string | null;
@@ -241,7 +241,7 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             id: string;
             slug: string | null;
-            contentStatus: import("@prisma/client").$Enums.ContentStatus;
+            contentStatus: import(".prisma/client").$Enums.ContentStatus;
             publishedAt: Date | null;
         };
         meta: object;

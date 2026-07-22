@@ -16,7 +16,7 @@ export declare class LicenseService {
     }): Promise<{
         licenses: ({
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -94,7 +94,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -118,9 +118,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -176,7 +176,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -229,7 +229,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -253,9 +253,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -311,7 +311,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -365,7 +365,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -389,9 +389,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -447,7 +447,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -508,7 +508,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -532,9 +532,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -590,7 +590,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -643,7 +643,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -667,9 +667,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -725,7 +725,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -778,7 +778,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -802,9 +802,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -860,7 +860,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -913,7 +913,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -937,9 +937,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -995,7 +995,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -1048,7 +1048,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -1072,9 +1072,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -1130,7 +1130,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -1183,7 +1183,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -1207,9 +1207,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -1265,7 +1265,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -1318,7 +1318,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -1342,9 +1342,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -1400,7 +1400,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -1431,7 +1431,7 @@ export declare class LicenseService {
         daysAhead: number;
     }): Promise<({
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
@@ -1498,7 +1498,7 @@ export declare class LicenseService {
             organization: {
                 id: string;
                 name: string;
-                plan: import("@prisma/client").$Enums.SubscriptionPlan;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
             };
             _count: {
                 timelineEvents: number;
@@ -1512,7 +1512,7 @@ export declare class LicenseService {
             } | null;
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -1553,7 +1553,7 @@ export declare class LicenseService {
         organization: {
             id: string;
             name: string;
-            plan: import("@prisma/client").$Enums.SubscriptionPlan;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
         };
         updatedBy: {
             id: string;
@@ -1576,7 +1576,7 @@ export declare class LicenseService {
             evidenceDocument: {
                 id: string;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             } | null;
         } & {
@@ -1600,9 +1600,9 @@ export declare class LicenseService {
         documents: ({
             vaultDocument: {
                 id: string;
-                status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                status: import(".prisma/client").$Enums.VaultDocumentStatus;
                 name: string;
-                category: import("@prisma/client").$Enums.DocumentCategory;
+                category: import(".prisma/client").$Enums.DocumentCategory;
                 fileName: string;
             };
             createdBy: {
@@ -1658,7 +1658,7 @@ export declare class LicenseService {
         };
     } & {
         id: string;
-        status: import("@prisma/client").$Enums.LicenseStatus;
+        status: import(".prisma/client").$Enums.LicenseStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;

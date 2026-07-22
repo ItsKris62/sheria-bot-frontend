@@ -40,10 +40,10 @@ export declare class CorpusGapReportService {
         reportId: string;
         report: {
             id: string;
-            status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+            status: import(".prisma/client").$Enums.CorpusGapReportStatus;
             createdAt: Date;
             documentName: string;
-            jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
+            jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
             reportedByUser: {
                 email: string;
                 fullName: string;
@@ -56,10 +56,10 @@ export declare class CorpusGapReportService {
     }): Promise<{
         reports: {
             id: string;
-            status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+            status: import(".prisma/client").$Enums.CorpusGapReportStatus;
             createdAt: Date;
             documentName: string;
-            jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
+            jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
             resolvedAt: Date | null;
         }[];
         pagination: {
@@ -79,13 +79,13 @@ export declare class CorpusGapReportService {
                 id: string;
                 name: string;
             };
-            status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+            status: import(".prisma/client").$Enums.CorpusGapReportStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
-            documentType: import("@prisma/client").$Enums.CorpusGapDocumentType;
+            documentType: import(".prisma/client").$Enums.CorpusGapDocumentType;
             documentName: string;
-            jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
+            jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
             sourceUrl: string | null;
             reportedByUserId: string;
             issuingAuthority: string;
@@ -108,7 +108,7 @@ export declare class CorpusGapReportService {
         input: AdminGetCorpusGapReportInput;
     }): Promise<{
         id: string;
-        status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+        status: import(".prisma/client").$Enums.CorpusGapReportStatus;
         priority: null;
         createdAt: string;
         updatedAt: string;
@@ -122,7 +122,7 @@ export declare class CorpusGapReportService {
             organizationId: string;
             name: string;
             type: string;
-            plan: import("@prisma/client").$Enums.SubscriptionPlan;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
         };
         query: {
             queryId: null;
@@ -167,13 +167,13 @@ export declare class CorpusGapReportService {
             id: string;
             name: string;
         };
-        status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+        status: import(".prisma/client").$Enums.CorpusGapReportStatus;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
-        documentType: import("@prisma/client").$Enums.CorpusGapDocumentType;
+        documentType: import(".prisma/client").$Enums.CorpusGapDocumentType;
         documentName: string;
-        jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
+        jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
         sourceUrl: string | null;
         reportedByUserId: string;
         issuingAuthority: string;

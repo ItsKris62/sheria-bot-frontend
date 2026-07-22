@@ -32,10 +32,10 @@ export declare const corpusGapReportRouter: import("@trpc/server").TRPCBuiltRout
             reportId: string;
             report: {
                 id: string;
-                status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+                status: import(".prisma/client").$Enums.CorpusGapReportStatus;
                 createdAt: Date;
                 documentName: string;
-                jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
+                jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
                 reportedByUser: {
                     email: string;
                     fullName: string;
@@ -52,10 +52,10 @@ export declare const corpusGapReportRouter: import("@trpc/server").TRPCBuiltRout
         output: {
             reports: {
                 id: string;
-                status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+                status: import(".prisma/client").$Enums.CorpusGapReportStatus;
                 createdAt: Date;
                 documentName: string;
-                jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
+                jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
                 resolvedAt: Date | null;
             }[];
             pagination: {
@@ -83,13 +83,13 @@ export declare const corpusGapReportRouter: import("@trpc/server").TRPCBuiltRout
                     id: string;
                     name: string;
                 };
-                status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+                status: import(".prisma/client").$Enums.CorpusGapReportStatus;
                 organizationId: string;
                 createdAt: Date;
                 updatedAt: Date;
-                documentType: import("@prisma/client").$Enums.CorpusGapDocumentType;
+                documentType: import(".prisma/client").$Enums.CorpusGapDocumentType;
                 documentName: string;
-                jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
+                jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
                 sourceUrl: string | null;
                 reportedByUserId: string;
                 issuingAuthority: string;
@@ -116,7 +116,7 @@ export declare const corpusGapReportRouter: import("@trpc/server").TRPCBuiltRout
         };
         output: {
             id: string;
-            status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+            status: import(".prisma/client").$Enums.CorpusGapReportStatus;
             priority: null;
             createdAt: string;
             updatedAt: string;
@@ -130,7 +130,7 @@ export declare const corpusGapReportRouter: import("@trpc/server").TRPCBuiltRout
                 organizationId: string;
                 name: string;
                 type: string;
-                plan: import("@prisma/client").$Enums.SubscriptionPlan;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
             };
             query: {
                 queryId: null;
@@ -180,13 +180,13 @@ export declare const corpusGapReportRouter: import("@trpc/server").TRPCBuiltRout
                 id: string;
                 name: string;
             };
-            status: import("@prisma/client").$Enums.CorpusGapReportStatus;
+            status: import(".prisma/client").$Enums.CorpusGapReportStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
-            documentType: import("@prisma/client").$Enums.CorpusGapDocumentType;
+            documentType: import(".prisma/client").$Enums.CorpusGapDocumentType;
             documentName: string;
-            jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
+            jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
             sourceUrl: string | null;
             reportedByUserId: string;
             issuingAuthority: string;

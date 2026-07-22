@@ -25,7 +25,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             licenses: ({
                 id: string;
-                status: import("@prisma/client").$Enums.LicenseStatus;
+                status: import(".prisma/client").$Enums.LicenseStatus;
                 organizationId: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -106,7 +106,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -130,9 +130,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -169,7 +169,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -188,7 +188,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -252,7 +252,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -276,9 +276,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -315,7 +315,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -334,7 +334,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -399,7 +399,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -423,9 +423,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -462,7 +462,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -481,7 +481,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -552,7 +552,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -576,9 +576,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -615,7 +615,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -634,7 +634,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -697,7 +697,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -721,9 +721,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -760,7 +760,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -779,7 +779,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -833,7 +833,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -857,9 +857,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -896,7 +896,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -915,7 +915,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -972,7 +972,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -996,9 +996,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -1035,7 +1035,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -1054,7 +1054,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -1108,7 +1108,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -1132,9 +1132,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -1171,7 +1171,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -1190,7 +1190,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -1250,7 +1250,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -1274,9 +1274,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -1313,7 +1313,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -1332,7 +1332,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -1393,7 +1393,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -1417,9 +1417,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -1456,7 +1456,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -1475,7 +1475,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -1509,7 +1509,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         output: ({
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -1581,7 +1581,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 organization: {
                     id: string;
                     name: string;
-                    plan: import("@prisma/client").$Enums.SubscriptionPlan;
+                    plan: import(".prisma/client").$Enums.SubscriptionPlan;
                 };
                 _count: {
                     timelineEvents: number;
@@ -1595,7 +1595,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 } | null;
             } & {
                 id: string;
-                status: import("@prisma/client").$Enums.LicenseStatus;
+                status: import(".prisma/client").$Enums.LicenseStatus;
                 organizationId: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -1639,7 +1639,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             organization: {
                 id: string;
                 name: string;
-                plan: import("@prisma/client").$Enums.SubscriptionPlan;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
             };
             updatedBy: {
                 id: string;
@@ -1662,7 +1662,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -1686,9 +1686,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -1725,7 +1725,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -1744,7 +1744,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -1810,7 +1810,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceDocument: {
                     id: string;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 } | null;
             } & {
@@ -1834,9 +1834,9 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             documents: ({
                 vaultDocument: {
                     id: string;
-                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
+                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
                     name: string;
-                    category: import("@prisma/client").$Enums.DocumentCategory;
+                    category: import(".prisma/client").$Enums.DocumentCategory;
                     fileName: string;
                 };
                 createdBy: {
@@ -1873,7 +1873,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 dueDate: Date | null;
-                amount: import("@prisma/client/runtime/client").Decimal | null;
+                amount: import("@prisma/client-runtime-utils").Decimal | null;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
@@ -1892,7 +1892,7 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.LicenseStatus;
+            status: import(".prisma/client").$Enums.LicenseStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;

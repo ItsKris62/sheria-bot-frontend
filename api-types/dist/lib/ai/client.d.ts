@@ -45,6 +45,19 @@ export interface AIStreamOptions extends AICompletionOptions {
  */
 export declare function getTodayAICost(): Promise<number>;
 /**
+ * Reset daily cost (admin only - use with caution)
+ */
+export declare function resetDailyCost(): Promise<void>;
+/**
+ * Get AI usage statistics
+ */
+export declare function getAIStats(): Promise<{
+    todayCost: number;
+    dailyLimit: number;
+    remainingBudget: number;
+    percentUsed: number;
+}>;
+/**
  * Complete AI request with retries
  * @param options Completion options
  * @param useCase Use case for model selection (optional)
@@ -57,18 +70,5 @@ export declare function complete(options: AICompletionOptions, useCase?: 'policy
  * @param useCase Use case for model selection
  */
 export declare function stream(options: AIStreamOptions, useCase?: 'policy' | 'checklist' | 'query' | 'verification'): Promise<AICompletionResult>;
-/**
- * Get AI usage statistics
- */
-export declare function getAIStats(): Promise<{
-    todayCost: number;
-    dailyLimit: number;
-    remainingBudget: number;
-    percentUsed: number;
-}>;
-/**
- * Reset daily cost (admin only - use with caution)
- */
-export declare function resetDailyCost(): Promise<void>;
 export { Anthropic };
 //# sourceMappingURL=client.d.ts.map

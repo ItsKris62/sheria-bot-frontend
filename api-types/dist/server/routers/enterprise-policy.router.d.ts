@@ -50,7 +50,7 @@ export declare const enterprisePolicyRouter: import("@trpc/server").TRPCBuiltRou
         };
         output: {
             policyId: string;
-            status: import("@prisma/client").$Enums.GeneratedPolicyStatus;
+            status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
             title: string;
             policyType: string;
             jobId: string;
@@ -83,7 +83,7 @@ export declare const enterprisePolicyRouter: import("@trpc/server").TRPCBuiltRou
                 }[];
             } | null;
             jobId: {} | null;
-            status: import("@prisma/client").$Enums.GeneratedPolicyStatus;
+            status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
             progress: number;
             title: string;
             currentStage: string;
@@ -129,7 +129,7 @@ export declare const enterprisePolicyRouter: import("@trpc/server").TRPCBuiltRou
             title: string;
             description: string | null;
             userId: string;
-            status: import("@prisma/client").$Enums.GeneratedPolicyStatus;
+            status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -174,7 +174,7 @@ export declare const enterprisePolicyRouter: import("@trpc/server").TRPCBuiltRou
                 id: string;
                 title: string;
                 description: string | null;
-                status: import("@prisma/client").$Enums.GeneratedPolicyStatus;
+                status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 version: number;

@@ -2,7 +2,7 @@ export declare function generateAiDraftForBlogPost(blogPostId: string, adminUser
     post: {
         id: string;
         title: string;
-        status: import("@prisma/client").$Enums.BlogPostStatus;
+        status: import(".prisma/client").$Enums.BlogPostStatus;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;

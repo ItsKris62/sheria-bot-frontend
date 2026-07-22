@@ -43,7 +43,7 @@ export declare const userRouter: import("@trpc/server").TRPCBuiltRouter<{
                 email: string;
                 phone: string | null;
                 fullName: string;
-                role: import("@prisma/client").$Enums.UserRole;
+                role: import(".prisma/client").$Enums.UserRole;
                 updatedAt: Date;
             };
         };

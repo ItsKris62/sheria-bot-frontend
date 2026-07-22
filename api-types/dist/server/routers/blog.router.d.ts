@@ -70,14 +70,14 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 publishedAt: Date | null;
                 notes: string | null;
-                sourceType: import("@prisma/client").$Enums.BlogSourceType;
+                sourceType: import(".prisma/client").$Enums.BlogSourceType;
                 postId: string;
                 publisher: string | null;
                 accessedAt: Date;
             }[];
             id: string;
             title: string;
-            status: import("@prisma/client").$Enums.BlogPostStatus;
+            status: import(".prisma/client").$Enums.BlogPostStatus;
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
@@ -162,7 +162,7 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
                 } | null;
                 id: string;
                 title: string;
-                status: import("@prisma/client").$Enums.BlogPostStatus;
+                status: import(".prisma/client").$Enums.BlogPostStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
@@ -209,7 +209,7 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 publishedAt: Date | null;
                 notes: string | null;
-                sourceType: import("@prisma/client").$Enums.BlogSourceType;
+                sourceType: import(".prisma/client").$Enums.BlogSourceType;
                 postId: string;
                 publisher: string | null;
                 accessedAt: Date;
@@ -220,7 +220,7 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
                         monitor: {
                             id: string;
                             description: string | null;
-                            status: import("@prisma/client").$Enums.BlogMonitorStatus;
+                            status: import(".prisma/client").$Enums.BlogMonitorStatus;
                             createdAt: Date;
                             updatedAt: Date;
                             deletedAt: Date | null;
@@ -230,17 +230,17 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
                             keywords: string[];
                             notes: string | null;
                             isActive: boolean;
-                            jurisdiction: import("@prisma/client").$Enums.BlogJurisdiction;
-                            authorityType: import("@prisma/client").$Enums.BlogAuthorityType;
+                            jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                            authorityType: import(".prisma/client").$Enums.BlogAuthorityType;
                             baseUrl: string;
                             createdById: string | null;
-                            sourceType: import("@prisma/client").$Enums.BlogSourceType;
+                            sourceType: import(".prisma/client").$Enums.BlogSourceType;
                             updatedById: string | null;
                             countryLabel: string | null;
-                            monitoringMethod: import("@prisma/client").$Enums.BlogMonitoringMethod;
+                            monitoringMethod: import(".prisma/client").$Enums.BlogMonitoringMethod;
                             feedUrl: string | null;
                             topics: string[];
-                            lastRunStatus: import("@prisma/client").$Enums.BlogMonitorLastRunStatus;
+                            lastRunStatus: import(".prisma/client").$Enums.BlogMonitorLastRunStatus;
                             isOfficial: boolean;
                             lastCheckedAt: Date | null;
                             lastSuccessfulRunAt: Date | null;
@@ -256,17 +256,17 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
                         id: string;
                         title: string;
                         url: string;
-                        status: import("@prisma/client").$Enums.BlogSourceItemStatus;
+                        status: import(".prisma/client").$Enums.BlogSourceItemStatus;
                         createdAt: Date;
                         updatedAt: Date;
                         deletedAt: Date | null;
                         summary: string | null;
                         failureReason: string | null;
-                        jurisdiction: import("@prisma/client").$Enums.BlogJurisdiction;
+                        jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                         publicationDate: Date | null;
                         contentHash: string;
-                        authorityType: import("@prisma/client").$Enums.BlogAuthorityType;
-                        sourceType: import("@prisma/client").$Enums.BlogSourceType;
+                        authorityType: import(".prisma/client").$Enums.BlogAuthorityType;
+                        sourceType: import(".prisma/client").$Enums.BlogSourceType;
                         publisher: string | null;
                         monitorId: string;
                         normalizedUrl: string;
@@ -282,24 +282,24 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
             } & {
                 id: string;
                 title: string;
-                status: import("@prisma/client").$Enums.BlogSuggestionStatus;
+                status: import(".prisma/client").$Enums.BlogSuggestionStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
                 targetAudience: string[];
                 summary: string | null;
                 category: string;
-                priority: import("@prisma/client").$Enums.BlogSuggestionPriority;
-                jurisdiction: import("@prisma/client").$Enums.BlogJurisdiction;
+                priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
+                jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                 reason: string | null;
                 approvedAt: Date | null;
                 dismissedReason: string | null;
                 blogPostId: string | null;
                 suggestedSlug: string | null;
-                jurisdictions: import("@prisma/client").$Enums.BlogJurisdiction[];
-                articleType: import("@prisma/client").$Enums.BlogArticleType;
+                jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
+                articleType: import(".prisma/client").$Enums.BlogArticleType;
                 relevanceScore: number;
-                sourceQuality: import("@prisma/client").$Enums.BlogSourceQuality;
+                sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
                 recommendedTags: string[];
                 suggestedNextAction: string | null;
                 requiresOfficialSource: boolean;
@@ -312,7 +312,7 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
         } & {
             id: string;
             title: string;
-            status: import("@prisma/client").$Enums.BlogPostStatus;
+            status: import(".prisma/client").$Enums.BlogPostStatus;
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
@@ -349,7 +349,7 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             id: string;
             title: string;
-            status: import("@prisma/client").$Enums.BlogPostStatus;
+            status: import(".prisma/client").$Enums.BlogPostStatus;
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
@@ -407,7 +407,7 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             id: string;
             title: string;
-            status: import("@prisma/client").$Enums.BlogPostStatus;
+            status: import(".prisma/client").$Enums.BlogPostStatus;
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
@@ -442,7 +442,7 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             id: string;
             title: string;
-            status: import("@prisma/client").$Enums.BlogPostStatus;
+            status: import(".prisma/client").$Enums.BlogPostStatus;
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
@@ -476,7 +476,7 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             id: string;
             title: string;
-            status: import("@prisma/client").$Enums.BlogPostStatus;
+            status: import(".prisma/client").$Enums.BlogPostStatus;
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;

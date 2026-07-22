@@ -40,7 +40,7 @@ declare class AdminModule {
         id: string;
         title: string | null;
         userId: string | null;
-        status: import("@prisma/client").$Enums.DocumentStatus;
+        status: import(".prisma/client").$Enums.DocumentStatus;
         organizationId: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -66,8 +66,8 @@ declare class AdminModule {
         keywords: string[];
         authorId: string | null;
         category: string | null;
-        contentStatus: import("@prisma/client").$Enums.ContentStatus;
-        contentType: import("@prisma/client").$Enums.ContentType;
+        contentStatus: import(".prisma/client").$Enums.ContentStatus;
+        contentType: import(".prisma/client").$Enums.ContentType;
         excerpt: string | null;
         helpfulCount: number;
         htmlContent: string | null;
@@ -86,7 +86,7 @@ declare class AdminModule {
         id: string;
         title: string | null;
         userId: string | null;
-        status: import("@prisma/client").$Enums.DocumentStatus;
+        status: import(".prisma/client").$Enums.DocumentStatus;
         organizationId: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -112,8 +112,8 @@ declare class AdminModule {
         keywords: string[];
         authorId: string | null;
         category: string | null;
-        contentStatus: import("@prisma/client").$Enums.ContentStatus;
-        contentType: import("@prisma/client").$Enums.ContentType;
+        contentStatus: import(".prisma/client").$Enums.ContentStatus;
+        contentType: import(".prisma/client").$Enums.ContentType;
         excerpt: string | null;
         helpfulCount: number;
         htmlContent: string | null;
@@ -132,7 +132,7 @@ declare class AdminModule {
         id: string;
         title: string | null;
         userId: string | null;
-        status: import("@prisma/client").$Enums.DocumentStatus;
+        status: import(".prisma/client").$Enums.DocumentStatus;
         organizationId: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -158,8 +158,8 @@ declare class AdminModule {
         keywords: string[];
         authorId: string | null;
         category: string | null;
-        contentStatus: import("@prisma/client").$Enums.ContentStatus;
-        contentType: import("@prisma/client").$Enums.ContentType;
+        contentStatus: import(".prisma/client").$Enums.ContentStatus;
+        contentType: import(".prisma/client").$Enums.ContentType;
         excerpt: string | null;
         helpfulCount: number;
         htmlContent: string | null;
@@ -178,7 +178,7 @@ declare class AdminModule {
         id: string;
         title: string | null;
         userId: string | null;
-        status: import("@prisma/client").$Enums.DocumentStatus;
+        status: import(".prisma/client").$Enums.DocumentStatus;
         organizationId: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -204,8 +204,8 @@ declare class AdminModule {
         keywords: string[];
         authorId: string | null;
         category: string | null;
-        contentStatus: import("@prisma/client").$Enums.ContentStatus;
-        contentType: import("@prisma/client").$Enums.ContentType;
+        contentStatus: import(".prisma/client").$Enums.ContentStatus;
+        contentType: import(".prisma/client").$Enums.ContentType;
         excerpt: string | null;
         helpfulCount: number;
         htmlContent: string | null;
@@ -224,7 +224,7 @@ declare class AdminModule {
         id: string;
         title: string | null;
         userId: string;
-        status: import("@prisma/client").$Enums.PolicyStatus;
+        status: import(".prisma/client").$Enums.PolicyStatus;
         organizationId: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -255,7 +255,7 @@ declare class AdminModule {
         id: string;
         title: string | null;
         userId: string;
-        status: import("@prisma/client").$Enums.PolicyStatus;
+        status: import(".prisma/client").$Enums.PolicyStatus;
         organizationId: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -286,7 +286,7 @@ declare class AdminModule {
         id: string;
         title: string | null;
         userId: string;
-        status: import("@prisma/client").$Enums.PolicyStatus;
+        status: import(".prisma/client").$Enums.PolicyStatus;
         organizationId: string | null;
         createdAt: Date;
         updatedAt: Date;

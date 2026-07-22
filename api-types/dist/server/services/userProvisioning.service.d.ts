@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 export declare function isValidOrganizationId(value: string): boolean;
-export declare const optionalOrganizationIdSchema: z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodOptional<z.ZodString>>;
+export declare const optionalOrganizationIdSchema: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
 export declare const createUserWithOrganizationInputSchema: z.ZodObject<{
     email: z.ZodString;
     fullName: z.ZodString;
@@ -18,8 +18,14 @@ export declare const createUserWithOrganizationInputSchema: z.ZodObject<{
         ENTERPRISE: "ENTERPRISE";
     }>>;
     isPilot: z.ZodDefault<z.ZodBoolean>;
-    organizationId: z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodOptional<z.ZodString>>;
-    organizationName: z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodOptional<z.ZodString>>;
+    organizationId: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    organizationName: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    orgRole: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
+        OWNER: "OWNER";
+        ADMIN: "ADMIN";
+        MEMBER: "MEMBER";
+        VIEWER: "VIEWER";
+    }>>>;
     supabaseAuthId: z.ZodString;
     adminId: z.ZodString;
     requestId: z.ZodString;
@@ -37,6 +43,7 @@ export interface CreateUserWithOrganizationInput {
     isPilot?: boolean;
     organizationId?: string;
     organizationName?: string;
+    orgRole?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
     supabaseAuthId: string;
     adminId: string;
     requestId: string;

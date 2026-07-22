@@ -83,6 +83,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
             limit?: number | undefined;
             role?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined;
             status?: "active" | "inactive" | undefined;
+            recentlyActive?: boolean | undefined;
             search?: string | undefined;
         };
         output: {
@@ -94,8 +95,8 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                     name: string;
                 } | null;
                 fullName: string;
-                role: import("@prisma/client").$Enums.UserRole;
-                status: import("@prisma/client").$Enums.UserStatus;
+                role: import(".prisma/client").$Enums.UserRole;
+                status: import(".prisma/client").$Enums.UserStatus;
                 emailVerified: boolean;
                 lastLoginAt: Date | null;
                 createdAt: Date;
@@ -124,7 +125,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
             id: string;
             email: string;
             fullName: string;
-            role: import("@prisma/client").$Enums.UserRole;
+            role: import(".prisma/client").$Enums.UserRole;
             emailVerified: boolean;
         };
         meta: object;
@@ -705,7 +706,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                     name: string;
                 } | null;
                 fullName: string;
-                role: import("@prisma/client").$Enums.UserRole;
+                role: import(".prisma/client").$Enums.UserRole;
                 accountStatus: string;
                 emailVerified: boolean;
                 createdAt: Date;
@@ -769,7 +770,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                     id: string;
                     email: string;
                     fullName: string;
-                    role: import("@prisma/client").$Enums.UserRole;
+                    role: import(".prisma/client").$Enums.UserRole;
                 }[];
             }[];
             total: number;
@@ -828,10 +829,11 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
             email: string;
             fullName: string;
             password: string;
-            organizationId: unknown;
-            organizationName: unknown;
             role?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined;
             subscriptionTier?: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE" | undefined;
+            organizationId?: unknown;
+            organizationName?: unknown;
+            orgRole?: "ADMIN" | "OWNER" | "MEMBER" | "VIEWER" | undefined;
             isPilot?: boolean | undefined;
             sendWelcomeEmail?: boolean | undefined;
         };

@@ -60,7 +60,7 @@ export declare class SendQueueService {
     getLatestJob(campaignId: string): Promise<{
         id: string;
         failed: number;
-        status: import("@prisma/client").$Enums.CampaignSendJobStatus;
+        status: import(".prisma/client").$Enums.CampaignSendJobStatus;
         createdAt: Date;
         updatedAt: Date;
         errorMessage: string | null;

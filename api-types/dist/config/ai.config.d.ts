@@ -74,20 +74,6 @@ export declare const aiConfig: {
      */
     readonly costs: {
         readonly enabled: true;
-        readonly pricing: {
-            readonly 'claude-opus-4-6': {
-                readonly input: 15;
-                readonly output: 75;
-            };
-            readonly 'claude-sonnet-4-6': {
-                readonly input: 3;
-                readonly output: 15;
-            };
-            readonly 'claude-haiku-4-5-20251001': {
-                readonly input: 0.8;
-                readonly output: 4;
-            };
-        };
         readonly warningThreshold: 100;
         readonly dailyLimit: 500;
     };
@@ -156,14 +142,6 @@ export declare function getRetryDelay(attemptNumber: number): number;
  * @returns true if should retry
  */
 export declare function isRetryableError(error: any): boolean;
-/**
- * Calculate cost for token usage
- * @param model Model ID
- * @param inputTokens Number of input tokens
- * @param outputTokens Number of output tokens
- * @returns Cost in USD
- */
-export declare function calculateCost(model: string, inputTokens: number, outputTokens: number): number;
 /**
  * Export type
  */

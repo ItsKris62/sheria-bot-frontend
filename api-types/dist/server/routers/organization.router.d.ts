@@ -51,7 +51,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 industry: string | null;
                 size: string | null;
                 subscriptionTier: string;
-                subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
+                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
                 trialEndsAt: Date | null;
                 gracePeriodEndsAt: Date | null;
                 cancelledAt: Date | null;
@@ -59,14 +59,14 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 verificationStatus: string;
                 verifiedAt: Date | null;
                 verifiedBy: string | null;
-                plan: import("@prisma/client").$Enums.SubscriptionPlan;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
                 planStartDate: Date | null;
                 planEndDate: Date | null;
                 maxSeats: number;
                 stripeCustomerId: string | null;
                 stripeSubId: string | null;
                 customLimits: import("@prisma/client/runtime/client").JsonValue | null;
-                preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
+                preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
                 mpesaNextPaymentDueDate: Date | null;
                 subscriptionCycleEnd: Date | null;
                 mpesaFailedRenewalAttempts: number;
@@ -106,7 +106,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 id: string;
                 email: string;
                 fullName: string;
-                role: import("@prisma/client").$Enums.UserRole;
+                role: import(".prisma/client").$Enums.UserRole;
             }[];
         } & {
             type: string;
@@ -122,7 +122,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             industry: string | null;
             size: string | null;
             subscriptionTier: string;
-            subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
+            subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
             trialEndsAt: Date | null;
             gracePeriodEndsAt: Date | null;
             cancelledAt: Date | null;
@@ -130,14 +130,14 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             verificationStatus: string;
             verifiedAt: Date | null;
             verifiedBy: string | null;
-            plan: import("@prisma/client").$Enums.SubscriptionPlan;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
-            preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
+            preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
             mpesaNextPaymentDueDate: Date | null;
             subscriptionCycleEnd: Date | null;
             mpesaFailedRenewalAttempts: number;
@@ -183,7 +183,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             industry: string | null;
             size: string | null;
             subscriptionTier: string;
-            subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
+            subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
             trialEndsAt: Date | null;
             gracePeriodEndsAt: Date | null;
             cancelledAt: Date | null;
@@ -191,14 +191,14 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             verificationStatus: string;
             verifiedAt: Date | null;
             verifiedBy: string | null;
-            plan: import("@prisma/client").$Enums.SubscriptionPlan;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
-            preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
+            preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
             mpesaNextPaymentDueDate: Date | null;
             subscriptionCycleEnd: Date | null;
             mpesaFailedRenewalAttempts: number;
@@ -245,7 +245,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             industry: string | null;
             size: string | null;
             subscriptionTier: string;
-            subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
+            subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
             trialEndsAt: Date | null;
             gracePeriodEndsAt: Date | null;
             cancelledAt: Date | null;
@@ -253,14 +253,14 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             verificationStatus: string;
             verifiedAt: Date | null;
             verifiedBy: string | null;
-            plan: import("@prisma/client").$Enums.SubscriptionPlan;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
-            preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
+            preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
             mpesaNextPaymentDueDate: Date | null;
             subscriptionCycleEnd: Date | null;
             mpesaFailedRenewalAttempts: number;
@@ -344,11 +344,14 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
         };
         output: {
             members: {
+                role: import(".prisma/client").$Enums.MemberRole;
+                platformRole: import(".prisma/client").$Enums.UserRole;
+                orgRole: import(".prisma/client").$Enums.MemberRole;
+                joinedAt: Date;
                 id: string;
                 email: string;
                 phone: string | null;
                 fullName: string;
-                role: import("@prisma/client").$Enums.UserRole;
                 emailVerified: boolean;
                 lastLoginAt: Date | null;
                 createdAt: Date;
@@ -385,8 +388,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     email: string;
                     fullName: string;
                 };
-                role: import("@prisma/client").$Enums.MemberRole;
-                status: import("@prisma/client").$Enums.MemberStatus;
+                role: import(".prisma/client").$Enums.MemberRole;
+                status: import(".prisma/client").$Enums.MemberStatus;
                 organizationId: string;
             };
             message: string;

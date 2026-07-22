@@ -37,11 +37,11 @@ export declare const paymentRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             payments: {
                 id: string;
-                provider: import("@prisma/client").$Enums.PaymentProvider;
+                provider: import(".prisma/client").$Enums.PaymentProvider;
                 providerTransactionId: string | null;
                 amount: number;
                 currency: string;
-                status: import("@prisma/client").$Enums.PaymentStatus;
+                status: import(".prisma/client").$Enums.PaymentStatus;
                 description: string | null;
                 paidAt: string | null;
                 createdAt: string;
@@ -64,11 +64,11 @@ export declare const paymentRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         output: {
             id: string;
-            provider: import("@prisma/client").$Enums.PaymentProvider;
+            provider: import(".prisma/client").$Enums.PaymentProvider;
             providerTransactionId: string | null;
             amount: number;
             currency: string;
-            status: import("@prisma/client").$Enums.PaymentStatus;
+            status: import(".prisma/client").$Enums.PaymentStatus;
             description: string | null;
             paidAt: string | null;
             createdAt: string;
@@ -92,8 +92,8 @@ export declare const paymentRouter: import("@trpc/server").TRPCBuiltRouter<{
             invoiceNumber: string | null;
             amount: number;
             currency: string;
-            status: import("@prisma/client").$Enums.PaymentStatus;
-            provider: import("@prisma/client").$Enums.PaymentProvider;
+            status: import(".prisma/client").$Enums.PaymentStatus;
+            provider: import(".prisma/client").$Enums.PaymentProvider;
             subscriptionPlan: string | null;
             billingPeriodStart: string | null;
             billingPeriodEnd: string | null;
