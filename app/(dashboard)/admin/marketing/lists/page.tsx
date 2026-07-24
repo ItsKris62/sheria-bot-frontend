@@ -127,7 +127,7 @@ function NewListDialog({ open, onClose }: { open: boolean; onClose: () => void }
 
         {step === 2 && isDynamic && (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">Define filter criteria as JSON. Supported fields: <code>consentStatus</code>, <code>suppressedAt</code> (&quot;null&quot;/&quot;not_null&quot;), <code>companyId</code>, <code>role</code></p>
+            <p className="text-sm text-muted-foreground">Define filter criteria as JSON -- a raw Prisma <code>Contact</code> where clause. Any valid field is supported, including nested relations (e.g. <code>consentStatus</code>, <code>suppressedAt</code>, <code>companyId</code>, <code>role</code>, <code>tags</code>, <code>company.regulatorMix</code>). Use real JSON values, not string sentinels -- e.g. <code>suppressedAt: null</code> for &quot;not suppressed&quot;, <code>{"{ not: null }"}</code> for &quot;suppressed&quot;.</p>
             <textarea
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono min-h-[120px]"
               value={filterJson}
