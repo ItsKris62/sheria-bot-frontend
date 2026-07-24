@@ -3,7 +3,6 @@ import { type AutomationApprovalService } from './approval.service';
 type ContentPrisma = Pick<typeof defaultPrisma, 'blogPost' | 'blogSourceItem' | 'regulatorySignal'>;
 export interface PublishContentInput {
     approvalId: string;
-    content: string;
 }
 export interface QueueContentCandidateInput {
     sourceItemId: string;
@@ -24,12 +23,14 @@ export interface RegulatoryItem {
     score: number;
     jurisdiction: string;
     summary?: string;
+    sourceItemId?: string;
 }
 export interface ApprovedContentItem {
     id: string;
     title: string;
     jurisdiction: string;
     publishedAt: string;
+    excerpt?: string;
 }
 type FetchLike = typeof fetch;
 export interface AutomationContentServiceDependencies {
@@ -46,11 +47,22 @@ export declare class AutomationContentService {
     constructor(dependencies?: AutomationContentServiceDependencies);
     /**
      * approval.metadata carries { blogPostId } (createApproval's own caller sets
-     * this) - publishContent itself only receives {approvalId, content} per the
-     * n8n wire contract, so the BlogPost link has to travel through metadata,
-     * the same pattern used for every other "approval gates a pre-existing
-     * backend row" case in this module. Applies input.content as the post's
-     * final body, then runs the exact same publish gates as blog.router.ts's
+     * this) - publishContent itself only receives {approvalId} per the n8n
+     * wire contract, so the BlogPost link has to travel through metadata, the
+     * same pattern used for every other "approval gates a pre-existing backend
+     * row" case in this module.
+     *
+     * Gap 3 stale-overwrite fix (W-CONTENT-02 Phase B, Batch 3): publishContent
+     * used to accept a caller-supplied `content` string and write it verbatim,
+     * which could silently discard a human edit made in the dashboard between
+     * draft-generation and the approval decision (the two events can be
+     * separated by an arbitrary amount of time, and n8n's own copy of the
+     * content - if it ever tried to carry one across executions - has no way
+     * to know about a later edit). publishContent now always reads and keeps
+     * the post's own live `content` column; publishing only flips
+     * status/publishedAt/lastReviewedAt, never mutates the body.
+     *
+     * Runs the exact same publish gates as blog.router.ts's
      * adminSetStatus('PUBLISHED') (title/slug/excerpt/category present, >=1
      * source, category-specific source-type rule, verification not BLOCKED/stale)
      * - duplicated here rather than calling into blog.router.ts directly, since

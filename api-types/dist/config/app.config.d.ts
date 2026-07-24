@@ -27,6 +27,7 @@ export declare const appConfig: {
             readonly generateRateLimitMax: number;
             readonly generateRateLimitWindowSeconds: number;
             readonly hmacSecret: string;
+            readonly decisionLinkSecret: string;
             readonly metricsRateLimitMax: number;
             readonly metricsRateLimitWindowSeconds: number;
             readonly approvalCreateRateLimitMax: number;
@@ -49,6 +50,11 @@ export declare const appConfig: {
         readonly personalApiKey: string | undefined;
         readonly host: string | undefined;
         readonly projectId: string | undefined;
+    };
+    readonly sentry: {
+        readonly apiToken: string | undefined;
+        readonly org: string | undefined;
+        readonly project: string | undefined;
     };
     readonly port: number;
     readonly appUrl: string;

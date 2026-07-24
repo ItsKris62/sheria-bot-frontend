@@ -24,6 +24,11 @@ export type ContactWithCompany = Prisma.ContactGetPayload<{
         company: true;
     };
 }>;
+/**
+ * Combine the base eligibility filter with a dynamic list's filterCriteria
+ * (stored, for resolveContacts, or ad-hoc, for previewDynamic).
+ */
+export declare function buildDynamicContactWhere(filterCriteria: Prisma.ContactWhereInput): Prisma.ContactWhereInput;
 export interface CreateListParams {
     name: string;
     description?: string;

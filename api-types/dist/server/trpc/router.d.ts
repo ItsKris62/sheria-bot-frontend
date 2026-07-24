@@ -9492,6 +9492,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     summary: string;
                     callbackUrl: string;
                     metadata: Record<string, unknown>;
+                    idempotencyKey: string;
+                    reviewerEmail?: string | undefined;
                 };
                 output: {
                     approvalId: string;
@@ -9640,6 +9642,16 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 output: {
                     vendors: import("../../modules/agents/automation/pilot-vendor.service").DpaVendorStatus[];
                     dataAvailable: boolean;
+                };
+                meta: object;
+            }>;
+            shouldNotify: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    dedupeKey: string;
+                    ttlSeconds: number;
+                };
+                output: {
+                    shouldNotify: boolean;
                 };
                 meta: object;
             }>;

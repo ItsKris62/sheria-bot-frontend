@@ -18,7 +18,7 @@
  *   - ConsentRecord: action = ConsentAction enum
  *   - suppress() / recordConsent() are standalone functions (not class methods)
  */
-import { MarketingCampaignStatus } from '@prisma/client';
+import { MarketingCampaignStatus, type Prisma } from '@prisma/client';
 export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRouter<{
     ctx: import("../trpc/context").Context;
     meta: object;
@@ -81,9 +81,9 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 sentAt: Date | null;
                 listId: string | null;
                 templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
-                templateVariables: import("@prisma/client/runtime/client").JsonValue;
+                templateVariables: Prisma.JsonValue;
                 scheduledFor: Date | null;
-                segmentFilter: import("@prisma/client/runtime/client").JsonValue | null;
+                segmentFilter: Prisma.JsonValue | null;
                 totalRecipients: number;
                 totalSent: number;
                 totalDelivered: number;
@@ -118,9 +118,9 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 sentAt: Date | null;
                 listId: string | null;
                 templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
-                templateVariables: import("@prisma/client/runtime/client").JsonValue;
+                templateVariables: Prisma.JsonValue;
                 scheduledFor: Date | null;
-                segmentFilter: import("@prisma/client/runtime/client").JsonValue | null;
+                segmentFilter: Prisma.JsonValue | null;
                 totalRecipients: number;
                 totalSent: number;
                 totalDelivered: number;
@@ -156,9 +156,9 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 sentAt: Date | null;
                 listId: string | null;
                 templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
-                templateVariables: import("@prisma/client/runtime/client").JsonValue;
+                templateVariables: Prisma.JsonValue;
                 scheduledFor: Date | null;
-                segmentFilter: import("@prisma/client/runtime/client").JsonValue | null;
+                segmentFilter: Prisma.JsonValue | null;
                 totalRecipients: number;
                 totalSent: number;
                 totalDelivered: number;
@@ -287,9 +287,9 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 sentAt: Date | null;
                 listId: string | null;
                 templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
-                templateVariables: import("@prisma/client/runtime/client").JsonValue;
+                templateVariables: Prisma.JsonValue;
                 scheduledFor: Date | null;
-                segmentFilter: import("@prisma/client/runtime/client").JsonValue | null;
+                segmentFilter: Prisma.JsonValue | null;
                 totalRecipients: number;
                 totalSent: number;
                 totalDelivered: number;
@@ -373,7 +373,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     name: string;
                 } | null;
                 consentRecords: {
-                    metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                    metadata: Prisma.JsonValue | null;
                     id: string;
                     ipAddress: string | null;
                     userAgent: string | null;
@@ -537,7 +537,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     eventType: import(".prisma/client").$Enums.EmailEventType;
                     messageId: string | null;
                     sendId: string | null;
-                    eventData: import("@prisma/client/runtime/client").JsonValue;
+                    eventData: Prisma.JsonValue;
                     occurredAt: Date;
                 })[];
                 total: number;
@@ -580,7 +580,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     name: string;
                     createdById: string;
                     isDynamic: boolean;
-                    filterCriteria: import("@prisma/client/runtime/client").JsonValue | null;
+                    filterCriteria: Prisma.JsonValue | null;
                 })[];
                 total: number;
             };
@@ -616,7 +616,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 name: string;
                 createdById: string;
                 isDynamic: boolean;
-                filterCriteria: import("@prisma/client/runtime/client").JsonValue | null;
+                filterCriteria: Prisma.JsonValue | null;
             };
             meta: object;
         }>;
@@ -636,7 +636,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 name: string;
                 createdById: string;
                 isDynamic: boolean;
-                filterCriteria: import("@prisma/client/runtime/client").JsonValue | null;
+                filterCriteria: Prisma.JsonValue | null;
             };
             meta: object;
         }>;
@@ -656,7 +656,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 name: string;
                 createdById: string;
                 isDynamic: boolean;
-                filterCriteria: import("@prisma/client/runtime/client").JsonValue | null;
+                filterCriteria: Prisma.JsonValue | null;
             };
             meta: object;
         }>;
@@ -690,6 +690,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             meta: object;
         }>;
+        /**
+         * Preview a dynamic list's recipient count/sample using the exact same filter
+         * logic resolveContacts applies at send time (via buildDynamicContactWhere),
+         * so a previewed count can never drift from what executeSend would actually resolve.
+         */
         previewDynamic: import("@trpc/server").TRPCQueryProcedure<{
             input: {
                 filterCriteria: Record<string, unknown>;
@@ -756,7 +761,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 items: {
-                    metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                    metadata: Prisma.JsonValue | null;
                     id: string;
                     email: string;
                     reason: import(".prisma/client").$Enums.SuppressionReason;
