@@ -1,41 +1,52 @@
+import { MarketingCampaignStatus } from '@prisma/client';
+import { campaignService as defaultCampaignService } from '@/modules/marketing/campaign.service';
 import { type AutomationApprovalService } from './approval.service';
 export interface SendNewsletterInput {
     approvalId: string;
-    html: string;
 }
+export interface SendNewsletterResult {
+    campaignId: string;
+    finalStatus: MarketingCampaignStatus;
+    sent: number;
+    skipped: number;
+    failed: number;
+}
+type ApprovalServiceLike = Pick<AutomationApprovalService, 'getApproval' | 'requireMetadataField' | 'requireMetadataObjectField'>;
+type CampaignServiceLike = Pick<typeof defaultCampaignService, 'create' | 'requestSendConfirmation' | 'executeSend' | 'getById'>;
+type RedisLike = {
+    get(key: string): Promise<string | null>;
+    set(key: string, value: string, opts?: {
+        ex?: number;
+        nx?: boolean;
+    }): Promise<unknown>;
+    del(key: string): Promise<unknown>;
+};
 export interface AutomationNewsletterServiceDependencies {
-    approvalService?: AutomationApprovalService;
+    approvalService?: ApprovalServiceLike;
+    campaignService?: CampaignServiceLike;
+    redis?: RedisLike;
 }
 /**
- * NOT fully wired to a real send - deliberately, see the block comment on
- * sendNewsletter(). The approval gate itself is real and enforced; the actual
- * send is not, because reusing the existing campaign pipeline correctly would
- * either bypass consent/suppression enforcement or require a real product
- * decision this brief didn't make. Flagged prominently in the Phase 3 report
- * rather than silently discarding the `html` input or building a shadow send
- * path around MarketingCampaign's consent/suppression checks.
+ * Wires the approval gate to a real send via the existing templated
+ * MarketingCampaign pipeline (Phase B decision: templated merge, not raw
+ * HTML - see KenyanComplianceBriefEmail / template-registry.ts).
+ *
+ * Confirmation-equivalence bridge: campaign.service.ts's requestSendConfirmation
+ * -> executeSend two-step flow only checks that the same identity string
+ * confirms and executes (campaign.service.ts's "same admin" check) within the
+ * token TTL - neither is session-derived, so calling both back-to-back here
+ * with the approving human's own decidedBy user id satisfies that check
+ * trivially and keeps a real person (not a system principal) as the audit
+ * trail for a compliance-relevant send.
  */
 export declare class AutomationNewsletterService {
     private readonly approvalService;
+    private readonly campaignService;
+    private readonly redis;
     constructor(dependencies?: AutomationNewsletterServiceDependencies);
-    /**
-     * campaign.service.ts's real send pipeline (executeSend) requires a
-     * pre-existing MarketingCampaign row driven by templateKey/templateVariables
-     * - there is no field anywhere on that model to hold arbitrary HTML, and its
-     * 2-step requestSendConfirmation -> executeSend flow expects a live human
-     * requestedById/executedById within a short confirmation window, not a
-     * machine call. Building a parallel direct-send path (bypassing
-     * MarketingCampaign) would also bypass the ConsentRecord/SuppressionList
-     * enforcement that protects every other marketing send in this codebase -
-     * queueOutreach avoids that problem only because SuppressionList is keyed
-     * by raw email, not by the Contact model dependency this would still need
-     * to route through, and marketing consent semantics for a broadcast
-     * newsletter aren't the same question as one outreach email to an existing
-     * customer contact. This needs a product decision (schema change for raw-
-     * HTML campaigns? Reuse an existing template? Direct send bypassing
-     * campaign tracking, accepting the consent-check gap?), not a guess.
-     */
-    sendNewsletter(input: SendNewsletterInput): Promise<never>;
+    sendNewsletter(input: SendNewsletterInput): Promise<SendNewsletterResult>;
+    private replayResult;
 }
 export declare const automationNewsletterService: AutomationNewsletterService;
+export {};
 //# sourceMappingURL=newsletter.service.d.ts.map

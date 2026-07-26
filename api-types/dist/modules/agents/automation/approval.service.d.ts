@@ -4,6 +4,13 @@ type FetchLike = typeof fetch;
 type SendEmail = (options: EmailOptions) => Promise<EmailResult>;
 export type ApprovalDecision = 'approved' | 'rejected';
 export type ApprovalStatus = 'pending' | ApprovalDecision | 'expired';
+export interface ApprovalBlogPostSummary {
+    id: string;
+    title: string;
+    excerpt: string | null;
+    content: string | null;
+    status: string;
+}
 export interface CreateApprovalInput {
     department: string;
     workflow: string;
@@ -46,7 +53,7 @@ export interface ListApprovalsResult {
     page: number;
     limit: number;
 }
-type ApprovalPrisma = Pick<typeof defaultPrisma, 'automationApproval'>;
+type ApprovalPrisma = Pick<typeof defaultPrisma, 'automationApproval' | 'blogPost'>;
 export interface AutomationApprovalServiceDependencies {
     prisma?: ApprovalPrisma;
     fetchImpl?: FetchLike;
@@ -100,10 +107,23 @@ export declare class AutomationApprovalService {
      * groups/filters by exact values, per the admin-UI request).
      */
     listApprovals(input: ListApprovalsInput): Promise<ListApprovalsResult>;
+    /**
+     * Gap 3 (W-CONTENT-02 Phase B, Batch 3). When metadata.blogPostId is
+     * present, joins in the live BlogPost row (application-level join, not a
+     * Prisma relation - metadata is unstructured Json, no FK exists or is
+     * being added). This is what lets the decision-webhook execution (a
+     * separate n8n run from the one that generated the draft) see the
+     * current, possibly-since-human-edited content without n8n having to
+     * carry any state of its own across executions. blogPost is omitted
+     * entirely for the common case of a non-blog approval (marketing/sales/
+     * outreach) or a blogPostId that no longer resolves to a real row.
+     */
     getApproval(input: {
         approvalId: string;
     }): Promise<{
         status: ApprovalStatus;
+        decidedBy: string | null;
+        blogPost?: ApprovalBlogPostSummary;
     }>;
     /**
      * Reads one field out of an approval's metadata JSON - shared by every
@@ -112,6 +132,14 @@ export declare class AutomationApprovalService {
      * type-narrowing logic isn't duplicated per consumer.
      */
     requireMetadataField(approvalId: string, field: string): Promise<string>;
+    /**
+     * Sibling to requireMetadataField for object-shaped metadata - sendNewsletter
+     * uses this to read the compiled templateVariables digest that createApproval's
+     * caller (n8n) sets when the newsletter approval is created, same "approval
+     * gates a pre-existing, already-reviewed payload" contract as blogPostId/draftId,
+     * just object-shaped instead of a single string/FK.
+     */
+    requireMetadataObjectField(approvalId: string, field: string): Promise<Record<string, unknown>>;
     /**
      * `by` is the deciding admin's own user ID, derived server-side by the
      * caller (agentsRouter.automation.recordApprovalDecision runs as

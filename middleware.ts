@@ -57,7 +57,7 @@ export async function middleware(request: NextRequest) {
   // All remaining routes require an authenticated session
   const { supabase, response } = createSupabaseMiddlewareClient(request);
 
-  // getUser() validates the JWT with Supabase Auth — more secure than getSession()
+  // getUser() validates the JWT with Supabase Auth - more secure than getSession()
   // which only reads the local cookie without server-side verification.
   const {
     data: { user },
@@ -69,7 +69,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Auth ✓ — authorization (role checks) stays in tRPC adminProcedure / protected procedures.
+  // Auth OK - authorization (role checks) stays in tRPC adminProcedure / protected procedures.
   // Keeping those concerns separate avoids a DB call in middleware on every request.
   return response;
 }

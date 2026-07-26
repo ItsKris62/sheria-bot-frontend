@@ -102,7 +102,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             input: {
                 name: string;
                 subject: string;
-                templateKey: "PILOT_INVITATION" | "REGULATOR_ACCESS_PROGRAM" | "PRODUCT_LAUNCH" | "COMPLIANCE_UPDATE" | "WEBINAR_INVITE" | "RESOURCE_DOWNLOAD" | "GENERIC_MARKETING";
+                templateKey: "PILOT_INVITATION" | "REGULATOR_ACCESS_PROGRAM" | "PRODUCT_LAUNCH" | "COMPLIANCE_UPDATE" | "WEBINAR_INVITE" | "RESOURCE_DOWNLOAD" | "GENERIC_MARKETING" | "KENYAN_COMPLIANCE_BRIEF";
                 templateVariables: Record<string, unknown>;
                 listId: string;
             };

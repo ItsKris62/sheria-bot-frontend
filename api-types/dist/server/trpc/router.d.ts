@@ -4611,7 +4611,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 input: {
                     name: string;
                     subject: string;
-                    templateKey: "PILOT_INVITATION" | "REGULATOR_ACCESS_PROGRAM" | "PRODUCT_LAUNCH" | "COMPLIANCE_UPDATE" | "WEBINAR_INVITE" | "RESOURCE_DOWNLOAD" | "GENERIC_MARKETING";
+                    templateKey: "PILOT_INVITATION" | "REGULATOR_ACCESS_PROGRAM" | "PRODUCT_LAUNCH" | "COMPLIANCE_UPDATE" | "WEBINAR_INVITE" | "RESOURCE_DOWNLOAD" | "GENERIC_MARKETING" | "KENYAN_COMPLIANCE_BRIEF";
                     templateVariables: Record<string, unknown>;
                     listId: string;
                 };
@@ -9506,6 +9506,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 };
                 output: {
                     status: import("../../modules/agents/automation/approval.service").ApprovalStatus;
+                    decidedBy: string | null;
+                    blogPost?: import("../../modules/agents/automation/approval.service").ApprovalBlogPostSummary;
                 };
                 meta: object;
             }>;
@@ -9534,7 +9536,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             publishContent: import("@trpc/server").TRPCMutationProcedure<{
                 input: {
                     approvalId: string;
-                    content: string;
                 };
                 output: {
                     blogPostId: string;
@@ -9552,6 +9553,21 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 output: {
                     forwarded: boolean;
                 };
+                meta: object;
+            }>;
+            createDraftFromCandidate: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    sourceItemId: string;
+                };
+                output: import("../../modules/agents/automation/blog-draft.service").CreateDraftFromCandidateResult;
+                meta: object;
+            }>;
+            generateDraftContent: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    blogPostId: string;
+                    idempotencyKey: string;
+                };
+                output: import("../../modules/agents/automation/blog-draft.service").GenerateDraftContentResult;
                 meta: object;
             }>;
             getRecentHighImpactRegulatoryItems: import("@trpc/server").TRPCMutationProcedure<{
@@ -9576,9 +9592,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             sendNewsletter: import("@trpc/server").TRPCMutationProcedure<{
                 input: {
                     approvalId: string;
-                    html: string;
                 };
-                output: never;
+                output: import("../../modules/agents/automation/newsletter.service").SendNewsletterResult;
                 meta: object;
             }>;
             queueOutreach: import("@trpc/server").TRPCMutationProcedure<{

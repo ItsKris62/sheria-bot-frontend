@@ -1,4 +1,12 @@
-export declare function generateAiDraftForBlogPost(blogPostId: string, adminUserId: string): Promise<{
+/**
+ * notifyUserId defaults to adminUserId (identical to prior behavior for the
+ * existing admin-dashboard caller, adminGenerateAiDraft, which never passes
+ * a third argument). Automation-originated callers pass a real human
+ * reviewer id separately from the FK-attribution id (adminUserId) they use,
+ * since adminUserId for an automation call is the sys-automation-orchestrator
+ * service principal - notifying that id directly would never reach a human.
+ */
+export declare function generateAiDraftForBlogPost(blogPostId: string, adminUserId: string, notifyUserId?: string): Promise<{
     post: {
         id: string;
         title: string;
