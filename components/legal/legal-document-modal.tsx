@@ -93,9 +93,11 @@ export function LegalDocumentModal({
   // Reset state when modal opens/type changes
   useEffect(() => {
     if (open) {
-      setScrollProgress(0)
-      setShowScrollTop(false)
-      setHasScrolledToBottom(false)
+      queueMicrotask(() => {
+        setScrollProgress(0)
+        setShowScrollTop(false)
+        setHasScrolledToBottom(false)
+      })
       if (scrollRef.current) {
         scrollRef.current.scrollTop = 0
       }

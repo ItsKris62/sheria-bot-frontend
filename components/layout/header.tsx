@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useSyncExternalStore } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -54,9 +54,26 @@ const solutions = [
   { name: "For Enterprise", href: "/solutions/enterprise", description: "Multi-org management & integrations" },
 ]
 
+function subscribeToScroll(onStoreChange: () => void) {
+  window.addEventListener("scroll", onStoreChange, { passive: true })
+  return () => window.removeEventListener("scroll", onStoreChange)
+}
+
+function getScrolledSnapshot() {
+  return window.scrollY > 20
+}
+
+function getServerScrolledSnapshot() {
+  return false
+}
+
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+  const scrolled = useSyncExternalStore(
+    subscribeToScroll,
+    getScrolledSnapshot,
+    getServerScrolledSnapshot,
+  )
   const [activeSection, setActiveSection] = useState("")
   const pathname = usePathname()
   const isHome = pathname === "/"
@@ -64,21 +81,9 @@ export function Header() {
   const { user, isAuthenticated, isInitialized } = useAuthStore()
   const showDashboard = isInitialized && isAuthenticated && user !== null
 
-  const handleScroll = useCallback(() => {
-    setScrolled(window.scrollY > 20)
-  }, [])
-
-  // Scroll listener for background transition
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [handleScroll])
-
   // IntersectionObserver for active section detection
   useEffect(() => {
     if (!isHome) {
-      setActiveSection("")
       return
     }
 

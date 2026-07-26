@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Copy, Linkedin, Twitter, MessageCircle, Share2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import { trackEvent } from "@/lib/analytics"
 
 interface SocialShareProps {
@@ -15,14 +15,12 @@ interface SocialShareProps {
 }
 
 export function SocialShare({ title, url, excerpt, slug, category }: SocialShareProps) {
-  const [hasNativeShare, setHasNativeShare] = useState(false)
+  const hasNativeShare = useSyncExternalStore(
+    () => () => undefined,
+    () => typeof navigator !== "undefined" && typeof navigator.share === "function",
+    () => false,
+  )
   const fullUrl = typeof window !== 'undefined' ? window.location.href : url
-
-  useEffect(() => {
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-      setHasNativeShare(true)
-    }
-  }, [])
 
   const logShare = (platform: string) => {
     trackEvent("blog_post_shared", {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 
@@ -33,47 +33,27 @@ export function LogoMarquee({
 }: LogoMarqueeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollerRef = useRef<HTMLUListElement>(null)
-  const [start, setStart] = useState(false)
 
   useEffect(() => {
-    addAnimation()
-  }, [])
+    const container = containerRef.current
+    const scroller = scrollerRef.current
+    if (!container || !scroller) return
 
-  function addAnimation() {
-    if (containerRef.current && scrollerRef.current) {
-      const scrollerContent = Array.from(scrollerRef.current.children)
+    container.style.setProperty(
+      "--animation-direction",
+      direction === "left" ? "forwards" : "reverse"
+    )
+    container.style.setProperty("--animation-duration", `${SPEED_MAP[speed]}s`)
 
-      // Duplicate items for seamless loop
-      scrollerContent.forEach((item) => {
-        const duplicatedItem = item.cloneNode(true)
-        if (scrollerRef.current) {
-          scrollerRef.current.appendChild(duplicatedItem)
-        }
-      })
+    if (scroller.dataset.duplicated === "true") return
 
-      getDirection()
-      getSpeed()
-      setStart(true)
-    }
-  }
-
-  const getDirection = () => {
-    if (containerRef.current) {
-      containerRef.current.style.setProperty(
-        "--animation-direction",
-        direction === "left" ? "forwards" : "reverse"
-      )
-    }
-  }
-
-  const getSpeed = () => {
-    if (containerRef.current) {
-      containerRef.current.style.setProperty(
-        "--animation-duration",
-        `${SPEED_MAP[speed]}s`
-      )
-    }
-  }
+    const scrollerContent = Array.from(scroller.children)
+    scrollerContent.forEach((item) => {
+      const duplicatedItem = item.cloneNode(true)
+      scroller.appendChild(duplicatedItem)
+    })
+    scroller.dataset.duplicated = "true"
+  }, [direction, speed])
 
   return (
     <div
@@ -88,7 +68,7 @@ export function LogoMarquee({
         ref={scrollerRef}
         className={cn(
           "flex w-max min-w-full shrink-0 flex-nowrap gap-8 py-4",
-          start && "animate-scroll",
+          "animate-scroll",
           pauseOnHover && "hover:[animation-play-state:paused]"
         )}
       >

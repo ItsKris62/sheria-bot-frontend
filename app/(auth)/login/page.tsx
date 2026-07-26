@@ -2,7 +2,7 @@
 
 import React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
@@ -18,24 +18,24 @@ export default function LoginPage() {
   const { login, isLoginLoading, loginError } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [sessionExpired, setSessionExpired] = useState(false)
+  const [sessionExpired] = useState(() => {
+    if (typeof window === "undefined") return false
+
+    const params = new URLSearchParams(window.location.search)
+    const reason = params.get("reason")
+    const storageFlag = sessionStorage.getItem(SESSION_EXPIRED_FLAG)
+
+    if (storageFlag === "1") {
+      sessionStorage.removeItem(SESSION_EXPIRED_FLAG)
+    }
+
+    return reason === "session_expired" || storageFlag === "1"
+  })
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   })
-
-  // Detect session expiry from both the ?reason URL param and the sessionStorage flag
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const reason = params.get("reason")
-    const storageFlag = sessionStorage.getItem(SESSION_EXPIRED_FLAG)
-
-    if (reason === "session_expired" || storageFlag === "1") {
-      setSessionExpired(true)
-      sessionStorage.removeItem(SESSION_EXPIRED_FLAG)
-    }
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useSyncExternalStore } from "react"
 import { useAuthStore } from "@/lib/auth-store"
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar"
 import { AdminSidebar } from "@/components/layout/admin-sidebar"
@@ -49,12 +49,12 @@ export default function SharedDashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  )
   const role = useAuthStore((state) => state.user?.role)
-  
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   if (!mounted) {
     return <div className="min-h-screen bg-background" />

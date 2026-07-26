@@ -92,7 +92,7 @@ export function GuestGuard({ children }: { children: React.ReactNode }) {
     if (isAuthenticated && user && !isVerifyEmailPage && pathname !== "/change-password") {
       router.replace(getRoleBasePath(user.role))
     }
-  }, [isInitialized, isAuthenticated, user, router, isVerifyEmailPage])
+  }, [isInitialized, isAuthenticated, user, router, isVerifyEmailPage, pathname])
 
   if (!isInitialized) {
     return <LoadingScreen fullScreen />

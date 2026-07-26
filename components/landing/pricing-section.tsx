@@ -131,13 +131,15 @@ function AnimatedPrice({ value }: { value: PriceValue }) {
 
   useEffect(() => {
     if (numericValue === null) {
-      setIsTransitioning(false)
       return
     }
 
     if (reducedMotion) {
-      setDisplayValue(numericValue)
-      setIsTransitioning(false)
+      queueMicrotask(() => {
+        displayValueRef.current = numericValue
+        setDisplayValue(numericValue)
+        setIsTransitioning(false)
+      })
       return
     }
 
@@ -146,8 +148,6 @@ function AnimatedPrice({ value }: { value: PriceValue }) {
     let startTime: number | null = null
     const startValue = displayValueRef.current
     const duration = 560
-
-    setIsTransitioning(true)
 
     const animate = (timestamp: number) => {
       if (startTime === null) startTime = timestamp
@@ -168,7 +168,10 @@ function AnimatedPrice({ value }: { value: PriceValue }) {
       }
     }
 
-    animationFrame = requestAnimationFrame(animate)
+    animationFrame = requestAnimationFrame((timestamp) => {
+      setIsTransitioning(true)
+      animate(timestamp)
+    })
 
     return () => {
       cancelAnimationFrame(animationFrame)

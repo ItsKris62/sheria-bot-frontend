@@ -484,19 +484,19 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
   // Search items
   const searchItems = useMemo(() => buildSearchItems(userType, logout), [userType, logout])
 
-  useEffect(() => {
-    if (searchOpen) {
-      const searches = getRecentSearches()
-      setRecentSearches(searches)
+  const handleSearchOpenChange = useCallback((open: boolean) => {
+    if (open) {
+      setRecentSearches(getRecentSearches())
       setSearchQuery("")
     }
-  }, [searchOpen])
+    setSearchOpen(open)
+  }, [])
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setSearchOpen((open) => !open)
+        handleSearchOpenChange(!searchOpen)
       } else if (e.key === "/") {
         if (
           e.target instanceof HTMLElement &&
@@ -505,19 +505,19 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
           return
         }
         e.preventDefault()
-        setSearchOpen((open) => !open)
+        handleSearchOpenChange(!searchOpen)
       }
     }
     document.addEventListener("keydown", down)
     return () => document.removeEventListener("keydown", down)
-  }, [])
+  }, [handleSearchOpenChange, searchOpen])
 
   const runCommand = useCallback((command: () => unknown, searchTerm?: string) => {
     if (searchTerm) saveRecentSearch(searchTerm)
-    setSearchOpen(false)
+    handleSearchOpenChange(false)
     setSearchQuery("")
     command()
-  }, [])
+  }, [handleSearchOpenChange])
 
   const handleClearRecent = useCallback(() => {
     clearRecentSearches()
@@ -573,7 +573,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
         <button
           type="button"
           className="hidden w-64 h-9 items-center gap-2.5 rounded-xl border border-border/50 bg-muted/30 px-3 text-sm text-muted-foreground transition-all duration-200 hover:border-[#22C55E]/30 hover:bg-[#22C55E]/[0.04] hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:flex"
-          onClick={() => setSearchOpen(true)}
+          onClick={() => handleSearchOpenChange(true)}
         >
           <Search className="h-3.5 w-3.5 text-muted-foreground/60" />
           <span className="flex-1 text-left">Search...</span>
@@ -585,7 +585,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
           variant="ghost"
           size="icon"
           className="lg:hidden"
-          onClick={() => setSearchOpen(true)}
+          onClick={() => handleSearchOpenChange(true)}
         >
           <Search className="h-5 w-5" />
           <span className="sr-only">Search</span>
@@ -864,7 +864,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
         </DropdownMenu>
       </div>
 
-      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
+      <CommandDialog open={searchOpen} onOpenChange={handleSearchOpenChange}>
         <CommandInput
           placeholder="Search pages, actions, settings..."
           value={searchQuery}

@@ -150,7 +150,7 @@ export function ReportMissingDocumentDialog({
 
   useEffect(() => {
     if (!actualOpen) {
-      resetForm()
+      queueMicrotask(resetForm)
     } else {
       trackEvent("corpus_gap_report_opened")
     }

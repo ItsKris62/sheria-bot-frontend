@@ -38,7 +38,7 @@ export function useIdleTimeout(): UseIdleTimeoutReturn {
   );
 
   // Refs for mutable state — avoids stale closures in event handlers
-  const lastActivityRef = useRef<number>(Date.now());
+  const lastActivityRef = useRef<number | null>(null);
   const showWarningRef = useRef<boolean>(false);
   const isLoggingOutRef = useRef<boolean>(false);
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -161,7 +161,12 @@ export function useIdleTimeout(): UseIdleTimeoutReturn {
   // This runs on mount (initial setup) and whenever the user navigates between
   // sensitive and non-sensitive pages.
   useEffect(() => {
-    const elapsed = Date.now() - lastActivityRef.current;
+    const now = Date.now();
+    if (lastActivityRef.current === null) {
+      lastActivityRef.current = now;
+    }
+
+    const elapsed = now - lastActivityRef.current;
     const warningThreshold =
       effectiveTimeout - SESSION_TIMEOUTS.WARNING_COUNTDOWN_SECONDS * 1000;
 

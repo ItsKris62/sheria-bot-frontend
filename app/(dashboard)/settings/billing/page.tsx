@@ -188,7 +188,6 @@ function CompactAnimatedPrice({ value }: { value: number | null }) {
 
   useEffect(() => {
     if (numericValue === null) {
-      setIsTransitioning(false)
       return
     }
 
@@ -197,8 +196,6 @@ function CompactAnimatedPrice({ value }: { value: number | null }) {
     let startTime: number | null = null
     const startValue = displayValueRef.current
     const duration = 520
-
-    setIsTransitioning(true)
 
     const animate = (timestamp: number) => {
       if (startTime === null) startTime = timestamp
@@ -217,7 +214,10 @@ function CompactAnimatedPrice({ value }: { value: number | null }) {
       }
     }
 
-    animationFrame = window.requestAnimationFrame(animate)
+    animationFrame = window.requestAnimationFrame((timestamp) => {
+      setIsTransitioning(true)
+      animate(timestamp)
+    })
 
     return () => {
       window.cancelAnimationFrame(animationFrame)

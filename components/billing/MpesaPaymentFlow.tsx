@@ -61,10 +61,9 @@ function useCountdown(seconds: number, active: boolean) {
 
   useEffect(() => {
     if (!active) {
-      setRemaining(seconds)
       return
     }
-    setRemaining(seconds)
+    queueMicrotask(() => setRemaining(seconds))
     const interval = setInterval(() => {
       setRemaining((prev) => {
         if (prev <= 1) {
@@ -77,7 +76,7 @@ function useCountdown(seconds: number, active: boolean) {
     return () => clearInterval(interval)
   }, [active, seconds])
 
-  return remaining
+  return active ? remaining : seconds
 }
 
 // ── Main component ─────────────────────────────────────────────────────────
@@ -107,7 +106,7 @@ export function MpesaPaymentFlow({ plan, storedPhone, onClose, onSuccess }: Mpes
   useEffect(() => {
     if (pollingActive && countdown === 0 && !timedOutRef.current) {
       timedOutRef.current = true
-      setFlowState("timeout")
+      queueMicrotask(() => setFlowState("timeout"))
     }
   }, [pollingActive, countdown])
 
@@ -141,7 +140,7 @@ export function MpesaPaymentFlow({ plan, storedPhone, onClose, onSuccess }: Mpes
     const status = statusQuery.data.status
 
     if (status === "COMPLETED") {
-      setFlowState("success")
+      queueMicrotask(() => setFlowState("success"))
 
       // Invalidate billing + payment history caches
       void queryClient.invalidateQueries({
@@ -154,8 +153,10 @@ export function MpesaPaymentFlow({ plan, storedPhone, onClose, onSuccess }: Mpes
       toast.success("Payment confirmed! Your subscription is now active.")
       onSuccess?.()
     } else if (status === "FAILED") {
-      setFlowState("failed")
-      setFailReason("The M-Pesa payment was declined or cancelled.")
+      queueMicrotask(() => {
+        setFlowState("failed")
+        setFailReason("The M-Pesa payment was declined or cancelled.")
+      })
     }
   }, [statusQuery.data, queryClient, onSuccess])
 
