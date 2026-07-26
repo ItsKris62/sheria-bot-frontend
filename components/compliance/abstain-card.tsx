@@ -107,7 +107,7 @@ function GapForm({ queryId, runId, onClose }: GapFormProps) {
       className="mt-4 rounded-md border border-border bg-muted/30 p-4 space-y-4"
     >
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-foreground">Tell us what's missing</p>
+        <p className="text-sm font-medium text-foreground">Tell us what&apos;s missing</p>
         <button
           type="button"
           aria-label="Close form"
@@ -221,7 +221,7 @@ export function AbstainCard({ queryId, runId, question, route, fallbackReason, c
           {isRouteScopeAbstain ? (
             <>
               <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" aria-hidden="true" />
-              <span>This question is outside SheriaBot's scope</span>
+              <span>This question is outside SheriaBot&apos;s scope</span>
             </>
           ) : (
             <>
@@ -284,7 +284,7 @@ export function AbstainCard({ queryId, runId, question, route, fallbackReason, c
             className="gap-1.5"
           >
             <MessageSquarePlus className="h-3.5 w-3.5" aria-hidden="true" />
-            Tell us what's missing
+            Tell us what&apos;s missing
           </Button>
           {runId === null && (
             <p className="mt-1 text-xs text-muted-foreground/70" role="note">

@@ -113,7 +113,7 @@ export function PrivacyPolicyContent() {
     <div className="space-y-8 text-sm">
       {/* Preamble */}
       <Callout>
-        <strong className="text-foreground">SheriaBot Technologies Limited</strong> ("SheriaBot," "we," "us," or "our")
+        <strong className="text-foreground">SheriaBot Technologies Limited</strong> (&quot;SheriaBot,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;)
         is committed to protecting personal data in strict compliance with the{" "}
         <strong className="text-foreground">Kenya Data Protection Act, 2019 (DPA)</strong>, the{" "}
         <strong className="text-foreground">
@@ -167,11 +167,11 @@ export function PrivacyPolicyContent() {
             ],
             [
               "Sensitive Personal Data",
-              "Data relating to a natural person's race, health status, ethnic social origin, conscience, belief, genetic data, biometric data, property details, marital status, family details, sex, or sexual orientation.",
+              "Data relating to a natural person&apos;s race, health status, ethnic social origin, conscience, belief, genetic data, biometric data, property details, marital status, family details, sex, or sexual orientation.",
             ],
           ].map(([term, def]) => (
             <li key={term} className="flex gap-2">
-              <span className="font-medium text-foreground shrink-0">"{term}"</span>
+              <span className="font-medium text-foreground shrink-0">&quot;{term}&quot;</span>
               <span>means {def}</span>
             </li>
           ))}
@@ -290,7 +290,7 @@ export function PrivacyPolicyContent() {
 
         <p>
           A full and current list of sub-processors is available upon written request at{" "}
-          <span className="text-primary">privacy@sheriabot.com</span>. We will provide at least 14 days' notice
+          <span className="text-primary">privacy@sheriabot.com</span>. We will provide at least 14 days&apos; notice
           before onboarding a new sub-processor that processes your personal data.
         </p>
       </DocSection>
@@ -411,7 +411,7 @@ export function PrivacyPolicyContent() {
           <p>
             To exercise any of these rights, submit a written request to{" "}
             <span className="text-primary font-medium">privacy@sheriabot.com</span> with the subject line{" "}
-            <em>"Data Subject Request."</em> We will acknowledge and respond within{" "}
+            <em>&quot;Data Subject Request.&quot;</em> We will acknowledge and respond within{" "}
             <strong className="text-foreground">21 days</strong> as required by the DPA. If you are dissatisfied with
             our response, you have the right to lodge a complaint with the{" "}
             <strong className="text-foreground">
@@ -459,7 +459,7 @@ export function PrivacyPolicyContent() {
       <DocSection id="changes" number="12" title="Changes to This Privacy Policy">
         <p>
           We may update this Privacy Policy from time to time to reflect changes in law, technology, or our
-          processing activities. All updates will be posted on this page with a revised "Last Updated" date.
+          processing activities. All updates will be posted on this page with a revised &quot;Last Updated&quot; date.
         </p>
         <p>
           <strong className="text-foreground">Material changes</strong> (those that affect your rights or our core

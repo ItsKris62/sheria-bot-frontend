@@ -127,7 +127,6 @@ function MarkdownContent({ content, compact = false }: { content: string; compac
     // Named function so React correctly identifies it as a component,
     // allowing the useContext hook call.
     function LiItem({ children }: React.LiHTMLAttributes<HTMLLIElement>) {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
       const ordered = useContext(OrderedContext)
       if (ordered) {
         return (

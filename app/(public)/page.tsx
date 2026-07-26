@@ -1245,10 +1245,13 @@ export default function LandingPage() {
                 {/* Founder sign-off */}
                 <div className="mt-10 flex items-center gap-4 border-t border-[#1D2925] pt-8">
                   <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#C6A15B]/25 shadow-[0_0_20px_rgba(198,161,91,0.15)] overflow-hidden bg-[#C6A15B]/10">
-                    <img 
+                    <Image
                       src={`${process.env.NEXT_PUBLIC_R2_ASSETS_URL}/avatars/founder/Christopher_rateng-Passport-Photo.jpg`}
                       alt="Christopher Rateng"
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="56px"
+                      className="object-cover"
+                      unoptimized
                     />
                   </div>
                   <div>

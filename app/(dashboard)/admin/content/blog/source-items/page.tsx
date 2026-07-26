@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { trpc } from '@/lib/trpc';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -87,9 +88,9 @@ export default function BlogSourceItemsPage() {
     <div className="flex flex-col gap-6 p-6">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-          <a href="/admin/content/blog/sources" className="hover:text-foreground transition-colors flex items-center gap-1">
+          <Link href="/admin/content/blog/sources" className="hover:text-foreground transition-colors flex items-center gap-1">
             <span className="text-blue-500">← Back to Source Monitors</span>
-          </a>
+          </Link>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">Source Items</h1>
         <p className="text-muted-foreground flex items-center gap-2">

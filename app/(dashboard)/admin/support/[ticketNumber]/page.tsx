@@ -128,7 +128,7 @@ export default function AdminTicketDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <p className="text-lg font-medium text-foreground">Ticket not found</p>
-        <p className="mt-1 text-sm text-muted-foreground">This ticket doesn't exist.</p>
+        <p className="mt-1 text-sm text-muted-foreground">This ticket doesn&apos;t exist.</p>
         <Button asChild className="mt-4" variant="outline">
           <Link href="/admin/support">Back to Support</Link>
         </Button>

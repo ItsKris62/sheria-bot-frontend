@@ -72,14 +72,14 @@ export function TermsOfServiceContent() {
     <div className="space-y-8 text-sm">
       {/* Preamble */}
       <Callout>
-        These Terms of Service ("Terms") constitute a legally binding agreement between{" "}
+        These Terms of Service (&quot;Terms&quot;) constitute a legally binding agreement between{" "}
         <strong className="text-foreground">SheriaBot Technologies Limited</strong>, a company incorporated under the
-        laws of the Republic of Kenya with registration number [C/XXXXX] ("SheriaBot," "we," "us," or "our"), and
-        the organisation or individual accessing or using the SheriaBot platform ("Customer," "you," or "your").{" "}
+        laws of the Republic of Kenya with registration number [C/XXXXX] (&quot;SheriaBot,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;), and
+        the organisation or individual accessing or using the SheriaBot platform (&quot;Customer,&quot; &quot;you,&quot; or &quot;your&quot;).{" "}
         <br />
         <br />
         <strong className="text-foreground">
-          BY CLICKING "I AGREE," CREATING AN ACCOUNT, OR ACCESSING THE PLATFORM, YOU CONFIRM THAT YOU HAVE READ,
+          BY CLICKING &quot;I AGREE,&quot; CREATING AN ACCOUNT, OR ACCESSING THE PLATFORM, YOU CONFIRM THAT YOU HAVE READ,
           UNDERSTOOD, AND AGREE TO BE BOUND BY THESE TERMS AND OUR PRIVACY POLICY, WHICH IS INCORPORATED HEREIN BY
           REFERENCE.
         </strong>
@@ -215,7 +215,7 @@ export function TermsOfServiceContent() {
             Payment is due within <strong className="text-foreground">14 days</strong> of the invoice date. Overdue
             amounts attract interest at the rate prescribed under the Kenya Late Payment of Commercial Debts Act or,
             if that Act does not apply, at the Central Bank of Kenya base rate plus 4% per annum, calculated daily.
-            SheriaBot may suspend Platform access for accounts with outstanding overdue invoices after 7 days'
+            SheriaBot may suspend Platform access for accounts with outstanding overdue invoices after 7 days&apos;
             written notice.
           </p>
         </Clause>
@@ -232,7 +232,7 @@ export function TermsOfServiceContent() {
         <Clause title="4.5 Price Changes">
           <p>
             SheriaBot will provide at least{" "}
-            <strong className="text-foreground">30 days' written notice</strong> of any Subscription fee increases
+            <strong className="text-foreground">30 days&apos; written notice</strong> of any Subscription fee increases
             before they take effect. Continued use of the Platform after the effective date of the price change
             constitutes your acceptance of the new pricing.
           </p>
@@ -242,7 +242,7 @@ export function TermsOfServiceContent() {
           <p>
             You are responsible for all applicable taxes, withholding taxes, duties, and levies imposed by any
             governmental authority in connection with your use of the Platform, other than taxes based on
-            SheriaBot's net income.
+            SheriaBot&apos;s net income.
           </p>
         </Clause>
       </DocSection>
@@ -253,7 +253,7 @@ export function TermsOfServiceContent() {
           <p>
             SheriaBot retains all intellectual property rights, including copyright, trade secrets, patent rights, and
             trademark rights, in and to the Platform, the AI models and algorithms, the regulatory knowledge base,
-            software code, interface designs, and all associated documentation ("SheriaBot IP"). Nothing in these
+            software code, interface designs, and all associated documentation (&quot;SheriaBot IP&quot;). Nothing in these
             Terms transfers any ownership interest in SheriaBot IP to you.
           </p>
         </Clause>
@@ -292,7 +292,7 @@ export function TermsOfServiceContent() {
 
         <Clause title="5.5 Feedback Licence">
           <p>
-            If you provide suggestions, ideas, feature requests, or other feedback about the Platform ("Feedback"),
+            If you provide suggestions, ideas, feature requests, or other feedback about the Platform (&quot;Feedback&quot;),
             you grant SheriaBot a perpetual, irrevocable, worldwide, royalty-free licence to use, incorporate, and
             commercialise such Feedback without any obligation of attribution, compensation, or confidentiality.
           </p>
@@ -358,7 +358,7 @@ export function TermsOfServiceContent() {
         <WarningBox title="As-Is Disclaimer">
           <p>
             TO THE MAXIMUM EXTENT PERMITTED BY THE LAWS OF THE REPUBLIC OF KENYA, THE PLATFORM AND ALL SERVICES ARE
-            PROVIDED <strong>"AS IS"</strong> AND <strong>"AS AVAILABLE"</strong> WITHOUT WARRANTY OF ANY KIND,
+            PROVIDED <strong>&quot;AS IS&quot;</strong> AND <strong>&quot;AS AVAILABLE&quot;</strong> WITHOUT WARRANTY OF ANY KIND,
             EXPRESS OR IMPLIED.
           </p>
           <p>SHERIABOT EXPRESSLY DISCLAIMS ALL WARRANTIES INCLUDING, WITHOUT LIMITATION:</p>
@@ -371,7 +371,7 @@ export function TermsOfServiceContent() {
           </ul>
         </WarningBox>
         <p>
-          Any statements made by SheriaBot representatives regarding the Platform's capabilities constitute
+          Any statements made by SheriaBot representatives regarding the Platform&apos;s capabilities constitute
           descriptions of product features and not warranties as to the suitability of the Platform for your
           specific regulatory requirements.
         </p>
@@ -393,7 +393,7 @@ export function TermsOfServiceContent() {
 
         <Clause title="8.2 Aggregate Liability Cap">
           <p>
-            SheriaBot's total aggregate liability to you in connection with these Terms, whether arising in contract,
+            SheriaBot&apos;s total aggregate liability to you in connection with these Terms, whether arising in contract,
             tort (including negligence), breach of statutory duty, or otherwise, shall not exceed the{" "}
             <strong className="text-foreground">
               total Subscription fees paid by you to SheriaBot in the three (3) calendar months immediately
@@ -405,8 +405,8 @@ export function TermsOfServiceContent() {
 
         <Clause title="8.3 Exceptions to Limitation">
           <p>
-            Nothing in these Terms limits or excludes SheriaBot's liability for: (a) death or personal injury caused
-            by SheriaBot's negligence; (b) fraud or fraudulent misrepresentation; (c) any other liability that cannot
+            Nothing in these Terms limits or excludes SheriaBot&apos;s liability for: (a) death or personal injury caused
+            by SheriaBot&apos;s negligence; (b) fraud or fraudulent misrepresentation; (c) any other liability that cannot
             lawfully be limited or excluded under Kenyan law.
           </p>
         </Clause>
@@ -415,9 +415,9 @@ export function TermsOfServiceContent() {
       {/* Section 9 — Indemnification */}
       <DocSection id="indemnification" number="9" title="Indemnification">
         <p>
-          You agree to indemnify, defend (at SheriaBot's request), and hold harmless SheriaBot, its directors,
+          You agree to indemnify, defend (at SheriaBot&apos;s request), and hold harmless SheriaBot, its directors,
           officers, employees, contractors, successors, and assigns from and against any and all claims, liabilities,
-          damages, losses, judgments, and expenses (including reasonable advocate's fees and litigation costs) arising
+          damages, losses, judgments, and expenses (including reasonable advocate&apos;s fees and litigation costs) arising
           out of or in connection with:
         </p>
         <BulletList
@@ -481,7 +481,7 @@ export function TermsOfServiceContent() {
         <p>
           In respect of personal data submitted by the Customer to the Platform (Customer Data), SheriaBot acts as a{" "}
           <strong className="text-foreground">Data Processor</strong> and the Customer acts as the{" "}
-          <strong className="text-foreground">Data Controller</strong>. SheriaBot's processing activities are
+          <strong className="text-foreground">Data Controller</strong>. SheriaBot&apos;s processing activities are
           governed by our Privacy Policy, which constitutes the Data Processing Agreement between the parties. By
           accepting these Terms, you also accept the Privacy Policy in its capacity as a data processing agreement.
         </p>
@@ -495,7 +495,7 @@ export function TermsOfServiceContent() {
       {/* Section 12 — Confidentiality */}
       <DocSection id="confidentiality" number="12" title="Confidentiality">
         <p>
-          Each party agrees to: (a) keep the other party's Confidential Information strictly confidential; (b) not
+          Each party agrees to: (a) keep the other party&apos;s Confidential Information strictly confidential; (b) not
           disclose it to any third party without prior written consent; and (c) use it only for the purposes
           permitted under these Terms. These obligations do not apply to information that is: (i) publicly available
           through no breach of these Terms; (ii) independently developed by the receiving party; (iii) received from
@@ -510,13 +510,13 @@ export function TermsOfServiceContent() {
           SheriaBot reserves the right to modify these Terms at any time. For{" "}
           <strong className="text-foreground">material changes</strong> (those that materially alter your rights or
           obligations), we will provide at least{" "}
-          <strong className="text-foreground">30 days' advance written notice</strong> by email and/or a prominent
+          <strong className="text-foreground">30 days&apos; advance written notice</strong> by email and/or a prominent
           in-platform notice. Your continued use of the Platform after the effective date of the changes constitutes
           your acceptance.
         </p>
         <p>
           SheriaBot may also modify, update, or discontinue Platform features at any time. For Subscription features
-          that are materially reduced or discontinued, we will provide at least 30 days' notice and offer a
+          that are materially reduced or discontinued, we will provide at least 30 days&apos; notice and offer a
           pro-rated credit or the opportunity to terminate without penalty.
         </p>
       </DocSection>

@@ -97,7 +97,7 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
       }
     });
     return () => subscription.unsubscribe();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Restore session on page load using Supabase's persisted session
   useEffect(() => {

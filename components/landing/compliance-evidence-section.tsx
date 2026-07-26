@@ -490,7 +490,7 @@ function QuestionScreen() {
         <SheriaMark className="h-16 w-16 rounded-2xl" imageClassName="h-9 w-9" />
         <h4 className="mt-5 text-2xl font-bold">Ask a Compliance Question</h4>
         <p className="mt-3 max-w-xl text-sm leading-6 text-[#B8C0BC]">
-          Get instant answers about Kenya's fintech regulations, CBK guidelines, data protection requirements,
+          Get instant answers about Kenya&apos;s fintech regulations, CBK guidelines, data protection requirements,
           and more.
         </p>
         <div className="mt-8 w-full max-w-md">
@@ -706,7 +706,7 @@ function PromptInput({ value }: { value: string }) {
         </button>
       </div>
       <p className="mt-2 text-xs text-[#B8C0BC]">
-        Answers are AI-generated based on Kenya's legal corpus. Always verify with official sources.{" "}
+        Answers are AI-generated based on Kenya&apos;s legal corpus. Always verify with official sources.{" "}
         <kbd className="rounded bg-[#161D1A] px-1.5 py-0.5 font-mono text-[10px]">Ctrl+Enter</kbd> to submit.
       </p>
     </div>
