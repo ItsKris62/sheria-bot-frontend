@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -45,6 +45,34 @@ interface ProfileData {
   lastLoginAt: string | Date | null
   organization: { id: string; name: string; type?: string | null } | null
   preferences: Record<string, string>
+}
+
+type ProfileFormData = {
+  phone: string
+  jobTitle: string
+  timezone: string
+  language: string
+  currency: string
+}
+
+const EMPTY_PROFILE_FORM: ProfileFormData = {
+  phone: "",
+  jobTitle: "",
+  timezone: "Africa/Nairobi",
+  language: "en",
+  currency: "KES",
+}
+
+function profileToForm(profile: ProfileData | undefined): ProfileFormData {
+  if (!profile) return EMPTY_PROFILE_FORM
+  const prefs = profile.preferences ?? {}
+  return {
+    phone: profile.phone ?? "",
+    jobTitle: prefs.jobTitle ?? "",
+    timezone: prefs.timezone ?? "Africa/Nairobi",
+    language: prefs.language ?? "en",
+    currency: prefs.currency ?? "KES",
+  }
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -122,27 +150,13 @@ export default function ProfileSettingsPage() {
   const { updateProfile, isUpdatingProfile, updatePreferences, isUpdatingPreferences } =
     useUserActions()
 
-  const [formData, setFormData] = useState({
-    phone: "",
-    jobTitle: "",
-    timezone: "Africa/Nairobi",
-    language: "en",
-    currency: "KES",
-  })
+  const remoteForm = useMemo(() => profileToForm(profile), [profile])
+  const [formOverride, setFormOverride] = useState<ProfileFormData | null>(null)
+  const formData = formOverride ?? remoteForm
 
-  // Populate form once profile loads — only editable fields
-  useEffect(() => {
-    if (profile) {
-      const prefs = profile.preferences ?? {}
-      setFormData({
-        phone: profile.phone ?? "",
-        jobTitle: prefs.jobTitle ?? "",
-        timezone: prefs.timezone ?? "Africa/Nairobi",
-        language: prefs.language ?? "en",
-        currency: prefs.currency ?? "KES",
-      })
-    }
-  }, [profile])
+  function patchForm(patch: Partial<ProfileFormData>) {
+    setFormOverride((prev) => ({ ...(prev ?? formData), ...patch }))
+  }
 
   const handleSave = async () => {
     try {
@@ -311,7 +325,7 @@ export default function ProfileSettingsPage() {
             <Input
               id="phone"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) => patchForm({ phone: e.target.value })}
               className="bg-background"
               placeholder="+254 700 000 000"
             />
@@ -322,7 +336,7 @@ export default function ProfileSettingsPage() {
             <Input
               id="jobTitle"
               value={formData.jobTitle}
-              onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+              onChange={(e) => patchForm({ jobTitle: e.target.value })}
               className="bg-background"
               placeholder="e.g. Chief Compliance Officer"
             />
@@ -341,7 +355,7 @@ export default function ProfileSettingsPage() {
             <Label htmlFor="timezone">Timezone</Label>
             <Select
               value={formData.timezone}
-              onValueChange={(value) => setFormData({ ...formData, timezone: value })}
+              onValueChange={(value) => patchForm({ timezone: value })}
             >
               <SelectTrigger id="timezone" className="bg-background">
                 <SelectValue />
@@ -359,7 +373,7 @@ export default function ProfileSettingsPage() {
             <Label htmlFor="language">Language</Label>
             <Select
               value={formData.language}
-              onValueChange={(value) => setFormData({ ...formData, language: value })}
+              onValueChange={(value) => patchForm({ language: value })}
             >
               <SelectTrigger id="language" className="bg-background">
                 <SelectValue />
@@ -375,7 +389,7 @@ export default function ProfileSettingsPage() {
             <Label htmlFor="currency">Currency Display</Label>
             <Select
               value={formData.currency}
-              onValueChange={(value) => setFormData({ ...formData, currency: value })}
+              onValueChange={(value) => patchForm({ currency: value })}
             >
               <SelectTrigger id="currency" className="bg-background">
                 <SelectValue />

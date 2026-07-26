@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useMemo, useState } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
@@ -12,6 +13,114 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, CheckCircle2, XCircle, Sparkles, Shield, ShieldCheck, ShieldAlert } from "lucide-react"
+
+type BlogEditorForm = {
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  coverImageUrl: string
+  category: string
+  jurisdiction: string
+  featured: boolean
+  seoTitle: string
+  seoDescription: string
+  canonicalUrl: string
+  ogImageUrl: string
+}
+
+const SOURCE_TYPES = ["OFFICIAL", "INTERNATIONAL_STANDARD", "THIRD_PARTY", "INTERNAL", "MEDIA"] as const
+type BlogSourceType = (typeof SOURCE_TYPES)[number]
+
+type BlogSourceForm = {
+  sourceType: BlogSourceType
+  title: string
+  publisher: string
+  url: string
+}
+
+type VerificationIssue = {
+  id: string
+  severity: string
+  title: string
+  description: string
+  excerpt?: string | null
+}
+
+type AutomationSuggestionSource = {
+  sourceItemId: string
+  sourceItem?: {
+    monitor?: {
+      name?: string | null
+    } | null
+  } | null
+}
+
+const EMPTY_FORM: BlogEditorForm = {
+  title: "",
+  slug: "",
+  excerpt: "",
+  content: "",
+  coverImageUrl: "",
+  category: "",
+  jurisdiction: "Kenya",
+  featured: false,
+  seoTitle: "",
+  seoDescription: "",
+  canonicalUrl: "",
+  ogImageUrl: "",
+}
+
+const EMPTY_SOURCE: BlogSourceForm = {
+  sourceType: "OFFICIAL",
+  title: "",
+  publisher: "",
+  url: "",
+}
+
+function normalizeSources(sources: unknown): BlogSourceForm[] {
+  if (!Array.isArray(sources)) return []
+
+  return sources
+    .filter((source): source is Record<string, unknown> => typeof source === "object" && source !== null)
+    .map((source) => ({
+      sourceType: isBlogSourceType(source.sourceType) ? source.sourceType : "OFFICIAL",
+      title: String(source.title ?? ""),
+      publisher: String(source.publisher ?? ""),
+      url: String(source.url ?? ""),
+    }))
+}
+
+function isBlogSourceType(value: unknown): value is BlogSourceType {
+  return typeof value === "string" && SOURCE_TYPES.includes(value as BlogSourceType)
+}
+
+function normalizeVerificationIssues(issues: unknown): VerificationIssue[] {
+  if (!Array.isArray(issues)) return []
+
+  return issues
+    .filter((issue): issue is Record<string, unknown> => typeof issue === "object" && issue !== null)
+    .map((issue, index) => ({
+      id: String(issue.id ?? `issue-${index}`),
+      severity: String(issue.severity ?? "INFO"),
+      title: String(issue.title ?? "Untitled issue"),
+      description: String(issue.description ?? ""),
+      excerpt: typeof issue.excerpt === "string" ? issue.excerpt : null,
+    }))
+}
+
+function normalizeAutomationSources(sources: unknown): AutomationSuggestionSource[] {
+  if (!Array.isArray(sources)) return []
+
+  return sources
+    .filter((source): source is Record<string, unknown> => typeof source === "object" && source !== null)
+    .map((source, index) => ({
+      sourceItemId: String(source.sourceItemId ?? `source-${index}`),
+      sourceItem: typeof source.sourceItem === "object" && source.sourceItem !== null
+        ? source.sourceItem as AutomationSuggestionSource["sourceItem"]
+        : null,
+    }))
+}
 
 export default function BlogEditorPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -25,11 +134,11 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
   const isAiStale = latestVerificationResponse?.isAiStale || false
 
   const verificationMutation = trpc.blogAutomation.adminRunBlogVerification.useMutation({
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       toast.success(`Verification completed: ${res.status}`)
       refetchVerification()
     },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err) => toast.error(err.message),
   })
   
   const updateMutation = trpc.blog.adminUpdate.useMutation({
@@ -59,42 +168,33 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
     onError: (err) => toast.error(err.message),
   })
 
-  const [form, setForm] = useState({
-    title: "",
-    slug: "",
-    excerpt: "",
-    content: "",
-    coverImageUrl: "",
-    category: "",
-    jurisdiction: "Kenya",
-    featured: false,
-    seoTitle: "",
-    seoDescription: "",
-    canonicalUrl: "",
-    ogImageUrl: "",
-  })
+  const postId = post?.id ?? null
+  const remoteForm = useMemo<BlogEditorForm>(() => post ? {
+    title: post.title || "",
+    slug: post.slug || "",
+    excerpt: post.excerpt || "",
+    content: post.content || "",
+    coverImageUrl: post.coverImageUrl || "",
+    category: post.category || "",
+    jurisdiction: post.jurisdiction || "Kenya",
+    featured: post.featured || false,
+    seoTitle: post.seoTitle || "",
+    seoDescription: post.seoDescription || "",
+    canonicalUrl: post.canonicalUrl || "",
+    ogImageUrl: post.ogImageUrl || "",
+  } : EMPTY_FORM, [post])
+  const remoteSources = useMemo(() => normalizeSources(post?.sources), [post?.sources])
+  const [formDraft, setFormDraft] = useState<{ postId: string; form: BlogEditorForm } | null>(null)
+  const [sourcesDraft, setSourcesDraft] = useState<{ postId: string; sources: BlogSourceForm[] } | null>(null)
+  const form = formDraft && formDraft.postId === postId ? formDraft.form : remoteForm
+  const sources = sourcesDraft && sourcesDraft.postId === postId ? sourcesDraft.sources : remoteSources
+  const verificationIssues = normalizeVerificationIssues(latestVerification?.issues)
+  const automationSources = normalizeAutomationSources(post?.automationSuggestion?.sources)
 
-  const [sources, setSources] = useState<any[]>([])
-
-  useEffect(() => {
-    if (post) {
-      setForm({
-        title: post.title || "",
-        slug: post.slug || "",
-        excerpt: post.excerpt || "",
-        content: post.content || "",
-        coverImageUrl: post.coverImageUrl || "",
-        category: post.category || "",
-        jurisdiction: post.jurisdiction || "Kenya",
-        featured: post.featured || false,
-        seoTitle: post.seoTitle || "",
-        seoDescription: post.seoDescription || "",
-        canonicalUrl: post.canonicalUrl || "",
-        ogImageUrl: post.ogImageUrl || "",
-      })
-      setSources(post.sources || [])
-    }
-  }, [post])
+  function patchForm(patch: Partial<BlogEditorForm>) {
+    if (!postId) return
+    setFormDraft({ postId, form: { ...form, ...patch } })
+  }
 
   const handleSave = () => {
     updateMutation.mutate({
@@ -105,17 +205,23 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
   }
 
   const handleAddSource = () => {
-    setSources([...sources, { sourceType: "OFFICIAL", title: "", publisher: "", url: "" }])
+    if (!postId) return
+    setSourcesDraft({ postId, sources: [...sources, EMPTY_SOURCE] })
   }
 
-  const updateSource = (index: number, key: string, value: string) => {
-    const newSources = [...sources]
-    newSources[index][key] = value
-    setSources(newSources)
+  const updateSource = (index: number, patch: Partial<BlogSourceForm>) => {
+    if (!postId) return
+    setSourcesDraft({
+      postId,
+      sources: sources.map((source, sourceIndex) => (
+        sourceIndex === index ? { ...source, ...patch } : source
+      )),
+    })
   }
 
   const removeSource = (index: number) => {
-    setSources(sources.filter((_, i) => i !== index))
+    if (!postId) return
+    setSourcesDraft({ postId, sources: sources.filter((_, i) => i !== index) })
   }
 
   if (isLoading) return <div className="p-6">Loading editor...</div>
@@ -187,19 +293,19 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Title</Label>
-                <Input value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
+                <Input value={form.title} onChange={e => patchForm({ title: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Slug</Label>
-                <Input value={form.slug} onChange={e => setForm({...form, slug: e.target.value})} />
+                <Input value={form.slug} onChange={e => patchForm({ slug: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Excerpt</Label>
-                <Textarea value={form.excerpt} onChange={e => setForm({...form, excerpt: e.target.value})} rows={3} />
+                <Textarea value={form.excerpt} onChange={e => patchForm({ excerpt: e.target.value })} rows={3} />
               </div>
               <div className="space-y-2">
                 <Label>Body (Markdown)</Label>
-                <Textarea value={form.content} onChange={e => setForm({...form, content: e.target.value})} rows={20} className="font-mono text-sm" />
+                <Textarea value={form.content} onChange={e => patchForm({ content: e.target.value })} rows={20} className="font-mono text-sm" />
               </div>
             </CardContent>
           </Card>
@@ -224,7 +330,7 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
                   </Button>
                   <div className="space-y-2">
                     <Label>Type</Label>
-                    <Select value={source.sourceType} onValueChange={v => updateSource(i, "sourceType", v)}>
+                    <Select value={source.sourceType} onValueChange={value => updateSource(i, { sourceType: isBlogSourceType(value) ? value : "OFFICIAL" })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="OFFICIAL">Official</SelectItem>
@@ -237,15 +343,15 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
                   </div>
                   <div className="space-y-2">
                     <Label>Title</Label>
-                    <Input value={source.title} onChange={e => updateSource(i, "title", e.target.value)} />
+                    <Input value={source.title} onChange={e => updateSource(i, { title: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <Label>Publisher</Label>
-                    <Input value={source.publisher} onChange={e => updateSource(i, "publisher", e.target.value)} />
+                    <Input value={source.publisher} onChange={e => updateSource(i, { publisher: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <Label>URL</Label>
-                    <Input value={source.url} onChange={e => updateSource(i, "url", e.target.value)} />
+                    <Input value={source.url} onChange={e => updateSource(i, { url: e.target.value })} />
                   </div>
                 </div>
               ))}
@@ -297,15 +403,15 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
                   <div className="flex justify-between"><span>Quality Score:</span> <span>{latestVerification.qualityScore}/100</span></div>
                   {latestVerification.summary && <p className="text-xs text-muted-foreground mt-2">{latestVerification.summary}</p>}
                   
-                  {latestVerification.issues && latestVerification.issues.length > 0 && (
+                  {verificationIssues.length > 0 && (
                     <div className="mt-4 space-y-2">
                       <h4 className="font-semibold text-xs uppercase text-muted-foreground">Issues</h4>
                       <div className="max-h-40 overflow-y-auto space-y-2">
-                        {latestVerification.issues.map((issue: any) => (
+                        {verificationIssues.map((issue) => (
                           <div key={issue.id} className={`p-2 text-xs rounded border ${issue.severity === 'BLOCKING' ? 'bg-red-50 border-red-200 text-red-800' : issue.severity === 'WARNING' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
                             <strong>[{issue.severity}] {issue.title}</strong>
                             <p className="mt-1">{issue.description}</p>
-                            {issue.excerpt && <p className="mt-1 italic text-[10px]">"{issue.excerpt}"</p>}
+                            {issue.excerpt && <p className="mt-1 italic text-[10px]">&quot;{issue.excerpt}&quot;</p>}
                           </div>
                         ))}
                       </div>
@@ -378,11 +484,11 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
                   <span className="font-semibold text-muted-foreground block mb-1">Reason:</span>
                   <span className="line-clamp-2">{post.automationSuggestion.reason || "N/A"}</span>
                 </div>
-                {post.automationSuggestion.sources && post.automationSuggestion.sources.length > 0 && (
+                {automationSources.length > 0 && (
                   <div>
                     <span className="font-semibold text-muted-foreground block mb-1">Source Monitors:</span>
                     <ul className="list-disc list-inside space-y-1">
-                      {post.automationSuggestion.sources.map((s: any) => (
+                      {automationSources.map((s) => (
                         <li key={s.sourceItemId} className="truncate">
                           {s.sourceItem?.monitor?.name || "Unknown Monitor"}
                         </li>
@@ -406,19 +512,19 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} />
+                <Input value={form.category} onChange={e => patchForm({ category: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Jurisdiction</Label>
-                <Input value={form.jurisdiction} onChange={e => setForm({...form, jurisdiction: e.target.value})} />
+                <Input value={form.jurisdiction} onChange={e => patchForm({ jurisdiction: e.target.value })} />
               </div>
               <div className="flex items-center justify-between">
                 <Label>Featured Post</Label>
-                <Switch checked={form.featured} onCheckedChange={c => setForm({...form, featured: c})} />
+                <Switch checked={form.featured} onCheckedChange={featured => patchForm({ featured })} />
               </div>
               <div className="space-y-2">
                 <Label>Cover Image URL</Label>
-                <Input value={form.coverImageUrl} onChange={e => setForm({...form, coverImageUrl: e.target.value})} />
+                <Input value={form.coverImageUrl} onChange={e => patchForm({ coverImageUrl: e.target.value })} />
               </div>
             </CardContent>
           </Card>
@@ -428,19 +534,19 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>SEO Title</Label>
-                <Input value={form.seoTitle} onChange={e => setForm({...form, seoTitle: e.target.value})} />
+                <Input value={form.seoTitle} onChange={e => patchForm({ seoTitle: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>SEO Description</Label>
-                <Textarea value={form.seoDescription} onChange={e => setForm({...form, seoDescription: e.target.value})} rows={3} />
+                <Textarea value={form.seoDescription} onChange={e => patchForm({ seoDescription: e.target.value })} rows={3} />
               </div>
               <div className="space-y-2">
                 <Label>Canonical URL</Label>
-                <Input value={form.canonicalUrl} onChange={e => setForm({...form, canonicalUrl: e.target.value})} />
+                <Input value={form.canonicalUrl} onChange={e => patchForm({ canonicalUrl: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Open Graph Image URL</Label>
-                <Input value={form.ogImageUrl} onChange={e => setForm({...form, ogImageUrl: e.target.value})} />
+                <Input value={form.ogImageUrl} onChange={e => patchForm({ ogImageUrl: e.target.value })} />
               </div>
             </CardContent>
           </Card>
@@ -461,7 +567,15 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
                 <Label className="text-xs text-muted-foreground uppercase">Social Preview (X / LinkedIn)</Label>
                 <div className="border rounded overflow-hidden shadow-sm bg-card text-sm">
                   {(form.ogImageUrl || form.coverImageUrl) ? (
-                    <img src={form.ogImageUrl || form.coverImageUrl} alt="OG" className="w-full h-[150px] object-cover" />
+                    <div className="relative h-[150px] w-full">
+                      <Image
+                        src={form.ogImageUrl || form.coverImageUrl}
+                        alt="OG"
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                    </div>
                   ) : (
                     <div className="w-full h-[150px] bg-muted flex items-center justify-center text-muted-foreground">No image available</div>
                   )}

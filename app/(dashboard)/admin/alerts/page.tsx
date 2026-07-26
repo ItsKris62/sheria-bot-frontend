@@ -90,29 +90,36 @@ const EMPTY_FORM = {
   expiresAt: "",
 }
 
+function readSavedDraft() {
+  if (typeof window === "undefined") {
+    return { form: EMPTY_FORM, showForm: false }
+  }
+
+  try {
+    const saved = localStorage.getItem("admin-alert-draft")
+    if (!saved) return { form: EMPTY_FORM, showForm: false }
+
+    const parsed = createAlertSchema.partial().safeParse(JSON.parse(saved))
+    if (!parsed.success || Object.keys(parsed.data).length === 0) {
+      return { form: EMPTY_FORM, showForm: false }
+    }
+
+    return {
+      form: { ...EMPTY_FORM, ...parsed.data },
+      showForm: true,
+    }
+  } catch {
+    return { form: EMPTY_FORM, showForm: false }
+  }
+}
+
 // --- Page ---------------------------------------------------------------------
 
 export default function AdminAlertsPage() {
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(EMPTY_FORM)
+  const [form, setForm] = useState(() => readSavedDraft().form)
+  const [showForm, setShowForm] = useState(() => readSavedDraft().showForm)
   const [errors, setErrors] = useState<FormErrors>({})
   const [page, setPage] = useState(1)
-
-  // Load draft on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("admin-alert-draft")
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (parsed && Object.keys(parsed).length > 0) {
-          setForm(parsed)
-          setShowForm(true)
-        }
-      }
-    } catch (e) {
-      // Ignore parse errors
-    }
-  }, [])
 
   // Save draft on form changes
   useEffect(() => {

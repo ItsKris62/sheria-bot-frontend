@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -86,28 +86,31 @@ const DEFAULT_SUB: SubState = {
   categories: [...ALERT_CATEGORIES],
 }
 
+function subscriptionToForm(sub: SubState & { regulatoryBodies?: string[]; categories?: string[] }): SubState {
+  return {
+    inAppEnabled: sub.inAppEnabled,
+    emailEnabled: sub.emailEnabled,
+    emailFrequency: sub.emailFrequency,
+    severityThreshold: sub.severityThreshold,
+    regulatoryBodies: sub.regulatoryBodies as SubState["regulatoryBodies"] ?? [...REGULATORY_BODIES],
+    categories: sub.categories as SubState["categories"] ?? [...ALERT_CATEGORIES],
+  }
+}
+
 function AlertSubscriptionSection() {
   const orgId = useAuthStore((s) => s.user?.organizationId)
-  const [form, setForm] = useState<SubState>(DEFAULT_SUB)
+  const [draftForm, setDraftForm] = useState<SubState | null>(null)
   const [isDirty, setIsDirty] = useState(false)
 
   const { data: sub, isLoading } = trpc.alert.getSubscription.useQuery(undefined, {
     enabled: !!orgId,
   })
 
-  useEffect(() => {
-    if (!sub) return
-    const s = sub as SubState & { regulatoryBodies: string[]; categories: string[] }
-    setForm({
-      inAppEnabled: s.inAppEnabled,
-      emailEnabled: s.emailEnabled,
-      emailFrequency: s.emailFrequency as SubState["emailFrequency"],
-      severityThreshold: s.severityThreshold as SubState["severityThreshold"],
-      regulatoryBodies: s.regulatoryBodies ?? [...REGULATORY_BODIES],
-      categories: s.categories ?? [...ALERT_CATEGORIES],
-    })
-    setIsDirty(false)
-  }, [sub])
+  const remoteForm = useMemo(
+    () => sub ? subscriptionToForm(sub as SubState & { regulatoryBodies?: string[]; categories?: string[] }) : DEFAULT_SUB,
+    [sub],
+  )
+  const form = draftForm ?? remoteForm
 
   const utils = trpc.useUtils()
   const saveMutation = trpc.alert.upsertSubscription.useMutation({
@@ -120,7 +123,7 @@ function AlertSubscriptionSection() {
   })
 
   function patch(updates: Partial<SubState>) {
-    setForm((prev) => ({ ...prev, ...updates }))
+    setDraftForm((prev) => ({ ...(prev ?? remoteForm), ...updates }))
     setIsDirty(true)
   }
 

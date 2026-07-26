@@ -1074,6 +1074,9 @@ export default function GapAnalysisPage() {
   }, [])
 
   const utils = trpc.useUtils()
+  const invalidateGapAnalyses: () => void = useCallback(() => {
+    void utils.gapAnalysis.getGapAnalyses.invalidate()
+  }, [utils])
 
   const { data: analyses, isLoading: listLoading, error: listError } = trpc.gapAnalysis.getGapAnalyses.useQuery(
     undefined,
@@ -1093,6 +1096,16 @@ export default function GapAnalysisPage() {
   )
   const maxFileSizeBytes = (gapLimits?.maxFileSizeMB ?? 10) * 1024 * 1024
 
+  const resetForm = useCallback(() => {
+    setSelectedFile(null)
+    setSelectedFrameworks([])
+    setSelectedBenchmarkDocumentIds([])
+    setAnalysisDepth("standard")
+    setSelectedFocusAreas([])
+    setFocusAreasOpen(false)
+    setConsentChecked(false)
+  }, [])
+
   // Polling query   active only while isAwaitingResult
   const pollingQuery = trpc.gapAnalysis.getGapAnalysisResult.useQuery(
     { id: activeAnalysisId! },
@@ -1105,26 +1118,42 @@ export default function GapAnalysisPage() {
       },
     }
   )
+  const pollingStatus = pollingQuery.data?.status
+  const pollingId = pollingQuery.data?.id
+  const pollingDocumentName = pollingQuery.data?.documentName
+  const pollingOverallScore = pollingQuery.data?.overallScore
+  const pollingErrorMessage = pollingQuery.data?.errorMessage
+  const pollingFrameworkCount = pendingFrameworks.length
 
   // Transition to results view on COMPLETED
   useEffect(() => {
-    if (!isAwaitingResult || !pollingQuery.data) return
-    const d = pollingQuery.data
-    if (d.status === "COMPLETED") {
-      setIsAwaitingResult(false)
-      setActiveView({ id: d.id, name: d.documentName })
-      utils.gapAnalysis.getGapAnalyses.invalidate()
-      resetForm()
-      const fc = Array.isArray((d as any).regulatoryFrameworks) ? (d as any).regulatoryFrameworks.length : 0;
-      trackEvent("gap_analysis_completed", {
-        framework_count: fc,
+    if (!isAwaitingResult || !pollingStatus) return
+    if (pollingStatus === "COMPLETED" && pollingId && pollingDocumentName) {
+      queueMicrotask(() => {
+        setIsAwaitingResult(false)
+        setActiveView({ id: pollingId, name: pollingDocumentName })
+        invalidateGapAnalyses()
+        resetForm()
       })
-      toast.success("Analysis complete", { description: `Overall score: ${d.overallScore ?? "N/A"}/100` })
+      trackEvent("gap_analysis_completed", {
+        framework_count: pollingFrameworkCount,
+      })
+      toast.success("Analysis complete", { description: `Overall score: ${pollingOverallScore ?? "N/A"}/100` })
     }
-    if (d.status === "FAILED") {
-      trackEvent("gap_analysis_failed", { reason: d.errorMessage || "unknown_polling_error" })
+    if (pollingStatus === "FAILED") {
+      trackEvent("gap_analysis_failed", { reason: pollingErrorMessage || "unknown_polling_error" })
     }
-  }, [pollingQuery.data?.status, isAwaitingResult]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    invalidateGapAnalyses,
+    isAwaitingResult,
+    pollingDocumentName,
+    pollingErrorMessage,
+    pollingFrameworkCount,
+    pollingId,
+    pollingOverallScore,
+    pollingStatus,
+    resetForm,
+  ])
 
   // Page-refresh resumption   detect in-progress analyses on first load
   useEffect(() => {
@@ -1132,10 +1161,12 @@ export default function GapAnalysisPage() {
     hasCheckedResumption.current = true
     const inProgress = analyses.find((a: { id: string; documentName: string; status: string }) => a.status !== "COMPLETED" && a.status !== "FAILED")
     if (inProgress) {
-      setActiveAnalysisId(inProgress.id)
-      setPendingDocName(inProgress.documentName)
-      setPendingFrameworks([])
-      setIsAwaitingResult(true)
+      queueMicrotask(() => {
+        setActiveAnalysisId(inProgress.id)
+        setPendingDocName(inProgress.documentName)
+        setPendingFrameworks([])
+        setIsAwaitingResult(true)
+      })
     }
   }, [analyses, isAwaitingResult, activeView])
 
@@ -1166,16 +1197,6 @@ export default function GapAnalysisPage() {
       toast.error("Failed to delete", { description: err.message })
     },
   })
-
-  function resetForm() {
-    setSelectedFile(null)
-    setSelectedFrameworks([])
-    setSelectedBenchmarkDocumentIds([])
-    setAnalysisDepth("standard")
-    setSelectedFocusAreas([])
-    setFocusAreasOpen(false)
-    setConsentChecked(false)
-  }
 
   const handleRunAnalysis = async () => {
     if (!selectedFile || selectedFrameworks.length === 0) return

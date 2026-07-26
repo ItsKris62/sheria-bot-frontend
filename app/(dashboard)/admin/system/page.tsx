@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -143,6 +143,8 @@ export default function SystemSettingsPage() {
       void utils.admin.getSystemConfig.invalidate()
       toast.success("Configuration saved")
       setDirty(false)
+      setLocalConfigOverride(null)
+      setMaintenanceMessageOverride(null)
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   })
@@ -157,21 +159,19 @@ export default function SystemSettingsPage() {
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
-  // Local editable state for SystemConfig
-  const [localConfig, setLocalConfig] = useState<Partial<SystemConfigValues>>({})
+  const remoteConfig = useMemo(
+    () => (systemConfigData ? systemConfigData as SystemConfigValues : null),
+    [systemConfigData],
+  )
+  const [localConfigOverride, setLocalConfigOverride] = useState<Partial<SystemConfigValues> | null>(null)
+  const localConfig = localConfigOverride ?? remoteConfig ?? {}
   const [dirty, setDirty] = useState(false)
-  const [maintenanceMessage, setMaintenanceMessage] = useState("")
-
-  useEffect(() => {
-    if (systemConfigData) {
-      setLocalConfig(systemConfigData as SystemConfigValues)
-      setMaintenanceMessage(String((systemConfigData as Partial<SystemConfigValues>).maintenanceMessage ?? ""))
-      setDirty(false)
-    }
-  }, [systemConfigData])
+  const remoteMaintenanceMessage = String(remoteConfig?.maintenanceMessage ?? "")
+  const [maintenanceMessageOverride, setMaintenanceMessageOverride] = useState<string | null>(null)
+  const maintenanceMessage = maintenanceMessageOverride ?? remoteMaintenanceMessage
 
   function handleConfigChange(key: string, value: unknown) {
-    setLocalConfig((prev) => ({ ...prev, [key]: value }))
+    setLocalConfigOverride((prev) => ({ ...(prev ?? remoteConfig ?? {}), [key]: value }))
     setDirty(true)
   }
 
@@ -181,7 +181,8 @@ export default function SystemSettingsPage() {
 
   function handleReset() {
     if (systemConfigData) {
-      setLocalConfig(systemConfigData as SystemConfigValues)
+      setLocalConfigOverride(systemConfigData as SystemConfigValues)
+      setMaintenanceMessageOverride(String((systemConfigData as Partial<SystemConfigValues>).maintenanceMessage ?? ""))
       setDirty(false)
     }
   }
@@ -408,7 +409,7 @@ export default function SystemSettingsPage() {
                   <Textarea
                     placeholder="We're performing scheduled maintenance. We'll be back shortly."
                     value={maintenanceMessage}
-                    onChange={(e) => setMaintenanceMessage(e.target.value)}
+                    onChange={(e) => setMaintenanceMessageOverride(e.target.value)}
                     className="bg-muted/50 text-sm resize-none"
                     rows={2}
                   />

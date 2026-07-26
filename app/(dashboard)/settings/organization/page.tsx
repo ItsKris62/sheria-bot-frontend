@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -87,24 +87,22 @@ export default function OrganizationSettingsPage() {
       toast.success("Organization settings updated")
       utils.organization.getSettings.invalidate()
       utils.user.getProfile.invalidate()
-      // Sync saved baseline to current form
-      setSavedData(formData)
+      setSavedDataOverride(formData)
+      setFormDataOverride(formData)
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update organization settings")
     },
   })
 
-  const [formData, setFormData] = useState<OrgFormData>(EMPTY_FORM)
-  const [savedData, setSavedData] = useState<OrgFormData>(EMPTY_FORM)
-
-  useEffect(() => {
-    if (orgData) {
-      const parsed = formFromData(orgData)
-      setFormData(parsed)
-      setSavedData(parsed)
-    }
-  }, [orgData])
+  const remoteSavedData = useMemo(
+    () => orgData ? formFromData(orgData) : EMPTY_FORM,
+    [orgData],
+  )
+  const [formDataOverride, setFormDataOverride] = useState<OrgFormData | null>(null)
+  const [savedDataOverride, setSavedDataOverride] = useState<OrgFormData | null>(null)
+  const savedData = savedDataOverride ?? remoteSavedData
+  const formData = formDataOverride ?? savedData
 
   const handleSave = () => {
     // Only send fields that have changed, allow empty string to clear a field
@@ -120,7 +118,7 @@ export default function OrganizationSettingsPage() {
   const field = (key: keyof OrgFormData) => ({
     value: formData[key],
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setFormData((prev) => ({ ...prev, [key]: e.target.value })),
+      setFormDataOverride((prev) => ({ ...(prev ?? formData), [key]: e.target.value })),
     disabled: isRegulator || updateMutation.isPending,
     className: isRegulator ? "bg-muted/50 text-muted-foreground cursor-not-allowed" : "bg-background",
   })
@@ -257,7 +255,7 @@ export default function OrganizationSettingsPage() {
                   placeholder="e.g. Westlands, Nairobi, Kenya"
                   rows={3}
                   value={formData.address}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                  onChange={(e) => setFormDataOverride((prev) => ({ ...(prev ?? formData), address: e.target.value }))}
                   disabled={isRegulator || updateMutation.isPending}
                   className={isRegulator ? "bg-muted/50 text-muted-foreground cursor-not-allowed" : "bg-background"}
                 />

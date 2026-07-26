@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -90,20 +90,26 @@ function sourceLabel(source: AIConfigForm["aiApiKeySource"]) {
 export default function AIConfigPage() {
   const utils = trpc.useUtils()
   const { data: sysConfig, isLoading } = trpc.admin.getSystemConfig.useQuery()
+  const [usageDateFrom] = useState(() => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
   const { data: aiUsage, isLoading: usageLoading } = trpc.admin.getAIUsageMetrics.useQuery({
-    dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    dateFrom: usageDateFrom,
   })
   const { data: checklistMetrics } = trpc.admin.getChecklistMetrics.useQuery()
 
-  const [form, setForm] = useState<AIConfigForm | null>(null)
+  const initialForm = useMemo(
+    () => sysConfig ? toForm(sysConfig as AIConfigView) : null,
+    [sysConfig],
+  )
+  const [draftForm, setDraftForm] = useState<AIConfigForm | null>(null)
+  const form = draftForm ?? initialForm
   const [dirty, setDirty] = useState(false)
   const [showApiKey, setShowApiKey] = useState(false)
   const [apiKeyDirty, setApiKeyDirty] = useState(false)
 
   const updateMutation = trpc.admin.updateSystemConfig.useMutation({
     onSuccess: async (updated) => {
+      setDraftForm(toForm(updated as AIConfigView))
       await utils.admin.getSystemConfig.invalidate()
-      setForm(toForm(updated as AIConfigView))
       setDirty(false)
       setApiKeyDirty(false)
       setShowApiKey(false)
@@ -112,34 +118,31 @@ export default function AIConfigPage() {
     onError: (error) => toast.error(getErrorMessage(error)),
   })
 
-  useEffect(() => {
-    if (!sysConfig) return
-    setForm(toForm(sysConfig as AIConfigView))
-    setDirty(false)
-    setApiKeyDirty(false)
-  }, [sysConfig])
-
   const modelOptions = useMemo(() => normalizeModels(form?.availableAIModels), [form?.availableAIModels])
 
   function updateForm(patch: Partial<AIConfigForm>) {
-    setForm((current) => current ? { ...current, ...patch } : current)
+    setDraftForm((current) => {
+      const base = current ?? initialForm
+      return base ? { ...base, ...patch } : base
+    })
     setDirty(true)
   }
 
   function updateAvailableModels(rawValue: string) {
     const models = parseModelList(rawValue)
-    setForm((current) => {
-      if (!current) return current
+    setDraftForm((current) => {
+      const base = current ?? initialForm
+      if (!base) return base
       const primary = models[0] ?? DEFAULT_MODELS[0]
       const queryFallback = models.includes(DEFAULT_MODELS[1]) ? DEFAULT_MODELS[1] : primary
       const analysisFallback = models.includes(DEFAULT_MODELS[2]) ? DEFAULT_MODELS[2] : primary
       return {
-        ...current,
+        ...base,
         availableAIModels: models,
-        aiPolicyModel: models.includes(current.aiPolicyModel) ? current.aiPolicyModel : primary,
-        aiQueryModel: models.includes(current.aiQueryModel) ? current.aiQueryModel : queryFallback,
-        aiVerificationModel: models.includes(current.aiVerificationModel) ? current.aiVerificationModel : queryFallback,
-        aiComplexAnalysisModel: models.includes(current.aiComplexAnalysisModel) ? current.aiComplexAnalysisModel : analysisFallback,
+        aiPolicyModel: models.includes(base.aiPolicyModel) ? base.aiPolicyModel : primary,
+        aiQueryModel: models.includes(base.aiQueryModel) ? base.aiQueryModel : queryFallback,
+        aiVerificationModel: models.includes(base.aiVerificationModel) ? base.aiVerificationModel : queryFallback,
+        aiComplexAnalysisModel: models.includes(base.aiComplexAnalysisModel) ? base.aiComplexAnalysisModel : analysisFallback,
       }
     })
     setDirty(true)
@@ -147,7 +150,7 @@ export default function AIConfigPage() {
 
   function handleReset() {
     if (!sysConfig) return
-    setForm(toForm(sysConfig as AIConfigView))
+    setDraftForm(toForm(sysConfig as AIConfigView))
     setDirty(false)
     setApiKeyDirty(false)
     setShowApiKey(false)

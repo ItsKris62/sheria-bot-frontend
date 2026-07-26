@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
@@ -209,7 +209,7 @@ function FailedPaymentsPanel() {
 
 export default function AdminBillingPage() {
   const utils = trpc.useUtils()
-  const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1_000).toISOString()
+  const [sixMonthsAgo] = useState(() => new Date(Date.now() - 180 * 24 * 60 * 60 * 1_000).toISOString())
 
   const { data: revenue, isLoading: revLoading } = trpc.admin.getRevenueMetrics.useQuery({ dateFrom: sixMonthsAgo })
   const { data: subOverview, isLoading: subLoading } = trpc.admin.getSubscriptionOverview.useQuery(undefined)
@@ -223,23 +223,22 @@ export default function AdminBillingPage() {
       void utils.admin.getBillingPlanCatalog.invalidate()
       toast.success("Plan catalog saved")
       setCatalogDirty(false)
+      setPlanEditsOverride(null)
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
-  const [planEdits, setPlanEdits] = useState<PlanEdit[]>([])
+  const catalogPlanEdits = useMemo(() => {
+    if (!catalogData) return []
+    const catalog = catalogData as PlanCatalog
+    return catalog.plans.filter((p) => p.editable).map(planToEdit)
+  }, [catalogData])
+  const [planEditsOverride, setPlanEditsOverride] = useState<PlanEdit[] | null>(null)
+  const planEdits = planEditsOverride ?? catalogPlanEdits
   const [catalogDirty, setCatalogDirty] = useState(false)
 
-  useEffect(() => {
-    if (catalogData && planEdits.length === 0) {
-      const catalog = catalogData as PlanCatalog
-      const editable = catalog.plans.filter((p) => p.editable)
-      setPlanEdits(editable.map(planToEdit))
-    }
-  }, [catalogData, planEdits.length])
-
   function updatePlanEdit(planId: string, changes: Partial<PlanEdit>) {
-    setPlanEdits((prev) => prev.map((e) => (e.id === planId ? { ...e, ...changes } : e)))
+    setPlanEditsOverride((prev) => (prev ?? catalogPlanEdits).map((e) => (e.id === planId ? { ...e, ...changes } : e)))
     setCatalogDirty(true)
   }
 
@@ -261,9 +260,7 @@ export default function AdminBillingPage() {
 
   function handleCatalogReset() {
     if (catalogData) {
-      const catalog = catalogData as PlanCatalog
-      const editable = catalog.plans.filter((p) => p.editable)
-      setPlanEdits(editable.map(planToEdit))
+      setPlanEditsOverride(catalogPlanEdits)
       setCatalogDirty(false)
     }
   }

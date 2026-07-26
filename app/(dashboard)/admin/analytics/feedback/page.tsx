@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import {
   ChevronLeft,
   ChevronRight,
@@ -84,10 +84,8 @@ const daysForRange = (value: FeedbackRange) => {
 }
 
 export default function FeedbackPage() {
-  const [range, setRange] = useState<FeedbackRange>("last30d")
-  const [page, setPage] = useState(1)
-
-  useEffect(() => { setPage(1) }, [range])
+  const [queryState, setQueryState] = useState({ range: "last30d" as FeedbackRange, page: 1 })
+  const { range, page } = queryState
 
   const { data: rawData, isLoading, isError, refetch } = trpc.analytics.getFeedbackSummary.useQuery(
     { range, page, pageSize: PAGE_SIZE },
@@ -134,7 +132,7 @@ export default function FeedbackPage() {
             User thumbs up / down on compliance query responses
           </p>
         </div>
-        <Select value={range} onValueChange={(v) => setRange(v as FeedbackRange)}>
+        <Select value={range} onValueChange={(value) => setQueryState({ range: value as FeedbackRange, page: 1 })}>
           <SelectTrigger className="h-9 w-full sm:w-40">
             <SelectValue />
           </SelectTrigger>
@@ -407,7 +405,7 @@ export default function FeedbackPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage((c) => Math.max(1, c - 1))}
+                      onClick={() => setQueryState((current) => ({ ...current, page: Math.max(1, current.page - 1) }))}
                       disabled={page === 1}
                     >
                       <ChevronLeft className="mr-1 h-4 w-4" />
@@ -416,7 +414,7 @@ export default function FeedbackPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage((c) => Math.min(totalPages, c + 1))}
+                      onClick={() => setQueryState((current) => ({ ...current, page: Math.min(totalPages, current.page + 1) }))}
                       disabled={page >= totalPages}
                     >
                       Next

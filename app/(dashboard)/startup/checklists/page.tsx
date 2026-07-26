@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect, useRef } from "react"
+import { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -329,7 +329,7 @@ function GenerateChecklistDialog({
     prevOpenRef.current = open
   }, [open, defaultValues])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const generateMutation = trpc.checklist.generateChecklistAsync.useMutation<any>({
     onSuccess: (data: { checklistId: string; status: string }) => {
       toast.success("Checklist generation started", {
@@ -339,7 +339,7 @@ function GenerateChecklistDialog({
       resetForm()
       onSuccess(data.checklistId)
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     onError: (err: any) => {
       const code = (err?.data?.code ?? err?.shape?.data?.code) as string | undefined
       if (code === "FORBIDDEN") {
@@ -1176,13 +1176,13 @@ function NormalizedChecklistDetailView({
   }
 
   const updateItemMutation = trpc.checklist.updateChecklistItem.useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     onMutate: async (variables: any) => {
       await utils.checklist.getChecklistDetail.cancel({ checklistId })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const prev = utils.checklist.getChecklistDetail.getData({ checklistId } as any)
       // Optimistic update
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       utils.checklist.getChecklistDetail.setData({ checklistId } as any, (old: any) => {
         if (!old) return old
         return {
@@ -1199,10 +1199,10 @@ function NormalizedChecklistDetailView({
       })
       return { prev }
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     onSuccess: (data: any) => {
       // Server response wins   apply authoritative server values
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       utils.checklist.getChecklistDetail.setData({ checklistId } as any, (old: any) => {
         if (!old) return old
         return {
@@ -1224,10 +1224,10 @@ function NormalizedChecklistDetailView({
       // Refresh list card progress
       utils.checklist.listChecklists.invalidate()
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     onError: (err: any, _variables: any, context: any) => {
       if (context?.prev) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         utils.checklist.getChecklistDetail.setData({ checklistId } as any, context.prev as any)
       } else {
         utils.checklist.getChecklistDetail.invalidate({ checklistId } as any)
@@ -1248,7 +1248,7 @@ function NormalizedChecklistDetailView({
       const next = cycleStatus(current)
       updateItemMutation.mutate({ checklistId, itemId, status: next })
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [checklistId, updateItemMutation]
   )
 
@@ -1256,7 +1256,7 @@ function NormalizedChecklistDetailView({
     (itemId: string, status: NormalizedItemStatus, notes?: string) => {
       updateItemMutation.mutate({ checklistId, itemId, status, notes })
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [checklistId, updateItemMutation]
   )
 
@@ -1756,8 +1756,10 @@ function LegacyChecklistDetailView({
   const [isExporting, setIsExporting]       = useState(false)
   const [localProgress, setLocalProgress]   = useState<Record<string, string> | null>(null)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const itemProgress = localProgress ?? ((data?.itemProgress as Record<string, string>) ?? {})
+  const itemProgress = useMemo(
+    () => localProgress ?? ((data?.itemProgress as Record<string, string>) ?? {}),
+    [data?.itemProgress, localProgress]
+  )
 
   const updateProgressMutation = trpc.checklist.updateChecklistProgress.useMutation({
     onSuccess: () => {
@@ -1786,7 +1788,6 @@ function LegacyChecklistDetailView({
       setLocalProgress(updated)
       updateProgressMutation.mutate({ checklistId, itemProgress: updated })
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, checklistId, itemProgress, updateProgressMutation]
   )
 
@@ -1797,7 +1798,6 @@ function LegacyChecklistDetailView({
       setLocalProgress(updated)
       updateProgressMutation.mutate({ checklistId, itemProgress: updated })
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, checklistId, itemProgress, updateProgressMutation]
   )
 
@@ -2168,22 +2168,23 @@ function ChecklistDetailView({
   checklistId: string
   onBack: () => void
 }) {
-  const pollStartRef = useRef(Date.now())
+  const [pollStartedAt, setPollStartedAt] = useState(() => Date.now())
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [timedOut, setTimedOut] = useState(false)
   const [newChecklistDialogOpen, setNewChecklistDialogOpen] = useState(false)
   const utils = trpc.useUtils()
 
   // Always poll status   determines isNormalized + GENERATING state.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { data: rawStatus, isLoading: statusLoading, error: statusError } =
     trpc.checklist.getChecklistStatus.useQuery(
       { checklistId },
       {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         refetchInterval: (query: any) => {
           const d = query?.state?.data as ChecklistStatusLocal | undefined
           if (!d || d.status === "GENERATING") {
-            if (Date.now() - pollStartRef.current > POLL_TIMEOUT_MS) return false
+            if (Date.now() - pollStartedAt > POLL_TIMEOUT_MS) return false
             return POLL_INTERVAL_MS
           }
           return false
@@ -2196,7 +2197,8 @@ function ChecklistDetailView({
 
   const retryMutation = trpc.checklist.retryChecklist.useMutation({
     onSuccess: () => {
-      pollStartRef.current = Date.now() // reset poll timer
+      setPollStartedAt(Date.now())
+      setElapsedSeconds(0)
       setTimedOut(false)
       void utils.checklist.getChecklistStatus.invalidate({ checklistId })
       void utils.checklist.listChecklists.invalidate()
@@ -2208,14 +2210,25 @@ function ChecklistDetailView({
   })
 
   // Set timeout flag after POLL_TIMEOUT_MS if still GENERATING
+  const isGenerating = statusLoading || !statusData || statusData.status === "GENERATING"
+  const isFailed     = statusData?.status === "FAILED"
+
   useEffect(() => {
+    if (!isGenerating) return
+    const remainingMs = Math.max(POLL_TIMEOUT_MS - (Date.now() - pollStartedAt), 0)
     const timer = setTimeout(() => {
-      if (!statusData || statusData.status === "GENERATING") {
-        setTimedOut(true)
-      }
-    }, POLL_TIMEOUT_MS)
+      setTimedOut(true)
+    }, remainingMs)
     return () => clearTimeout(timer)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isGenerating, pollStartedAt])
+
+  useEffect(() => {
+    if (!isGenerating) return
+    const timer = window.setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - pollStartedAt) / 1000))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [isGenerating, pollStartedAt])
 
   // Status error
   if (statusError) {
@@ -2236,12 +2249,7 @@ function ChecklistDetailView({
   }
 
   // Generating / polling state
-  const isGenerating = statusLoading || !statusData || statusData.status === "GENERATING"
-  const isFailed     = statusData?.status === "FAILED"
-
   if (isGenerating) {
-    const elapsed = Math.floor((Date.now() - pollStartRef.current) / 1000)
-
     if (timedOut) {
       return (
         <div className="space-y-4">
@@ -2294,7 +2302,7 @@ function ChecklistDetailView({
             </div>
             {statusData && (
               <div className="text-xs text-muted-foreground space-y-1">
-                <p>{elapsed}s elapsed, checking every 3 seconds</p>
+                <p>{elapsedSeconds}s elapsed, checking every 3 seconds</p>
               </div>
             )}
             <div className="w-full max-w-xs mx-auto bg-muted rounded-full h-2 overflow-hidden">
@@ -2441,14 +2449,14 @@ export default function ChecklistsPage() {
   // fire a success toast exactly once when they transition to a non-GENERATING state.
   const prevGeneratingIdsRef = useRef<Set<string>>(new Set())
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { data: rawUsage } = trpc.checklist.getChecklistUsage.useQuery(undefined) as { data: any }
   const usageData = rawUsage as { used: number; limit: number; period: "month" | "lifetime"; planName: string } | undefined
 
   const { data: rawChecklists, isLoading, error, refetch } =
     trpc.checklist.listChecklists.useQuery(undefined, {
       // Auto-poll when any checklist is GENERATING   stops when all leave that state
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       refetchInterval: (query: any) => {
         const data = query?.state?.data as ChecklistSummaryLocal[] | undefined
         return data?.some((c) => c.status === "GENERATING") ? POLL_INTERVAL_MS : false

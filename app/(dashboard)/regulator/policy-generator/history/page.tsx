@@ -68,7 +68,7 @@ function PolicyHistoryContent() {
   const queryStatus = statusFilter === "all" ? undefined : statusFilter
   const { data, isLoading, isError, error } = useEnterprisePolicies({ limit: 50, status: queryStatus })
   const { deletePolicy, isDeleting } = useEnterprisePolicyActions()
-  const policies = (data?.items ?? []) as PolicyHistoryItem[]
+  const policies = useMemo(() => (data?.items ?? []) as PolicyHistoryItem[], [data?.items])
 
   const filteredHistory = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()

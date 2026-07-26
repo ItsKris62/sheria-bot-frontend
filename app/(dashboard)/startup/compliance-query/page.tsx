@@ -224,9 +224,15 @@ function MessageActionBar({
 export default function ComplianceQueryPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [query, setQuery] = useState("")
+  const topic = searchParams.get("topic")
+  const [query, setQuery] = useState(() => {
+    if (!isRegulatoryArea(topic)) return ""
+    const areaLabel = REGULATORY_AREA_NAMES[topic]
+    return `What are the current compliance requirements for ${areaLabel} that apply to my organization?`
+  })
   const [messages, setMessages] = useState<Message[]>([])
   const [answerDetail, setAnswerDetail] = useState<"standard" | "detailed">("standard")
+  const [pendingQuestion, setPendingQuestion] = useState("")
 
   const [feedbackState, setFeedbackState] = useState<Record<string, FeedbackRating>>({})
   const [savedState, setSavedState] = useState<Record<string, boolean>>({})
@@ -275,8 +281,6 @@ export default function ComplianceQueryPage() {
     if (topicPrefillAppliedRef.current) return
     topicPrefillAppliedRef.current = true
 
-    const topic = searchParams.get("topic")
-    
     // Track page open
     trackEvent("compliance_query_opened", {
       source: topic ? "topic_link" : "direct"
@@ -284,10 +288,8 @@ export default function ComplianceQueryPage() {
 
     if (!isRegulatoryArea(topic)) return
 
-    const areaLabel = REGULATORY_AREA_NAMES[topic]
-    setQuery(`What are the current compliance requirements for ${areaLabel} that apply to my organization?`)
     router.replace("/startup/compliance-query", { scroll: false })
-  }, [router, searchParams])
+  }, [router, topic])
 
   const scrollChatToBottom = () => {
     window.requestAnimationFrame(() => {
@@ -340,7 +342,7 @@ export default function ComplianceQueryPage() {
         trackEvent("compliance_query_source_insufficient")
       }
     }
-  }, [streamState])
+  }, [answerDetail, streamState])
 
   // Handlers
 
@@ -352,6 +354,7 @@ export default function ComplianceQueryPage() {
     trackEvent("compliance_query_started", { source: "manual_input" })
 
     pendingQuestionRef.current = trimmed
+    setPendingQuestion(trimmed)
     setMessages((prev) => [
       ...prev,
       {
@@ -648,7 +651,7 @@ export default function ComplianceQueryPage() {
                         {streamState.content ? (
                           <ComplianceFeedback content={streamState.content} variant="chat" />
                         ) : (
-                          <ThinkingIndicator query={pendingQuestionRef.current} />
+                          <ThinkingIndicator query={pendingQuestion} />
                         )}
                       </div>
                     </div>
