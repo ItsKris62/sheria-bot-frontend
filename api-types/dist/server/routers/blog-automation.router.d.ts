@@ -111,7 +111,7 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
             authorityType?: "OTHER" | "DATA_PROTECTION" | "AML_CFT" | "INTERNATIONAL_STANDARD" | "CONSUMER_PROTECTION" | "INTERNAL" | "CENTRAL_BANK" | "COMMUNICATIONS" | "SECURITIES" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | undefined;
             sourceType?: "INTERNATIONAL_STANDARD" | "OFFICIAL" | "THIRD_PARTY" | "INTERNAL" | "MEDIA" | undefined;
-            status?: "DUPLICATE" | "NEW" | "READY_FOR_SCORING" | "SCORED" | "DISMISSED" | "FETCH_FAILED" | "CONVERTED_TO_SUGGESTION" | undefined;
+            status?: "DUPLICATE" | "DISMISSED" | "NEW" | "READY_FOR_SCORING" | "SCORED" | "FETCH_FAILED" | "CONVERTED_TO_SUGGESTION" | undefined;
             search?: string | undefined;
             page?: number | undefined;
             limit?: number | undefined;
@@ -288,8 +288,8 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                     jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                     reason: string | null;
                     approvedAt: Date | null;
-                    dismissedReason: string | null;
                     blogPostId: string | null;
+                    dismissedReason: string | null;
                     suggestedSlug: string | null;
                     jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     articleType: import(".prisma/client").$Enums.BlogArticleType;
@@ -380,8 +380,8 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                 reason: string | null;
                 approvedAt: Date | null;
-                dismissedReason: string | null;
                 blogPostId: string | null;
+                dismissedReason: string | null;
                 suggestedSlug: string | null;
                 jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                 articleType: import(".prisma/client").$Enums.BlogArticleType;
@@ -582,7 +582,7 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             evidenceGaps: string[];
             contradictions: import("@prisma/client/runtime/client").JsonValue | null;
             reviewerStatus: string | null;
-        };
+        } | null;
         meta: object;
     }>;
     adminGetFreshnessReview: import("@trpc/server").TRPCQueryProcedure<{
@@ -602,8 +602,8 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             completedAt: Date | null;
             action: import(".prisma/client").$Enums.BlogFreshnessAction;
             contentHash: string;
-            triggeredBy: string;
             blogPostId: string;
+            triggeredBy: string;
             sourceSetHash: string;
             promptVersion: string;
             agentRunId: string | null;
@@ -640,8 +640,8 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 completedAt: Date | null;
                 action: import(".prisma/client").$Enums.BlogFreshnessAction;
                 contentHash: string;
-                triggeredBy: string;
                 blogPostId: string;
+                triggeredBy: string;
                 sourceSetHash: string;
                 promptVersion: string;
                 agentRunId: string | null;
@@ -668,7 +668,7 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
     adminListRevisionRequests: import("@trpc/server").TRPCQueryProcedure<{
         input: {
             blogPostId?: string | undefined;
-            status?: "RESOLVED" | "DISMISSED" | "PENDING_REVIEW" | "ACCEPTED" | "ASSIGNED" | undefined;
+            status?: "RESOLVED" | "ACCEPTED" | "DISMISSED" | "PENDING_REVIEW" | "ASSIGNED" | undefined;
             page?: number | undefined;
             limit?: number | undefined;
         };

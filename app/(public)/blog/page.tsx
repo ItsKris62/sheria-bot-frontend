@@ -1,229 +1,293 @@
-import { Metadata } from "next"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowRight, Calendar, User } from "lucide-react"
+import { Suspense } from "react"
+import { redirect } from "next/navigation"
+import { ArrowRight, BookOpen, CalendarDays, FileSearch, Library, MessageSquareText, ShieldCheck, type LucideIcon } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { BlogArticleCard } from "@/components/blog/blog-article-card"
 import { BlogFilters } from "@/components/blog/blog-filters"
+import { BlogNewsletterSignup } from "@/components/blog/blog-newsletter-signup"
+import { BlogPagination } from "@/components/blog/blog-pagination"
+import { BlogProductCtaLink } from "@/components/blog/blog-product-cta-link"
+import { BlogTopicRequest } from "@/components/blog/blog-topic-request"
+import type { BlogCtaId } from "@/lib/analytics/blog-events"
+import { getBlogList, getBlogTaxonomy, getFeaturedBlogPosts } from "@/lib/blog/api"
+import { buildBlogHref, cleanBlogParam, normaliseBlogPage } from "@/lib/blog/url"
+import { absoluteUrl } from "@/lib/site-url"
 
-import { getSiteUrl, absoluteUrl } from "@/lib/site-url"
+const PAGE_SIZE = 9
 
-export function generateMetadata(): Metadata {
-  const url = absoluteUrl('/blog');
-  
+interface BlogPageProps {
+  searchParams: Promise<{ [key: string]: string | undefined }>
+}
+
+function resolveState(searchParams: { [key: string]: string | undefined }) {
+  const q = cleanBlogParam(searchParams.q)
+  const category = cleanBlogParam(searchParams.category)
+  const tag = cleanBlogParam(searchParams.tag)
+  const page = normaliseBlogPage(searchParams.page)
+  return { q, category, tag, page }
+}
+
+export async function generateMetadata({ searchParams }: BlogPageProps): Promise<Metadata> {
+  const state = resolveState(await searchParams)
+  const isSearchPage = Boolean(state.q)
+  const canonicalPath = isSearchPage
+    ? "/blog"
+    : buildBlogHref({ category: state.category, tag: state.tag, page: state.page }, "")
+
+  const title = state.category
+    ? `${state.category} Articles | SheriaBot Blog`
+    : "Compliance Intelligence for African Fintech Teams | SheriaBot Blog"
+
+  const description = "Practical regulatory analysis, compliance guidance and fintech operations insights from SheriaBot for Kenyan and African financial services teams."
+
   return {
-    title: "Regulatory Insights & Compliance News | SheriaBot",
-    description: "Source-backed regulatory updates, compliance guides, and fintech compliance insights for Kenya's financial services sector.",
-    alternates: {
-      canonical: url,
-    },
+    title,
+    description,
+    alternates: { canonical: absoluteUrl(canonicalPath) },
+    robots: isSearchPage ? { index: false, follow: true } : undefined,
     openGraph: {
-      title: "Regulatory Insights & Compliance News | SheriaBot",
-      description: "Source-backed regulatory updates, compliance guides, and fintech compliance insights for Kenya's financial services sector.",
-      url,
+      title,
+      description,
+      url: absoluteUrl(canonicalPath),
       siteName: "SheriaBot",
-      images: [
-        {
-          url: absoluteUrl('/og-image.png'),
-          width: 1200,
-          height: 630,
-        }
-      ],
+      images: [{ url: absoluteUrl("/og-image.png"), width: 1200, height: 630 }],
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: "Regulatory Insights & Compliance News | SheriaBot",
-      description: "Source-backed regulatory updates, compliance guides, and fintech compliance insights for Kenya's financial services sector.",
-      images: [absoluteUrl('/og-image.png')],
+      title,
+      description,
+      images: [absoluteUrl("/og-image.png")],
     },
-  };
-}
-
-async function getPosts(searchParams: { q?: string, category?: string, page?: string }) {
-  const query = searchParams.q || ""
-  const category = searchParams.category === "All" ? "" : (searchParams.category || "")
-  const page = parseInt(searchParams.page || "1", 10)
-  
-  const url = new URL(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/trpc/blog.publicList`)
-  const input = {
-    search: query || undefined,
-    category: category || undefined,
-    page,
-    limit: 20
-  }
-  url.searchParams.set("input", JSON.stringify(input))
-  
-  try {
-    const res = await fetch(url.toString(), { next: { revalidate: 60 } })
-    if (!res.ok) return { posts: [], pagination: { total: 0 } }
-    const json = await res.json()
-    return json.result.data
-  } catch (error) {
-    console.error("Failed to fetch blog posts", error)
-    return { posts: [], pagination: { total: 0 } }
   }
 }
 
-export default async function BlogPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
-  const resolvedSearchParams = await searchParams
-  const data = await getPosts(resolvedSearchParams)
-  
-  const filteredPosts = data.posts || []
-  const featuredPosts = filteredPosts.filter((post: any) => post.featured).slice(0, 2)
-  const selectedCategory = resolvedSearchParams.category || "All"
+const exploreLinks = [
+  {
+    title: "Compliance Query",
+    href: "/startup/compliance-query",
+    description: "Ask a regulatory question and get grounded guidance.",
+    icon: MessageSquareText,
+    ctaId: "start_compliance_query",
+  },
+  {
+    title: "Gap Analysis",
+    href: "/startup/gap-analysis",
+    description: "Compare your controls against compliance expectations.",
+    icon: FileSearch,
+    ctaId: "request_demo",
+  },
+  {
+    title: "Policy Generator",
+    href: "/regulator/policy-generator",
+    description: "Draft structured policy artefacts from regulatory inputs.",
+    icon: ShieldCheck,
+    ctaId: "explore_regulatory_library",
+  },
+  {
+    title: "Knowledge Base",
+    href: "/knowledge-base",
+    description: "Browse source-backed compliance guidance.",
+    icon: Library,
+    ctaId: "explore_regulatory_library",
+  },
+  {
+    title: "Compliance Calendar",
+    href: "/startup/calendar",
+    description: "Keep upcoming regulatory dates visible.",
+    icon: CalendarDays,
+    ctaId: "request_demo",
+  },
+] satisfies Array<{
+  title: string
+  href: string
+  description: string
+  icon: LucideIcon
+  ctaId: BlogCtaId
+}>
+
+export default async function BlogPage({ searchParams }: BlogPageProps) {
+  const state = resolveState(await searchParams)
+  const [data, featuredPosts, taxonomy] = await Promise.all([
+    getBlogList({
+      search: state.q,
+      category: state.category,
+      tag: state.tag,
+      page: state.page,
+      limit: PAGE_SIZE,
+    }),
+    getFeaturedBlogPosts(2),
+    getBlogTaxonomy(),
+  ])
+
+  if (data.pagination.pages > 0 && state.page > data.pagination.pages) {
+    redirect(buildBlogHref({ ...state, page: data.pagination.pages }, ""))
+  }
+
+  const posts = data.posts || []
+  const hasFilters = Boolean(state.q || state.category || state.tag)
+  const resultLabel = `${data.pagination.total} ${data.pagination.total === 1 ? "article" : "articles"}`
+  const placement = state.q ? "search" : state.category || state.tag ? "category" : "recent"
 
   return (
-    <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <Badge variant="outline" className="mb-4 border-primary/50 text-primary">
-              Blog
+    <main className="flex flex-col">
+      <section className="border-b border-border bg-background pt-28">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-10 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
+          <div className="flex flex-col justify-center">
+            <Badge variant="outline" className="mb-5 w-fit border-primary/50 bg-primary/10 text-primary">
+              SheriaBot Blog
             </Badge>
-            <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              Regulatory Insights &{" "}
-              <span className="text-primary">Compliance News</span>
+            <h1 className="max-w-4xl text-balance text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
+              Compliance intelligence for African fintech teams
             </h1>
-            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-              Stay informed with the latest regulatory updates, compliance tips, 
-              and industry news from Kenya&apos;s fintech sector.
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+              Practical analysis, regulatory updates and implementation guidance from SheriaBot for founders, legal teams, operators and regulators building across Kenya and Africa.
             </p>
+          </div>
+          <div className="rounded-lg border border-border/70 bg-card/80 p-5 shadow-elevated">
+            <Suspense fallback={<div className="h-36 rounded-md bg-muted/40" />}>
+              <BlogFilters
+                resultCount={data.pagination.total}
+                page={data.pagination.page}
+                categories={taxonomy.categories}
+                tags={taxonomy.tags}
+              />
+            </Suspense>
           </div>
         </div>
       </section>
 
-      {/* Featured Posts */}
       {featuredPosts.length > 0 && (
-        <section className="pb-12">
+        <section aria-labelledby="featured-article-heading" className="border-b border-border/60 py-14">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="mb-6 text-xl font-semibold text-foreground">Featured Articles</h2>
+            <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Featured</p>
+                <h2 id="featured-article-heading" className="mt-2 text-2xl font-semibold text-foreground">
+                  Editor-selected insight
+                </h2>
+              </div>
+            </div>
             <div className="grid gap-6 lg:grid-cols-2">
-              {featuredPosts.map((post: any) => (
-                <Link key={post.slug} href={`/blog/${post.slug}`}>
-                  <Card className="group h-full border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
-                    <CardContent className="p-6">
-                      <Badge variant="outline" className="mb-3 text-xs">
-                        {post.category || "General"}
-                      </Badge>
-                      <h3 className="text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
-                        {post.title}
-                      </h3>
-                      <p className="mt-2 line-clamp-2 text-muted-foreground">
-                        {post.excerpt}
-                      </p>
-                      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <User className="h-4 w-4" />
-                          {post.author?.name || "Editorial Team"}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("en-KE", { 
-                            month: "short", 
-                            day: "numeric", 
-                            year: "numeric" 
-                          }) : "Recently"}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+              {featuredPosts.map((post, index) => (
+                <BlogArticleCard
+                  key={post.id}
+                  post={post}
+                  placement="featured"
+                  variant="featured"
+                  priorityImage={index === 0}
+                />
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Search and Filters */}
-      <section className="border-y border-border bg-muted/30 py-8">
+      <section id="articles" aria-labelledby="recent-articles-heading" className="py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <BlogFilters />
-        </div>
-      </section>
-
-      {/* All Posts */}
-      <section className="py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-semibold text-foreground">
-            {selectedCategory === "All" ? "All Articles" : selectedCategory}
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({data.pagination?.total || 0} {(data.pagination?.total || 0) === 1 ? "article" : "articles"})
-            </span>
-          </h2>
-
-          {filteredPosts.length === 0 ? (
-            <Card className="border-border/50 bg-card/50">
-              <CardContent className="p-12 text-center">
-                <p className="text-muted-foreground">No articles found matching your criteria.</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4 bg-transparent"
-                  asChild
-                >
-                  <Link href="/blog">Clear Filters</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredPosts.map((post: any) => (
-                <Link key={post.slug} href={`/blog/${post.slug}`}>
-                  <Card className="group h-full border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
-                    <CardContent className="p-6">
-                      <Badge variant="outline" className="mb-3 text-xs">
-                        {post.category || "General"}
-                      </Badge>
-                      <h3 className="font-semibold text-foreground transition-colors group-hover:text-primary">
-                        {post.title}
-                      </h3>
-                      <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                        {post.excerpt}
-                      </p>
-                      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{post.author?.name || "Editorial Team"}</span>
-                        <span>
-                          {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("en-KE") : "Recently"}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Recent articles</p>
+              <h2 id="recent-articles-heading" className="mt-2 text-2xl font-semibold text-foreground">
+                {state.category || state.tag || state.q ? "Filtered guidance" : "Latest from SheriaBot"}
+              </h2>
+              <p aria-live="polite" className="mt-2 text-sm text-muted-foreground">
+                Showing {resultLabel}
+                {state.category ? ` in ${state.category}` : ""}
+                {state.tag ? ` tagged ${state.tag}` : ""}
+                {state.q ? " matching your search" : ""}.
+              </p>
             </div>
+            {hasFilters && (
+              <Button variant="outline" asChild className="bg-transparent">
+                <Link href="/blog#articles">Clear filters</Link>
+              </Button>
+            )}
+          </div>
+
+          {posts.length === 0 ? (
+            <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
+              <div className="rounded-lg border border-border/70 bg-card/80 p-8">
+                <BookOpen className="h-9 w-9 text-primary" aria-hidden="true" />
+                <h3 className="mt-5 text-xl font-semibold text-foreground">
+                  No articles matched this view
+                </h3>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+                  Try clearing a filter, checking the Knowledge Base, or asking the editorial team to cover this topic.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Button asChild>
+                    <Link href="/blog#articles">Clear filters</Link>
+                  </Button>
+                  <Button variant="outline" asChild className="bg-transparent">
+                    <Link href="/knowledge-base">Open Knowledge Base</Link>
+                  </Button>
+                </div>
+              </div>
+              <BlogTopicRequest sourcePage="/blog" category={state.category} compact />
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {posts.map((post) => (
+                  <BlogArticleCard key={post.id} post={post} placement={placement} />
+                ))}
+              </div>
+              <BlogPagination
+                currentPage={data.pagination.page}
+                totalPages={data.pagination.pages}
+                state={state}
+              />
+            </>
           )}
         </div>
       </section>
 
-      {/* Newsletter CTA */}
-      <section className="border-t border-border bg-muted/30 py-20">
+      <section aria-labelledby="explore-sheriabot-heading" className="border-y border-border/60 bg-muted/20 py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Card className="border-primary/50 bg-gradient-to-br from-primary/10 via-card to-secondary/10">
-            <CardContent className="p-12 text-center">
-              <h2 className="text-3xl font-bold text-foreground">
-                Stay Updated
-              </h2>
-              <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-                Subscribe to our newsletter for weekly regulatory updates and compliance tips.
-              </p>
-              <div className="mx-auto mt-8 flex max-w-md flex-col gap-4 sm:flex-row">
-                <Input 
-                  placeholder="Enter your email" 
-                  type="email"
-                  className="flex-1"
-                />
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  Subscribe
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="mb-8 max-w-2xl">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Explore SheriaBot</p>
+            <h2 id="explore-sheriabot-heading" className="mt-2 text-2xl font-semibold text-foreground">
+              Turn insight into compliance action
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {exploreLinks.map((item) => (
+              <BlogProductCtaLink
+                key={item.href}
+                href={item.href}
+                ctaId={item.ctaId}
+                className="group rounded-lg border border-border/70 bg-card/70 p-5 transition duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary motion-reduce:transform-none"
+              >
+                <item.icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                <h3 className="mt-4 font-semibold text-foreground group-hover:text-primary">{item.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
+                <span className="mt-4 inline-flex items-center text-sm font-medium text-primary">
+                  Open <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
+                </span>
+              </BlogProductCtaLink>
+            ))}
+          </div>
         </div>
       </section>
-    </div>
+
+      <section aria-labelledby="blog-newsletter-heading" className="py-14">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-[1fr_420px] lg:px-8">
+          <div className="rounded-lg border border-primary/25 bg-primary/5 p-7">
+            <h2 id="blog-newsletter-heading" className="text-2xl font-semibold text-foreground">
+              Get the Kenyan Compliance Brief
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+              A weekly editorial digest of regulatory developments and practical implementation guidance. No fabricated popularity metrics, just the updates worth reviewing.
+            </p>
+            <BlogNewsletterSignup sourcePage="/blog" category={state.category} />
+          </div>
+          <BlogTopicRequest sourcePage="/blog" category={state.category} compact />
+        </div>
+      </section>
+    </main>
   )
 }

@@ -68,10 +68,14 @@ function PostHogPageViewTracker() {
 
   useEffect(() => {
     if (pathname && posthog) {
-      let url = window.origin + pathname;
-      if (searchParams?.toString()) {
-        url = url + `?${searchParams.toString()}`;
+      const params = new URLSearchParams(searchParams?.toString());
+      if (pathname === "/blog" || pathname.startsWith("/blog/")) {
+        params.delete("q");
+        params.delete("query");
+        params.delete("search");
       }
+      const queryString = params.toString();
+      const url = `${window.origin}${pathname}${queryString ? `?${queryString}` : ""}`;
       posthog.capture("$pageview", {
         $current_url: url,
       });

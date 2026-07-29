@@ -1,4 +1,5 @@
-import { getSiteUrl, absoluteUrl } from '@/lib/site-url'
+import { absoluteUrl } from '@/lib/site-url'
+import { safeSourceUrl } from '@/lib/blog/url'
 
 interface BlogPostJsonLdProps {
   slug: string
@@ -10,6 +11,7 @@ interface BlogPostJsonLdProps {
   dateModified: string
   readTime: string
   category?: string
+  imageUrl?: string
   sources?: { url?: string | null }[]
 }
 
@@ -23,10 +25,11 @@ export function BlogPostJsonLd({
   dateModified,
   readTime,
   category,
+  imageUrl,
   sources,
 }: BlogPostJsonLdProps) {
   const url = absoluteUrl(`/blog/${slug}`)
-  const validCitations = sources?.map(s => s.url).filter(Boolean) as string[]
+  const validCitations = sources?.map((source) => safeSourceUrl(source.url)).filter(Boolean) as string[]
 
   const schema: any = {
     '@context': 'https://schema.org',
@@ -36,7 +39,7 @@ export function BlogPostJsonLd({
     url,
     datePublished: new Date(datePublished).toISOString(),
     dateModified: new Date(dateModified).toISOString(),
-    image: absoluteUrl('/og-image.png'),
+    image: imageUrl || absoluteUrl('/og-image.png'),
     inLanguage: 'en-KE',
     timeRequired: readTime,
     isAccessibleForFree: true,
@@ -75,4 +78,3 @@ export function BlogPostJsonLd({
     />
   )
 }
-

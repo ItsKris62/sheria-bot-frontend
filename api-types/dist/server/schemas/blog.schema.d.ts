@@ -28,15 +28,39 @@ export declare const blogSourceSchema: z.ZodObject<{
     notes: z.ZodNullable<z.ZodOptional<z.ZodString>>;
 }, z.core.$strip>;
 export declare const publicListBlogPostsSchema: z.ZodObject<{
-    category: z.ZodOptional<z.ZodString>;
-    search: z.ZodOptional<z.ZodString>;
-    tag: z.ZodOptional<z.ZodString>;
+    category: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    search: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    tag: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
     featured: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 export declare const publicGetBlogPostBySlugSchema: z.ZodObject<{
     slug: z.ZodString;
+}, z.core.$strip>;
+export declare const publicFeaturedBlogPostsSchema: z.ZodObject<{
+    limit: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const submitBlogFeedbackSchema: z.ZodObject<{
+    postId: z.ZodString;
+    value: z.ZodEnum<{
+        HELPFUL: "HELPFUL";
+        NOT_HELPFUL: "NOT_HELPFUL";
+    }>;
+    reasonCode: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    readerSessionId: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+}, z.core.$strip>;
+export declare const publicFeedbackSummarySchema: z.ZodObject<{
+    postId: z.ZodString;
+}, z.core.$strip>;
+export declare const submitBlogTopicRequestSchema: z.ZodObject<{
+    topic: z.ZodString;
+    category: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    jurisdiction: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    sourcePage: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    contactEmail: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    readerSessionId: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    spamTrap: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export declare const adminListBlogPostsSchema: z.ZodObject<{
     status: z.ZodOptional<z.ZodEnum<{

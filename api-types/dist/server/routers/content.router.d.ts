@@ -28,7 +28,7 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
      */
     create: import("@trpc/server").TRPCMutationProcedure<{
         input: {
-            contentType: "BLOG_POST" | "KNOWLEDGE_BASE_ARTICLE" | "POLICY_TEMPLATE";
+            contentType: "KNOWLEDGE_BASE_ARTICLE" | "POLICY_TEMPLATE";
             title: string;
             content: string;
             slug?: string | undefined;
@@ -77,6 +77,47 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
             contentStatus: import(".prisma/client").$Enums.ContentStatus;
             title: string | null;
             updatedAt: Date;
+        };
+        meta: object;
+    }>;
+    /**
+     * List published Knowledge Base articles for the public site.
+     *
+     * @public
+     */
+    listPublishedKnowledgeBase: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            page?: number | undefined;
+            limit?: number | undefined;
+            search?: string | undefined;
+            category?: string | undefined;
+            tag?: string | undefined;
+        };
+        output: {
+            items: {
+                id: string;
+                title: string | null;
+                slug: string;
+                excerpt: string | null;
+                category: string | null;
+                subcategory: string | null;
+                tags: string[];
+                publishedAt: Date | null;
+                updatedAt: Date;
+                viewCount: number;
+                readingTime: number;
+                author: {
+                    id: string;
+                    name: string;
+                    avatar: string | null;
+                } | null;
+            }[];
+            pagination: {
+                page: number;
+                limit: number;
+                total: number;
+                totalPages: number;
+            };
         };
         meta: object;
     }>;
@@ -202,6 +243,7 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
     getBySlug: import("@trpc/server").TRPCQueryProcedure<{
         input: {
             slug: string;
+            contentType?: "KNOWLEDGE_BASE_ARTICLE" | undefined;
         };
         output: {
             id: string;
@@ -218,6 +260,7 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
             seoDescription: string | null;
             seoKeywords: string[];
             publishedAt: Date | null;
+            updatedAt: Date;
             viewCount: number;
             helpfulCount: number;
             notHelpfulCount: number;

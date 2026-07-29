@@ -1,5 +1,6 @@
 import { prisma as defaultPrisma } from '@/lib/prisma/client';
 import type { EmailOptions, EmailResult } from '@/lib/email/client';
+import { type BlogPublicationSnapshot } from '@/modules/blog-automation/publication-snapshot';
 type FetchLike = typeof fetch;
 type SendEmail = (options: EmailOptions) => Promise<EmailResult>;
 export type ApprovalDecision = 'approved' | 'rejected';
@@ -53,6 +54,10 @@ export interface ListApprovalsResult {
     page: number;
     limit: number;
 }
+export interface BlogPublicationApprovalMetadata {
+    snapshot: BlogPublicationSnapshot;
+    expiresAt: Date | null;
+}
 type ApprovalPrisma = Pick<typeof defaultPrisma, 'automationApproval' | 'blogPost'>;
 export interface AutomationApprovalServiceDependencies {
     prisma?: ApprovalPrisma;
@@ -80,6 +85,7 @@ export declare class AutomationApprovalService {
     createApproval(input: CreateApprovalInput): Promise<{
         approvalId: string;
     }>;
+    private attachBlogPublicationSnapshotIfNeeded;
     /**
      * Composes and sends the reviewer's approval-decision-link email. Mirrors
      * SecurityOpsAlertService.sendAlert's shape (injectable sendEmail, try/catch
@@ -140,6 +146,7 @@ export declare class AutomationApprovalService {
      * just object-shaped instead of a single string/FK.
      */
     requireMetadataObjectField(approvalId: string, field: string): Promise<Record<string, unknown>>;
+    requireBlogPublicationSnapshot(approvalId: string): Promise<BlogPublicationApprovalMetadata>;
     /**
      * `by` is the deciding admin's own user ID, derived server-side by the
      * caller (agentsRouter.automation.recordApprovalDecision runs as

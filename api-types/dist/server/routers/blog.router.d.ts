@@ -16,9 +16,9 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
 }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
     publicList: import("@trpc/server").TRPCQueryProcedure<{
         input: {
-            category?: string | undefined;
-            search?: string | undefined;
-            tag?: string | undefined;
+            category?: unknown;
+            search?: unknown;
+            tag?: unknown;
             page?: number | undefined;
             limit?: number | undefined;
             featured?: boolean | undefined;
@@ -136,6 +136,53 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
             publishedAt: Date | null;
             slug: string;
         }[];
+        meta: object;
+    }>;
+    submitFeedback: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            postId: string;
+            value: "HELPFUL" | "NOT_HELPFUL";
+            reasonCode?: unknown;
+            readerSessionId?: unknown;
+        };
+        output: {
+            success: true;
+        };
+        meta: object;
+    }>;
+    getPublicFeedbackSummary: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            postId: string;
+        };
+        output: {
+            helpfulCount: number;
+            notHelpfulCount: number;
+            totalResponses: number;
+        };
+        meta: object;
+    }>;
+    submitTopicRequest: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            topic: string;
+            category?: unknown;
+            jurisdiction?: unknown;
+            sourcePage?: unknown;
+            contactEmail?: unknown;
+            readerSessionId?: unknown;
+            spamTrap?: string | undefined;
+        };
+        output: {
+            success: true;
+        };
+        meta: object;
+    }>;
+    adminGetEditorialMetricsContract: import("@trpc/server").TRPCQueryProcedure<{
+        input: void;
+        output: {
+            publicTrendingEnabled: boolean;
+            aggregationArchitecture: string;
+            sources: import("@/modules/blog/editorial-metrics").BlogEditorialMetricSource[];
+        };
         meta: object;
     }>;
     adminList: import("@trpc/server").TRPCQueryProcedure<{
@@ -293,8 +340,8 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
                 jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                 reason: string | null;
                 approvedAt: Date | null;
-                dismissedReason: string | null;
                 blogPostId: string | null;
+                dismissedReason: string | null;
                 suggestedSlug: string | null;
                 jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                 articleType: import(".prisma/client").$Enums.BlogArticleType;

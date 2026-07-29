@@ -14,11 +14,13 @@ async function getPublishedSlugs() {
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
   const json = await res.json()
-  return json.result.data.map((post: any) => ({
-    slug: post.slug,
-    updatedAt: post.updatedAt,
-    publishedAt: post.publishedAt,
-  }))
+  return json.result.data
+    .filter((post: any) => typeof post.slug === 'string' && post.slug.length > 0)
+    .map((post: any) => ({
+      slug: post.slug,
+      updatedAt: post.updatedAt,
+      publishedAt: post.publishedAt,
+    }))
 }
 
 async function getPublishedKnowledgeBaseArticles() {
@@ -88,7 +90,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     blogResult.status === 'fulfilled'
       ? blogResult.value.map((post: any) => ({
           url: absoluteUrl(`/blog/${post.slug}`),
-          lastModified: post.updatedAt ? new Date(post.updatedAt) : now,
+          lastModified: post.updatedAt ? new Date(post.updatedAt) : post.publishedAt ? new Date(post.publishedAt) : now,
           changeFrequency: 'monthly' as const,
           priority: 0.7,
         }))
