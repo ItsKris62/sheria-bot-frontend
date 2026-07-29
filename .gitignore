@@ -18,3 +18,7 @@ tsconfig.tsbuildinfo
 *.cert
 secrets/
 .env.local
+
+# Impeccable runtime output and per-developer state
+.impeccable/
+**/.impeccable/
