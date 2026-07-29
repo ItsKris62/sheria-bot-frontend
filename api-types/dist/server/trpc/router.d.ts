@@ -9382,6 +9382,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 id: string;
                 status: "REJECTED" | "REVIEWED";
+                note?: string | undefined;
             };
             output: {
                 id: string;

@@ -481,6 +481,7 @@ export declare const adminReviewResearchPackSchema: z.ZodObject<{
         REJECTED: "REJECTED";
         REVIEWED: "REVIEWED";
     }>;
+    note: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export declare const adminListFreshnessReviewsSchema: z.ZodObject<{
     blogPostId: z.ZodOptional<z.ZodString>;

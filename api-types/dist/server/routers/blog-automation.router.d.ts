@@ -557,6 +557,7 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
         input: {
             id: string;
             status: "REJECTED" | "REVIEWED";
+            note?: string | undefined;
         };
         output: {
             id: string;

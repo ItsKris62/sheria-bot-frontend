@@ -66,10 +66,10 @@ export default function ResearchPackDetailPage() {
         
         {canReview && (
           <div className="flex gap-2">
-            <Button variant="outline" className="text-red-600" onClick={() => setRejectDialogOpen(true)} disabled={reviewMutation.isLoading}>
+            <Button variant="outline" className="text-red-600" onClick={() => setRejectDialogOpen(true)} disabled={reviewMutation.isPending}>
               <X className="w-4 h-4 mr-2" /> Reject / Request Revision
             </Button>
-            <Button className="bg-green-600 hover:bg-green-700" onClick={handleApprove} disabled={reviewMutation.isLoading}>
+            <Button className="bg-green-600 hover:bg-green-700" onClick={handleApprove} disabled={reviewMutation.isPending}>
               <Check className="w-4 h-4 mr-2" /> Approve
             </Button>
           </div>
@@ -137,8 +137,8 @@ export default function ResearchPackDetailPage() {
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleReject} disabled={reviewMutation.isLoading}>
-              {reviewMutation.isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            <Button variant="destructive" onClick={handleReject} disabled={reviewMutation.isPending}>
+              {reviewMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Submit Rejection
             </Button>
           </DialogFooter>
