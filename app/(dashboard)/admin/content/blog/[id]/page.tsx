@@ -417,6 +417,34 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
                       </div>
                     </div>
                   )}
+                  {latestVerification.claims && (
+                    <div className="mt-4 space-y-2 border-t pt-2">
+                      <h4 className="font-semibold text-xs uppercase text-muted-foreground">Semantic Claims</h4>
+                      <div className="max-h-60 overflow-y-auto space-y-2">
+                        {(latestVerification.claims as any[]).map((claim, idx) => (
+                          <div key={idx} className="p-2 text-xs rounded border bg-slate-50 border-slate-200">
+                            <div className="font-bold flex justify-between">
+                              <span>{claim.claimCategory || 'Uncategorized'}</span>
+                              <span className={claim.verificationStatus === 'VERIFIED' ? 'text-green-600' : claim.verificationStatus === 'DISPUTED' ? 'text-red-600' : 'text-amber-600'}>
+                                {claim.verificationStatus}
+                              </span>
+                            </div>
+                            <p className="mt-1">{claim.claimText}</p>
+                            {claim.confidence && <div className="mt-1"><strong>Confidence:</strong> {claim.confidence}/100</div>}
+                            {claim.primaryProvenance && <div className="mt-1"><strong>Provenance (1°):</strong> {claim.primaryProvenance}</div>}
+                            {claim.secondaryProvenance && <div className="mt-1"><strong>Provenance (2°):</strong> {claim.secondaryProvenance}</div>}
+                            {claim.modelDisagreement === true && <div className="mt-1 text-red-500 font-bold">Model Disagreement Detected</div>}
+                            {claim.recommendation && <div className="mt-1"><strong>Recommendation:</strong> {claim.recommendation}</div>}
+                            {claim.sourceReferences?.length > 0 && (
+                              <div className="mt-1 text-[10px] text-muted-foreground">
+                                Refs: {claim.sourceReferences.join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

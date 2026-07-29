@@ -17,6 +17,11 @@ export declare const appConfig: {
         readonly orchestratorEnabled: boolean;
         readonly agentsEnabled: boolean;
     };
+    readonly editorial: {
+        readonly humanReviewPolicyEnabled: boolean;
+        readonly humanReviewEnforcementEnabled: boolean;
+        readonly publishReadinessMode: "off" | "shadow" | "enforce";
+    };
     readonly agents: {
         readonly maxCostPerRunUsd: number;
         readonly maxCostPerDayUsd: number;
@@ -34,6 +39,8 @@ export declare const appConfig: {
             readonly approvalCreateRateLimitWindowSeconds: number;
             readonly approvalReadRateLimitMax: number;
             readonly approvalReadRateLimitWindowSeconds: number;
+            readonly editorialRateLimitMax: number;
+            readonly editorialRateLimitWindowSeconds: number;
             readonly webhookIngress: {
                 readonly header: string;
                 readonly secret: string;

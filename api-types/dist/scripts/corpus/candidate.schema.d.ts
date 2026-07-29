@@ -89,8 +89,8 @@ export declare const CandidateEntrySchema: z.ZodObject<{
         IN_FORCE: "IN_FORCE";
         SUPERSEDED: "SUPERSEDED";
         CONSULTATION: "CONSULTATION";
-        REPORT: "REPORT";
         UNKNOWN: "UNKNOWN";
+        REPORT: "REPORT";
         GUIDANCE: "GUIDANCE";
     }>;
     suggestedIsBinding: z.ZodNullable<z.ZodBoolean>;
@@ -187,8 +187,8 @@ export declare const CandidateManifestSchema: z.ZodObject<{
             IN_FORCE: "IN_FORCE";
             SUPERSEDED: "SUPERSEDED";
             CONSULTATION: "CONSULTATION";
-            REPORT: "REPORT";
             UNKNOWN: "UNKNOWN";
+            REPORT: "REPORT";
             GUIDANCE: "GUIDANCE";
         }>;
         suggestedIsBinding: z.ZodNullable<z.ZodBoolean>;

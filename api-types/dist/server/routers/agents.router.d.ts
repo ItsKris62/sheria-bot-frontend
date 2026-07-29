@@ -551,6 +551,183 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        triageEditorialCandidate: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                idempotencyKey: string;
+                sourceItemId?: string | undefined;
+                suggestionId?: string | undefined;
+                regulatorySignalId?: string | undefined;
+                forceRetriage?: boolean | undefined;
+            };
+            output: import("@/modules/blog-automation/editorial-triage.service").TriageEditorialCandidateResult;
+            meta: object;
+        }>;
+        getEditorialTriage: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                triageRunId: string;
+            };
+            output: {
+                id: string;
+                status: import(".prisma/client").$Enums.BlogEditorialTriageStatus;
+                createdAt: Date;
+                urgency: import(".prisma/client").$Enums.BlogSuggestionPriority;
+                version: number;
+                errorMessage: string | null;
+                completedAt: Date | null;
+                promptVersion: string;
+                recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
+                requiresHumanReview: boolean;
+                suggestionId: string | null;
+                sourceItemId: string | null;
+                agentRunId: string | null;
+                deterministicScore: number;
+                aiRelevanceScore: number | null;
+                finalScore: number;
+                targetAudiences: string[];
+                recommendedArticleType: import(".prisma/client").$Enums.BlogArticleType | null;
+                recommendedChannels: string[];
+                rationale: string;
+                sourceConfidence: number;
+                modelProvider: string | null;
+                modelName: string | null;
+                inputHash: string;
+            } | null;
+            meta: object;
+        }>;
+        createResearchPack: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                idempotencyKey: string;
+                blogPostId?: string | undefined;
+                suggestionId?: string | undefined;
+            };
+            output: import("@/modules/blog-automation/research-pack.service").CreateResearchPackResult;
+            meta: object;
+        }>;
+        getResearchPack: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                researchPackId?: string | undefined;
+                blogPostId?: string | undefined;
+            };
+            output: ({
+                id: string;
+                status: import(".prisma/client").$Enums.BlogResearchPackStatus;
+                createdAt: Date;
+                executiveSummary: string | null;
+                version: number;
+                confidence: number;
+                reviewedAt: Date | null;
+                reviewedById: string | null;
+                blogPostId: string | null;
+                sourceSetHash: string;
+                promptVersion: string;
+                suggestionId: string | null;
+                modelProvider: string | null;
+                modelName: string | null;
+                inputHash: string;
+                researchObjective: string;
+                importantDates: import("@prisma/client/runtime/client").JsonValue | null;
+                authorities: import("@prisma/client/runtime/client").JsonValue | null;
+                obligationsSummary: import("@prisma/client/runtime/client").JsonValue | null;
+                evidenceGaps: string[];
+                contradictions: import("@prisma/client/runtime/client").JsonValue | null;
+                reviewerStatus: string | null;
+            } & {
+                sources: unknown[];
+            }) | null;
+            meta: object;
+        }>;
+        verifyBlogPostClaims: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                blogPostId: string;
+                idempotencyKey: string;
+                requestSecondReview?: boolean | undefined;
+            };
+            output: import("@/modules/blog-automation/semantic-verification.service").RunSemanticVerificationResult;
+            meta: object;
+        }>;
+        getVerificationResult: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                verificationRunId?: string | undefined;
+                blogPostId?: string | undefined;
+            };
+            output: ({
+                issues: {
+                    id: string;
+                    title: string;
+                    description: string;
+                    severity: import(".prisma/client").$Enums.BlogVerificationIssueSeverity;
+                    createdAt: Date;
+                    confidence: number | null;
+                    excerpt: string | null;
+                    claimText: string | null;
+                    sourceId: string | null;
+                    sourceUrl: string | null;
+                    runId: string;
+                    issueType: import(".prisma/client").$Enums.BlogVerificationIssueType;
+                    recommendation: string | null;
+                    paragraphIndex: number | null;
+                    sentenceIndex: number | null;
+                    claimCategory: import(".prisma/client").$Enums.BlogClaimCategory | null;
+                    claimVerificationStatus: import(".prisma/client").$Enums.BlogClaimVerificationStatus | null;
+                    claimHash: string | null;
+                    reviewProvenance: import("@prisma/client/runtime/client").JsonValue | null;
+                }[];
+            } & {
+                id: string;
+                status: import(".prisma/client").$Enums.BlogVerificationStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                summary: string | null;
+                errorMessage: string | null;
+                completedAt: Date | null;
+                contentHash: string | null;
+                startedAt: Date;
+                blogPostId: string;
+                draftGenerationRunId: string | null;
+                runType: import(".prisma/client").$Enums.BlogVerificationRunType;
+                qualityScore: number;
+                sourceScore: number;
+                claimRiskScore: number;
+                jurisdictionScore: number;
+                readinessScore: number;
+                blockingIssueCount: number;
+                warningIssueCount: number;
+                infoIssueCount: number;
+                recommendedAction: string | null;
+                requestedById: string | null;
+                sourceSetHash: string | null;
+                promptVersion: string | null;
+            }) | null;
+            meta: object;
+        }>;
+        listFreshnessReviewCandidates: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                maxItems?: number | undefined;
+            };
+            output: import("@/modules/blog-automation/freshness-review.service").FreshnessCandidate[];
+            meta: object;
+        }>;
+        runFreshnessReview: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                blogPostId: string;
+                idempotencyKey: string;
+            };
+            output: import("@/modules/blog-automation/freshness-review.service").RunFreshnessReviewResult;
+            meta: object;
+        }>;
+        createRevisionRequest: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                blogPostId: string;
+                reason: string;
+                priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+                idempotencyKey: string;
+                freshnessReviewId?: string | undefined;
+                recommendedChanges?: Record<string, unknown> | undefined;
+                evidence?: Record<string, unknown> | undefined;
+            };
+            output: import("@/modules/blog-automation/revision-request.service").CreateRevisionRequestResult;
+            meta: object;
+        }>;
     }>>;
     productBi: import("@trpc/server").TRPCBuiltRouter<{
         ctx: import("../trpc/context").Context;

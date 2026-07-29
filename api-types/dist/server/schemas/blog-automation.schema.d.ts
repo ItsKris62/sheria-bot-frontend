@@ -460,4 +460,91 @@ export declare const adminGenerateEditorialDigestSchema: z.ZodObject<{
     periodStart: z.ZodOptional<z.ZodDate>;
     periodEnd: z.ZodOptional<z.ZodDate>;
 }, z.core.$strip>;
+export declare const adminListEditorialTriageRunsSchema: z.ZodObject<{
+    page: z.ZodDefault<z.ZodNumber>;
+    limit: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const adminGetEditorialTriageRunSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminListResearchPackVersionsSchema: z.ZodObject<{
+    blogPostId: z.ZodOptional<z.ZodString>;
+    page: z.ZodDefault<z.ZodNumber>;
+    limit: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const adminGetResearchPackSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminReviewResearchPackSchema: z.ZodObject<{
+    id: z.ZodString;
+    status: z.ZodEnum<{
+        REJECTED: "REJECTED";
+        REVIEWED: "REVIEWED";
+    }>;
+}, z.core.$strip>;
+export declare const adminListFreshnessReviewsSchema: z.ZodObject<{
+    blogPostId: z.ZodOptional<z.ZodString>;
+    page: z.ZodDefault<z.ZodNumber>;
+    limit: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const adminGetFreshnessReviewSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminListRevisionRequestsSchema: z.ZodObject<{
+    blogPostId: z.ZodOptional<z.ZodString>;
+    status: z.ZodOptional<z.ZodEnum<{
+        RESOLVED: "RESOLVED";
+        DISMISSED: "DISMISSED";
+        PENDING_REVIEW: "PENDING_REVIEW";
+        ACCEPTED: "ACCEPTED";
+        ASSIGNED: "ASSIGNED";
+    }>>;
+    page: z.ZodDefault<z.ZodNumber>;
+    limit: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const adminGetRevisionRequestSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminAssignRevisionRequestSchema: z.ZodObject<{
+    id: z.ZodString;
+    assignedToId: z.ZodString;
+}, z.core.$strip>;
+export declare const adminAcceptRevisionRequestSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminStartRevisionRequestSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminResolveRevisionRequestSchema: z.ZodObject<{
+    id: z.ZodString;
+    resolutionNotes: z.ZodString;
+}, z.core.$strip>;
+export declare const adminDismissRevisionRequestSchema: z.ZodObject<{
+    id: z.ZodString;
+    reason: z.ZodString;
+}, z.core.$strip>;
+export declare const adminListContentOpsAlertsSchema: z.ZodObject<{
+    status: z.ZodOptional<z.ZodEnum<{
+        OPEN: "OPEN";
+        RESOLVED: "RESOLVED";
+        ACKNOWLEDGED: "ACKNOWLEDGED";
+        IGNORED: "IGNORED";
+    }>>;
+    page: z.ZodDefault<z.ZodNumber>;
+    limit: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const adminGetContentOpsAlertSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminAcknowledgeContentOpsAlertSchema: z.ZodObject<{
+    id: z.ZodString;
+}, z.core.$strip>;
+export declare const adminResolveContentOpsAlertSchema: z.ZodObject<{
+    id: z.ZodString;
+    resolutionNotes: z.ZodString;
+}, z.core.$strip>;
+export declare const adminIgnoreContentOpsAlertSchema: z.ZodObject<{
+    id: z.ZodString;
+    reason: z.ZodString;
+}, z.core.$strip>;
 //# sourceMappingURL=blog-automation.schema.d.ts.map

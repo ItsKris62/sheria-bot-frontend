@@ -15,6 +15,10 @@ export type CreateDraftFromCandidateResult = {
     slug: string;
 } | {
     status: 'below_threshold' | 'duplicate';
+} | {
+    status: 'human_review_required';
+    suggestionId: string;
+    reasons: string[];
 };
 export interface GenerateDraftContentInput {
     blogPostId: string;

@@ -14,6 +14,7 @@ export declare function runBlogPostVerification({ prisma, blogPostId, requestedB
         description: string;
         severity: import(".prisma/client").$Enums.BlogVerificationIssueSeverity;
         createdAt: Date;
+        confidence: number | null;
         excerpt: string | null;
         claimText: string | null;
         sourceId: string | null;
@@ -23,6 +24,10 @@ export declare function runBlogPostVerification({ prisma, blogPostId, requestedB
         recommendation: string | null;
         paragraphIndex: number | null;
         sentenceIndex: number | null;
+        claimCategory: import(".prisma/client").$Enums.BlogClaimCategory | null;
+        claimVerificationStatus: import(".prisma/client").$Enums.BlogClaimVerificationStatus | null;
+        claimHash: string | null;
+        reviewProvenance: import("@prisma/client/runtime/client").JsonValue | null;
     }[];
 } & {
     id: string;
@@ -32,6 +37,7 @@ export declare function runBlogPostVerification({ prisma, blogPostId, requestedB
     summary: string | null;
     errorMessage: string | null;
     completedAt: Date | null;
+    contentHash: string | null;
     startedAt: Date;
     blogPostId: string;
     draftGenerationRunId: string | null;
@@ -46,6 +52,8 @@ export declare function runBlogPostVerification({ prisma, blogPostId, requestedB
     infoIssueCount: number;
     recommendedAction: string | null;
     requestedById: string | null;
+    sourceSetHash: string | null;
+    promptVersion: string | null;
 }>;
 export {};
 //# sourceMappingURL=blog-verification.service.d.ts.map

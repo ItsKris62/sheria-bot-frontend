@@ -38,6 +38,8 @@ import {
   ListOrdered,
   Lightbulb,
   ClipboardCheck,
+  FileSearch,
+  FileText,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -90,6 +92,11 @@ export const adminNav: AdminNavGroup[] = [
       { title: "Source Items", href: "/admin/content/blog/source-items", icon: ListOrdered },
       { title: "Blog Suggestions", href: "/admin/content/blog/suggestions", icon: Lightbulb },
       { title: "Blog Digests", href: "/admin/content/blog/digests", icon: Activity },
+      { title: "Editorial Triage", href: "/admin/content/editorial/triage", icon: FileSearch },
+      { title: "Research Packs", href: "/admin/content/editorial/research", icon: BookOpen },
+      { title: "Freshness Reviews", href: "/admin/content/editorial/freshness", icon: ClipboardCheck },
+      { title: "Revision Requests", href: "/admin/content/editorial/revisions", icon: FileText },
+      { title: "Content Ops Alerts", href: "/admin/content/editorial/alerts", icon: Shield },
       { title: "Regulatory Alerts", href: "/admin/alerts", icon: Megaphone },
       { title: "Corpus Gap Reports", href: "/admin/corpus-gap-reports", icon: FileQuestion },
     ],

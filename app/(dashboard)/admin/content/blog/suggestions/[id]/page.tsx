@@ -36,10 +36,33 @@ export default function SuggestionDetailPage() {
 
   const createDraftMutation = trpc.blogAutomation.adminCreateDraftFromSuggestion.useMutation({
     onSuccess: (res) => {
-      // no need to toast here, we're redirecting
       window.location.href = `/admin/content/blog/${res.blogPostId}`
     },
-    // Cannot import toast easily here without modifying imports, we will just use alert for errors or add sonner import
+    onError: (err) => toast.error(err.message)
+  })
+
+  const approveMutation = trpc.blogAutomation.adminApproveSuggestionForDraft.useMutation({
+    onSuccess: () => {
+      toast.success("Approved for drafting")
+      utils.blogAutomation.adminGetSuggestion.invalidate({ id })
+    },
+    onError: (err) => toast.error(err.message)
+  })
+
+  const needsMoreSourcesMutation = trpc.blogAutomation.adminMarkSuggestionNeedsMoreSources.useMutation({
+    onSuccess: () => {
+      toast.success("Marked as needs more sources")
+      utils.blogAutomation.adminGetSuggestion.invalidate({ id })
+    },
+    onError: (err) => toast.error(err.message)
+  })
+
+  const dismissMutation = trpc.blogAutomation.adminDismissSuggestion.useMutation({
+    onSuccess: () => {
+      toast.success("Suggestion dismissed")
+      utils.blogAutomation.adminGetSuggestion.invalidate({ id })
+    },
+    onError: (err) => toast.error(err.message)
   })
 
   if (isLoading) {
@@ -184,13 +207,33 @@ export default function SuggestionDetailPage() {
             <Card className="bg-muted/50 border-dashed">
               <CardContent className="p-6 space-y-3">
                 <h3 className="font-medium text-center mb-4">Quick Actions</h3>
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white justify-start">
+                <Button 
+                  className="w-full bg-green-600 hover:bg-green-700 text-white justify-start"
+                  onClick={() => approveMutation.mutate({ id })}
+                  disabled={approveMutation.isPending}
+                >
                   <CheckCircle2 className="w-4 h-4 mr-2" /> Approve for Draft
                 </Button>
-                <Button variant="outline" className="w-full justify-start text-orange-600 hover:text-orange-700 hover:bg-orange-50">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                  onClick={() => {
+                    const reason = prompt("Optional reason for needing more sources:")
+                    if (reason !== null) needsMoreSourcesMutation.mutate({ id, reason })
+                  }}
+                  disabled={needsMoreSourcesMutation.isPending}
+                >
                   <FileSearch className="w-4 h-4 mr-2" /> Needs More Sources
                 </Button>
-                <Button variant="outline" className="w-full justify-start text-gray-600 hover:bg-gray-100">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-gray-600 hover:bg-gray-100"
+                  onClick={() => {
+                    const reason = prompt("Reason for dismissing:")
+                    if (reason) dismissMutation.mutate({ id, reason })
+                  }}
+                  disabled={dismissMutation.isPending}
+                >
                   <XCircle className="w-4 h-4 mr-2" /> Dismiss
                 </Button>
               </CardContent>

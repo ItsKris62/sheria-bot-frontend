@@ -72,8 +72,8 @@ export declare const AuthorityStatusEnum: z.ZodEnum<{
     IN_FORCE: "IN_FORCE";
     SUPERSEDED: "SUPERSEDED";
     CONSULTATION: "CONSULTATION";
-    REPORT: "REPORT";
     UNKNOWN: "UNKNOWN";
+    REPORT: "REPORT";
     GUIDANCE: "GUIDANCE";
 }>;
 export type AuthorityStatus = z.infer<typeof AuthorityStatusEnum>;
@@ -156,8 +156,8 @@ export declare const CorpusManifestEntrySchema: z.ZodObject<{
         IN_FORCE: "IN_FORCE";
         SUPERSEDED: "SUPERSEDED";
         CONSULTATION: "CONSULTATION";
-        REPORT: "REPORT";
         UNKNOWN: "UNKNOWN";
+        REPORT: "REPORT";
         GUIDANCE: "GUIDANCE";
     }>;
     isBinding: z.ZodBoolean;
@@ -268,8 +268,8 @@ export declare const CorpusManifestSchema: z.ZodObject<{
             IN_FORCE: "IN_FORCE";
             SUPERSEDED: "SUPERSEDED";
             CONSULTATION: "CONSULTATION";
-            REPORT: "REPORT";
             UNKNOWN: "UNKNOWN";
+            REPORT: "REPORT";
             GUIDANCE: "GUIDANCE";
         }>;
         isBinding: z.ZodBoolean;

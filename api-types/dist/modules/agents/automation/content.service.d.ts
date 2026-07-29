@@ -1,6 +1,6 @@
 import { prisma as defaultPrisma } from '@/lib/prisma/client';
 import { type AutomationApprovalService } from './approval.service';
-type ContentPrisma = Pick<typeof defaultPrisma, 'blogPost' | 'blogSourceItem' | 'regulatorySignal'>;
+type ContentPrisma = Pick<typeof defaultPrisma, 'blogPost' | 'blogSourceItem' | 'regulatorySignal' | 'contentOpsAlert'>;
 export interface PublishContentInput {
     approvalId: string;
 }
