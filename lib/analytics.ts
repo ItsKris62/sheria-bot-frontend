@@ -45,6 +45,14 @@ export type SafeEventProperties = {
   blog_slug?: string;
   read_time_seconds?: number;
   share_platform?: string;
+
+  // Knowledge Base specific
+  kb_category?: string;
+  kb_tag?: string;
+  kb_slug?: string;
+  has_search?: boolean;
+  result_count?: number;
+  page?: number;
   
   // Blog Automation Admin
   blog_automation_action?: string;
@@ -87,6 +95,11 @@ export type AnalyticsEvent =
   // Blog
   | "blog_post_viewed"
   | "blog_post_shared"
+  // Knowledge Base
+  | "knowledge_base_viewed"
+  | "knowledge_base_searched"
+  | "knowledge_base_category_selected"
+  | "knowledge_base_article_opened"
   // Blog Automation
   | "blog_automation_monitor_created"
   | "blog_automation_monitor_failed"
@@ -134,6 +147,12 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "blog_slug",
   "read_time_seconds",
   "share_platform",
+  "kb_category",
+  "kb_tag",
+  "kb_slug",
+  "has_search",
+  "result_count",
+  "page",
   "blog_automation_action",
   "blog_automation_type",
   "blog_automation_priority",

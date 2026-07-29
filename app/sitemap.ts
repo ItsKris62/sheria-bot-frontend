@@ -1,27 +1,51 @@
 import type { MetadataRoute } from 'next'
 import { getSiteUrl, absoluteUrl } from '@/lib/site-url'
 
+function getTrpcUrl(procedure: string) {
+  const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '')
+  const trpcBase = apiUrl.endsWith('/trpc') ? apiUrl : `${apiUrl}/trpc`
+  return new URL(`${trpcBase}/${procedure}`)
+}
+
 async function getPublishedSlugs() {
-  const url = new URL(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/trpc/blog.publicSlugs`)
-  
-  try {
+  const url = getTrpcUrl('blog.publicSlugs')
+  const res = await fetch(url.toString(), { next: { revalidate: 60 } })
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+  const json = await res.json()
+  return json.result.data.map((post: any) => ({
+    slug: post.slug,
+    updatedAt: post.updatedAt,
+    publishedAt: post.publishedAt,
+  }))
+}
+
+async function getPublishedKnowledgeBaseArticles() {
+  async function fetchPage(page: number) {
+    const url = getTrpcUrl('content.listPublishedKnowledgeBase')
+    url.searchParams.set('input', JSON.stringify({ page, limit: 50 }))
+
     const res = await fetch(url.toString(), { next: { revalidate: 60 } })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
     const json = await res.json()
-    return json.result.data.map((post: any) => ({
-      slug: post.slug,
-      updatedAt: post.updatedAt,
-      publishedAt: post.publishedAt
-    }))
-  } catch (error) {
-    throw error // Let the main sitemap function handle the failure
+    return json.result.data
   }
+
+  const firstPage = await fetchPage(1)
+  const totalPages = Math.min(firstPage.pagination?.totalPages || 1, 20)
+  const remainingPages =
+    totalPages > 1
+      ? await Promise.all(Array.from({ length: totalPages - 1 }, (_, index) => fetchPage(index + 2)))
+      : []
+
+  return [firstPage, ...remainingPages].flatMap((page) => page.items || [])
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
 
-  // ── Static public pages ───────────────────────────────────────────────────
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: getSiteUrl(),
@@ -55,20 +79,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  // ── Dynamic blog post pages ───────────────────────────────────────────────
-  try {
-    const posts = await getPublishedSlugs()
-    
-    const blogRoutes: MetadataRoute.Sitemap = posts.map((post: any) => ({
-      url: absoluteUrl(`/blog/${post.slug}`),
-      lastModified: post.updatedAt ? new Date(post.updatedAt) : now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    }))
+  const [blogResult, knowledgeBaseResult] = await Promise.allSettled([
+    getPublishedSlugs(),
+    getPublishedKnowledgeBaseArticles(),
+  ])
 
-    return [...staticRoutes, ...blogRoutes]
-  } catch (error) {
-    console.warn("[sitemap] Failed to fetch blog slugs; returning static routes only")
-    return staticRoutes
+  const blogRoutes: MetadataRoute.Sitemap =
+    blogResult.status === 'fulfilled'
+      ? blogResult.value.map((post: any) => ({
+          url: absoluteUrl(`/blog/${post.slug}`),
+          lastModified: post.updatedAt ? new Date(post.updatedAt) : now,
+          changeFrequency: 'monthly' as const,
+          priority: 0.7,
+        }))
+      : []
+
+  if (blogResult.status === 'rejected') {
+    console.warn('[sitemap] Failed to fetch blog slugs')
   }
+
+  const knowledgeBaseRoutes: MetadataRoute.Sitemap =
+    knowledgeBaseResult.status === 'fulfilled'
+      ? knowledgeBaseResult.value.map((article: any) => ({
+          url: absoluteUrl(`/knowledge-base/${article.slug}`),
+          lastModified: article.updatedAt ? new Date(article.updatedAt) : now,
+          changeFrequency: 'monthly' as const,
+          priority: 0.7,
+        }))
+      : []
+
+  if (knowledgeBaseResult.status === 'rejected') {
+    console.warn('[sitemap] Failed to fetch Knowledge Base slugs')
+  }
+
+  return [...staticRoutes, ...blogRoutes, ...knowledgeBaseRoutes]
 }
