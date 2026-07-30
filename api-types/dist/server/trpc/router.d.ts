@@ -8508,6 +8508,20 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             }[];
             meta: object;
         }>;
+        publicTaxonomy: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                categories: {
+                    name: string;
+                    count: number;
+                }[];
+                tags: {
+                    name: string;
+                    count: number;
+                }[];
+            };
+            meta: object;
+        }>;
         submitFeedback: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 postId: string;
