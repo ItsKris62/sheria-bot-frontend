@@ -40,6 +40,13 @@ const securityHeaders = [
   },
 ];
 
+const indexingHeaders =
+  process.env.NEXT_PUBLIC_DISABLE_INDEXING === "true" ||
+  process.env.VERCEL_ENV === "preview" ||
+  process.env.VERCEL_ENV === "development"
+    ? [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
+    : [];
+
 const nextConfig = {
   images: {
     unoptimized: true,
@@ -49,7 +56,7 @@ const nextConfig = {
       {
         // Apply security headers to every route
         source: "/:path*",
-        headers: securityHeaders,
+        headers: [...securityHeaders, ...indexingHeaders],
       },
     ];
   },

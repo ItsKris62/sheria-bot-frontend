@@ -55,4 +55,44 @@ describe("BlogFilters", () => {
     fireEvent.click(screen.getByRole("button", { name: /data protection/i }))
     expect(navigationMocks.push).toHaveBeenCalledWith("/blog?q=CBK+licensing&category=Data+Protection")
   })
+
+  it("trims search, removes page, and removes empty query from the URL", () => {
+    navigationMocks.params = "page=4"
+    render(
+      <BlogFilters
+        resultCount={2}
+        page={4}
+        categories={[]}
+        tags={[]}
+      />,
+    )
+
+    fireEvent.change(screen.getByLabelText("Search SheriaBot articles"), {
+      target: { value: "  AML   reporting  " },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Search" }))
+    expect(navigationMocks.push).toHaveBeenCalledWith("/blog?q=AML+reporting")
+
+    fireEvent.change(screen.getByLabelText("Search SheriaBot articles"), {
+      target: { value: "   " },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Search" }))
+    expect(navigationMocks.push).toHaveBeenLastCalledWith("/blog")
+  })
+
+  it("preserves category when toggling tags and exposes active state", () => {
+    navigationMocks.params = "category=Regulatory+Updates&tag=CBK&page=3"
+    render(
+      <BlogFilters
+        resultCount={4}
+        page={3}
+        categories={[{ name: "Regulatory Updates", count: 4 }]}
+        tags={[{ name: "CBK", count: 2 }, { name: "AML", count: 1 }]}
+      />,
+    )
+
+    expect(screen.getByRole("button", { name: "#CBK" })).toHaveAttribute("aria-current", "page")
+    fireEvent.click(screen.getByRole("button", { name: "#AML" }))
+    expect(navigationMocks.push).toHaveBeenCalledWith("/blog?category=Regulatory+Updates&tag=AML")
+  })
 })

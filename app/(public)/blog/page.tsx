@@ -129,6 +129,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
   const posts = data.posts || []
   const hasFilters = Boolean(state.q || state.category || state.tag)
+  const blogIsEmpty = posts.length === 0 && !hasFilters && data.pagination.total === 0
   const resultLabel = `${data.pagination.total} ${data.pagination.total === 1 ? "article" : "articles"}`
   const placement = state.q ? "search" : state.category || state.tag ? "category" : "recent"
 
@@ -191,7 +192,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Recent articles</p>
-              <h2 id="recent-articles-heading" className="mt-2 text-2xl font-semibold text-foreground">
+              <h2 id="recent-articles-heading" tabIndex={-1} className="mt-2 text-2xl font-semibold text-foreground focus:outline-none">
                 {state.category || state.tag || state.q ? "Filtered guidance" : "Latest from SheriaBot"}
               </h2>
               <p aria-live="polite" className="mt-2 text-sm text-muted-foreground">
@@ -213,15 +214,19 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               <div className="rounded-lg border border-border/70 bg-card/80 p-8">
                 <BookOpen className="h-9 w-9 text-primary" aria-hidden="true" />
                 <h3 className="mt-5 text-xl font-semibold text-foreground">
-                  No articles matched this view
+                  {blogIsEmpty ? "No published Blog articles yet" : "No articles matched this view"}
                 </h3>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-                  Try clearing a filter, checking the Knowledge Base, or asking the editorial team to cover this topic.
+                  {blogIsEmpty
+                    ? "SheriaBot editors have not published public Blog articles yet. The Knowledge Base remains available for source-backed guidance."
+                    : `No public articles matched${state.q ? " your search" : ""}${state.category ? ` in ${state.category}` : ""}${state.tag ? ` tagged ${state.tag}` : ""}. Try clearing filters, checking the Knowledge Base, or asking the editorial team to cover this topic.`}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Button asChild>
-                    <Link href="/blog#articles">Clear filters</Link>
-                  </Button>
+                  {!blogIsEmpty && (
+                    <Button asChild>
+                      <Link href="/blog#articles">Clear filters</Link>
+                    </Button>
+                  )}
                   <Button variant="outline" asChild className="bg-transparent">
                     <Link href="/knowledge-base">Open Knowledge Base</Link>
                   </Button>

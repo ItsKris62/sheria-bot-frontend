@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { trpc, getErrorMessage } from "@/lib/trpc"
+import { trpc } from "@/lib/trpc"
 import {
   BLOG_ANALYTICS_EVENTS,
   getBlogReadingSessionId,
@@ -80,9 +80,9 @@ export function BlogNewsletterSignup({ sourcePage, category, postId, slug }: Blo
         slug,
         category,
       })
-    } catch (error) {
+    } catch {
       setSubmitted(false)
-      setMessage(getErrorMessage(error))
+      setMessage("We could not complete the subscription right now. Please try again in a moment.")
     }
   }
 

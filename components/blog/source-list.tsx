@@ -56,7 +56,8 @@ function formatDate(value: Date | string) {
 }
 
 export function SourceList({ sources, postId, slug, category }: SourceListProps) {
-  if (!sources || sources.length === 0) return null
+  const publicSources = sources?.filter((source) => source.sourceType !== "INTERNAL") ?? []
+  if (publicSources.length === 0) return null
 
   return (
     <section aria-labelledby="sources-heading" className="mt-12 border-t border-border pt-8">
@@ -65,7 +66,7 @@ export function SourceList({ sources, postId, slug, category }: SourceListProps)
         SheriaBot articles cite public materials where available. External source links open in a new tab.
       </p>
       <div className="space-y-4">
-        {sources.map((source, index) => {
+        {publicSources.map((source, index) => {
           const safeUrl = safeSourceUrl(source.url)
           const sourceDomain = safeSourceDomain(safeUrl)
           return (

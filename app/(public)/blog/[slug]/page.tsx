@@ -163,7 +163,8 @@ export default async function BlogPostPage({ params }: PageProps) {
   const updatedDate = formatDate(post.updatedAt)
   const reviewedDate = formatDate(post.lastReviewedAt)
   const author = post.author?.fullName || post.author?.name || "SheriaBot Editorial"
-  const sourceCount = post.sources?.length || post.sourceCount || 0
+  const publicSources = post.sources?.filter((source) => source.sourceType !== "INTERNAL") ?? []
+  const sourceCount = post.sources ? publicSources.length : post.sourceCount || 0
 
   return (
     <main className="flex flex-col">
@@ -178,7 +179,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         readTime={`${post.readingTime} min read`}
         category={post.category || undefined}
         imageUrl={imageUrl}
-        sources={post.sources || []}
+        sources={publicSources}
       />
 
       <BlogAnalyticsTracker
@@ -306,7 +307,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             </section>
 
             <SourceList
-              sources={post.sources || []}
+              sources={publicSources}
               postId={post.id}
               slug={post.slug}
               category={post.category || undefined}

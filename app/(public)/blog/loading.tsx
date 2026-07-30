@@ -2,7 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Loading() {
   return (
-    <main className="pt-28">
+    <main className="pt-28" aria-busy="true">
+      <span className="sr-only" role="status">Loading Blog articles</span>
       <section className="border-b border-border pb-10">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
           <div>
@@ -13,10 +14,19 @@ export default function Loading() {
           <Skeleton className="h-56 rounded-lg" />
         </div>
       </section>
+      <section className="border-b border-border/60 py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Skeleton className="h-7 w-48" />
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <Skeleton className="h-[360px] rounded-lg" />
+            <Skeleton className="h-[360px] rounded-lg" />
+          </div>
+        </div>
+      </section>
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <Skeleton className="h-8 w-56" />
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }, (_, index) => (
+          {Array.from({ length: 9 }, (_, index) => (
             <Skeleton key={index} className="h-72 rounded-lg" />
           ))}
         </div>

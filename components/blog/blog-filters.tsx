@@ -87,20 +87,22 @@ export function BlogFilters({ resultCount, page = 1, categories, tags }: BlogFil
 
   const updateFilters = (newCategory: string, newQ: string, newTag = currentTag) => {
     const params = new URLSearchParams(searchParams.toString())
+    const nextQ = newQ.trim().replace(/\s+/g, " ")
+    const nextTag = newTag.trim()
     if (newCategory && newCategory !== "All") {
       params.set("category", newCategory)
     } else {
       params.delete("category")
     }
     
-    if (newQ) {
-      params.set("q", newQ)
+    if (nextQ) {
+      params.set("q", nextQ)
     } else {
       params.delete("q")
     }
 
-    if (newTag) {
-      params.set("tag", newTag)
+    if (nextTag) {
+      params.set("tag", nextTag)
     } else {
       params.delete("tag")
     }

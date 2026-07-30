@@ -75,6 +75,19 @@ describe("Blog newsletter signup", () => {
       email: "reader@example.com",
     }))
   })
+
+  it("shows a generic error for failed newsletter submissions", async () => {
+    mocks.newsletterMutate.mockRejectedValueOnce(new Error("Redis rate limit details"))
+    render(<BlogNewsletterSignup sourcePage="/blog" />)
+
+    fireEvent.change(screen.getByLabelText("Email address"), {
+      target: { value: "reader@example.com" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: /subscribe/i }))
+
+    expect(await screen.findByRole("status")).toHaveTextContent("We could not complete the subscription right now")
+    expect(screen.getByRole("status")).not.toHaveTextContent("Redis")
+  })
 })
 
 describe("Blog source tracking", () => {
@@ -105,6 +118,25 @@ describe("Blog source tracking", () => {
       sourceUrl: expect.any(String),
     }))
   })
+
+  it("does not render internal source records publicly", () => {
+    render(
+      <SourceList
+        sources={[
+          {
+            id: "source-1",
+            sourceType: "INTERNAL",
+            title: "Internal editorial note",
+            publisher: "SheriaBot",
+            url: "https://internal.example.com/private",
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.queryByText("Internal editorial note")).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /view source/i })).not.toBeInTheDocument()
+  })
 })
 
 describe("Blog topic request", () => {
@@ -124,6 +156,28 @@ describe("Blog topic request", () => {
       topic: "ODPC breach notification duties",
     }))
   })
+
+  it("uses unique labelled fields and generic failure copy", async () => {
+    mocks.topicMutate.mockRejectedValueOnce(new Error("Topic is too short."))
+    render(
+      <>
+        <BlogTopicRequest sourcePage="/blog" />
+        <BlogTopicRequest sourcePage="/blog" compact />
+      </>,
+    )
+
+    const topicFields = screen.getAllByLabelText("Topic")
+    expect(new Set(topicFields.map((field) => field.id)).size).toBe(2)
+
+    fireEvent.change(topicFields[0], {
+      target: { value: "ODPC breach notification duties" },
+    })
+    fireEvent.click(screen.getAllByRole("button", { name: /send request/i })[0])
+
+    const statuses = await screen.findAllByRole("status")
+    expect(statuses[0]).toHaveTextContent("We could not submit the request right now")
+    expect(statuses[0]).not.toHaveTextContent("too short")
+  })
 })
 
 describe("Blog feedback", () => {
@@ -140,5 +194,17 @@ describe("Blog feedback", () => {
       feedbackValue: "HELPFUL",
       postId: "post-1",
     }))
+  })
+
+  it("supports vote updates and generic failure copy", async () => {
+    mocks.feedbackMutate.mockResolvedValueOnce({ success: true }).mockRejectedValueOnce(new Error("A reader session is required."))
+    render(<BlogFeedback postId="post-1" slug="cbk" />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Yes" }))
+    await waitFor(() => expect(mocks.feedbackMutate).toHaveBeenCalledWith(expect.objectContaining({ value: "HELPFUL" })))
+
+    fireEvent.click(screen.getByRole("button", { name: "Not really" }))
+    expect(await screen.findByRole("status")).toHaveTextContent("We could not save your feedback right now")
+    expect(screen.getByRole("status")).not.toHaveTextContent("reader session")
   })
 })

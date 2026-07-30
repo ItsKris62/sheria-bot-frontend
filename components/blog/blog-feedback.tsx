@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { ThumbsDown, ThumbsUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { trpc, getErrorMessage } from "@/lib/trpc"
+import { trpc } from "@/lib/trpc"
 import {
   BLOG_ANALYTICS_EVENTS,
   getBlogReadingSessionId,
@@ -38,8 +38,8 @@ export function BlogFeedback({ postId, slug, category }: BlogFeedbackProps) {
         category,
         feedbackValue: value,
       })
-    } catch (error) {
-      setMessage(getErrorMessage(error))
+    } catch {
+      setMessage("We could not save your feedback right now. Please try again in a moment.")
     }
   }
 

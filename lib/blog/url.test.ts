@@ -1,36 +1,29 @@
 import { describe, expect, it } from "vitest"
-import { buildBlogHref, getPaginationItems, normaliseBlogPage, safeImageUrl, safeSourceUrl } from "./url"
+import { buildBlogHref, cleanBlogParam, getPaginationItems, normaliseBlogPage, safeImageUrl, safeSourceUrl } from "./url"
 
 describe("Blog URL helpers", () => {
-  it("builds shareable filter and pagination URLs without empty params", () => {
-    expect(buildBlogHref({ q: " licensing ", category: "Regulatory Updates", tag: "CBK", page: 2 })).toBe(
-      "/blog?q=licensing&category=Regulatory+Updates&tag=CBK&page=2#articles",
-    )
-    expect(buildBlogHref({ category: "All", q: "", page: 1 })).toBe("/blog#articles")
-  })
-
-  it("normalises invalid pages safely", () => {
-    expect(normaliseBlogPage("3")).toBe(3)
+  it("normalises invalid pages and removes blank params", () => {
+    expect(normaliseBlogPage("0")).toBe(1)
     expect(normaliseBlogPage("-2")).toBe(1)
-    expect(normaliseBlogPage("nope")).toBe(1)
+    expect(normaliseBlogPage("3.9")).toBe(3)
+    expect(cleanBlogParam("   ")).toBeUndefined()
   })
 
-  it("generates accessible pagination windows with ellipses", () => {
-    expect(getPaginationItems(1, 4)).toEqual([1, 2, 3, 4])
-    expect(getPaginationItems(8, 12)).toEqual([1, "ellipsis", 7, 8, 9, "ellipsis", 12])
+  it("preserves valid listing URL state without empty search params", () => {
+    expect(buildBlogHref({ q: " AML reporting ", category: "All", tag: "", page: 1 })).toBe("/blog?q=AML+reporting#articles")
+    expect(buildBlogHref({ category: "Regulatory Updates", tag: "CBK", page: 3 })).toBe("/blog?category=Regulatory+Updates&tag=CBK&page=3#articles")
   })
 
-  it("accepts only local and http image URLs", () => {
-    expect(safeImageUrl("/cover.png")).toBe("/cover.png")
-    expect(safeImageUrl("https://example.com/cover.png")).toBe("https://example.com/cover.png")
+  it("builds accessible pagination windows with ellipses", () => {
+    expect(getPaginationItems(1, 10)).toEqual([1, 2, "ellipsis", 10])
+    expect(getPaginationItems(5, 10)).toEqual([1, "ellipsis", 4, 5, 6, "ellipsis", 10])
+    expect(getPaginationItems(10, 10)).toEqual([1, "ellipsis", 9, 10])
+  })
+
+  it("allows only safe image and source URLs", () => {
     expect(safeImageUrl("javascript:alert(1)")).toBeUndefined()
-  })
-
-  it("sanitizes public source URLs before rendering or structured data", () => {
-    expect(safeSourceUrl("https://centralbank.go.ke/notices?token=secret&page=2")).toBe(
-      "https://centralbank.go.ke/notices?page=2",
-    )
-    expect(safeSourceUrl("https://user:pass@centralbank.go.ke/notices")).toBeUndefined()
-    expect(safeSourceUrl("javascript:alert(1)")).toBeUndefined()
+    expect(safeImageUrl("https://example.com/image.jpg")).toBe("https://example.com/image.jpg")
+    expect(safeSourceUrl("https://authority.example/path?token=secret&ref=public")).toBe("https://authority.example/path?ref=public")
+    expect(safeSourceUrl("https://user:pass@authority.example/path")).toBeUndefined()
   })
 })
