@@ -1,4 +1,5 @@
 import { cache } from "react"
+import { getTrpcUrl } from "@/lib/trpc-url"
 
 const DEFAULT_API_URL = "http://localhost:4000"
 
@@ -79,12 +80,7 @@ export class BlogNotFoundError extends Error {
   }
 }
 
-function getTrpcUrl(procedure: string) {
-  const rawUrl = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL).split(",")[0].trim()
-  const apiUrl = rawUrl.replace(/\/$/, "")
-  const trpcBase = apiUrl.endsWith("/trpc") ? apiUrl : `${apiUrl}/trpc`
-  return new URL(`${trpcBase}/${procedure}`)
-}
+
 
 function normaliseTrpcCode(payload: unknown): string | undefined {
   if (!payload || typeof payload !== "object") return undefined

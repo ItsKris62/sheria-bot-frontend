@@ -1,11 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getSiteUrl, absoluteUrl } from '@/lib/site-url'
 
-function getTrpcUrl(procedure: string) {
-  const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '')
-  const trpcBase = apiUrl.endsWith('/trpc') ? apiUrl : `${apiUrl}/trpc`
-  return new URL(`${trpcBase}/${procedure}`)
-}
+import { getTrpcUrl } from '@/lib/trpc-url'
 
 async function getPublishedSlugs() {
   const url = getTrpcUrl('blog.publicSlugs')

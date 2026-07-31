@@ -33,11 +33,7 @@ type RawContentArticle = Omit<KnowledgeBaseArticleDetail, "author"> & {
   } | null;
 };
 
-function getTrpcUrl(procedure: string) {
-  const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(/\/$/, "");
-  const trpcBase = apiUrl.endsWith("/trpc") ? apiUrl : `${apiUrl}/trpc`;
-  return new URL(`${trpcBase}/${procedure}`);
-}
+import { getTrpcUrl } from "@/lib/trpc-url";
 
 function normalizeArticle(article: RawContentArticle): KnowledgeBaseArticleDetail | null {
   if (article.contentType !== "KNOWLEDGE_BASE_ARTICLE" || !article.slug) {

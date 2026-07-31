@@ -35,11 +35,7 @@ type FetchResult =
   | { data: PublishedKnowledgeBaseResponse; error: null }
   | { data: null; error: string };
 
-function getTrpcUrl(procedure: string) {
-  const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(/\/$/, "");
-  const trpcBase = apiUrl.endsWith("/trpc") ? apiUrl : `${apiUrl}/trpc`;
-  return new URL(`${trpcBase}/${procedure}`);
-}
+import { getTrpcUrl } from "@/lib/trpc-url";
 
 function firstParam(value: SearchParamValue) {
   return Array.isArray(value) ? value[0] : value;
@@ -95,13 +91,19 @@ async function getPublishedKnowledgeBase(input: {
   try {
     const response = await fetch(url.toString(), { next: { revalidate: 60 } });
     if (!response.ok) {
+      console.error(`Knowledge Base API returned HTTP ${response.status} for content.listPublishedKnowledgeBase`);
       return { data: null, error: "Knowledge Base articles could not be loaded." };
     }
 
     const json = await response.json();
+    if (!json || typeof json !== "object" || !("result" in json) || !json.result || typeof json.result !== "object" || !("data" in json.result)) {
+      console.error("Unexpected Knowledge Base API response structure:", json);
+      return { data: null, error: "Knowledge Base articles could not be loaded." };
+    }
+
     return { data: json.result.data, error: null };
   } catch (error) {
-    console.error("Failed to fetch Knowledge Base articles", error);
+    console.error("Failed to fetch Knowledge Base articles:", error);
     return { data: null, error: "Knowledge Base articles could not be loaded." };
   }
 }
