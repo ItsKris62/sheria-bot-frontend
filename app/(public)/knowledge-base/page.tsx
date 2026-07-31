@@ -14,7 +14,6 @@ import { KnowledgeBaseArticleCard } from "@/components/knowledge-base/knowledge-
 import { KnowledgeBaseControls } from "@/components/knowledge-base/knowledge-base-controls";
 import type { PublishedKnowledgeBaseResponse } from "@/components/knowledge-base/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -199,9 +198,6 @@ export default async function KnowledgeBasePage({
       <section className="border-b border-border bg-background py-14 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="outline" className="mb-4 border-primary/50 text-primary">
-              Knowledge Base
-            </Badge>
             <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
               Kenyan fintech compliance guidance, ready when you need it
             </h1>

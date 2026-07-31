@@ -3,7 +3,6 @@ import Link from "next/link"
 import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import { ArrowRight, BookOpen, CalendarDays, FileSearch, Library, MessageSquareText, ShieldCheck, type LucideIcon } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BlogArticleCard } from "@/components/blog/blog-article-card"
 import { BlogFilters } from "@/components/blog/blog-filters"
@@ -138,9 +137,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       <section className="border-b border-border bg-background pt-28">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-10 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
           <div className="flex flex-col justify-center">
-            <Badge variant="outline" className="mb-5 w-fit border-primary/50 bg-primary/10 text-primary">
-              SheriaBot Blog
-            </Badge>
             <h1 className="max-w-4xl text-balance text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
               Compliance intelligence for African fintech teams
             </h1>
