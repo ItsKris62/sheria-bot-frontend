@@ -80,7 +80,8 @@ export class BlogNotFoundError extends Error {
 }
 
 function getTrpcUrl(procedure: string) {
-  const apiUrl = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL).replace(/\/$/, "")
+  const rawUrl = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL).split(",")[0].trim()
+  const apiUrl = rawUrl.replace(/\/$/, "")
   const trpcBase = apiUrl.endsWith("/trpc") ? apiUrl : `${apiUrl}/trpc`
   return new URL(`${trpcBase}/${procedure}`)
 }
@@ -101,7 +102,13 @@ async function fetchTrpc<T>(procedure: string, input?: unknown): Promise<T> {
     url.searchParams.set("input", JSON.stringify(input))
   }
 
-  const res = await fetch(url.toString(), { next: { revalidate: 60 } })
+  let res: Response
+  try {
+    res = await fetch(url.toString(), { next: { revalidate: 60 } })
+  } catch (err) {
+    console.error(`Network error reaching Blog API (${procedure}):`, err)
+    throw new Error(`Blog API network error: could not connect to ${url.origin}`)
+  }
   let json: unknown
   try {
     json = await res.json()

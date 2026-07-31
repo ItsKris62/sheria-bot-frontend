@@ -11,7 +11,7 @@ import { BlogPagination } from "@/components/blog/blog-pagination"
 import { BlogProductCtaLink } from "@/components/blog/blog-product-cta-link"
 import { BlogTopicRequest } from "@/components/blog/blog-topic-request"
 import type { BlogCtaId } from "@/lib/analytics/blog-events"
-import { getBlogList, getBlogTaxonomy, getFeaturedBlogPosts } from "@/lib/blog/api"
+import { getBlogList, getBlogTaxonomy, getFeaturedBlogPosts, type BlogPostSummary, type BlogTaxonomyResponse } from "@/lib/blog/api"
 import { buildBlogHref, cleanBlogParam, normaliseBlogPage } from "@/lib/blog/url"
 import { absoluteUrl } from "@/lib/site-url"
 
@@ -110,17 +110,28 @@ const exploreLinks = [
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   const state = resolveState(await searchParams)
-  const [data, featuredPosts, taxonomy] = await Promise.all([
-    getBlogList({
-      search: state.q,
-      category: state.category,
-      tag: state.tag,
-      page: state.page,
-      limit: PAGE_SIZE,
-    }),
-    getFeaturedBlogPosts(2),
-    getBlogTaxonomy(),
-  ])
+  let data = { posts: [] as BlogPostSummary[], pagination: { page: 1, limit: PAGE_SIZE, total: 0, pages: 0 } }
+  let featuredPosts: BlogPostSummary[] = []
+  let taxonomy: BlogTaxonomyResponse = { categories: [], tags: [] }
+
+  try {
+    const [fetchedData, fetchedFeatured, fetchedTaxonomy] = await Promise.all([
+      getBlogList({
+        search: state.q,
+        category: state.category,
+        tag: state.tag,
+        page: state.page,
+        limit: PAGE_SIZE,
+      }),
+      getFeaturedBlogPosts(2),
+      getBlogTaxonomy(),
+    ])
+    data = fetchedData
+    featuredPosts = fetchedFeatured
+    taxonomy = fetchedTaxonomy
+  } catch (err) {
+    console.error("Failed to load blog data:", err)
+  }
 
   if (data.pagination.pages > 0 && state.page > data.pagination.pages) {
     redirect(buildBlogHref({ ...state, page: data.pagination.pages }, ""))
