@@ -97,7 +97,98 @@ Browser screenshot tooling was not exposed in the current tool set, and no authe
 
 ---
 
-## 8. Rollback Instructions
+## 8. Phase 2 Visual QA Gate Update
+
+### Visual QA Environment
+
+* **Date / Time:** August 3, 2026, Africa/Nairobi local environment.
+* **Operating System:** Windows.
+* **Browser:** Google Chrome headless via Chrome DevTools Protocol.
+* **Application Environment:** Local Next.js production server from the existing `.next` build at `http://127.0.0.1:3000`.
+* **Authentication Strategy Attempted:** Existing backend local start, documented seeded startup credentials, and browser-bound request interception matching current frontend tRPC response contracts.
+* **Test Account Roles:** No real authenticated startup, calendar-enabled, calendar-locked, trial, or admin account could be validated in browser. The backend did not become reachable at `http://localhost:4000/health`, and the controlled browser auth harness returned to `/login`.
+* **Data Strategy:** Controlled browser-only tRPC/Supabase interception was attempted for QA. No source code, committed fixtures, production data, or backend contracts were changed.
+
+### Complete Phase 2 Branch Diff
+
+Source of truth: `git diff --name-only eb0d173...HEAD`.
+
+```text
+app/(dashboard)/startup/page.tsx
+components/dashboard/__tests__/user-dashboard.test.tsx
+components/dashboard/compliance-category-item.tsx
+components/dashboard/compliance-overview.tsx
+components/dashboard/dashboard-empty-state.tsx
+components/dashboard/dashboard-error-state.tsx
+components/dashboard/dashboard-loading-state.tsx
+components/dashboard/dashboard-quick-actions.tsx
+components/dashboard/dashboard-types.ts
+components/dashboard/index.ts
+components/dashboard/priority-attention.tsx
+components/dashboard/recent-compliance-queries.tsx
+components/dashboard/regulatory-alerts-card.tsx
+components/dashboard/upcoming-deadlines-card.tsx
+components/dashboard/user-dashboard-header.tsx
+docs/dashboard/user-dashboard-phase-1-portal-foundation.md
+docs/dashboard/user-dashboard-phase-2-redesign.md
+```
+
+The earlier final response listed only the files in final commit `4e85d908f0d3d8b9b4c9a81e5153f883f9fd17ab`; it did not list the complete Phase 2 branch diff. The dashboard components and tests were committed in the earlier Phase 2 implementation commit `5a3a893`.
+
+### Final Phase 2 Commit Diff
+
+Source of truth: `git show --stat --oneline 4e85d908f0d3d8b9b4c9a81e5153f883f9fd17ab`.
+
+```text
+components/dashboard/priority-attention.tsx
+components/dashboard/upcoming-deadlines-card.tsx
+docs/dashboard/user-dashboard-phase-1-portal-foundation.md
+docs/dashboard/user-dashboard-phase-2-redesign.md
+```
+
+### Screenshot Matrix
+
+| State | Viewport | Result | Evidence |
+| :--- | :--- | :--- | :--- |
+| Populated dashboard | 1440 x 900 | **Blocked**: browser returned to `/login`; authenticated `/startup` was not reached. | Local attempted smoke screenshot: `%TEMP%/sheriabot-phase2-visual-qa/startup-after-login.png` |
+| 320/375/430/768/1024/1280/1440/1920 dashboard states | Required | **Not completed** due authenticated browser blocker. | None claimed |
+| Public home regression | Required | **Not completed** as release gate stopped at authenticated dashboard blocker. | None claimed |
+| Admin regression | Required | **Not completed** as release gate stopped at authenticated dashboard blocker. | None claimed |
+
+Screenshots are not committed because they do not prove the authenticated dashboard state and may mislead reviewers.
+
+### Defects and Corrections
+
+| ID | Severity | Viewport / State | Evidence | Affected File | User Impact | Correction | Validation |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| P2-QA-BLOCKER-001 | Blocker | Authenticated browser QA | Backend process did not answer `http://localhost:4000/health`; controlled Chrome auth harness called `auth.login`, `billing.getPlanAndUsage`, and `auth.me` but still returned to `/login?redirect=%2Fstartup`. | Environment / auth backend availability, no Phase 2 source file identified | Required authenticated `/startup` visual QA cannot be completed; Phase 2 cannot be marked ready for PR. | No source correction made; this requires a working authenticated test account or backend/test-auth harness. | Release gate remains blocked. |
+
+No dashboard UI defects were corrected during this QA gate because the authenticated dashboard was not reachable in browser.
+
+### Accessibility Validation
+
+Browser-based keyboard, focus, semantics, contrast, reduced-motion, and blur-fallback validation could not be completed against authenticated `/startup`. Component-level tests and static review still cover one `h1`, Lucide icons, text status labels, and portal primitive usage, but those are not a substitute for authenticated browser accessibility QA.
+
+### Regression Results
+
+Authenticated dashboard, admin, and public route visual regression checks were not completed after the authenticated dashboard blocker. No public or admin source files are included in the Phase 2 branch diff.
+
+### Warning Classification
+
+* **Workspace-root inference:** Pre-existing / repository-environment warning. Non-blocking for Phase 2 UI code, but should be handled by infrastructure owners using the appropriate Next.js root setting.
+* **Middleware deprecation:** Pre-existing framework migration warning. Non-blocking for Phase 2; not introduced by dashboard files.
+* **Sitemap fetch failures:** Pre-existing local-build/runtime limitation was observed in the production build output. The build completed and generated routes, but sitemap content behavior still requires owner confirmation before calling it harmless.
+* **Vercel Analytics / Speed Insights local script warnings:** Local runtime-only warnings when running outside Vercel. Non-blocking and not introduced by Phase 2.
+
+### Final Release Verdict
+
+**FAIL -- BLOCKED**
+
+Phase 2 implementation remains committed, tests/lint/typecheck/build have passed, and the branch diff is complete. However, the release gate cannot pass until authenticated browser visual QA is completed with a working startup session and the required screenshot matrix.
+
+---
+
+## 9. Rollback Instructions
 
 To roll back Phase 2 changes:
 ```bash
