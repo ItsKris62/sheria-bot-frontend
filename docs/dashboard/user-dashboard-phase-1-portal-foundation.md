@@ -117,7 +117,8 @@ Phase 1 establishes a restrained, production-safe authenticated portal design sy
 ## 7. Test Results
 
 * **Unit Test Suite:** Added [`components/portal/__tests__/portal-primitives.test.tsx`](file:///c:/Users/USER/Videos/Sheria-Bot-SaaS/fintech-regulatory-platform/components/portal/__tests__/portal-primitives.test.tsx).
-* **Execution Results:** 17 test files / 84 unit tests **PASSED** cleanly in Vitest.
+* **Execution Results:** 17 test files / 85 unit tests **PASSED** cleanly in Vitest (85 tests exact source of truth).
+* **Jurisdiction Data Confirmation:** Confirmed that organization jurisdiction metadata is not exposed on current user auth store session object. Functional flag emojis are prohibited. Regional scope treatment is omitted unless a real data field exists.
 
 ---
 
