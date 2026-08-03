@@ -9,8 +9,8 @@ export interface UserDashboardHeaderProps {
 
 export function UserDashboardHeader({ displayName }: UserDashboardHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2">
-      <div className="space-y-1">
+    <div className="flex min-w-0 flex-col gap-4 pb-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0 space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-[var(--portal-text-primary)] lg:text-3xl">
           Welcome back, {displayName}
         </h1>
