@@ -18,8 +18,11 @@ function UpcomingDeadlinesContent({
   deadlines = [],
   isLoading,
   isError,
-  deadlinesUpdatedAt = Date.now(),
+  deadlinesUpdatedAt,
 }: UpcomingDeadlinesCardProps) {
+  const [fallbackReferenceTime] = React.useState(() => Date.now())
+  const referenceTime = deadlinesUpdatedAt ?? fallbackReferenceTime
+
   return (
     <PortalSurface variant="raised" className="p-6">
       <PortalSectionHeader
@@ -54,7 +57,7 @@ function UpcomingDeadlinesContent({
         ) : (
           deadlines.map((event) => {
             const dueDate = new Date(event.dueDate)
-            const daysUntil = Math.ceil((dueDate.getTime() - deadlinesUpdatedAt) / (1000 * 60 * 60 * 24))
+            const daysUntil = Math.ceil((dueDate.getTime() - referenceTime) / (1000 * 60 * 60 * 24))
             const isUrgent = daysUntil <= 3 && daysUntil > 0
             const isOverdue = daysUntil <= 0
             const priCfg = PRIORITY_CONFIG[event.priority as keyof typeof PRIORITY_CONFIG]

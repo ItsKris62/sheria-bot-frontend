@@ -1,7 +1,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { PortalSurface, PortalSectionHeader, PortalStatusBadge } from "@/components/portal"
-import { AlertTriangle, Calendar, Bell, ArrowRight, CheckCircle2 } from "lucide-react"
+import { AlertTriangle, Calendar, Bell, CheckCircle2 } from "lucide-react"
 import type { AlertItem, DeadlineItem } from "./dashboard-types"
 
 export interface PriorityAttentionProps {
@@ -13,12 +13,15 @@ export interface PriorityAttentionProps {
 export function PriorityAttention({
   deadlines = [],
   alerts = [],
-  deadlinesUpdatedAt = Date.now(),
+  deadlinesUpdatedAt,
 }: PriorityAttentionProps) {
+  const [fallbackReferenceTime] = React.useState(() => Date.now())
+  const referenceTime = deadlinesUpdatedAt ?? fallbackReferenceTime
+
   // Select urgent deadlines (<= 3 days left or overdue)
   const urgentDeadlines = deadlines.filter((item) => {
     const dueDate = new Date(item.dueDate)
-    const daysUntil = Math.ceil((dueDate.getTime() - deadlinesUpdatedAt) / (1000 * 60 * 60 * 24))
+    const daysUntil = Math.ceil((dueDate.getTime() - referenceTime) / (1000 * 60 * 60 * 24))
     return daysUntil <= 3
   })
 
@@ -63,7 +66,7 @@ export function PriorityAttention({
         {/* Urgent Deadlines */}
         {urgentDeadlines.map((item) => {
           const dueDate = new Date(item.dueDate)
-          const daysUntil = Math.ceil((dueDate.getTime() - deadlinesUpdatedAt) / (1000 * 60 * 60 * 24))
+          const daysUntil = Math.ceil((dueDate.getTime() - referenceTime) / (1000 * 60 * 60 * 24))
           const isOverdue = daysUntil <= 0
 
           return (

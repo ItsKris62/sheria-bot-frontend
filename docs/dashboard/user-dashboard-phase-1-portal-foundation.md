@@ -126,5 +126,5 @@ Phase 1 establishes a restrained, production-safe authenticated portal design sy
 
 1. Full recomposition of the user dashboard layout on `/startup`.
 2. Priority Attention Strip implementation for urgent deadlines & critical alerts.
-3. Regional jurisdiction context tag (`🇰🇪 Kenya (CBK / ODPC)`) integration on welcome header.
+3. Regional jurisdiction context treatment using text plus the existing Lucide `MapPin` icon, only if a verified organization jurisdiction field is exposed to the dashboard.
 4. Recomposition of category score cards and quick action grid tiles.
