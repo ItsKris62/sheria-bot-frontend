@@ -1577,7 +1577,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
     }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
         create: import("@trpc/server").TRPCMutationProcedure<{
             input: {
-                contentType: "BLOG_POST" | "KNOWLEDGE_BASE_ARTICLE" | "POLICY_TEMPLATE";
+                contentType: "KNOWLEDGE_BASE_ARTICLE" | "POLICY_TEMPLATE";
                 title: string;
                 content: string;
                 slug?: string | undefined;
@@ -1621,6 +1621,42 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contentStatus: import(".prisma/client").$Enums.ContentStatus;
                 title: string | null;
                 updatedAt: Date;
+            };
+            meta: object;
+        }>;
+        listPublishedKnowledgeBase: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                page?: number | undefined;
+                limit?: number | undefined;
+                search?: string | undefined;
+                category?: string | undefined;
+                tag?: string | undefined;
+            };
+            output: {
+                items: {
+                    id: string;
+                    title: string | null;
+                    slug: string;
+                    excerpt: string | null;
+                    category: string | null;
+                    subcategory: string | null;
+                    tags: string[];
+                    publishedAt: Date | null;
+                    updatedAt: Date;
+                    viewCount: number;
+                    readingTime: number;
+                    author: {
+                        id: string;
+                        name: string;
+                        avatar: string | null;
+                    } | null;
+                }[];
+                pagination: {
+                    page: number;
+                    limit: number;
+                    total: number;
+                    totalPages: number;
+                };
             };
             meta: object;
         }>;
@@ -1733,6 +1769,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         getBySlug: import("@trpc/server").TRPCQueryProcedure<{
             input: {
                 slug: string;
+                contentType?: "KNOWLEDGE_BASE_ARTICLE" | undefined;
             };
             output: {
                 id: string;
@@ -1749,6 +1786,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 seoDescription: string | null;
                 seoKeywords: string[];
                 publishedAt: Date | null;
+                updatedAt: Date;
                 viewCount: number;
                 helpfulCount: number;
                 notHelpfulCount: number;
@@ -5360,6 +5398,19 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        subscribeBlogNewsletter: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                email: string;
+                sourcePage?: string | undefined;
+                readerSessionId?: string | undefined;
+                privacyPolicyVersion?: string | undefined;
+                spamTrap?: string | undefined;
+            };
+            output: {
+                success: boolean;
+            };
+            meta: object;
+        }>;
     }>>;
     enterprisePolicy: import("@trpc/server").TRPCBuiltRouter<{
         ctx: import("./context").Context;
@@ -8335,9 +8386,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
     }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
         publicList: import("@trpc/server").TRPCQueryProcedure<{
             input: {
-                category?: string | undefined;
-                search?: string | undefined;
-                tag?: string | undefined;
+                category?: unknown;
+                search?: unknown;
+                tag?: unknown;
                 page?: number | undefined;
                 limit?: number | undefined;
                 featured?: boolean | undefined;
@@ -8455,6 +8506,67 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 publishedAt: Date | null;
                 slug: string;
             }[];
+            meta: object;
+        }>;
+        publicTaxonomy: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                categories: {
+                    name: string;
+                    count: number;
+                }[];
+                tags: {
+                    name: string;
+                    count: number;
+                }[];
+            };
+            meta: object;
+        }>;
+        submitFeedback: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                postId: string;
+                value: "HELPFUL" | "NOT_HELPFUL";
+                reasonCode?: unknown;
+                readerSessionId?: unknown;
+            };
+            output: {
+                success: true;
+            };
+            meta: object;
+        }>;
+        getPublicFeedbackSummary: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                postId: string;
+            };
+            output: {
+                helpfulCount: number;
+                notHelpfulCount: number;
+                totalResponses: number;
+            };
+            meta: object;
+        }>;
+        submitTopicRequest: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                topic: string;
+                category?: unknown;
+                jurisdiction?: unknown;
+                sourcePage?: unknown;
+                contactEmail?: unknown;
+                readerSessionId?: unknown;
+                spamTrap?: string | undefined;
+            };
+            output: {
+                success: true;
+            };
+            meta: object;
+        }>;
+        adminGetEditorialMetricsContract: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                publicTrendingEnabled: boolean;
+                aggregationArchitecture: string;
+                sources: import("../../modules/blog/editorial-metrics").BlogEditorialMetricSource[];
+            };
             meta: object;
         }>;
         adminList: import("@trpc/server").TRPCQueryProcedure<{
@@ -8612,8 +8724,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                     reason: string | null;
                     approvedAt: Date | null;
-                    dismissedReason: string | null;
                     blogPostId: string | null;
+                    dismissedReason: string | null;
                     suggestedSlug: string | null;
                     jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     articleType: import(".prisma/client").$Enums.BlogArticleType;
@@ -8936,7 +9048,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
                 authorityType?: "OTHER" | "DATA_PROTECTION" | "AML_CFT" | "INTERNATIONAL_STANDARD" | "CONSUMER_PROTECTION" | "INTERNAL" | "CENTRAL_BANK" | "COMMUNICATIONS" | "SECURITIES" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | undefined;
                 sourceType?: "INTERNATIONAL_STANDARD" | "OFFICIAL" | "THIRD_PARTY" | "INTERNAL" | "MEDIA" | undefined;
-                status?: "DUPLICATE" | "NEW" | "READY_FOR_SCORING" | "SCORED" | "DISMISSED" | "FETCH_FAILED" | "CONVERTED_TO_SUGGESTION" | undefined;
+                status?: "DUPLICATE" | "DISMISSED" | "NEW" | "READY_FOR_SCORING" | "SCORED" | "FETCH_FAILED" | "CONVERTED_TO_SUGGESTION" | undefined;
                 search?: string | undefined;
                 page?: number | undefined;
                 limit?: number | undefined;
@@ -9113,8 +9225,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                         reason: string | null;
                         approvedAt: Date | null;
-                        dismissedReason: string | null;
                         blogPostId: string | null;
+                        dismissedReason: string | null;
                         suggestedSlug: string | null;
                         jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                         articleType: import(".prisma/client").$Enums.BlogArticleType;
@@ -9205,8 +9317,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                     reason: string | null;
                     approvedAt: Date | null;
-                    dismissedReason: string | null;
                     blogPostId: string | null;
+                    dismissedReason: string | null;
                     suggestedSlug: string | null;
                     jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     articleType: import(".prisma/client").$Enums.BlogArticleType;
@@ -9407,7 +9519,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidenceGaps: string[];
                 contradictions: import("@prisma/client/runtime/client").JsonValue | null;
                 reviewerStatus: string | null;
-            };
+            } | null;
             meta: object;
         }>;
         adminGetFreshnessReview: import("@trpc/server").TRPCQueryProcedure<{
@@ -9427,8 +9539,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 completedAt: Date | null;
                 action: import(".prisma/client").$Enums.BlogFreshnessAction;
                 contentHash: string;
-                triggeredBy: string;
                 blogPostId: string;
+                triggeredBy: string;
                 sourceSetHash: string;
                 promptVersion: string;
                 agentRunId: string | null;
@@ -9465,8 +9577,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     completedAt: Date | null;
                     action: import(".prisma/client").$Enums.BlogFreshnessAction;
                     contentHash: string;
-                    triggeredBy: string;
                     blogPostId: string;
+                    triggeredBy: string;
                     sourceSetHash: string;
                     promptVersion: string;
                     agentRunId: string | null;
@@ -9493,7 +9605,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         adminListRevisionRequests: import("@trpc/server").TRPCQueryProcedure<{
             input: {
                 blogPostId?: string | undefined;
-                status?: "RESOLVED" | "DISMISSED" | "PENDING_REVIEW" | "ACCEPTED" | "ASSIGNED" | undefined;
+                status?: "RESOLVED" | "ACCEPTED" | "DISMISSED" | "PENDING_REVIEW" | "ASSIGNED" | undefined;
                 page?: number | undefined;
                 limit?: number | undefined;
             };

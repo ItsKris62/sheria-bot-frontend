@@ -1,4 +1,5 @@
-import { getSiteUrl, absoluteUrl } from '@/lib/site-url'
+import { absoluteUrl } from '@/lib/site-url'
+import { safeSourceUrl } from '@/lib/blog/url'
 
 interface BlogPostJsonLdProps {
   slug: string
@@ -10,7 +11,8 @@ interface BlogPostJsonLdProps {
   dateModified: string
   readTime: string
   category?: string
-  sources?: { url?: string | null }[]
+  imageUrl?: string
+  sources?: { sourceType?: string; url?: string | null }[]
 }
 
 export function BlogPostJsonLd({
@@ -23,12 +25,16 @@ export function BlogPostJsonLd({
   dateModified,
   readTime,
   category,
+  imageUrl,
   sources,
 }: BlogPostJsonLdProps) {
   const url = absoluteUrl(`/blog/${slug}`)
-  const validCitations = sources?.map(s => s.url).filter(Boolean) as string[]
+  const validCitations = sources
+    ?.filter((source) => source.sourceType !== 'INTERNAL')
+    .map((source) => safeSourceUrl(source.url))
+    .filter(Boolean) as string[]
 
-  const schema: any = {
+  const blogPosting: any = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: title,
@@ -36,7 +42,7 @@ export function BlogPostJsonLd({
     url,
     datePublished: new Date(datePublished).toISOString(),
     dateModified: new Date(dateModified).toISOString(),
-    image: absoluteUrl('/og-image.png'),
+    image: imageUrl || absoluteUrl('/og-image.png'),
     inLanguage: 'en-KE',
     timeRequired: readTime,
     isAccessibleForFree: true,
@@ -61,18 +67,36 @@ export function BlogPostJsonLd({
   }
 
   if (category) {
-    schema.articleSection = category
+    blogPosting.articleSection = category
   }
 
   if (validCitations.length > 0) {
-    schema.citation = validCitations
+    blogPosting.citation = validCitations
+  }
+
+  const breadcrumbList = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Blog',
+        item: absoluteUrl('/blog'),
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: title,
+        item: url,
+      },
+    ],
   }
 
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify([blogPosting, breadcrumbList]) }}
     />
   )
 }
-

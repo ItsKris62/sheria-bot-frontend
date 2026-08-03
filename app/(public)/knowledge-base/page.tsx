@@ -1,359 +1,398 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CreditCard, FileText, Lock, Scale, Search, Shield } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpenCheck,
+  FileText,
+  MessageSquareText,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { KnowledgeBaseAnalyticsTracker } from "@/components/knowledge-base/knowledge-base-analytics-tracker";
+import { KnowledgeBaseArticleCard } from "@/components/knowledge-base/knowledge-base-article-card";
+import { KnowledgeBaseControls } from "@/components/knowledge-base/knowledge-base-controls";
+import type { PublishedKnowledgeBaseResponse } from "@/components/knowledge-base/types";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { useMemo, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { absoluteUrl } from "@/lib/site-url";
 
-const categories = [
-  {
-    id: "getting-started",
-    name: "Getting Started",
-    icon: BookOpen,
-    description: "Setup guides and platform basics",
-    articleCount: 2,
-  },
-  {
-    id: "cbk-regulations",
-    name: "CBK Regulations",
-    icon: Scale,
-    description: "Central Bank licensing and oversight",
-    articleCount: 2,
-  },
-  {
-    id: "licensing",
-    name: "Licensing & Registration",
-    icon: FileText,
-    description: "Application requirements and process guides",
-    articleCount: 2,
-  },
-  {
-    id: "aml-kyc",
-    name: "AML/KYC Compliance",
-    icon: Shield,
-    description: "Customer verification and monitoring",
-    articleCount: 2,
-  },
-  {
-    id: "data-protection",
-    name: "Data Protection",
-    icon: Lock,
-    description: "Kenya Data Protection Act compliance",
-    articleCount: 2,
-  },
-  {
-    id: "payments",
-    name: "Payments & Mobile Money",
-    icon: CreditCard,
-    description: "Payment systems and M-Pesa integration",
-    articleCount: 2,
-  },
-];
+const PAGE_SIZE = 9;
 
-const articles = [
-  {
-    slug: "getting-started-with-sheriabot",
-    title: "Getting Started with SheriaBot",
-    category: "getting-started",
-    excerpt: "A complete guide to setting up your account and running your first compliance query.",
-    popular: true,
-  },
-  {
-    slug: "understanding-compliance-queries",
-    title: "Understanding Compliance Queries",
-    category: "getting-started",
-    excerpt: "Learn how to formulate effective queries to get the most accurate compliance guidance.",
-    popular: true,
-  },
-  {
-    slug: "cbk-licensing-framework-overview",
-    title: "CBK Licensing Framework Overview",
-    category: "cbk-regulations",
-    excerpt: "Comprehensive overview of CBK's licensing requirements for fintech categories.",
-    popular: true,
-  },
-  {
-    slug: "regulatory-sandbox-application",
-    title: "Regulatory Sandbox Application Process",
-    category: "cbk-regulations",
-    excerpt: "How to apply for and operate within CBK's regulatory sandbox.",
-    popular: false,
-  },
-  {
-    slug: "digital-credit-provider-license",
-    title: "Digital Credit Provider License Requirements",
-    category: "licensing",
-    excerpt: "Step-by-step guide to obtaining a digital credit provider license from CBK.",
-    popular: true,
-  },
-  {
-    slug: "payment-service-provider-registration",
-    title: "Payment Service Provider Registration",
-    category: "licensing",
-    excerpt: "How to register as a payment service provider under the National Payment System Act.",
-    popular: false,
-  },
-  {
-    slug: "kyc-requirements-for-fintechs",
-    title: "KYC Requirements for Fintechs",
-    category: "aml-kyc",
-    excerpt: "Detailed breakdown of Know Your Customer requirements under POCAMLA.",
-    popular: true,
-  },
-  {
-    slug: "transaction-monitoring-guide",
-    title: "Transaction Monitoring Guide",
-    category: "aml-kyc",
-    excerpt: "Best practices for implementing effective transaction monitoring systems.",
-    popular: false,
-  },
-  {
-    slug: "data-protection-act-overview",
-    title: "Data Protection Act 2019 Overview",
-    category: "data-protection",
-    excerpt: "Key provisions of Kenya's Data Protection Act and what they mean for fintechs.",
-    popular: true,
-  },
-  {
-    slug: "consent-management-best-practices",
-    title: "Consent Management Best Practices",
-    category: "data-protection",
-    excerpt: "How to implement proper consent mechanisms under the Data Protection Act.",
-    popular: false,
-  },
-  {
-    slug: "mpesa-integration-compliance",
-    title: "M-Pesa Integration Compliance",
-    category: "payments",
-    excerpt: "Regulatory requirements for integrating with Safaricom's M-Pesa platform.",
-    popular: true,
-  },
-  {
-    slug: "national-payment-system-act",
-    title: "National Payment System Act Guide",
-    category: "payments",
-    excerpt: "Understanding the NPS Act and its requirements for payment service providers.",
-    popular: false,
-  },
-];
+type SearchParamValue = string | string[] | undefined;
+type PageSearchParams = Record<string, SearchParamValue>;
 
-export default function KnowledgeBasePage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+type FetchResult =
+  | { data: PublishedKnowledgeBaseResponse; error: null }
+  | { data: null; error: string };
 
-  const filteredArticles = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
+import { getTrpcUrl } from "@/lib/trpc-url";
 
-    return articles.filter((article) => {
-      const matchesSearch =
-        !normalizedQuery ||
-        article.title.toLowerCase().includes(normalizedQuery) ||
-        article.excerpt.toLowerCase().includes(normalizedQuery);
-      const matchesCategory = !selectedCategory || article.category === selectedCategory;
+function firstParam(value: SearchParamValue) {
+  return Array.isArray(value) ? value[0] : value;
+}
 
-      return matchesSearch && matchesCategory;
-    });
-  }, [searchQuery, selectedCategory]);
+function cleanParam(value: SearchParamValue) {
+  return firstParam(value)?.trim() || "";
+}
 
-  const popularArticles = articles.filter((article) => article.popular);
-  const selectedCategoryName = categories.find((category) => category.id === selectedCategory)?.name;
+function parsePage(value: SearchParamValue) {
+  const page = Number.parseInt(firstParam(value) || "1", 10);
+  return Number.isFinite(page) && page > 0 ? page : 1;
+}
+
+function buildPageHref(params: {
+  query: string;
+  category: string;
+  tag: string;
+  page: number;
+}) {
+  const searchParams = new URLSearchParams();
+  if (params.query) searchParams.set("q", params.query);
+  if (params.category) searchParams.set("category", params.category);
+  if (params.tag) searchParams.set("tag", params.tag);
+  if (params.page > 1) searchParams.set("page", String(params.page));
+
+  const queryString = searchParams.toString();
+  return queryString ? `/knowledge-base?${queryString}` : "/knowledge-base";
+}
+
+function getVisiblePages(currentPage: number, totalPages: number) {
+  const start = Math.max(1, currentPage - 2);
+  const end = Math.min(totalPages, currentPage + 2);
+  return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+}
+
+function uniqueSorted(values: Array<string | null | undefined>) {
+  return Array.from(new Set(values.filter(Boolean) as string[])).sort((a, b) =>
+    a.localeCompare(b)
+  );
+}
+
+async function getPublishedKnowledgeBase(input: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: string;
+  tag?: string;
+}): Promise<FetchResult> {
+  const url = getTrpcUrl("content.listPublishedKnowledgeBase");
+  url.searchParams.set("input", JSON.stringify(input));
+
+  try {
+    const response = await fetch(url.toString(), { next: { revalidate: 60 } });
+    if (!response.ok) {
+      console.error(`Knowledge Base API returned HTTP ${response.status} for content.listPublishedKnowledgeBase`);
+      return { data: null, error: "Knowledge Base articles could not be loaded." };
+    }
+
+    const json = await response.json();
+    if (!json || typeof json !== "object" || !("result" in json) || !json.result || typeof json.result !== "object" || !("data" in json.result)) {
+      console.error("Unexpected Knowledge Base API response structure:", json);
+      return { data: null, error: "Knowledge Base articles could not be loaded." };
+    }
+
+    return { data: json.result.data, error: null };
+  } catch (error) {
+    console.error("Failed to fetch Knowledge Base articles:", error);
+    return { data: null, error: "Knowledge Base articles could not be loaded." };
+  }
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<PageSearchParams>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const hasFilterState = Boolean(
+    cleanParam(params.q) || cleanParam(params.category) || cleanParam(params.tag) || parsePage(params.page) > 1
+  );
+  const url = absoluteUrl("/knowledge-base");
+
+  return {
+    title: "Knowledge Base | SheriaBot",
+    description:
+      "Practical Kenyan fintech compliance guidance from SheriaBot, covering regulatory obligations, reporting, licensing and operating controls.",
+    alternates: {
+      canonical: url,
+    },
+    robots: hasFilterState ? { index: false, follow: true } : undefined,
+    openGraph: {
+      title: "Knowledge Base | SheriaBot",
+      description:
+        "Practical Kenyan fintech compliance guidance from SheriaBot, covering regulatory obligations, reporting, licensing and operating controls.",
+      url,
+      siteName: "SheriaBot",
+      type: "website",
+      images: [{ url: absoluteUrl("/og-image.png"), width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Knowledge Base | SheriaBot",
+      description:
+        "Practical Kenyan fintech compliance guidance from SheriaBot, covering regulatory obligations, reporting, licensing and operating controls.",
+      images: [absoluteUrl("/og-image.png")],
+    },
+  };
+}
+
+export default async function KnowledgeBasePage({
+  searchParams,
+}: {
+  searchParams: Promise<PageSearchParams>;
+}) {
+  const params = await searchParams;
+  const query = cleanParam(params.q);
+  const category = cleanParam(params.category);
+  const tag = cleanParam(params.tag);
+  const page = parsePage(params.page);
+
+  const [listingResult, facetResult] = await Promise.all([
+    getPublishedKnowledgeBase({
+      page,
+      limit: PAGE_SIZE,
+      search: query || undefined,
+      category: category || undefined,
+      tag: tag || undefined,
+    }),
+    getPublishedKnowledgeBase({ page: 1, limit: 50 }),
+  ]);
+
+  const articles = listingResult.data?.items || [];
+  const pagination = listingResult.data?.pagination || {
+    page,
+    limit: PAGE_SIZE,
+    total: 0,
+    totalPages: 0,
+  };
+  const facetArticles = facetResult.data?.items || [];
+  const categories = uniqueSorted([...facetArticles.map((article) => article.category), category]);
+  const tags = uniqueSorted([
+    ...facetArticles.flatMap((article) => article.tags || []),
+    tag,
+  ]);
+  const hasActiveFilters = Boolean(query || category || tag);
+  const latestArticle = page === 1 ? articles[0] : undefined;
+  const gridArticles = latestArticle ? articles.slice(1) : articles;
+  const totalPages = Math.max(1, pagination.totalPages || 1);
 
   return (
     <div className="flex flex-col">
-      <section className="relative overflow-hidden py-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <Badge variant="outline" className="mb-4 border-primary/50 text-primary">
-              Knowledge Base
-            </Badge>
+      <KnowledgeBaseAnalyticsTracker
+        type="listing"
+        hasSearch={Boolean(query)}
+        category={category || undefined}
+        tag={tag || undefined}
+        resultCount={pagination.total}
+        page={page}
+      />
+
+      <section className="border-b border-border bg-background py-14 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl text-center">
             <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              Regulatory <span className="text-primary">Knowledge Hub</span>
+              Kenyan fintech compliance guidance, ready when you need it
             </h1>
-            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-              Comprehensive guides, tutorials, and documentation on Kenya&apos;s fintech regulatory landscape.
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+              Search published SheriaBot guidance across licensing, AML, reporting,
+              data protection and regulatory operations.
             </p>
+          </div>
 
-            <div className="relative mx-auto mt-10 max-w-xl">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search the knowledge base..."
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                className="h-12 pl-12 text-base"
-              />
-            </div>
+          <div className="mx-auto mt-10 max-w-5xl">
+            <KnowledgeBaseControls
+              query={query}
+              category={category}
+              tag={tag}
+              categories={categories}
+              tags={tags}
+              resultCount={pagination.total}
+            />
           </div>
         </div>
       </section>
 
-      <section className="border-y border-border bg-muted/30 py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-semibold text-foreground">Browse by Category</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((category) => {
-              const Icon = category.icon;
-              const isSelected = selectedCategory === category.id;
-
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(isSelected ? null : category.id)}
-                  className="text-left"
-                >
-                  <Card
-                    className={`h-full border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 ${
-                      isSelected ? "border-primary/50 ring-1 ring-primary/50" : ""
-                    }`}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                            isSelected ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-                          }`}
-                        >
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-foreground">{category.name}</h3>
-                          <p className="mt-1 text-sm text-muted-foreground">{category.description}</p>
-                          <p className="mt-2 text-xs text-primary">{category.articleCount} articles</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </button>
-              );
-            })}
-          </div>
-
-          {selectedCategory && (
-            <Button variant="ghost" size="sm" onClick={() => setSelectedCategory(null)} className="mt-4">
-              Clear filter
-            </Button>
-          )}
-        </div>
-      </section>
-
-      {!selectedCategory && !searchQuery && (
-        <section className="py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="mb-6 text-xl font-semibold text-foreground">Popular Articles</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {popularArticles.map((article) => (
-                <ArticleCard key={article.slug} article={article} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section className={`py-12 ${!selectedCategory && !searchQuery ? "border-t border-border" : ""}`}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-semibold text-foreground">
-            {selectedCategoryName ?? (searchQuery ? "Search Results" : "All Articles")}
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({filteredArticles.length} {filteredArticles.length === 1 ? "article" : "articles"})
-            </span>
-          </h2>
-
-          {filteredArticles.length === 0 ? (
-            <Card className="border-border/50 bg-card/50">
-              <CardContent className="p-12 text-center">
-                <p className="text-muted-foreground">No articles found matching your criteria.</p>
-                <Button
-                  variant="outline"
-                  className="mt-4 bg-transparent"
-                  onClick={() => {
-                    setSelectedCategory(null);
-                    setSearchQuery("");
-                  }}
-                >
-                  Clear Filters
+      <section className="py-12 sm:py-16">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
+          <main className="min-w-0 space-y-8" aria-labelledby="knowledge-base-results">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-medium uppercase tracking-wide text-primary">
+                  {hasActiveFilters ? "Filtered guidance" : "Published guidance"}
+                </p>
+                <h2 id="knowledge-base-results" className="mt-2 text-2xl font-semibold text-foreground">
+                  {pagination.total} {pagination.total === 1 ? "article" : "articles"}
+                </h2>
+              </div>
+              {hasActiveFilters && (
+                <Button variant="outline" asChild>
+                  <Link href="/knowledge-base">Clear filters</Link>
                 </Button>
+              )}
+            </div>
+
+            {listingResult.error && (
+              <Alert role="alert" variant="destructive">
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                <AlertTitle>Knowledge Base unavailable</AlertTitle>
+                <AlertDescription>{listingResult.error}</AlertDescription>
+              </Alert>
+            )}
+
+            {!listingResult.error && articles.length === 0 && (
+              <Card className="border-border/70 bg-card/70" role="status" aria-live="polite">
+                <CardContent className="p-8 text-center sm:p-12">
+                  <BookOpenCheck className="mx-auto h-10 w-10 text-primary" aria-hidden="true" />
+                  <h3 className="mt-4 text-lg font-semibold text-foreground">
+                    {hasActiveFilters ? "No matching guidance found" : "No published guidance yet"}
+                  </h3>
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                    {hasActiveFilters
+                      ? "Try a broader search, remove a filter, or browse all published Knowledge Base articles."
+                      : "Published admin Knowledge Base articles will appear here automatically."}
+                  </p>
+                  {hasActiveFilters && (
+                    <Button className="mt-6" asChild>
+                      <Link href="/knowledge-base">Browse all guidance</Link>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {latestArticle && (
+              <section aria-labelledby="latest-guidance-heading">
+                <h2 id="latest-guidance-heading" className="sr-only">
+                  Latest guidance
+                </h2>
+                <KnowledgeBaseArticleCard article={latestArticle} variant="featured" />
+              </section>
+            )}
+
+            {gridArticles.length > 0 && (
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {gridArticles.map((article) => (
+                  <KnowledgeBaseArticleCard key={article.id} article={article} />
+                ))}
+              </div>
+            )}
+
+            {!listingResult.error && pagination.totalPages > 1 && (
+              <Pagination aria-label="Knowledge Base pagination">
+                <PaginationContent className="flex-wrap">
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href={buildPageHref({
+                        query,
+                        category,
+                        tag,
+                        page: Math.max(1, page - 1),
+                      })}
+                      aria-disabled={page <= 1}
+                      className={page <= 1 ? "pointer-events-none opacity-50" : undefined}
+                    />
+                  </PaginationItem>
+
+                  {getVisiblePages(page, totalPages).map((pageNumber) => (
+                    <PaginationItem key={pageNumber}>
+                      <PaginationLink
+                        href={buildPageHref({ query, category, tag, page: pageNumber })}
+                        isActive={pageNumber === page}
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      href={buildPageHref({
+                        query,
+                        category,
+                        tag,
+                        page: Math.min(totalPages, page + 1),
+                      })}
+                      aria-disabled={page >= totalPages}
+                      className={page >= totalPages ? "pointer-events-none opacity-50" : undefined}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </main>
+
+          <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start" aria-label="Knowledge Base resources">
+            <Card className="border-border/70 bg-card/70">
+              <CardHeader>
+                <CardTitle className="text-lg">Useful resources</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <ResourceLink
+                  href="/blog"
+                  icon={FileText}
+                  title="Regulatory insights"
+                  description="Source-backed updates and compliance explainers."
+                />
+                <ResourceLink
+                  href="/contact"
+                  icon={MessageSquareText}
+                  title="Contact SheriaBot"
+                  description="Speak with the team about your compliance workflow."
+                />
+                <ResourceLink
+                  href="/pilot/apply"
+                  icon={ShieldCheck}
+                  title="Apply for pilot access"
+                  description="Explore SheriaBot with a guided onboarding path."
+                />
               </CardContent>
             </Card>
-          ) : (
-            <div className="space-y-4">
-              {filteredArticles.map((article) => (
-                <ArticleRow key={article.slug} article={article} />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="border-t border-border bg-muted/30 py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Card className="border-primary/50 bg-gradient-to-br from-primary/10 via-card to-secondary/10">
-            <CardContent className="p-12 text-center">
-              <h2 className="text-3xl font-bold text-foreground">Can&apos;t Find What You&apos;re Looking For?</h2>
-              <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-                Our AI-powered compliance assistant can answer your specific questions with citations from Kenya&apos;s
-                regulatory framework.
-              </p>
-              <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link href="/register">
-                    Try SheriaBot Free
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild className="bg-transparent">
-                  <Link href="/support">Contact Support</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          </aside>
         </div>
       </section>
     </div>
   );
 }
 
-function ArticleCard({ article }: { article: (typeof articles)[number] }) {
-  const category = categories.find((item) => item.id === article.category);
-
+function ResourceLink({
+  href,
+  icon: Icon,
+  title,
+  description,
+}: {
+  href: string;
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}) {
   return (
-    <Link href={`/knowledge-base/${article.slug}`}>
-      <Card className="group h-full border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
-        <CardContent className="p-6">
-          <Badge variant="outline" className="mb-3 text-xs">
-            {category?.name}
-          </Badge>
-          <h3 className="font-semibold text-foreground transition-colors group-hover:text-primary">{article.title}</h3>
-          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{article.excerpt}</p>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
-
-function ArticleRow({ article }: { article: (typeof articles)[number] }) {
-  const category = categories.find((item) => item.id === article.category);
-
-  return (
-    <Link href={`/knowledge-base/${article.slug}`}>
-      <Card className="group border-border/50 bg-card/50 transition-all hover:border-primary/50">
-        <CardContent className="flex items-center gap-4 p-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <FileText className="h-5 w-5 text-primary" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <Badge variant="secondary" className="mb-2 text-xs">
-              {category?.name}
-            </Badge>
-            <h3 className="font-medium text-foreground transition-colors group-hover:text-primary">{article.title}</h3>
-            <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{article.excerpt}</p>
-          </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
-        </CardContent>
-      </Card>
+    <Link
+      href={href}
+      className="group flex gap-3 rounded-lg border border-border/70 bg-background/60 p-4 transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+        <Icon className="h-4 w-4" aria-hidden="true" />
+      </span>
+      <span className="min-w-0">
+        <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          {title}
+          <ArrowRight
+            className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+            aria-hidden="true"
+          />
+        </span>
+        <span className="mt-1 block text-sm leading-5 text-muted-foreground">{description}</span>
+      </span>
     </Link>
   );
 }

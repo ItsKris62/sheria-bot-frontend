@@ -79,5 +79,23 @@ export declare const publicMarketingRouter: import("@trpc/server").TRPCBuiltRout
         };
         meta: object;
     }>;
+    /**
+     * Subscribe to the Blog newsletter using the existing marketing Contact and
+     * ConsentRecord infrastructure. The response is intentionally generic for
+     * duplicate, existing, and newly-created contacts.
+     */
+    subscribeBlogNewsletter: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            email: string;
+            sourcePage?: string | undefined;
+            readerSessionId?: string | undefined;
+            privacyPolicyVersion?: string | undefined;
+            spamTrap?: string | undefined;
+        };
+        output: {
+            success: boolean;
+        };
+        meta: object;
+    }>;
 }>>;
 //# sourceMappingURL=publicMarketing.router.d.ts.map

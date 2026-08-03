@@ -11,6 +11,13 @@ export declare const contentTypeEnum: z.ZodEnum<{
     KNOWLEDGE_BASE_ARTICLE: "KNOWLEDGE_BASE_ARTICLE";
     POLICY_TEMPLATE: "POLICY_TEMPLATE";
 }>;
+export declare const legacyCreateContentTypeEnum: z.ZodEnum<{
+    KNOWLEDGE_BASE_ARTICLE: "KNOWLEDGE_BASE_ARTICLE";
+    POLICY_TEMPLATE: "POLICY_TEMPLATE";
+}>;
+export declare const publicContentSlugTypeEnum: z.ZodEnum<{
+    KNOWLEDGE_BASE_ARTICLE: "KNOWLEDGE_BASE_ARTICLE";
+}>;
 export declare const contentStatusEnum: z.ZodEnum<{
     DRAFT: "DRAFT";
     ARCHIVED: "ARCHIVED";
@@ -22,7 +29,6 @@ export declare const contentStatusEnum: z.ZodEnum<{
  */
 export declare const createContentSchema: z.ZodObject<{
     contentType: z.ZodEnum<{
-        BLOG_POST: "BLOG_POST";
         KNOWLEDGE_BASE_ARTICLE: "KNOWLEDGE_BASE_ARTICLE";
         POLICY_TEMPLATE: "POLICY_TEMPLATE";
     }>;
@@ -92,6 +98,17 @@ export declare const listContentSchema: z.ZodObject<{
 }, z.core.$strip>;
 export type ListContentInput = z.infer<typeof listContentSchema>;
 /**
+ * Public Knowledge Base listing
+ */
+export declare const listPublishedKnowledgeBaseSchema: z.ZodObject<{
+    page: z.ZodDefault<z.ZodNumber>;
+    limit: z.ZodDefault<z.ZodNumber>;
+    search: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<string | undefined, string | undefined>>;
+    category: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<string | undefined, string | undefined>>;
+    tag: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<string | undefined, string | undefined>>;
+}, z.core.$strip>;
+export type ListPublishedKnowledgeBaseInput = z.infer<typeof listPublishedKnowledgeBaseSchema>;
+/**
  * Get content by ID
  */
 export declare const getContentSchema: z.ZodObject<{
@@ -103,6 +120,9 @@ export type GetContentInput = z.infer<typeof getContentSchema>;
  */
 export declare const getContentBySlugSchema: z.ZodObject<{
     slug: z.ZodString;
+    contentType: z.ZodDefault<z.ZodEnum<{
+        KNOWLEDGE_BASE_ARTICLE: "KNOWLEDGE_BASE_ARTICLE";
+    }>>;
 }, z.core.$strip>;
 export type GetContentBySlugInput = z.infer<typeof getContentBySlugSchema>;
 /**

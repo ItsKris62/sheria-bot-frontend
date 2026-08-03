@@ -495,9 +495,9 @@ export declare const adminListRevisionRequestsSchema: z.ZodObject<{
     blogPostId: z.ZodOptional<z.ZodString>;
     status: z.ZodOptional<z.ZodEnum<{
         RESOLVED: "RESOLVED";
+        ACCEPTED: "ACCEPTED";
         DISMISSED: "DISMISSED";
         PENDING_REVIEW: "PENDING_REVIEW";
-        ACCEPTED: "ACCEPTED";
         ASSIGNED: "ASSIGNED";
     }>>;
     page: z.ZodDefault<z.ZodNumber>;
