@@ -18,3 +18,9 @@ tsconfig.tsbuildinfo
 *.cert
 secrets/
 .env.local
+
+# Local browser QA artifacts
+.playwright/
+test-results/
+playwright-report/
+docs/dashboard/evidence/
