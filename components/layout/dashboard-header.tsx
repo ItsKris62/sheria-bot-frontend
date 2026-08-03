@@ -558,7 +558,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b portal-surface-shell px-6">
       {/* Left side */}
       <div className="flex items-center gap-2">
         <Button

@@ -221,7 +221,7 @@ export function AdminSidebar() {
       {/* -- Desktop sidebar (md and above) --------------------------------- */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 hidden md:flex h-screen flex-col border-r border-border/50 bg-background/95 backdrop-blur-xl transition-all duration-500 ease-out",
+          "fixed left-0 top-0 z-40 hidden md:flex h-screen flex-col border-r portal-surface-shell transition-all duration-500 ease-out",
           collapsed ? "w-[72px]" : "w-64"
         )}
       >
