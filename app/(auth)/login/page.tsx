@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, AlertCircle, Clock } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
@@ -54,7 +54,7 @@ export default function LoginPage() {
   return (
     <Card className="w-full max-w-md border-border/50 bg-card/50 backdrop-blur">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-foreground">Welcome back</CardTitle>
+        <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
         <CardDescription className="text-muted-foreground">
           Sign in to your SheriaBot account
         </CardDescription>
