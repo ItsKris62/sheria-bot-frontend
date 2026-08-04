@@ -394,16 +394,20 @@ html {
 /* ── Surface Level 1: Shell Glass (Top Header, Expanded Sidebar, Mobile Sheet) */
 .portal-shell .portal-surface-shell,
 [data-portal-shell="true"] .portal-surface-shell {
-  background-color: rgba(3, 7, 18, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-color: var(--portal-border);
 }
 
-/* ── Surface Level 2: Raised Portal Surface (Primary Containers, Dashboard Cards) */
+/* ── Surface Level 2: Raised Portal Surface (Primary Bento Grid Cards & Containers) */
 .portal-shell .portal-surface-raised,
-[data-portal-shell="true"] .portal-surface-raised {
-  background-color: var(--portal-surface-raised);
+[data-portal-shell="true"] .portal-surface-raised,
+.portal-shell .bg-card,
+[data-portal-shell="true"] .bg-card {
+  background-color: rgba(17, 24, 39, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--portal-border);
   box-shadow: var(--portal-shadow-sm);
   border-radius: var(--portal-radius-lg);
@@ -412,9 +416,28 @@ html {
 /* ── Surface Level 3: Solid Nested Surface (List Rows, Sub-cards, Tables, Form Controls) */
 .portal-shell .portal-surface-solid,
 [data-portal-shell="true"] .portal-surface-solid {
-  background-color: var(--portal-surface-solid);
+  background-color: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--portal-border);
   border-radius: var(--portal-radius-md);
+}
+
+/* ── Light Mode Glass Effects */
+.light .portal-shell .portal-surface-raised,
+.light [data-portal-shell="true"] .portal-surface-raised,
+.light .portal-shell .bg-card,
+.light [data-portal-shell="true"] .bg-card {
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.light .portal-shell .portal-surface-solid,
+.light [data-portal-shell="true"] .portal-surface-solid {
+  background-color: rgba(249, 250, 251, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 /* ── Focus Ring Styling inside Portal Shell */

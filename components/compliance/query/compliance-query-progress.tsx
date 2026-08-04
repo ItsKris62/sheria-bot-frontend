@@ -1,7 +1,7 @@
 import React from "react"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { AlertCircle, Loader2, Sparkles } from "lucide-react"
+import { AlertCircle, Loader2, BookOpen } from "lucide-react"
 import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
 import { ThinkingIndicator } from "@/components/compliance/thinking-indicator"
 import { AbstainCard } from "@/components/compliance/abstain-card"
@@ -79,7 +79,7 @@ export function ComplianceQueryProgress({
             {/* Suggested Queries Empty State Section */}
             <div className="mt-8 w-full max-w-xl">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center justify-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-green-400" aria-hidden="true" />
+                <BookOpen className="h-3.5 w-3.5 text-green-400" aria-hidden="true" />
                 Suggested Queries
               </p>
               {suggestedQueriesLoading ? (

@@ -1,7 +1,7 @@
 import React, { useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
-import { AlertCircle, Send, Sparkles, Command } from "lucide-react"
+import { AlertCircle, Send, FileText, Command } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { DetailLevel } from "./compliance-query-types"
 
@@ -35,7 +35,7 @@ export function ComplianceQueryComposer({
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <span className="font-medium text-foreground/80 flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-green-400" aria-hidden="true" />
+            <FileText className="h-3.5 w-3.5 text-green-400" aria-hidden="true" />
             Detail Level:
           </span>
           <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-1">
