@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import { trpc, getErrorMessage } from "@/lib/trpc"
 import { toast } from "sonner"
+import { AdminPageHeader } from "@/components/admin/portal"
 
 interface SystemConfigValues {
   maintenanceMode: boolean
@@ -197,13 +198,12 @@ export default function SystemSettingsPage() {
 
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">System Settings</h1>
-          <p className="text-muted-foreground mt-1">Platform configuration and maintenance</p>
-        </div>
-      </div>
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-8">
+      <AdminPageHeader
+        title="System Settings"
+        description="Platform configuration and maintenance."
+        icon={Server}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* System & Ops Health */}

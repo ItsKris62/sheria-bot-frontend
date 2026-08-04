@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Activity, User, Settings, FileText, Shield, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Download } from "lucide-react"
 import { trpc, getErrorMessage } from "@/lib/trpc"
 import { toast } from "sonner"
+import {
+  AdminDataPanel,
+  AdminEmptyState,
+  AdminFilterBar,
+  AdminPageHeader,
+} from "@/components/admin/portal"
+import { PortalSurface } from "@/components/portal"
 
 type TypeConfigEntry = { label: string; icon: React.ElementType; color: string }
 const typeConfig: Record<string, TypeConfigEntry> = {
@@ -105,13 +111,13 @@ export default function AuditLogsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Audit Logs</h1>
-          <p className="text-gray-500 mt-1">Track all system activity and administrative actions</p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-8">
+      <AdminPageHeader
+        title="Audit Logs"
+        description="Track all system activity and administrative actions."
+        icon={Activity}
+        action={
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -133,24 +139,26 @@ export default function AuditLogsPage() {
             Export DOCX
           </Button>
         </div>
-      </div>
+        }
+      />
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Activity Log</CardTitle>
-          <CardDescription>{isLoading ? "Loading..." : `${total.toLocaleString()} entries`}</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <AdminDataPanel
+        title="Activity Log"
+        description={isLoading ? "Loading..." : `${total.toLocaleString()} entries`}
+      >
           {/* Filters */}
-          <div className="flex flex-col gap-3 mb-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <AdminFilterBar className="mb-4">
+            <div className="min-w-0 lg:w-[220px]">
+              <label htmlFor="audit-log-search" className="sr-only">Search audit logs</label>
               <Input
+                id="audit-log-search"
                 placeholder="Search logs..."
                 value={searchFilter}
                 onChange={(e) => { setSearchFilter(e.target.value); setPage(1) }}
               />
+            </div>
             <Select value={entityTypeFilter} onValueChange={(v) => { setEntityTypeFilter(v); setPage(1) }}>
-              <SelectTrigger><SelectValue placeholder="Entity Type" /></SelectTrigger>
+              <SelectTrigger aria-label="Filter audit logs by entity type"><SelectValue placeholder="Entity Type" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="User">User</SelectItem>
@@ -168,7 +176,7 @@ export default function AuditLogsPage() {
               </SelectContent>
             </Select>
             <Select value={severityFilter} onValueChange={(v) => { setSeverityFilter(v); setPage(1) }}>
-              <SelectTrigger><SelectValue placeholder="Severity" /></SelectTrigger>
+              <SelectTrigger aria-label="Filter audit logs by severity"><SelectValue placeholder="Severity" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Severities</SelectItem>
                 <SelectItem value="HIGH">High</SelectItem>
@@ -177,45 +185,62 @@ export default function AuditLogsPage() {
                 <SelectItem value="INFO">Info</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="min-w-0 lg:w-[180px]">
+              <label htmlFor="audit-action-filter" className="sr-only">Filter audit logs by action</label>
             <Input
+              id="audit-action-filter"
               placeholder="Action filter..."
               value={actionFilter}
               onChange={(e) => { setActionFilter(e.target.value); setPage(1) }}
             />
+            </div>
+            <div className="min-w-0 lg:w-[180px]">
+              <label htmlFor="audit-user-filter" className="sr-only">Filter audit logs by user ID</label>
             <Input
+              id="audit-user-filter"
               placeholder="User ID filter..."
               value={userIdFilter}
               onChange={(e) => { setUserIdFilter(e.target.value); setPage(1) }}
             />
+            </div>
+            <div>
+              <label htmlFor="audit-date-from" className="sr-only">Audit log date from</label>
             <Input
+              id="audit-date-from"
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setPage(1) }}
               className="text-sm"
             />
+            </div>
+            <div>
+              <label htmlFor="audit-date-to" className="sr-only">Audit log date to</label>
             <Input
+              id="audit-date-to"
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setPage(1) }}
               className="text-sm"
             />
-          </div>
-        </div>
+            </div>
+          </AdminFilterBar>
 
           {/* Entries */}
           <div className="space-y-2">
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4 p-3 rounded-lg bg-gray-50">
+                <PortalSurface key={i} variant="solid" className="flex items-center gap-4 p-3">
                   <Skeleton className="h-8 w-8 rounded-lg flex-shrink-0" />
                   <div className="flex-1 space-y-1.5"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-32" /></div>
                   <Skeleton className="h-5 w-16" />
-                </div>
+                </PortalSurface>
               ))
             ) : logs.length === 0 ? (
-              <p className="py-10 text-center text-sm text-gray-400">No audit logs found for the selected filters</p>
+              <AdminEmptyState
+                title="No audit events were found for the selected period"
+                description="Adjust the filters or date range to broaden the audit trail view."
+                icon={Activity}
+              />
             ) : (
               logs.map((log) => {
                 const config = getConfig(log.entityType)
@@ -223,24 +248,27 @@ export default function AuditLogsPage() {
                 const isExpanded = expandedId === log.id
                 const hasMetadata = !!log.metadata && typeof log.metadata === "object" && Object.keys(log.metadata as object).length > 0
                 return (
-                  <div key={log.id} className="rounded-lg border border-gray-100 overflow-hidden">
-                    <div
-                      className="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer"
+                  <PortalSurface key={log.id} variant="solid" className="overflow-hidden">
+                    <button
+                      type="button"
+                      className="flex w-full cursor-pointer items-center justify-between p-3 text-left hover:bg-[var(--portal-surface-hover)] disabled:cursor-default"
                       onClick={() => hasMetadata && setExpandedId(isExpanded ? null : log.id)}
+                      disabled={!hasMetadata}
+                      aria-expanded={hasMetadata ? isExpanded : undefined}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={`p-1.5 rounded-md flex-shrink-0 ${config.color}`}>
                           <Icon className="h-3.5 w-3.5" />
                         </div>
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium text-foreground text-sm truncate">{log.action}</p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="break-words text-sm font-medium text-[var(--portal-text-primary)]">{log.action}</p>
                             {log.severity === 'HIGH' && <Badge variant="destructive" className="text-[10px] h-4 px-1.5">HIGH</Badge>}
                             {log.severity === 'MEDIUM' && <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-amber-600 border-amber-200 bg-amber-50">MED</Badge>}
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5 flex-wrap">
-                            <span>{log.actorName ? `${log.actorName} (${log.actorEmail})` : (log.userId ?? "System")}</span>
-                            {log.actorOrganization && <span className="font-mono bg-gray-100 px-1 rounded">{log.actorOrganization}</span>}
+                          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-[var(--portal-text-secondary)]">
+                            <span className="break-all">{log.actorName ? `${log.actorName} (${log.actorEmail})` : (log.userId ?? "System")}</span>
+                            {log.actorOrganization && <span className="rounded bg-[var(--portal-surface)] px-1 font-mono">{log.actorOrganization}</span>}
                             {log.entityId && <span className="font-mono">{log.entityId.slice(0, 8)}</span>}
                             {log.ipAddress && <span>- {log.ipAddress}</span>}
                           </div>
@@ -248,40 +276,39 @@ export default function AuditLogsPage() {
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0 ml-3">
                         <Badge className={`${config.color} border-0 text-xs`}>{config.label}</Badge>
-                        <p className="text-xs text-gray-400 hidden lg:block">
+                        <p className="hidden text-xs text-[var(--portal-text-muted)] lg:block">
                           {new Date(log.createdAt).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" })}
                         </p>
                         {hasMetadata && (
                           isExpanded
-                            ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
-                            : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                            ? <ChevronUp className="w-3.5 h-3.5 text-[var(--portal-text-muted)]" />
+                            : <ChevronDown className="w-3.5 h-3.5 text-[var(--portal-text-muted)]" />
                         )}
                       </div>
-                    </div>
+                    </button>
                     {isExpanded && hasMetadata && (
-                      <div className="px-4 pb-3 border-t border-gray-100 bg-gray-50">
-                        <pre className="text-xs text-gray-600 mt-2 overflow-auto max-h-48 whitespace-pre-wrap break-words">
+                      <div className="border-t border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 pb-3">
+                        <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words text-xs text-[var(--portal-text-secondary)]">
                           {JSON.stringify(log.metadata, null, 2)}
                         </pre>
                       </div>
                     )}
-                  </div>
-                )
-              })
+                    </PortalSurface>
+                  )
+                })
             )}
           </div>
 
           {!isLoading && totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <p className="text-sm text-gray-500">Page {page} of {totalPages} ({total.toLocaleString()} total)</p>
+              <p className="text-sm text-[var(--portal-text-secondary)]">Page {page} of {totalPages} ({total.toLocaleString()} total)</p>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}><ChevronLeft className="h-4 w-4" /></Button>
                 <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}><ChevronRight className="h-4 w-4" /></Button>
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </AdminDataPanel>
     </div>
   )
 }

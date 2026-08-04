@@ -58,6 +58,14 @@ import {
 import { trpc } from "@/lib/trpc"
 import { TRPCClientError } from "@trpc/client"
 import { toast } from "sonner"
+import {
+  AdminEmptyState,
+  AdminErrorState,
+  AdminPageHeader,
+  AdminStatCard,
+  AdminTableShell,
+} from "@/components/admin/portal"
+import { PortalStatusBadge } from "@/components/portal"
 
 const PAGE_SIZE = 20
 const REFRESH_INTERVAL_MS = 30_000
@@ -244,20 +252,17 @@ export default function AdminOrganizationsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Organizations</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Live oversight of customer organizations, membership health, and plan distribution.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground">
-            <Radio className={`h-3.5 w-3.5 ${isFetching ? "animate-pulse text-primary" : "text-primary"}`} />
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-8">
+      <AdminPageHeader
+        title="Organizations"
+        description="Live oversight of customer organizations, membership health, and plan distribution."
+        icon={Building2}
+        metadata={
+          <PortalStatusBadge status="info" icon={Radio}>
             Auto-refreshing every 30s
-          </div>
+          </PortalStatusBadge>
+        }
+        action={
           <Button
             variant="outline"
             size="sm"
@@ -268,34 +273,22 @@ export default function AdminOrganizationsPage() {
             <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {statsLoading
-          ? Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="border-border/70 shadow-sm">
-                <CardContent className="p-5">
-                  <Skeleton className="h-4 w-32 mb-3" />
-                  <Skeleton className="h-8 w-16" />
-                </CardContent>
-              </Card>
-            ))
+          ? Array.from({ length: 4 }).map((_, i) => <AdminStatCard key={i} label="Loading organization metric" isLoading />)
           : cards.map((card) => {
-              const toneStyle = getToneStyle(card.token)
               return (
-                <Card key={card.label} className="border-border/70 shadow-sm">
-                  <CardContent className="flex items-center justify-between p-5">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{card.label}</p>
-                      <p className="mt-2 text-3xl font-semibold text-foreground">{card.value.toLocaleString()}</p>
-                    </div>
-                    <div className="rounded-2xl border p-3" style={toneStyle}>
-                      <card.icon className="h-5 w-5" />
-                    </div>
-                  </CardContent>
-                </Card>
+                <AdminStatCard
+                  key={card.label}
+                  label={card.label}
+                  value={card.value.toLocaleString()}
+                  icon={card.icon}
+                  status={card.token === 2 ? "success" : card.token === 3 ? "warning" : "info"}
+                />
               )
             })}
       </div>
@@ -349,39 +342,27 @@ export default function AdminOrganizationsPage() {
               ))}
             </div>
           ) : isError ? (
-            <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-12 text-center">
-              <AlertCircle className="mx-auto h-10 w-10 text-destructive/60 mb-3" />
-              <p className="text-sm font-medium text-destructive mb-1">Failed to load organizations</p>
-              <p className="text-xs text-muted-foreground mb-4">
-                {error instanceof TRPCClientError ? error.message : "An error occurred while fetching organizations."}
-              </p>
-              <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
-                <RefreshCw className="h-4 w-4" />
-                Retry
-              </Button>
-            </div>
+            <AdminErrorState
+              title="Failed to load organizations"
+              description={error instanceof TRPCClientError ? error.message : "An error occurred while fetching organizations."}
+              onRetry={() => refetch()}
+            />
           ) : !data?.items.length ? (
-            <div className="rounded-2xl border border-dashed border-border bg-muted/10 px-6 py-14 text-center">
-              <Building2 className="mx-auto h-10 w-10 text-muted-foreground/40" />
-              <h3 className="mt-4 text-base font-semibold text-foreground">
-                {hasActiveFilters ? "No organizations matched your view" : "No organizations yet"}
-              </h3>
-              <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-                {hasActiveFilters
-                  ? "Try adjusting your search, plan filter, or sorting preference."
-                  : "Organizations will appear here as customers onboard to the platform."}
-              </p>
-              {hasActiveFilters && (
-                <div className="mt-5 flex justify-center">
-                  <Button variant="outline" onClick={resetFilters}>
-                    Clear filters and reset sorting
-                  </Button>
-                </div>
-              )}
-            </div>
+            <AdminEmptyState
+              title={hasActiveFilters ? "No organizations matched your view" : "No organizations yet"}
+              description={hasActiveFilters
+                ? "Try adjusting your search, plan filter, or sorting preference."
+                : "Organizations will appear here as customers onboard to the platform."}
+              icon={Building2}
+              action={hasActiveFilters ? (
+                <Button variant="outline" onClick={resetFilters}>
+                  Clear filters and reset sorting
+                </Button>
+              ) : null}
+            />
           ) : (
             <>
-              <div className="rounded-2xl border border-border/70">
+              <AdminTableShell>
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
@@ -476,7 +457,7 @@ export default function AdminOrganizationsPage() {
                     })}
                   </TableBody>
                 </Table>
-              </div>
+              </AdminTableShell>
 
               <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-muted-foreground">

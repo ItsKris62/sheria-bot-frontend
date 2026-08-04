@@ -77,9 +77,11 @@ export function BlogFeedback({ postId, slug, category }: BlogFeedbackProps) {
           </Button>
         </div>
       </div>
-      <p role="status" aria-live="polite" className={cn("mt-3 text-sm", submitFeedback.isError ? "text-destructive" : "text-primary")}>
-        {message}
-      </p>
+      {message ? (
+        <p role="status" aria-live="polite" className={cn("mt-3 text-sm", submitFeedback.isError ? "text-destructive" : "text-primary")}>
+          {message}
+        </p>
+      ) : null}
     </section>
   )
 }

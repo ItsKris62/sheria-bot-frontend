@@ -122,20 +122,26 @@ export function BlogTopicRequest({ sourcePage, category, jurisdiction = "Kenya",
           <p className="text-xs leading-5 text-muted-foreground">
             Requests enter editorial review only. They do not create automated drafts.
           </p>
-          <Button type="submit" disabled={submitTopic.isPending || topic.trim().length < 5} aria-describedby={statusId}>
+          <Button
+            type="submit"
+            disabled={submitTopic.isPending || topic.trim().length < 5}
+            aria-describedby={message ? statusId : undefined}
+          >
             {submitTopic.isPending ? "Sending..." : "Send request"}
             <Send className="ml-2 h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
 
-        <p
-          id={statusId}
-          role="status"
-          aria-live="polite"
-          className={status === "error" ? "text-sm text-destructive" : "text-sm text-primary"}
-        >
-          {message}
-        </p>
+        {message ? (
+          <p
+            id={statusId}
+            role="status"
+            aria-live="polite"
+            className={status === "error" ? "text-sm text-destructive" : "text-sm text-primary"}
+          >
+            {message}
+          </p>
+        ) : null}
       </form>
     </div>
   )

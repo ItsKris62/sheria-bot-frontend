@@ -125,13 +125,15 @@ export function BlogNewsletterSignup({ sourcePage, category, postId, slug }: Blo
           </a>
           .
         </p>
-        <p
-          role="status"
-          aria-live="polite"
-          className={subscribe.isError ? "mt-3 text-left text-sm text-destructive" : "mt-3 text-left text-sm text-primary"}
-        >
-          {message}
-        </p>
+        {message ? (
+          <p
+            role="status"
+            aria-live="polite"
+            className={subscribe.isError ? "mt-3 text-left text-sm text-destructive" : "mt-3 text-left text-sm text-primary"}
+          >
+            {message}
+          </p>
+        ) : null}
       </form>
     </div>
   )

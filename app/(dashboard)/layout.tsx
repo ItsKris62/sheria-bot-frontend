@@ -39,7 +39,7 @@ export default function DashboardLayout({
       <IdleTimeoutWrapper>
         <NotificationSoundProvider />
         <AlertSSEProvider />
-        <div className="min-h-screen bg-background">
+        <div data-portal-shell="true" className="portal-shell min-h-screen bg-background">
           {children}
         </div>
       </IdleTimeoutWrapper>

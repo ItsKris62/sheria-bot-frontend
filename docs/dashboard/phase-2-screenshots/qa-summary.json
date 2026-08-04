@@ -1,0 +1,107 @@
+{
+  "loginRoute": true,
+  "startupRedirect": true,
+  "startupLogin": true,
+  "refresh": true,
+  "directStartup": true,
+  "secondTab": true,
+  "logoutRedirect": true,
+  "horizontalOverflow": [
+    {
+      "name": "startup-320-populated",
+      "overflow": false,
+      "innerWidth": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "startup-375-populated",
+      "overflow": false,
+      "innerWidth": 375,
+      "scrollWidth": 375
+    },
+    {
+      "name": "startup-430-populated",
+      "overflow": false,
+      "innerWidth": 430,
+      "scrollWidth": 430
+    },
+    {
+      "name": "startup-768-populated",
+      "overflow": false,
+      "innerWidth": 768,
+      "scrollWidth": 768
+    },
+    {
+      "name": "startup-1024-populated",
+      "overflow": false,
+      "innerWidth": 1024,
+      "scrollWidth": 1024
+    },
+    {
+      "name": "startup-1280-populated",
+      "overflow": false,
+      "innerWidth": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "startup-1440-populated",
+      "overflow": false,
+      "innerWidth": 1440,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "startup-1920-populated",
+      "overflow": false,
+      "innerWidth": 1920,
+      "scrollWidth": 1920
+    }
+  ],
+  "headings": {
+    "h1Count": 1,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "Welcome back, SheriaBot"
+      },
+      {
+        "tag": "h2",
+        "text": "Regulatory Alerts"
+      },
+      {
+        "tag": "h2",
+        "text": "Recent Queries"
+      },
+      {
+        "tag": "h2",
+        "text": "Upcoming Deadlines"
+      },
+      {
+        "tag": "h2",
+        "text": "Quick Actions"
+      }
+    ]
+  },
+  "contrast": {
+    "body": 20.13,
+    "h1": 19.27,
+    "button": 9.22
+  },
+  "screenshots": [
+    "startup-320-populated.png",
+    "startup-375-populated.png",
+    "startup-430-populated.png",
+    "startup-768-populated.png",
+    "startup-1024-populated.png",
+    "startup-1280-populated.png",
+    "startup-1440-populated.png",
+    "startup-1920-populated.png",
+    "startup-keyboard-focus.png",
+    "startup-200-zoom.png",
+    "startup-400-reflow.png",
+    "startup-reduced-motion.png",
+    "startup-blur-fallback.png",
+    "public-home-375.png",
+    "public-home-1440.png",
+    "startup-calendar-locked.png"
+  ]
+}

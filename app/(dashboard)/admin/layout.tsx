@@ -12,13 +12,12 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
   return (
     <div
       className={cn(
-        "flex flex-1 flex-col transition-all duration-500 ease-out",
+        "flex min-w-0 flex-1 flex-col overflow-x-clip transition-all duration-500 ease-out",
         collapsed ? "md:pl-[72px]" : "md:pl-64"
       )}
     >
-      {/* @ts-ignore: DashboardHeader userType will be updated shortly */}
       <DashboardHeader userType="admin" />
-      <main className="flex-1 p-4 md:p-6">
+      <main className="min-w-0 flex-1 overflow-x-clip p-4 md:p-6">
         {children}
       </main>
     </div>
@@ -29,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <AuthGuard allowedRoles={["ADMIN"]}>
       <SidebarProvider>
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen w-full overflow-x-hidden">
           <AdminSidebar />
           <LayoutInner>{children}</LayoutInner>
         </div>

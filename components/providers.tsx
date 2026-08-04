@@ -82,7 +82,7 @@ function makeQueryClient() {
 
 function AuthInitializer({ children }: { children: React.ReactNode }) {
   const { setAuth, clearAuth, setInitialized, isInitialized } = useAuthStore();
-  const trpcClient = trpc.useUtils();
+  const authClient = React.useMemo(() => createTRPCClient(), []);
 
   // Subscribe to Supabase auth state changes — handles automatic token refresh
   useEffect(() => {
@@ -115,7 +115,7 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
 
         setAccessToken(session.access_token);
 
-        const user = await (trpcClient.auth.me as any).fetch();
+        const user = await authClient.auth.me.query();
         setAuth(
           {
             id: user.id,
@@ -136,7 +136,7 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
     }
 
     initSession();
-  }, [isInitialized, setAuth, clearAuth, setInitialized, trpcClient]);
+  }, [isInitialized, setAuth, clearAuth, setInitialized, authClient]);
 
   return <>{children}</>;
 }

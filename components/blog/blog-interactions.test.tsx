@@ -61,6 +61,8 @@ describe("Blog newsletter signup", () => {
   it("submits email to backend but excludes it from analytics", async () => {
     render(<BlogNewsletterSignup sourcePage="/blog" category="Regulatory Updates" />)
 
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
+
     fireEvent.change(screen.getByLabelText("Email address"), {
       target: { value: "reader@example.com" },
     })
@@ -143,6 +145,9 @@ describe("Blog topic request", () => {
   it("submits bounded topic text to backend but not analytics", async () => {
     render(<BlogTopicRequest sourcePage="/blog" category="Data Protection" />)
 
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /send request/i })).not.toHaveAttribute("aria-describedby")
+
     fireEvent.change(screen.getByLabelText("Topic"), {
       target: { value: "ODPC breach notification duties" },
     })
@@ -152,6 +157,8 @@ describe("Blog topic request", () => {
       topic: "ODPC breach notification duties",
       category: "Data Protection",
     })))
+    expect(await screen.findByRole("status")).toHaveTextContent("Thanks. Our editorial team will review the request.")
+    expect(screen.getByRole("button", { name: /send request/i })).toHaveAttribute("aria-describedby")
     expect(trackEvent).toHaveBeenCalledWith("blog_topic_request_submitted", expect.not.objectContaining({
       topic: "ODPC breach notification duties",
     }))
@@ -184,12 +191,15 @@ describe("Blog feedback", () => {
   it("submits helpful feedback and tracks the stable feedback value", async () => {
     render(<BlogFeedback postId="post-1" slug="cbk" category="Regulatory Updates" />)
 
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
+
     fireEvent.click(screen.getByRole("button", { name: "Yes" }))
 
     await waitFor(() => expect(mocks.feedbackMutate).toHaveBeenCalledWith(expect.objectContaining({
       postId: "post-1",
       value: "HELPFUL",
     })))
+    expect(await screen.findByRole("status")).toHaveTextContent("Thanks. Your feedback helps improve SheriaBot articles.")
     expect(trackEvent).toHaveBeenCalledWith("blog_feedback_submitted", expect.objectContaining({
       feedbackValue: "HELPFUL",
       postId: "post-1",

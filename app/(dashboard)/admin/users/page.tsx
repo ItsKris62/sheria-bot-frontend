@@ -3,7 +3,6 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -60,6 +59,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import {
+  AdminDataPanel,
+  AdminEmptyState,
+  AdminFilterBar,
+  AdminPageHeader,
+  AdminStatCard,
+} from "@/components/admin/portal"
+import { PortalSurface } from "@/components/portal"
 
 const roleColorMap: Record<string, string> = {
   STARTUP: "bg-primary/10 text-primary",
@@ -77,7 +84,7 @@ const roleLabel: Record<string, string> = {
 
 function UserRowSkeleton() {
   return (
-    <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+    <PortalSurface variant="solid" className="flex items-center justify-between p-4">
       <div className="flex items-center gap-4">
         <Skeleton className="h-10 w-10 rounded-full" />
         <div className="space-y-2">
@@ -89,7 +96,7 @@ function UserRowSkeleton() {
         <Skeleton className="h-6 w-16 rounded-full" />
         <Skeleton className="h-8 w-8 rounded" />
       </div>
-    </div>
+    </PortalSurface>
   )
 }
 
@@ -276,74 +283,37 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">User Management</h1>
-          <p className="text-muted-foreground mt-1">Manage platform users and their permissions</p>
-        </div>
-        <Button className="bg-secondary hover:bg-[#007a50] text-white" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add User
-        </Button>
-      </div>
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-8">
+      <AdminPageHeader
+        title="User Management"
+        description="Manage platform users and their permissions."
+        icon={Users}
+        action={
+          <Button className="bg-secondary hover:bg-[#007a50] text-white" onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
+            Add User
+          </Button>
+        }
+      />
 
       {/* Stat cards */}
       <div className="grid gap-4 md:grid-cols-3">
         {statsLoading ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="border-border/50 bg-card/50 backdrop-blur">
-              <CardContent className="pt-6 space-y-3">
-                <Skeleton className="h-8 w-8 rounded-lg" />
-                <Skeleton className="h-7 w-16" />
-                <Skeleton className="h-4 w-24" />
-              </CardContent>
-            </Card>
-          ))
+          Array.from({ length: 3 }).map((_, i) => <AdminStatCard key={i} label="Loading user metric" isLoading />)
         ) : (
           <>
-            <Card className="border-border/50 bg-card/50 backdrop-blur">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-lg bg-primary/10"><Users className="h-5 w-5 text-primary" /></div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Users</p>
-                    <p className="text-2xl font-bold text-foreground">{s?.users?.total?.toLocaleString() ?? "—"}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-border/50 bg-card/50 backdrop-blur">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-lg bg-primary/10"><Building2 className="h-5 w-5 text-primary" /></div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Organizations</p>
-                    <p className="text-2xl font-bold text-foreground">{s?.organizations?.total?.toLocaleString() ?? "—"}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-border/50 bg-card/50 backdrop-blur">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-lg bg-warning/10"><Shield className="h-5 w-5 text-warning" /></div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Active Users (30d)</p>
-                    <p className="text-2xl font-bold text-foreground">{s?.users?.active?.toLocaleString() ?? "—"}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <AdminStatCard label="Total Users" value={s?.users?.total?.toLocaleString() ?? "Not available"} icon={Users} status="info" />
+            <AdminStatCard label="Organizations" value={s?.organizations?.total?.toLocaleString() ?? "Not available"} icon={Building2} status="info" />
+            <AdminStatCard label="Active Users (30d)" value={s?.users?.active?.toLocaleString() ?? "Not available"} icon={Shield} status="warning" />
           </>
         )}
       </div>
 
       {/* Bulk action toolbar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5">
-          <span className="text-sm font-medium text-foreground">{selectedIds.size} user{selectedIds.size !== 1 ? "s" : ""} selected</span>
-          <div className="flex items-center gap-2 ml-auto flex-wrap">
+        <PortalSurface variant="solid" className="flex flex-col gap-3 border-[var(--portal-accent-border)] bg-[var(--portal-accent-muted)]/30 p-3 sm:flex-row sm:items-center">
+          <span className="text-sm font-medium text-[var(--portal-text-primary)]">{selectedIds.size} user{selectedIds.size !== 1 ? "s" : ""} selected</span>
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
             <Button size="sm" variant="outline" onClick={() => setBulkConfirmAction("activate")} disabled={bulkIsPending}>
               <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />Activate
             </Button>
@@ -366,169 +336,169 @@ export default function UsersPage() {
             </div>
             <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())} disabled={bulkIsPending}>
               <X className="h-3.5 w-3.5" />
+              <span className="sr-only">Clear selected users</span>
             </Button>
           </div>
-        </div>
+        </PortalSurface>
       )}
 
       {/* User list */}
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>All Users</CardTitle>
-              <CardDescription>{isLoading ? "Loading…" : `${total} users`}</CardDescription>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search users…"
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                  className="pl-9 w-[250px] bg-muted/50"
-                />
-              </div>
-              <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setPage(1) }}>
-                <SelectTrigger className="w-[150px] bg-muted/50"><SelectValue placeholder="Role" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="STARTUP">Startup</SelectItem>
-                  <SelectItem value="REGULATOR">Regulator</SelectItem>
-                  <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1) }}>
-                <SelectTrigger className="w-[140px] bg-muted/50"><SelectValue placeholder="Status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <AdminDataPanel
+        title="All Users"
+        description={isLoading ? "Loading..." : `${total} users`}
+      >
+        <AdminFilterBar className="mb-4">
+          <div className="relative min-w-0 lg:w-[250px]">
+            <label htmlFor="admin-users-search" className="sr-only">Search users</label>
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input
+              id="admin-users-search"
+              placeholder="Search users..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+              className="w-full bg-[var(--portal-surface)] pl-9"
+            />
           </div>
-        </CardHeader>
-        <CardContent>
-          {/* Select-all header */}
-          {!isLoading && users.length > 0 && (
-            <div className="flex items-center gap-3 px-1 pb-2 border-b border-border/30">
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded border-border accent-primary cursor-pointer"
-                checked={allPageSelected}
-                onChange={toggleSelectAll}
-                aria-label="Select all users on this page"
-              />
-              <span className="text-xs text-muted-foreground">Select all on this page</span>
-            </div>
-          )}
+          <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setPage(1) }}>
+            <SelectTrigger aria-label="Filter users by role" className="w-full bg-[var(--portal-surface)] lg:w-[150px]"><SelectValue placeholder="Role" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Roles</SelectItem>
+              <SelectItem value="STARTUP">Startup</SelectItem>
+              <SelectItem value="REGULATOR">Regulator</SelectItem>
+              <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+              <SelectItem value="ADMIN">Admin</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1) }}>
+            <SelectTrigger aria-label="Filter users by status" className="w-full bg-[var(--portal-surface)] lg:w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </AdminFilterBar>
 
-          <div className="space-y-3">
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => <UserRowSkeleton key={i} />)
-            ) : users.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">No users found</p>
-            ) : (
-              users.map((user) => {
-                const isSuspended = user.status === "SUSPENDED"
-                const isPending = pendingUserId === user.id || (deleteUserMutation.isPending && deleteUserMutation.variables?.userId === user.id)
-                const initials = (user.fullName ?? user.email ?? "?")
-                  .split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
-                const isSelected = selectedIds.has(user.id)
+        {!isLoading && users.length > 0 && (
+          <div className="mb-3 flex items-center gap-3 border-b border-[var(--portal-border)] px-1 pb-2">
+            <input
+              type="checkbox"
+              className="h-4 w-4 cursor-pointer rounded border-border accent-primary"
+              checked={allPageSelected}
+              onChange={toggleSelectAll}
+              aria-label="Select all users on this page"
+            />
+            <span className="text-xs text-[var(--portal-text-secondary)]">Select all on this page</span>
+          </div>
+        )}
 
-                return (
-                  <div
-                    key={user.id}
-                    className={`flex items-center justify-between p-4 rounded-lg transition-colors ${isSelected ? "bg-primary/8 border border-primary/20" : "bg-muted/30 hover:bg-muted/50"} ${isSuspended ? "opacity-60" : ""}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-border accent-primary cursor-pointer flex-shrink-0"
-                        checked={isSelected}
-                        onChange={() => toggleSelect(user.id)}
-                        aria-label={`Select ${user.fullName ?? user.email}`}
-                      />
-                      <Avatar>
-                        <AvatarFallback className="bg-primary/10 text-primary">{initials}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-foreground">{user.fullName ?? user.email}</p>
-                          {isSuspended ? (
-                            <Badge variant="outline" className="border-destructive/50 text-destructive text-xs">Suspended</Badge>
-                          ) : (
-                            <Badge variant="outline" className="border-primary/50 text-primary text-xs">Active</Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                          <span>{user.email}</span>
-                          {user.organization?.name && <span>{user.organization.name}</span>}
-                        </div>
+        <div className="space-y-3">
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, i) => <UserRowSkeleton key={i} />)
+          ) : users.length === 0 ? (
+            <AdminEmptyState
+              title={search || roleFilter !== "all" || statusFilter !== "all" ? "No users match the current filters" : "No users are currently available"}
+              description={search || roleFilter !== "all" || statusFilter !== "all" ? "Adjust the search, role, or status filters to broaden the result set." : "Users will appear here as accounts are created."}
+              icon={Users}
+            />
+          ) : (
+            users.map((user) => {
+              const isSuspended = user.status === "SUSPENDED"
+              const isPending = pendingUserId === user.id || (deleteUserMutation.isPending && deleteUserMutation.variables?.userId === user.id)
+              const initials = (user.fullName ?? user.email ?? "?")
+                .split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+              const isSelected = selectedIds.has(user.id)
+
+              return (
+                <div
+                  key={user.id}
+                  className={`flex flex-col gap-4 rounded-lg border p-4 transition-colors lg:flex-row lg:items-center lg:justify-between ${isSelected ? "border-[var(--portal-accent-border)] bg-[var(--portal-accent-muted)]/30" : "border-[var(--portal-border)] bg-[var(--portal-surface-solid)] hover:bg-[var(--portal-surface-hover)]"} ${isSuspended ? "opacity-70" : ""}`}
+                >
+                  <div className="flex min-w-0 items-center gap-4">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 flex-shrink-0 cursor-pointer rounded border-border accent-primary"
+                      checked={isSelected}
+                      onChange={() => toggleSelect(user.id)}
+                      aria-label={`Select ${user.fullName ?? user.email}`}
+                    />
+                    <Avatar>
+                      <AvatarFallback className="bg-primary/10 text-primary">{initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="break-words font-medium text-[var(--portal-text-primary)]">{user.fullName ?? user.email}</p>
+                        {isSuspended ? (
+                          <Badge variant="outline" className="border-destructive/50 text-destructive text-xs">Suspended</Badge>
+                        ) : (
+                          <Badge variant="outline" className="border-primary/50 text-primary text-xs">Active</Badge>
+                        )}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex flex-col items-end gap-1">
-                        <Badge className={roleColorMap[user.role] ?? "bg-muted text-muted-foreground"}>
-                          {roleLabel[user.role] ?? user.role}
-                        </Badge>
-                        <Badge variant="outline" className={user.emailVerified ? "border-green-400 text-green-600 text-xs" : "border-orange-400 text-orange-600 text-xs"}>
-                          {user.emailVerified ? "Verified" : "Unverified"}
-                        </Badge>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--portal-text-secondary)]">
+                        <span className="break-all">{user.email}</span>
+                        {user.organization?.name && <span className="break-words">{user.organization.name}</span>}
                       </div>
-                      {isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                      ) : (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/admin/users/${user.id}`}>
-                                <Eye className="h-4 w-4 mr-2" />View Details
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleSuspend(user.id, isSuspended)}>
-                              {isSuspended ? (
-                                <><CheckCircle2 className="h-4 w-4 mr-2" />Reactivate User</>
-                              ) : (
-                                <><Ban className="h-4 w-4 mr-2" />Suspend User</>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={() => handleDelete(user.id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />Delete User
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
                     </div>
                   </div>
-                )
-              })
-            )}
-          </div>
-
-          {!isLoading && totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/50">
-              <p className="text-sm text-muted-foreground">Page {page} of {totalPages} - {total} users</p>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+                  <div className="flex items-center justify-end gap-3">
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className={roleColorMap[user.role] ?? "bg-muted text-muted-foreground"}>
+                        {roleLabel[user.role] ?? user.role}
+                      </Badge>
+                      <Badge variant="outline" className={user.emailVerified ? "border-green-400 text-green-600 text-xs" : "border-orange-400 text-orange-600 text-xs"}>
+                        {user.emailVerified ? "Verified" : "Unverified"}
+                      </Badge>
+                    </div>
+                    {isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-label="User action in progress" />
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" aria-label={`Open actions for ${user.fullName ?? user.email}`}><MoreVertical className="h-4 w-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/users/${user.id}`}>
+                              <Eye className="h-4 w-4 mr-2" />View Details
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSuspend(user.id, isSuspended)}>
+                            {isSuspended ? (
+                              <><CheckCircle2 className="h-4 w-4 mr-2" />Reactivate User</>
+                            ) : (
+                              <><Ban className="h-4 w-4 mr-2" />Suspend User</>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => handleDelete(user.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />Delete User
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                </div>
+              )
+            })
           )}
-        </CardContent>
-      </Card>
+        </div>
+
+        {!isLoading && totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-between border-t border-[var(--portal-border)] pt-4">
+            <p className="text-sm text-[var(--portal-text-secondary)]">Page {page} of {totalPages} - {total} users</p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} aria-label="Previous users page">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} aria-label="Next users page">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </AdminDataPanel>
 
       {/* Bulk Action Confirmation Dialog */}
       <AlertDialog open={bulkConfirmAction !== null} onOpenChange={(open) => { if (!open) setBulkConfirmAction(null) }}>
