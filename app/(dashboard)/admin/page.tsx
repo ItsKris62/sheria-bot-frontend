@@ -21,8 +21,15 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import {
+  AdminDataPanel,
+  AdminEmptyState,
+  AdminErrorState,
+  AdminLoadingState,
+  AdminPageHeader,
+  AdminStatCard,
+} from "@/components/admin/portal"
+import { PortalSurface, PortalStatusBadge } from "@/components/portal"
 import { trpc } from "@/lib/trpc"
 import { cn } from "@/lib/utils"
 
@@ -99,26 +106,26 @@ type MetricCard = {
   badge?: string
 }
 
-const toneStyles: Record<MetricTone, { icon: string; badge: string; border: string }> = {
+const toneStyles: Record<MetricTone, { badge: string; border: string; status: "success" | "warning" | "danger" | "info" | "neutral" }> = {
   good: {
-    icon: "bg-primary/10 text-primary",
     badge: "bg-primary/10 text-primary border-primary/20",
     border: "hover:border-primary/40",
+    status: "success",
   },
   neutral: {
-    icon: "bg-blue-500/10 text-blue-500",
     badge: "bg-blue-500/10 text-blue-500 border-blue-500/20",
     border: "hover:border-blue-500/40",
+    status: "info",
   },
   warning: {
-    icon: "bg-warning/10 text-warning",
     badge: "bg-warning/10 text-warning border-warning/20",
     border: "hover:border-warning/40",
+    status: "warning",
   },
   critical: {
-    icon: "bg-destructive/10 text-destructive",
     badge: "bg-destructive/10 text-destructive border-destructive/20",
     border: "hover:border-destructive/40",
+    status: "danger",
   },
 }
 
@@ -157,48 +164,21 @@ function relativeDate(value: string) {
   return new Date(value).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" })
 }
 
-function MetricSkeleton() {
-  return (
-    <Card className="border-border/50 bg-card/50">
-      <CardContent className="space-y-4 p-5">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-9 w-9 rounded-lg" />
-        </div>
-        <Skeleton className="h-8 w-24" />
-        <Skeleton className="h-4 w-full" />
-      </CardContent>
-    </Card>
-  )
-}
-
 function MetricTile({ card }: { card: MetricCard }) {
   const Icon = card.icon
   const tone = toneStyles[card.tone]
 
   return (
     <Link href={card.href} className="group block h-full">
-      <Card className={cn("h-full border-border/50 bg-card/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-glow-green-sm", tone.border)}>
-        <CardContent className="flex h-full flex-col justify-between gap-4 p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{card.label}</p>
-              <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">{card.value}</p>
-            </div>
-            <div className={cn("rounded-lg p-2.5", tone.icon)}>
-              <Icon className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="flex items-end justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{card.helper}</p>
-            {card.badge ? (
-              <Badge variant="outline" className={cn("shrink-0", tone.badge)}>{card.badge}</Badge>
-            ) : (
-              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/50 transition group-hover:text-primary" />
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <AdminStatCard
+        label={card.label}
+        value={card.value}
+        helper={card.helper}
+        icon={Icon}
+        status={tone.status}
+        badge={card.badge}
+        className={cn("transition duration-200 hover:-translate-y-0.5 hover:shadow-glow-green-sm", tone.border)}
+      />
     </Link>
   )
 }
@@ -321,14 +301,17 @@ export default function AdminDashboard() {
     : false
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Operational Overview</h1>
-          <p className="mt-1 text-muted-foreground">
-            Pilot monitoring across users, queries, feedback, support, billing, security, and system health.
-          </p>
-        </div>
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-8">
+      <AdminPageHeader
+        title="Operational Overview"
+        description="Pilot monitoring across users, queries, feedback, support, billing, security, and system health."
+        icon={Activity}
+        metadata={
+          <PortalStatusBadge status="info" icon={RefreshCw}>
+            Auto-refreshes every minute
+          </PortalStatusBadge>
+        }
+        action={
         <Button
           variant="outline"
           size="sm"
@@ -339,141 +322,114 @@ export default function AdminDashboard() {
           <RefreshCw className={cn("h-4 w-4", overviewQuery.isFetching && "animate-spin")} />
           Refresh
         </Button>
-      </div>
+        }
+      />
 
       {overviewQuery.isError ? (
-        <Card className="border-destructive/30 bg-destructive/5">
-          <CardContent className="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 h-5 w-5 text-destructive" />
-              <div>
-                <p className="font-medium text-foreground">Could not load operational overview.</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Refresh the page or try again shortly. Internal service details have been hidden for safety.
-                </p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => overviewQuery.refetch()}>
-              Try again
-            </Button>
-          </CardContent>
-        </Card>
+        <AdminErrorState
+          title="Could not load operational overview."
+          description="Refresh the page or try again shortly. Internal service details have been hidden for safety."
+          retryLabel="Try again"
+          onRetry={() => overviewQuery.refetch()}
+        />
       ) : null}
 
       {hasSystemWarning ? (
-        <Card className="border-warning/30 bg-warning/5">
-          <CardContent className="flex items-start gap-3 p-4">
-            <AlertTriangle className="mt-0.5 h-5 w-5 text-warning" />
+        <PortalSurface variant="solid" className="border-amber-500/30 bg-amber-500/5 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-400" aria-hidden="true" />
             <div>
-              <p className="text-sm font-medium text-foreground">Some system checks are currently unavailable.</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="text-sm font-medium text-[var(--portal-text-primary)]">Some system checks are currently unavailable.</p>
+              <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">
                 Review System Health for details. No secrets or environment values are shown here.
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </PortalSurface>
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {overviewQuery.isLoading
-          ? Array.from({ length: 9 }).map((_, index) => <MetricSkeleton key={index} />)
+          ? Array.from({ length: 9 }).map((_, index) => (
+              <AdminStatCard key={index} label="Loading metric" isLoading />
+            ))
           : metricCards.map((card) => <MetricTile key={card.label} card={card} />)}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="border-border/50 bg-card/50 lg:col-span-2">
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
-                Recent Operational Activity
-              </CardTitle>
-              <CardDescription>Latest audit trail events relevant to admin monitoring.</CardDescription>
-            </div>
+        <AdminDataPanel
+          className="lg:col-span-2"
+          title="Recent Operational Activity"
+          description="Latest audit trail events relevant to admin monitoring."
+          icon={Activity}
+          action={
             <Button asChild variant="ghost" size="sm" className="w-fit gap-2">
               <Link href="/admin/audit-logs">
                 Audit logs <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-          </CardHeader>
-          <CardContent>
+          }
+        >
             {overviewQuery.isLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="flex items-center justify-between gap-4 rounded-lg border border-border/50 p-3">
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-44" />
-                      <Skeleton className="h-3 w-32" />
-                    </div>
-                    <Skeleton className="h-5 w-16 rounded-full" />
-                  </div>
-                ))}
-              </div>
+              <AdminLoadingState rows={5} />
             ) : !overview?.recentActivity.length ? (
-              <div className="flex min-h-40 flex-col items-center justify-center rounded-lg border border-dashed border-border text-center">
-                <CheckCircle2 className="h-10 w-10 text-primary/70" />
-                <p className="mt-3 text-sm font-medium text-foreground">No recent admin activity</p>
-                <p className="mt-1 text-sm text-muted-foreground">Operational events will appear here as the pilot runs.</p>
-              </div>
+              <AdminEmptyState
+                title="No recent admin activity"
+                description="Operational events will appear here as the pilot runs."
+              />
             ) : (
               <div className="space-y-3">
                 {overview.recentActivity.map((item) => {
                   const tone = toneStyles[severityTone(item.severity)]
                   return (
-                    <div key={item.id} className="flex flex-col gap-3 rounded-lg border border-border/50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <PortalSurface key={item.id} variant="solid" className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium text-foreground">{item.title}</p>
+                          <p className="break-words font-medium text-[var(--portal-text-primary)]">{item.title}</p>
                           <Badge variant="outline" className={cn("text-xs", tone.badge)}>{item.type}</Badge>
                         </div>
-                        {item.description ? <p className="mt-1 text-sm text-muted-foreground">{item.description}</p> : null}
+                        {item.description ? <p className="mt-1 break-words text-sm text-[var(--portal-text-secondary)]">{item.description}</p> : null}
                       </div>
-                      <span className="shrink-0 text-xs text-muted-foreground">{relativeDate(item.createdAt)}</span>
-                    </div>
+                      <span className="shrink-0 text-xs text-[var(--portal-text-muted)]">{relativeDate(item.createdAt)}</span>
+                    </PortalSurface>
                   )
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
+        </AdminDataPanel>
 
-        <Card className="border-border/50 bg-card/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Pilot Pulse
-            </CardTitle>
-            <CardDescription>Small signals that should stay visible during onboarding.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <AdminDataPanel
+          title="Pilot Pulse"
+          description="Small signals that should stay visible during onboarding."
+          icon={TrendingUp}
+        >
+          <div className="space-y-4">
             {overviewQuery.isLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-10 w-full" />)}
-              </div>
+              <AdminLoadingState rows={4} />
             ) : overview ? (
               <>
-                <div className="flex items-center justify-between rounded-lg bg-muted/30 p-3">
-                  <span className="text-sm text-muted-foreground">New users, 7 days</span>
-                  <span className="font-semibold text-foreground">{formatCount(overview.users.newLast7Days)}</span>
+                <div className="flex items-center justify-between rounded-lg bg-[var(--portal-surface-solid)] p-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">New users, 7 days</span>
+                  <span className="font-semibold text-[var(--portal-text-primary)]">{formatCount(overview.users.newLast7Days)}</span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg bg-muted/30 p-3">
-                  <span className="text-sm text-muted-foreground">Open corpus gaps</span>
-                  <span className="font-semibold text-foreground">{formatCount(overview.corpusGaps.open)}</span>
+                <div className="flex items-center justify-between rounded-lg bg-[var(--portal-surface-solid)] p-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Open corpus gaps</span>
+                  <span className="font-semibold text-[var(--portal-text-primary)]">{formatCount(overview.corpusGaps.open)}</span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg bg-muted/30 p-3">
-                  <span className="text-sm text-muted-foreground">Trial organizations</span>
-                  <span className="font-semibold text-foreground">{formatCount(overview.billing.trialUsers)}</span>
+                <div className="flex items-center justify-between rounded-lg bg-[var(--portal-surface-solid)] p-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Trial organizations</span>
+                  <span className="font-semibold text-[var(--portal-text-primary)]">{formatCount(overview.billing.trialUsers)}</span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg bg-muted/30 p-3">
-                  <span className="text-sm text-muted-foreground">Stale support tickets</span>
-                  <span className="font-semibold text-foreground">{formatCount(overview.support.overdueOrStale)}</span>
+                <div className="flex items-center justify-between rounded-lg bg-[var(--portal-surface-solid)] p-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Stale support tickets</span>
+                  <span className="font-semibold text-[var(--portal-text-primary)]">{formatCount(overview.support.overdueOrStale)}</span>
                 </div>
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">Pilot pulse is unavailable right now.</p>
+              <p className="text-sm text-[var(--portal-text-secondary)]">Pilot pulse is unavailable right now.</p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </AdminDataPanel>
       </div>
     </div>
   )

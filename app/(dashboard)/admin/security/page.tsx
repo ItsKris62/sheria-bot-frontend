@@ -30,6 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { AdminPageHeader } from "@/components/admin/portal"
 
 interface LoginHistoryEntry {
   id: string
@@ -705,16 +706,12 @@ export default function SecurityPage() {
   const { data: summary, isLoading: summaryLoading } = trpc.admin.getSecuritySummary.useQuery()
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary" />
-          Security & Auditing
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Monitor authentication activity, manage user sessions, and review the full audit trail.
-        </p>
-      </div>
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-8">
+      <AdminPageHeader
+        title="Security & Auditing"
+        description="Monitor authentication activity, manage user sessions, and review the full audit trail."
+        icon={Shield}
+      />
 
       {summary?.warnings?.length ? (
         <div className="space-y-3">

@@ -19,6 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Loader2, Megaphone, Plus, Send, ChevronLeft, ChevronRight, X } from "lucide-react"
+import { AdminEmptyState, AdminErrorState, AdminPageHeader } from "@/components/admin/portal"
+import { PortalSurface } from "@/components/portal"
 
 // --- Constants ----------------------------------------------------------------
 
@@ -194,15 +196,13 @@ export default function AdminAlertsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-8">
       {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Regulatory Alerts</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Create and publish regulatory updates to subscribers.
-          </p>
-        </div>
+      <AdminPageHeader
+        title="Regulatory Alerts"
+        description="Create and publish regulatory updates to subscribers."
+        icon={Megaphone}
+        action={
         <Button
           onClick={() => setShowForm((v) => !v)}
           variant={showForm ? "outline" : "default"}
@@ -221,11 +221,12 @@ export default function AdminAlertsPage() {
             </>
           )}
         </Button>
-      </div>
+        }
+      />
 
       {/* Create form */}
       {showForm && (
-        <Card>
+        <PortalSurface>
           <CardHeader>
             <CardTitle className="text-base">New Regulatory Alert</CardTitle>
           </CardHeader>
@@ -380,7 +381,7 @@ export default function AdminAlertsPage() {
               </Button>
             </div>
           </CardContent>
-        </Card>
+        </PortalSurface>
       )}
 
       {/* Alert list */}
@@ -397,16 +398,16 @@ export default function AdminAlertsPage() {
             Loading alerts...
           </div>
         ) : isError ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Megaphone className="h-8 w-8 text-muted-foreground/30 mb-3" />
-            <p className="text-sm text-muted-foreground">Failed to load alerts</p>
-          </div>
+          <AdminErrorState
+            title="Failed to load alerts"
+            description="Regulatory alert data is temporarily unavailable."
+          />
         ) : alerts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Megaphone className="h-8 w-8 text-muted-foreground/30 mb-3" />
-            <p className="text-sm font-medium text-muted-foreground">No alerts yet</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">Create your first alert above.</p>
-          </div>
+          <AdminEmptyState
+            title="No alerts yet"
+            description="Create your first alert above."
+            icon={Megaphone}
+          />
         ) : (
           <div className="flex flex-col gap-2">
             {alerts.map((alert) => {

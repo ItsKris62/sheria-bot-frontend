@@ -152,7 +152,7 @@ export function AdminSidebar() {
     return adminNav.map((group) => (
       <div key={group.title}>
         {!opts.showCollapsed && (
-          <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-widest text-primary/70">
+          <p className="mb-3 px-3 text-[11px] font-semibold uppercase text-[var(--portal-text-muted)]">
             {group.title}
           </p>
         )}
@@ -175,30 +175,32 @@ export function AdminSidebar() {
                 key={item.href + item.title}
                 href={item.href}
                 className={cn(
-                  "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300",
+                  "group relative flex min-w-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[var(--portal-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   isActive
-                    ? "bg-primary/15 text-primary shadow-sm"
-                    : "text-muted-foreground hover:bg-primary/10 hover:text-foreground",
+                    ? "bg-[var(--portal-accent-muted)] text-[var(--portal-accent)] shadow-sm"
+                    : "text-[var(--portal-text-secondary)] hover:bg-[var(--portal-surface-solid)] hover:text-[var(--portal-text-primary)]",
                   opts.showCollapsed && "justify-center px-2",
                   !opts.showCollapsed && item.href.startsWith("/admin/analytics/") && "pl-6"
                 )}
                 title={opts.showCollapsed ? item.title : undefined}
+                aria-current={isActive ? "page" : undefined}
               >
                 {/* Active indicator */}
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                  <div className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[var(--portal-accent)]" />
                 )}
                 <item.icon
                   className={cn(
-                    "h-5 w-5 shrink-0 transition-all duration-300",
-                    isActive ? "text-primary" : "group-hover:text-primary"
+                    "h-5 w-5 shrink-0 transition-all duration-200",
+                    isActive ? "text-[var(--portal-accent)]" : "group-hover:text-[var(--portal-accent)]"
                   )}
+                  aria-hidden="true"
                 />
                 {!opts.showCollapsed && (
                   <>
-                    <span className="flex-1">{item.title}</span>
+                    <span className="min-w-0 flex-1 truncate">{item.title}</span>
                     {badgeValue !== null && (
-                      <Badge className="h-5 min-w-5 justify-center rounded-full px-1.5 text-[10px] font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+                      <Badge className="h-5 min-w-5 justify-center rounded-full bg-[var(--portal-accent)] px-1.5 text-[10px] font-bold text-black shadow-sm">
                         {badgeValue}
                       </Badge>
                     )}
@@ -206,7 +208,7 @@ export function AdminSidebar() {
                 )}
                 {/* Collapsed badge dot */}
                 {opts.showCollapsed && badgeValue !== null && (
-                  <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary" />
+                  <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[var(--portal-accent)]" />
                 )}
               </Link>
             )
@@ -244,8 +246,8 @@ export function AdminSidebar() {
                 <span className="brand-wordmark font-bold text-white">
                   Sheria<span className="text-brand-green">Bot</span>
                 </span>
-                <span className="text-[10px] text-destructive font-semibold -mt-0.5 tracking-wider uppercase flex items-center gap-1">
-                  <Shield className="h-2.5 w-2.5" />
+                <span className="-mt-0.5 flex items-center gap-1 text-[10px] font-semibold uppercase text-[var(--portal-accent)]">
+                  <Shield className="h-2.5 w-2.5" aria-hidden="true" />
                   Admin
                 </span>
               </div>
@@ -278,9 +280,10 @@ export function AdminSidebar() {
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
-              "w-full rounded-xl text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-300",
+              "w-full rounded-lg text-[var(--portal-text-secondary)] transition-all duration-200 hover:bg-[var(--portal-surface-solid)] hover:text-[var(--portal-accent)] focus-visible:ring-2 focus-visible:ring-[var(--portal-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               collapsed && "mx-auto"
             )}
+            aria-label={collapsed ? "Expand admin sidebar" : "Collapse admin sidebar"}
           >
             {collapsed ? (
               <ChevronRight className="h-4 w-4" />
@@ -294,7 +297,7 @@ export function AdminSidebar() {
 
       {/* -- Mobile drawer (below md) ---------------------------------------- */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-72 p-0 flex flex-col">
+        <SheetContent side="left" className="portal-surface-shell flex w-72 flex-col p-0">
           <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
 
           {/* Logo */}
@@ -312,8 +315,8 @@ export function AdminSidebar() {
                 <span className="brand-wordmark font-bold text-white">
                   Sheria<span className="text-brand-green">Bot</span>
                 </span>
-                <span className="text-[10px] text-destructive font-semibold -mt-0.5 tracking-wider uppercase flex items-center gap-1">
-                  <Shield className="h-2.5 w-2.5" />
+                <span className="-mt-0.5 flex items-center gap-1 text-[10px] font-semibold uppercase text-[var(--portal-accent)]">
+                  <Shield className="h-2.5 w-2.5" aria-hidden="true" />
                   Admin
                 </span>
               </div>
