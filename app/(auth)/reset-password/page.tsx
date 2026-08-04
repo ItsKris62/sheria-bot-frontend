@@ -150,7 +150,7 @@ function ResetPasswordContent() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className={`h-11 pr-10 ${confirmMismatch ? "border-destructive focus-visible:ring-destructive" : confirmMatch ? "border-emerald-500 focus-visible:ring-emerald-500" : ""}`}
+                className={`h-11 pr-10 ${confirmMismatch ? "border-destructive focus-visible:ring-destructive" : confirmMatch ? "border-green-500 focus-visible:ring-green-500" : ""}`}
                 aria-describedby={confirmMismatch ? "confirm-error-reset" : undefined}
                 autoComplete="new-password"
               />
@@ -169,7 +169,7 @@ function ResetPasswordContent() {
               </p>
             )}
             {confirmMatch && (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400">Passwords match.</p>
+              <p className="text-xs text-green-600 dark:text-green-400">Passwords match.</p>
             )}
           </div>
 

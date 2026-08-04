@@ -48,7 +48,7 @@ const PLAN_BADGE: Record<string, string> = {
   REGULATOR:  "bg-slate-100 text-slate-600 border-slate-300",
   STARTUP:    "bg-amber-50 text-amber-700 border-amber-300",
   BUSINESS:   "bg-blue-50 text-blue-700 border-blue-300",
-  ENTERPRISE: "bg-emerald-50 text-emerald-700 border-emerald-300",
+  ENTERPRISE: "bg-green-50 text-green-700 border-green-300 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30",
 }
 
 const PLAN_LABELS: Record<string, string> = {
@@ -76,14 +76,14 @@ function formatPeriodRange(start: Date | string, end: Date | string): string {
  * Return the Tailwind classes for a progress bar fill based on percentage used.
  *
  * Thresholds (per spec):
- *   0 – 70 % → Emerald green
+ *   0 – 70 % → Brand green
  *  70 – 90 % → Gold / amber
  *  90 – 100% → Red / destructive
  */
 function barColorClass(pct: number): string {
   if (pct >= 90) return "bg-destructive"
   if (pct >= 70) return "bg-amber-500"
-  return "bg-emerald-500"
+  return "bg-green-500"
 }
 
 /** Text color class matching the bar color. */
@@ -165,8 +165,8 @@ function CategoryRow({ category }: CategoryRowProps) {
       <div className="flex items-center justify-between text-sm">
         <span className="text-muted-foreground">{label}</span>
         <div className="flex items-center gap-1.5">
-          <Infinity className="h-3.5 w-3.5 text-emerald-500" />
-          <span className="text-emerald-500 font-medium text-xs">Unlimited</span>
+          <Infinity className="h-3.5 w-3.5 text-green-500" />
+          <span className="text-green-500 font-medium text-xs">Unlimited</span>
         </div>
       </div>
     )
@@ -284,7 +284,7 @@ export function UsageCard({ onCompareToggle, compareOpen = false }: UsageCardPro
               <CardTitle className="text-base">This Month&apos;s Usage</CardTitle>
               {hasCritical && <AlertCircle className="h-4 w-4 text-destructive" />}
               {hasWarning  && <AlertCircle className="h-4 w-4 text-amber-500" />}
-              {!hasCritical && !hasWarning && <CheckCircle2 className="h-4 w-4 text-emerald-500/70" />}
+              {!hasCritical && !hasWarning && <CheckCircle2 className="h-4 w-4 text-green-500/70" />}
             </div>
             <CardDescription className="flex items-center gap-1.5 text-xs">
               <CalendarDays className="h-3.5 w-3.5" />

@@ -102,7 +102,7 @@ function normalizeStatus(status?: string): ServiceStatus {
 }
 
 function statusBadgeClass(status: ServiceStatus): string {
-  if (status === "healthy") return "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
+  if (status === "healthy") return "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
   if (status === "degraded") return "bg-amber-500/10 text-amber-700 border-amber-500/20"
   if (status === "down") return "bg-destructive/10 text-destructive border-destructive/20"
   if (status === "not_configured") return "bg-slate-500/10 text-slate-700 border-slate-500/20 dark:text-slate-400"

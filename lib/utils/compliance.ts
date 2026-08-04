@@ -45,10 +45,10 @@ export function getComplianceScoreTheme(score: number): ComplianceScoreTheme {
 
   if (clamped >= 90) {
     return {
-      color: '#10B981',
-      tailwindText: 'text-emerald-500',
-      tailwindBg: 'bg-emerald-500',
-      tailwindBgMuted: 'bg-emerald-500/15',
+      color: '#22C55E',
+      tailwindText: 'text-green-500',
+      tailwindBg: 'bg-green-500',
+      tailwindBgMuted: 'bg-green-500/15',
       icon: 'shield-check',
       label: 'Excellent',
     };

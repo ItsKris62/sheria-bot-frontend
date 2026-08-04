@@ -16,15 +16,15 @@ The combined authenticated portal release branch (`release/authenticated-portal-
 
 ## Release References
 
-| Item | Value |
-|---|---|
-| Original Phase 1 base | `eb0d17365977c595eb4437fda6ae5c4bf79a14e9` |
-| Phase 2 commit | `fca9274d283a70c5c7fddc445988c4b403aaa631` |
-| Phase 3 commit | `f3f4ca2cf0a1780844d01a6bc4c3ad0e2bf534fa` |
-| Final release branch | `release/authenticated-portal-ui-upgrade` |
-| Final release commit | `91a3afd2d7057ac7909fe47b231e986d151c72c5` |
-| Existing Phase 2 PR | `https://github.com/ItsKris62/sheria-bot-frontend/pull/4` |
-| PR #4 status | Open draft (to be closed as superseded) |
+| Item                  | Value                                                     |
+| -----------------------| -----------------------------------------------------------|
+| Original Phase 1 base | `eb0d17365977c595eb4437fda6ae5c4bf79a14e9`                |
+| Phase 2 commit        | `fca9274d283a70c5c7fddc445988c4b403aaa631`                |
+| Phase 3 commit        | `f3f4ca2cf0a1780844d01a6bc4c3ad0e2bf534fa`                |
+| Final release branch  | `release/authenticated-portal-ui-upgrade`                 |
+| Final release commit  | `91a3afd2d7057ac7909fe47b231e986d151c72c5`                |
+| Existing Phase 2 PR   | `https://github.com/ItsKris62/sheria-bot-frontend/pull/4` |
+| PR #4 status          | Open draft (to be closed as superseded)                   |
 
 ---
 

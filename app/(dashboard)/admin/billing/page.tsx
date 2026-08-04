@@ -391,7 +391,7 @@ export default function AdminBillingPage() {
                     {Object.entries(subBreakdown.byPlan).map(([plan, rawCount]) => {
                       const count = Number(rawCount)
                       const pct = subBreakdown.total > 0 ? Math.round((count / subBreakdown.total) * 100) : 0
-                      const colors: Record<string, string> = { REGULATOR: "bg-slate-400", STARTUP: "bg-blue-500", BUSINESS: "bg-purple-500", ENTERPRISE: "bg-emerald-500" }
+                      const colors: Record<string, string> = { REGULATOR: "bg-slate-400", STARTUP: "bg-blue-500", BUSINESS: "bg-purple-500", ENTERPRISE: "bg-green-500" }
                       return (
                         <div key={plan}>
                           <div className="flex justify-between text-sm mb-1">

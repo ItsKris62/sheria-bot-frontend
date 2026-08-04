@@ -96,7 +96,7 @@ interface EnterpriseFormState {
 function statusBadge(status: SubscriptionStatusValue) {
   switch (status) {
     case "ACTIVE":
-      return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Active</Badge>
+      return <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20">Active</Badge>
     case "TRIALING":
       return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Trial</Badge>
     case "PAST_DUE":
@@ -160,7 +160,7 @@ function BillingSkeleton() {
 function PaymentStatusBadge({ status }: { status: string }) {
   switch (status) {
     case "COMPLETED":
-      return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">Paid</Badge>
+      return <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 text-xs">Paid</Badge>
     case "FAILED":
       return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-xs">Failed</Badge>
     case "REFUNDED":
@@ -1148,7 +1148,7 @@ export default function BillingSettingsPage() {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
                   Inquiry Received
                 </DialogTitle>
                 <DialogDescription>

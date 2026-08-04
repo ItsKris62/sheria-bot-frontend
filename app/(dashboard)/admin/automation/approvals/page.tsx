@@ -100,7 +100,7 @@ function formatMetadataFull(metadata: Record<string, unknown> | null): string {
 
 function StatusBadge({ status }: { status: ApprovalStatus }) {
   if (status === "approved")
-    return <Badge className="bg-emerald-500/10 text-emerald-600 border-0">Approved</Badge>
+    return <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-0">Approved</Badge>
   if (status === "rejected")
     return <Badge className="bg-destructive/10 text-destructive border-0">Rejected</Badge>
   return (
@@ -141,7 +141,7 @@ function ApprovalRowActions({ row, onDecided }: { row: ApprovalRow; onDecided: (
           type="button"
           variant="outline"
           size="sm"
-          className="h-8 gap-1.5 text-emerald-600 hover:text-emerald-600 border-emerald-600/30"
+          className="h-8 gap-1.5 text-green-600 dark:text-green-400 hover:text-green-600 border-green-600/30"
           disabled={decideMutation.isPending}
           onClick={() => setConfirm("approved")}
         >

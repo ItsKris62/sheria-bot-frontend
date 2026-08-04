@@ -381,7 +381,7 @@ const CATEGORY_CONFIG: Record<NotificationCategoryName, { label: string; Icon: R
   SECURITY:   { label: "Security",   Icon: Shield,         iconCls: "text-destructive",   bgCls: "bg-destructive/10" },
   COMPLIANCE: { label: "Compliance", Icon: ClipboardCheck, iconCls: "text-yellow-600",    bgCls: "bg-yellow-500/10" },
   DOCUMENTS:  { label: "Documents",  Icon: FileText,       iconCls: "text-primary",        bgCls: "bg-primary/10" },
-  ACCOUNT:    { label: "Account",    Icon: UserCircle,     iconCls: "text-emerald-600",    bgCls: "bg-emerald-500/10" },
+  ACCOUNT:    { label: "Account",    Icon: UserCircle,     iconCls: "text-green-600 dark:text-green-400",    bgCls: "bg-green-500/10" },
   SUPPORT:    { label: "Support",    Icon: LifeBuoy,       iconCls: "text-purple-600",     bgCls: "bg-purple-500/10" },
   SYSTEM:     { label: "System",     Icon: Megaphone,      iconCls: "text-muted-foreground", bgCls: "bg-muted" },
 }
@@ -404,7 +404,7 @@ const ALERT_SEVERITY_CONFIG: Record<AlertSeverity, { iconCls: string; bgCls: str
   CRITICAL: { iconCls: "text-red-600",    bgCls: "bg-red-500/10",    pillCls: "bg-red-500/10 text-red-600 border border-red-500/20" },
   HIGH:     { iconCls: "text-orange-600", bgCls: "bg-orange-500/10", pillCls: "bg-orange-500/10 text-orange-600 border border-orange-500/20" },
   MEDIUM:   { iconCls: "text-yellow-600", bgCls: "bg-yellow-500/10", pillCls: "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20" },
-  LOW:      { iconCls: "text-emerald-600", bgCls: "bg-emerald-500/10", pillCls: "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" },
+  LOW:      { iconCls: "text-green-600 dark:text-green-400", bgCls: "bg-green-500/10", pillCls: "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20" },
 }
 
 interface AlertItem {

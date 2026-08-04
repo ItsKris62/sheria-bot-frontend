@@ -72,7 +72,7 @@ function CustomTooltip({ active, payload, label, categoryLabel }: CustomTooltipP
     } else if (percentUsed >= 70) {
       percentColorClass = "text-amber-500 font-semibold"
     } else {
-      percentColorClass = "text-emerald-500 font-semibold"
+      percentColorClass = "text-green-500 font-semibold"
     }
   }
 
@@ -121,7 +121,7 @@ export function UsageTrendChart({
     const formattedChange = `${absChange.toLocaleString()}%`
 
     if (direction === "up") {
-      insightIcon = <TrendingUp className="h-4 w-4 text-emerald-500 shrink-0" />
+      insightIcon = <TrendingUp className="h-4 w-4 text-green-500 shrink-0" />
     } else if (direction === "down") {
       insightIcon = <TrendingDown className="h-4 w-4 text-destructive shrink-0" />
     } else {

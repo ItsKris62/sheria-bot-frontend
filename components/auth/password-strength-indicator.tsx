@@ -123,16 +123,16 @@ const SEGMENT_COLORS: Record<number, string> = {
   1: "bg-red-500",
   2: "bg-orange-500",
   3: "bg-yellow-500",
-  4: "bg-emerald-500",
-  5: "bg-emerald-700",
+  4: "bg-green-500",
+  5: "bg-green-700",
 };
 
 const LABEL_COLORS: Record<number, string> = {
   1: "text-red-500",
   2: "text-orange-500",
   3: "text-yellow-600",
-  4: "text-emerald-500",
-  5: "text-emerald-700",
+  4: "text-green-500",
+  5: "text-green-700",
 };
 
 // ── Requirement rows shown in the checklist ───────────────────────────────────
@@ -205,7 +205,7 @@ export function PasswordStrengthIndicator({
               <div key={key} className="flex items-center gap-2">
                 {met ? (
                   <Check
-                    className="h-3.5 w-3.5 shrink-0 text-emerald-500"
+                    className="h-3.5 w-3.5 shrink-0 text-green-500"
                     aria-hidden="true"
                   />
                 ) : (

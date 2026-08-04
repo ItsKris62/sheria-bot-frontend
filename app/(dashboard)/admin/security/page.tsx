@@ -82,7 +82,7 @@ function parseUA(ua: string | null): string {
 function getActionColor(action: string): string {
   const a = action.toLowerCase()
   if (a.includes("delete") || a.includes("suspend") || a.includes("reject")) return "text-destructive bg-destructive/10"
-  if (a.includes("create") || a.includes("approve") || a.includes("verify")) return "text-emerald-600 bg-emerald-500/10"
+  if (a.includes("create") || a.includes("approve") || a.includes("verify")) return "text-green-600 dark:text-green-400 bg-green-500/10"
   if (a.includes("update") || a.includes("change") || a.includes("reset")) return "text-amber-600 bg-amber-500/10"
   if (a.includes("login") || a.includes("logout") || a.includes("sign")) return "text-blue-600 bg-blue-500/10"
   return "text-muted-foreground bg-muted"
@@ -753,8 +753,8 @@ export default function SecurityPage() {
         <Card className="border-border/50">
           <CardContent className="pt-5">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-emerald-500/10">
-                <Activity className="h-5 w-5 text-emerald-600" />
+              <div className="p-2.5 rounded-lg bg-green-500/10">
+                <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Audit Logging</p>

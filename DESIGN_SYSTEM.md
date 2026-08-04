@@ -11,8 +11,8 @@ This document provides a complete guide to the SheriaBot Dashboard UI overhaul, 
 - **Primary (Navy)**: `#1A2B4A` - HSL(210, 45%, 22%)
   - Used for: Primary buttons, links, active states, headers
   
-- **Secondary (Emerald)**: `#00875A` - HSL(160, 100%, 26%)
-  - Used for: Success states, positive actions, completion indicators
+- **Secondary (Green)**: `#22C55E` - HSL(142, 71%, 45%)
+  - Used for: Success states, positive actions, completion indicators, green accents
   
 - **Accent (Gold)**: `#D4A843` - HSL(45, 73%, 58%)
   - Used for: Highlights, important information, accent elements
@@ -25,7 +25,7 @@ This document provides a complete guide to the SheriaBot Dashboard UI overhaul, 
 
 ### Status Colors
 
-- **Success**: Emerald (#00875A)
+- **Success**: Green (#22C55E)
 - **Warning**: Amber/Orange (#F59E0B)
 - **Error/Destructive**: Red (#EF4444)
 - **Info**: Navy (#1A2B4A)

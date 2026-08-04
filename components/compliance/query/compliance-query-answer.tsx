@@ -29,7 +29,7 @@ export function SheriaBotLogo({ className = "h-5 w-5" }: { className?: string })
       alt=""
       width={40}
       height={40}
-      className={cn("rounded-full object-contain bg-slate-900 border border-emerald-500/30 p-0.5", className)}
+      className={cn("rounded-full object-contain bg-slate-900 border border-green-500/30 p-0.5", className)}
       aria-hidden="true"
       priority={false}
     />
@@ -43,7 +43,7 @@ function citationVerificationLabel(citation: CitationItem): "Verified" | "Unveri
 }
 
 function citationVerificationClass(label: "Verified" | "Unverified" | "Not checked"): string {
-  if (label === "Verified") return "border-emerald-500/40 text-emerald-400 bg-emerald-500/10"
+  if (label === "Verified") return "border-green-500/40 text-green-400 bg-green-500/10"
   if (label === "Unverified") return "border-amber-500/40 text-amber-400 bg-amber-500/10"
   return "border-muted-foreground/30 text-muted-foreground bg-muted/20"
 }
@@ -100,8 +100,8 @@ export function MessageActionBar({
       >
         {isCopied ? (
           <>
-            <Check className="mr-1.5 h-3.5 w-3.5 text-emerald-400" />
-            <span className="text-emerald-400">Copied!</span>
+            <Check className="mr-1.5 h-3.5 w-3.5 text-green-400" />
+            <span className="text-green-400">Copied!</span>
           </>
         ) : (
           <>
@@ -145,8 +145,8 @@ export function MessageActionBar({
         size="icon"
         className={cn(
           "h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50 motion-safe:active:scale-95 transition-all duration-150",
-          rating === "up" && "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-xs",
-          isFbLoading && rating === "up" && "ring-1 ring-emerald-500/30",
+          rating === "up" && "bg-green-500/15 text-green-400 border border-green-500/30 shadow-xs",
+          isFbLoading && rating === "up" && "ring-1 ring-green-500/30",
           noQueryId && "opacity-40 cursor-not-allowed",
         )}
         onClick={() => qId && onFeedback(qId, "up")}

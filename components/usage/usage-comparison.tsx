@@ -119,7 +119,7 @@ function DirectionBadge({ item }: { item: ChangeItem }) {
     )
   }
   return (
-    <div className="flex items-center gap-1 text-xs text-emerald-600">
+    <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
       <ArrowDown className="h-3 w-3" />
       <span>{item.changePercent}%</span>
     </div>
@@ -141,7 +141,7 @@ function ComparisonRow({
   const prevPct  = prevCat?.percentUsed   ?? 0
 
   const barColor = (pct: number) =>
-    pct >= 90 ? "bg-destructive" : pct >= 70 ? "bg-amber-500" : "bg-emerald-500"
+    pct >= 90 ? "bg-destructive" : pct >= 70 ? "bg-amber-500" : "bg-green-500"
 
   const formatCount = (cat: CategorySummary | undefined): string => {
     if (!cat || !cat.available) return "—"

@@ -499,7 +499,7 @@ function AnalysisResultsView({
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800">
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30">
           <CheckCircle2 className="mr-1 h-3 w-3" />
           {verifiedGapCount} verified
         </Badge>
@@ -615,7 +615,7 @@ function AnalysisResultsView({
                       <p className="text-xs text-primary font-medium mt-1 flex items-center gap-1.5 flex-wrap">
                         <span>{gap.regulatoryBasis}</span>
                         {verification === "Verified" ? (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800">
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-700 border border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30">
                             <CheckCircle2 className="h-3 w-3" />
                             Verified
                           </span>

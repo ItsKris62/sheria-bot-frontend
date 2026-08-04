@@ -41,7 +41,7 @@ const statusColor: Record<string, string> = {
   ACTIVE: "bg-primary/10 text-primary",
   PENDING_RENEWAL: "bg-warning/10 text-warning",
   SUBMITTED: "bg-sky-500/10 text-sky-500",
-  APPROVED: "bg-emerald-500/10 text-emerald-500",
+  APPROVED: "bg-green-500/10 text-green-500",
   EXPIRED: "bg-destructive/10 text-destructive",
   SUSPENDED: "bg-warning/10 text-warning",
   REVOKED: "bg-destructive/10 text-destructive",

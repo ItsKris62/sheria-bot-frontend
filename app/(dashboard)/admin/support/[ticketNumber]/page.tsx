@@ -26,7 +26,7 @@ type TicketStatus = "OPEN" | "IN_PROGRESS" | "AWAITING_USER" | "RESOLVED" | "CLO
 
 const STATUS_STYLES: Record<TicketStatus, string> = {
   OPEN: "bg-blue-50 text-blue-700 border-blue-200",
-  IN_PROGRESS: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  IN_PROGRESS: "bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30",
   AWAITING_USER: "bg-amber-50 text-amber-700 border-amber-200",
   RESOLVED: "bg-slate-50 text-slate-600 border-slate-200",
   CLOSED: "bg-gray-50 text-gray-500 border-gray-200",
@@ -227,7 +227,7 @@ export default function AdminTicketDetailPage() {
                     key={comment.id}
                     className={`rounded-lg p-4 ${
                       isAdminComment
-                        ? "border-l-4 border-emerald-500 bg-emerald-50/60"
+                        ? "border-l-4 border-green-500 bg-green-50/60 dark:bg-green-950/20"
                         : "bg-muted/30 border border-border/50"
                     }`}
                   >
@@ -240,7 +240,7 @@ export default function AdminTicketDetailPage() {
                           {isAdminComment ? "SheriaBot Support" : (comment.user?.fullName ?? "User")}
                         </span>
                         {isAdminComment && (
-                          <Badge variant="outline" className="h-4 px-1.5 py-0 text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
+                          <Badge variant="outline" className="h-4 px-1.5 py-0 text-[10px] bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30">
                             Support Team
                           </Badge>
                         )}

@@ -69,7 +69,7 @@ const CATEGORY_CONFIG: Record<
   { label: string; icon: React.ElementType; color: string; bg: string }
 > = {
   CORPORATE: { label: "Corporate", icon: Folder, color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/20" },
-  COMPLIANCE: { label: "Compliance", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-100 dark:bg-emerald-900/20" },
+  COMPLIANCE: { label: "Compliance", icon: ShieldCheck, color: "text-green-600 dark:text-green-400", bg: "bg-green-100 dark:bg-green-500/20" },
   FINANCIAL: { label: "Financial", icon: FileText, color: "text-amber-600", bg: "bg-amber-100 dark:bg-amber-900/20" },
   LICENSE: { label: "License", icon: ShieldCheck, color: "text-purple-600", bg: "bg-purple-100 dark:bg-purple-900/20" },
   OPERATIONS: { label: "Operations", icon: Folder, color: "text-orange-600", bg: "bg-orange-100 dark:bg-orange-900/20" },

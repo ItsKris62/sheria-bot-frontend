@@ -1173,11 +1173,11 @@ export default function LandingPage() {
                   <CardContent className="p-8 flex flex-col h-full">
                     <div>
                       <div className="flex items-center justify-between">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 transition-all duration-300">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10 text-green-500 transition-all duration-300">
                           <feature.icon className="h-6 w-6" strokeWidth={1.75} />
                         </div>
                         {feature.badge && (
-                          <span className="text-[10px] font-semibold tracking-wide px-2.5 py-0.5 rounded-full bg-emerald-950/30 text-emerald-400 border border-emerald-500/20">
+                          <span className="text-[10px] font-semibold tracking-wide px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
                             {feature.badge}
                           </span>
                         )}
@@ -1384,7 +1384,7 @@ export default function LandingPage() {
           />
 
           {/* Modal Card */}
-          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-emerald-500/20 bg-slate-800 p-8 shadow-2xl transition-all animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-green-500/20 bg-slate-800 p-8 shadow-2xl transition-all animate-in fade-in zoom-in-95 duration-200">
             {/* Close button */}
             <button
               onClick={() => setActiveModal(null)}
@@ -1415,7 +1415,7 @@ export default function LandingPage() {
               <Link 
                 href={modalData[activeModal as keyof typeof modalData]?.href ?? "/register"} 
                 onClick={() => setActiveModal(null)}
-                className="bg-[#00875A] hover:bg-emerald-600 text-white rounded-lg px-6 py-2 text-sm font-semibold transition-colors duration-200 inline-flex items-center"
+                className="bg-brand-green hover:bg-brand-green-hover text-foreground-on-green rounded-lg px-6 py-2 text-sm font-semibold transition-colors duration-200 inline-flex items-center"
               >
                 {modalData[activeModal as keyof typeof modalData]?.cta}
               </Link>

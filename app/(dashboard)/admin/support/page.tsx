@@ -42,7 +42,7 @@ const STATUS_LABELS: Record<TicketStatus, string> = {
 
 const STATUS_STYLES: Record<TicketStatus, string> = {
   OPEN: "bg-blue-50 text-blue-700 border-blue-200",
-  IN_PROGRESS: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  IN_PROGRESS: "bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30",
   AWAITING_USER: "bg-amber-50 text-amber-700 border-amber-200",
   RESOLVED: "bg-slate-50 text-slate-600 border-slate-200",
   CLOSED: "bg-gray-50 text-gray-500 border-gray-200",
@@ -112,8 +112,8 @@ export default function AdminSupportPage() {
     {
       label: "In Progress",
       value: stats?.inProgress ?? 0,
-      icon: <Clock className="h-5 w-5 text-emerald-500" />,
-      color: "text-emerald-700",
+      icon: <Clock className="h-5 w-5 text-green-500" />,
+      color: "text-green-700 dark:text-green-400",
     },
     {
       label: "Urgent",

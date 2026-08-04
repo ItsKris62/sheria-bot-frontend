@@ -132,7 +132,7 @@ function StatCard({ title, value, sub, icon: Icon, loading, trend, color = CHART
             <div className="rounded-lg p-2" style={{ backgroundColor: `${color}20` }}>
               <Icon className="h-4 w-4" style={{ color }} />
             </div>
-            {trend === "up" && <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />}
+            {trend === "up" && <TrendingUp className="h-3.5 w-3.5 text-green-500" />}
             {trend === "down" && <TrendingDown className="h-3.5 w-3.5 text-destructive" />}
           </div>
         </div>

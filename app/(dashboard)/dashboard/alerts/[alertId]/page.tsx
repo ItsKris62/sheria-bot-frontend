@@ -15,7 +15,7 @@ const SEVERITY_CONFIG: Record<AlertSeverity, { pillCls: string; barCls: string; 
   CRITICAL: { pillCls: "bg-red-500/10 text-red-600 border border-red-500/20",    barCls: "bg-red-500",    label: "Critical - immediate action required" },
   HIGH:     { pillCls: "bg-orange-500/10 text-orange-600 border border-orange-500/20", barCls: "bg-orange-500", label: "High priority regulatory update" },
   MEDIUM:   { pillCls: "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20", barCls: "bg-yellow-500", label: "Regulatory update" },
-  LOW:      { pillCls: "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20", barCls: "bg-emerald-500", label: "Informational update" },
+  LOW:      { pillCls: "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20", barCls: "bg-green-500", label: "Informational update" },
 }
 
 interface AlertDetail {

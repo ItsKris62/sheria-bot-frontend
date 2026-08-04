@@ -65,7 +65,7 @@ export function ComplianceQueryProgress({
       <ScrollArea ref={chatScrollRef} className="flex-1 p-4 sm:p-6">
         {showEmptyState ? (
           <div className="flex h-full flex-col items-center justify-center py-12 text-center my-auto motion-safe:animate-fade-slide-up">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_25px_rgba(16,185,129,0.15)] transition-transform duration-200 hover:scale-105">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-green-500/30 bg-green-500/10 shadow-[0_0_25px_rgba(34,197,94,0.15)] transition-transform duration-200 hover:scale-105">
               <SheriaBotLogo className="h-10 w-10 border-0 bg-transparent p-0" />
             </div>
             <h2 className="mt-5 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
@@ -79,7 +79,7 @@ export function ComplianceQueryProgress({
             {/* Suggested Queries Empty State Section */}
             <div className="mt-8 w-full max-w-xl">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center justify-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+                <Sparkles className="h-3.5 w-3.5 text-green-400" aria-hidden="true" />
                 Suggested Queries
               </p>
               {suggestedQueriesLoading ? (
@@ -97,7 +97,7 @@ export function ComplianceQueryProgress({
                     <button
                       key={s.id}
                       onClick={() => onSuggestedQuerySelect(s.text, s.id, "empty_state")}
-                      className="rounded-full border border-border/70 bg-card/90 px-4 py-2 text-xs font-medium text-foreground transition-all duration-150 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-300 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-left max-w-full truncate"
+                      className="rounded-full border border-border/70 bg-card/90 px-4 py-2 text-xs font-medium text-foreground transition-all duration-150 hover:border-green-500/50 hover:bg-green-500/10 hover:text-green-300 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-green-500/40 text-left max-w-full truncate"
                     >
                       {s.text.length > 55 ? s.text.slice(0, 55) + "..." : s.text}
                     </button>
@@ -135,7 +135,7 @@ export function ComplianceQueryProgress({
                   <div className="max-w-[95%] sm:max-w-[90%] rounded-2xl border border-border/60 bg-card/90 p-4 sm:p-5 text-foreground shadow-sm space-y-3">
                     {/* Header bar */}
                     <div className="flex items-center gap-2.5 border-b border-border/40 pb-3">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 shadow-xs">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full border border-green-500/30 bg-green-500/10 shadow-xs">
                         <SheriaBotLogo className="h-4 w-4 border-0 p-0 bg-transparent" />
                       </div>
                       <div>
@@ -143,7 +143,7 @@ export function ComplianceQueryProgress({
                         <span className="ml-2 text-[10px] text-muted-foreground/80">Regulatory Intelligence</span>
                       </div>
                       {message.confidence != null && (
-                        <Badge variant="outline" className="text-[10px] ml-auto border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+                        <Badge variant="outline" className="text-[10px] ml-auto border-green-500/30 text-green-400 bg-green-500/10">
                           {Math.round(message.confidence * 100)}% confidence
                         </Badge>
                       )}
@@ -184,12 +184,12 @@ export function ComplianceQueryProgress({
               <div className="flex justify-start motion-safe:animate-fade-slide-up">
                 <div className="max-w-[95%] sm:max-w-[90%] rounded-2xl border border-border/60 bg-card/90 p-4 sm:p-5 text-foreground shadow-sm space-y-3">
                   <div className="flex items-center gap-2.5 border-b border-border/40 pb-3">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 shadow-xs">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full border border-green-500/30 bg-green-500/10 shadow-xs">
                       <SheriaBotLogo className="h-4 w-4 border-0 p-0 bg-transparent" />
                     </div>
                     <span className="text-sm font-semibold text-foreground">SheriaBot</span>
                     {streamState.phase === "verifying" && (
-                      <Badge variant="outline" className="text-[10px] ml-auto gap-1 border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+                      <Badge variant="outline" className="text-[10px] ml-auto gap-1 border-green-500/30 text-green-400 bg-green-500/10">
                         <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
                         Verifying Sources
                       </Badge>

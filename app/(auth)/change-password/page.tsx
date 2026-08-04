@@ -74,8 +74,8 @@ export default function ChangePasswordPage() {
       <CardContent>
         {complete ? (
           <div className="space-y-4 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10">
-              <CheckCircle2 className="h-7 w-7 text-emerald-500" aria-hidden="true" />
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10">
+              <CheckCircle2 className="h-7 w-7 text-green-500" aria-hidden="true" />
             </div>
             <p className="text-sm text-muted-foreground">Password updated. Opening your dashboard...</p>
           </div>

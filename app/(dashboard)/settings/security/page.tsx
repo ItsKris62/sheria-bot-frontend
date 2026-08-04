@@ -182,7 +182,7 @@ function ChangePasswordCard() {
             <button
               type="button"
               onClick={handleSuggestPassword}
-              className="flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+              className="flex items-center gap-1 text-xs font-medium text-green-600 hover:text-green-700 dark:text-green-400 transition-colors"
             >
               <Sparkles className="h-3.5 w-3.5" />
               Suggest strong password
@@ -221,14 +221,14 @@ function ChangePasswordCard() {
 
           {/* Generated password display */}
           {generatedPassword && form.newPass === generatedPassword && (
-            <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30 px-3 py-2">
-              <code className="flex-1 truncate text-xs font-mono text-emerald-800 dark:text-emerald-300">
+            <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 dark:border-green-500/30 dark:bg-green-500/10 px-3 py-2">
+              <code className="flex-1 truncate text-xs font-mono text-green-800 dark:text-green-300">
                 {generatedPassword}
               </code>
               <button
                 type="button"
                 onClick={handleCopyGenerated}
-                className="shrink-0 text-emerald-700 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-200 transition-colors"
+                className="shrink-0 text-green-700 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200 transition-colors"
                 aria-label="Copy generated password"
               >
                 <Copy className="h-4 w-4" />
@@ -265,7 +265,7 @@ function ChangePasswordCard() {
             <p className="text-xs text-destructive">Passwords do not match</p>
           )}
           {form.confirm.length > 0 && form.newPass === form.confirm && form.confirm.length > 0 && (
-            <p className="text-xs text-emerald-600">Passwords match</p>
+            <p className="text-xs text-green-600 dark:text-green-400">Passwords match</p>
           )}
         </div>
 

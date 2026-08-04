@@ -80,7 +80,7 @@ function profileToForm(profile: ProfileData | undefined): ProfileFormData {
 function roleBadge(role: UserRole) {
   const map: Record<UserRole, { label: string; className: string }> = {
     REGULATOR: { label: "Regulator", className: "bg-blue-500/15 text-blue-600 border-blue-500/30" },
-    STARTUP: { label: "Startup", className: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30" },
+    STARTUP: { label: "Startup", className: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30" },
     ENTERPRISE: { label: "Enterprise", className: "bg-purple-500/15 text-purple-600 border-purple-500/30" },
     ADMIN: { label: "Admin", className: "bg-orange-500/15 text-orange-600 border-orange-500/30" },
   }
@@ -247,7 +247,7 @@ export default function ProfileSettingsPage() {
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {profile?.role && roleBadge(profile.role)}
                 {profile?.emailVerified ? (
-                  <span className="flex items-center gap-1 text-xs text-emerald-600">
+                  <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
                     <CheckCircle2 className="h-3 w-3" />
                     Email verified
                   </span>

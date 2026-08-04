@@ -75,7 +75,7 @@ const SEVERITY_STYLES: Record<AlertSeverity, string> = {
   CRITICAL: "bg-red-500/10 text-red-600 border border-red-500/20",
   HIGH:     "bg-orange-500/10 text-orange-600 border border-orange-500/20",
   MEDIUM:   "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20",
-  LOW:      "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20",
+  LOW:      "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20",
 }
 
 // --- Empty form ---------------------------------------------------------------
@@ -431,7 +431,7 @@ export default function AdminAlertsPage() {
                           <Badge
                             variant="outline"
                             className={alert.isActive
-                              ? "text-[10px] border-emerald-500/30 text-emerald-600 bg-emerald-500/5"
+                              ? "text-[10px] border-green-500/30 text-green-600 dark:text-green-400 bg-green-500/5"
                               : "text-[10px] border-border text-muted-foreground"
                             }
                           >

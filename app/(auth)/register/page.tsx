@@ -351,7 +351,7 @@ export default function RegisterPage() {
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     required
-                    className={`bg-background pr-10 ${confirmMismatch ? "border-destructive focus-visible:ring-destructive" : !confirmMismatch && formData.confirmPassword ? "border-emerald-500 focus-visible:ring-emerald-500" : ""}`}
+                    className={`bg-background pr-10 ${confirmMismatch ? "border-destructive focus-visible:ring-destructive" : !confirmMismatch && formData.confirmPassword ? "border-green-500 focus-visible:ring-green-500" : ""}`}
                     aria-describedby={confirmMismatch ? "confirm-error" : undefined}
                     autoComplete="new-password"
                   />
@@ -370,7 +370,7 @@ export default function RegisterPage() {
                   </p>
                 )}
                 {!confirmMismatch && formData.confirmPassword && (
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400">Passwords match.</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">Passwords match.</p>
                 )}
               </div>
 

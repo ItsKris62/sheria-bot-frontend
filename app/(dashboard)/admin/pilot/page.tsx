@@ -97,7 +97,7 @@ function StatusBadge({ status }: { status: PilotTester["status"] }) {
   if (status === "active")
     return <Badge className="bg-primary/10 text-primary border-0">Active</Badge>
   if (status === "converted")
-    return <Badge className="bg-emerald-500/10 text-emerald-600 border-0">Converted</Badge>
+    return <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-0">Converted</Badge>
   if (status === "revoked")
     return <Badge className="bg-destructive/10 text-destructive border-0">Revoked</Badge>
   return <Badge className="bg-muted text-muted-foreground border-0">Expired</Badge>

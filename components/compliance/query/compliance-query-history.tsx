@@ -30,7 +30,7 @@ export function ComplianceQueryHistory({
       <Card className="border-border/60 bg-card/90 shadow-xs transition-all duration-200 hover:border-border/80">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+            <History className="h-4 w-4 text-green-400" aria-hidden="true" />
             <CardTitle className="text-base font-semibold text-foreground">Recent Queries</CardTitle>
           </div>
           <CardDescription className="text-xs">Your previous regulatory inquiries</CardDescription>
@@ -43,18 +43,18 @@ export function ComplianceQueryHistory({
                   <Link
                     key={item.id}
                     href={`/startup/compliance-query/${item.id}`}
-                    className="group flex items-center gap-3 rounded-xl border border-border/50 bg-background/50 p-3 transition-all duration-150 hover:border-emerald-500/30 hover:bg-muted/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
+                    className="group flex items-center gap-3 rounded-xl border border-border/50 bg-background/50 p-3 transition-all duration-150 hover:border-green-500/30 hover:bg-muted/40 focus:outline-none focus:ring-1 focus:ring-green-500/40"
                   >
-                    <Clock className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-emerald-400 transition-colors" />
+                    <Clock className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-green-400 transition-colors" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-foreground truncate group-hover:text-emerald-300 transition-colors">
+                      <p className="text-xs font-medium text-foreground truncate group-hover:text-green-300 transition-colors">
                         {item.query}
                       </p>
                       <p className="text-[10px] text-muted-foreground/80">
                         {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
                       </p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-emerald-400 motion-safe:group-hover:translate-x-0.5 transition-all duration-150" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-green-400 motion-safe:group-hover:translate-x-0.5 transition-all duration-150" />
                   </Link>
                 ))}
                 <Button

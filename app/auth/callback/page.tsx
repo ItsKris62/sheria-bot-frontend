@@ -155,9 +155,9 @@ function SuccessState({ role }: { role: string }) {
       {/* Icon */}
       <div className="text-center space-y-4">
         <div className="relative mx-auto h-20 w-20">
-          <div className="absolute inset-0 rounded-full bg-emerald-500/10 animate-ping [animation-duration:2s]" />
-          <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/15 border-2 border-emerald-500/30">
-            <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+          <div className="absolute inset-0 rounded-full bg-green-500/10 animate-ping [animation-duration:2s]" />
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-green-500/15 border-2 border-green-500/30">
+            <CheckCircle2 className="h-10 w-10 text-green-500" />
           </div>
         </div>
         <div className="space-y-2">
@@ -255,7 +255,7 @@ function PendingApprovalState() {
               <div
                 className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${
                   item.done
-                    ? "border-emerald-500 bg-emerald-500/15 text-emerald-500"
+                    ? "border-green-500 bg-green-500/15 text-green-500"
                     : "border-border bg-muted/30 text-muted-foreground"
                 }`}
               >
@@ -264,7 +264,7 @@ function PendingApprovalState() {
               {i < timeline.length - 1 && (
                 <div
                   className={`w-[2px] flex-1 my-1 rounded-full min-h-[28px] ${
-                    item.done ? "bg-emerald-500/40" : "bg-border"
+                    item.done ? "bg-green-500/40" : "bg-border"
                   }`}
                 />
               )}
@@ -462,7 +462,7 @@ export default function AuthCallbackPage() {
           {(stage === "success" || stage === "pending_approval") && (
             <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                <ShieldCheck className="h-3.5 w-3.5 text-green-500" />
                 <span>256-bit TLS encryption</span>
               </div>
               <div className="flex items-center gap-1.5">
