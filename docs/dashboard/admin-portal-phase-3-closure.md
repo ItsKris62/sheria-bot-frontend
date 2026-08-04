@@ -26,7 +26,9 @@ Pre-Phase-3 rollback commit: fca9274d283a70c5c7fddc445988c4b403aaa631
 
 Phase 3 branch: feat/admin-portal-alignment
 
-Phase 3 final commit: 95013cb8ceb890614d26001b1898749f406fde78
+Phase 3 implementation commit: 1af4f05a8d835f51e28cdb71e33d82f0b7f7bf1a
+
+Phase 3 final branch tip: recorded in final response after the report update commit.
 
 Merge commit: not created.
 
