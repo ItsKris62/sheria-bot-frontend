@@ -61,6 +61,8 @@ describe("Blog newsletter signup", () => {
   it("submits email to backend but excludes it from analytics", async () => {
     render(<BlogNewsletterSignup sourcePage="/blog" category="Regulatory Updates" />)
 
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
+
     fireEvent.change(screen.getByLabelText("Email address"), {
       target: { value: "reader@example.com" },
     })
