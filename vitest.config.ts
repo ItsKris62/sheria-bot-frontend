@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url"
 export default defineConfig({
   test: {
     environment: "jsdom",
+    pool: "threads",
+    maxWorkers: 1,
     setupFiles: ["./vitest.setup.ts"],
     globals: true,
     include: ["**/*.{test,spec}.{ts,tsx}"],
