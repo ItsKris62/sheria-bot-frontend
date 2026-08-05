@@ -25,7 +25,7 @@ export const LOGOS = {
   footer: '/footer-logo.png',
 
   /** Email signature (used by backend email templates via theme.ts) — served from R2 */
-  emailSignature: `${R2}/branding/email-signature-logo.png`,
+  emailSignature: `${R2}/branding/Sheriabot%20logo%20-%20email.png`,
 
   /** Favicon — local path required for Next.js metadata */
   favicon: '/favicon-logo.png',
