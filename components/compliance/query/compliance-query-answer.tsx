@@ -29,7 +29,7 @@ export function SheriaBotLogo({ className = "h-5 w-5" }: { className?: string })
       alt=""
       width={40}
       height={40}
-      className={cn("rounded-full object-contain bg-slate-900 border border-green-500/30 p-0.5", className)}
+      className={cn("rounded-full object-contain bg-black border border-green-500/30 p-0.5", className)}
       aria-hidden="true"
       priority={false}
     />

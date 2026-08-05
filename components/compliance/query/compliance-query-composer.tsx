@@ -34,8 +34,7 @@ export function ComplianceQueryComposer({
       {/* Detail Level Selector Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-foreground/80 flex items-center gap-1.5">
-            <FileText className="h-3.5 w-3.5 text-green-400" aria-hidden="true" />
+          <span className="font-medium text-foreground/80">
             Detail Level:
           </span>
           <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-1">

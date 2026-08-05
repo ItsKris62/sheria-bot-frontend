@@ -42,10 +42,7 @@ export function ComplianceQuerySidebar({
       {/* 2. Suggested Queries Rail */}
       <Card className="border-border/60 bg-card/90 shadow-xs transition-all duration-200 hover:border-border/80">
         <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-green-400" aria-hidden="true" />
-            <CardTitle className="text-base font-semibold text-foreground">Suggested Queries</CardTitle>
-          </div>
+          <CardTitle className="text-base font-semibold text-foreground">Suggested Queries</CardTitle>
           <CardDescription className="text-xs">Personalised compliance questions</CardDescription>
         </CardHeader>
         <CardContent>

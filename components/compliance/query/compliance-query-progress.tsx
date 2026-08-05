@@ -78,8 +78,7 @@ export function ComplianceQueryProgress({
 
             {/* Suggested Queries Empty State Section */}
             <div className="mt-8 w-full max-w-xl">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center justify-center gap-1.5">
-                <BookOpen className="h-3.5 w-3.5 text-green-400" aria-hidden="true" />
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 text-center">
                 Suggested Queries
               </p>
               {suggestedQueriesLoading ? (
