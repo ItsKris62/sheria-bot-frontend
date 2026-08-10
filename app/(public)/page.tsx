@@ -25,7 +25,6 @@ import {
   AlertTriangle,
   Upload,
   FileDown,
-  Sparkles,
   Quote,
 } from "lucide-react"
 
@@ -35,8 +34,8 @@ import {
 
 const modalData = {
   "zero-hallucinations": {
-    title: "Zero Hallucinations. Just Law.",
-    body: "AI is only useful if you can trust it. Every time SheriaBot answers a compliance question, it provides direct, clickable citations mapping back to the exact section, act, and year of the Kenya Gazette. Verify everything instantly.",
+    title: "Cited answers. Source trail included.",
+    body: "Every SheriaBot answer keeps cited regulatory sources and source context close to the response, so your team can verify the material before acting.",
     cta: "See How It Works",
     href: "/pricing",
   },
@@ -68,9 +67,9 @@ const features = [
   {
     id: "zero-hallucinations",
     icon: BookOpen,
-    title: "Zero Hallucinations.",
+    title: "Cited Answers.",
     description:
-      "Every SheriaBot answer comes with cited regulatory sources and source context. No generic AI guesses — just verifiable Kenyan law, mapped to the exact act, section, and year.",
+      "Every SheriaBot answer keeps cited regulatory sources and source context close to the response, so teams can verify the material before acting.",
     badge: "Cited Sources",
     size: "large" as const,
   },
@@ -79,7 +78,7 @@ const features = [
     icon: Upload,
     title: "Instant Gap Analysis.",
     description:
-      "Upload a policy document and instantly identify missing regulatory obligations. Get a compliance score, red/green status indicators, and a prioritized gap count.",
+      "Upload a policy document and identify missing regulatory obligations, review status indicators, and prioritize follow-up items.",
     size: "medium" as const,
   },
   {
@@ -153,22 +152,47 @@ function useParallax() {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     if (prefersReducedMotion) return
 
-    const handleScroll = () => {
-      if (!ref.current) return
-      const elements = ref.current.querySelectorAll("[data-parallax]")
-      
+    let frameId: number | null = null
+    let isAnimating = false
+
+    const renderParallax = () => {
+      if (!ref.current) {
+        isAnimating = false
+        frameId = null
+        return
+      }
+      const elements = ref.current.querySelectorAll<HTMLElement>("[data-parallax]")
+      let shouldContinue = false
+
       elements.forEach((el) => {
         const rect = el.getBoundingClientRect()
         const speed = Number.parseFloat(el.getAttribute("data-parallax") || "0.5")
-        const yPos = (window.innerHeight - rect.top) * speed * 0.1
-        const element = el as HTMLElement
+        const targetY = (window.innerHeight - rect.top) * speed * 0.1
+        const currentY = Number.parseFloat(el.dataset.parallaxCurrent || "0")
+        const nextY = currentY + (targetY - currentY) * 0.16
 
-        if (element.hasAttribute("data-ambient-layer")) {
-          element.style.setProperty("--parallax-y", `${yPos}px`)
+        el.dataset.parallaxCurrent = nextY.toFixed(2)
+        shouldContinue = shouldContinue || Math.abs(targetY - nextY) > 0.12
+
+        if (el.hasAttribute("data-ambient-layer")) {
+          el.style.setProperty("--parallax-y", `${nextY.toFixed(2)}px`)
         } else {
-          element.style.transform = `translateY(${yPos}px)`
+          el.style.transform = `translate3d(0, ${nextY.toFixed(2)}px, 0)`
         }
       })
+
+      if (shouldContinue) {
+        frameId = window.requestAnimationFrame(renderParallax)
+      } else {
+        isAnimating = false
+        frameId = null
+      }
+    }
+
+    const scheduleParallax = () => {
+      if (isAnimating) return
+      isAnimating = true
+      frameId = window.requestAnimationFrame(renderParallax)
     }
 
     const handlePointerMove = (event: PointerEvent) => {
@@ -194,12 +218,17 @@ function useParallax() {
       section.style.setProperty("--drift-y-px-inverse", `${(driftY * -4).toFixed(2)}px`)
     }
 
-    handleScroll()
-    window.addEventListener("scroll", handleScroll, { passive: true })
+    scheduleParallax()
+    window.addEventListener("scroll", scheduleParallax, { passive: true })
+    window.addEventListener("resize", scheduleParallax, { passive: true })
     window.addEventListener("pointermove", handlePointerMove, { passive: true })
 
     return () => {
-      window.removeEventListener("scroll", handleScroll)
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId)
+      }
+      window.removeEventListener("scroll", scheduleParallax)
+      window.removeEventListener("resize", scheduleParallax)
       window.removeEventListener("pointermove", handlePointerMove)
     }
   }, [])
@@ -214,10 +243,10 @@ function useParallax() {
 
 function CitationSnippet() {
   return (
-    <div className="mt-4 rounded-lg border border-[#1D2925] bg-[#050706] p-3">
+    <div className="mt-4 rounded-xl border border-white/10 bg-black/35 p-3 shadow-[inset_0_1px_0_rgba(245,247,246,0.08)] backdrop-blur-md">
       <div className="mb-2 flex items-center gap-2">
-        <Sparkles className="h-3.5 w-3.5 text-[#1ED760]" />
-        <span className="text-[11px] font-semibold text-[#F5F7F6]">AI Response</span>
+        <BookOpen className="h-3.5 w-3.5 text-[#1ED760]" />
+        <span className="text-[11px] font-semibold text-[#F5F7F6]">Cited response</span>
       </div>
       <p className="mb-2 text-[11px] leading-4 text-[#B8C0BC]">
         Digital credit providers must verify customer identity before loan disbursement...
@@ -236,14 +265,14 @@ function CitationSnippet() {
 
 function GapAnalysisSnippet() {
   return (
-    <div className="mt-4 rounded-lg border border-[#1D2925] bg-[#050706] p-3">
+    <div className="mt-4 rounded-xl border border-white/10 bg-black/35 p-3 shadow-[inset_0_1px_0_rgba(245,247,246,0.08)] backdrop-blur-md">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Upload className="h-3.5 w-3.5 text-[#1ED760]" />
           <span className="text-[11px] font-semibold text-[#F5F7F6]">privacy-policy.pdf</span>
         </div>
-        <span className="rounded-full bg-[#F59E0B]/10 px-2 py-0.5 text-[9px] font-bold text-[#F59E0B]">
-          72% compliant
+        <span className="rounded-full border border-[#F59E0B]/20 bg-[#F59E0B]/10 px-2 py-0.5 text-[9px] font-bold text-[#F9B949]">
+          Needs review
         </span>
       </div>
       <div className="space-y-1.5">
@@ -269,7 +298,7 @@ function GapAnalysisSnippet() {
 
 function ChecklistSnippet() {
   return (
-    <div className="mt-4 rounded-lg border border-[#1D2925] bg-[#050706] p-3">
+    <div className="mt-4 rounded-xl border border-white/10 bg-black/35 p-3 shadow-[inset_0_1px_0_rgba(245,247,246,0.08)] backdrop-blur-md">
       <div className="mb-2 flex items-center gap-2">
         <div className="rounded-md border border-[#1ED760]/20 bg-[#1ED760]/10 px-2 py-1 text-[10px] font-semibold text-[#1ED760]">
           Digital Credit Provider
@@ -294,7 +323,7 @@ function ChecklistSnippet() {
 
 function ExportSnippet() {
   return (
-    <div className="mt-4 rounded-lg border border-[#1D2925] bg-[#050706] p-3">
+    <div className="mt-4 rounded-xl border border-white/10 bg-black/35 p-3 shadow-[inset_0_1px_0_rgba(245,247,246,0.08)] backdrop-blur-md">
       <div className="mb-2 text-[11px] font-semibold text-[#F5F7F6]">Export options</div>
       <div className="space-y-1.5">
         {["PDF Compliance Report", "DOCX Gap Analysis", "CSV Checklist"].map((item) => (
@@ -490,7 +519,11 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════
           2. HONEST AUTHORITY STRIP
           ════════════════════════════════════════════════════ */}
-      <AmbientSection className="border-y border-border py-14 sm:py-16" density="quiet">
+      <AmbientSection
+        tone="green"
+        className="border-y border-brand-green/10 py-14 sm:py-16"
+        density="quiet"
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm font-medium text-foreground-muted mb-8 tracking-wide">
             Engineered to navigate Kenya&apos;s critical frameworks:
@@ -500,7 +533,7 @@ export default function LandingPage() {
             {regulatoryFrameworks.map((framework) => (
               <div
                 key={framework.name}
-                className="group flex items-center gap-2.5 rounded-full border border-[#1D2925] bg-[#080D0B]/80 px-4 py-2.5 text-sm font-medium text-[#B8C0BC] transition-all duration-300 hover:border-brand-green/30 hover:text-[#F5F7F6]"
+                className="group flex items-center gap-2.5 rounded-full border border-white/10 bg-black/25 px-4 py-2.5 text-sm font-medium text-[#C9D1CD] shadow-[inset_0_1px_0_rgba(245,247,246,0.08)] backdrop-blur-md transition-all duration-300 hover:border-brand-green/30 hover:bg-brand-green/10 hover:text-[#F5F7F6]"
               >
                 <span className="text-base" aria-hidden="true">{framework.icon}</span>
                 {framework.name}
@@ -522,7 +555,7 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════
           4. FEATURES — BENTO GRID
           ════════════════════════════════════════════════════ */}
-      <AmbientSection id="features" className="py-24 sm:py-32 scroll-mt-20" density="quiet">
+      <AmbientSection id="features" tone="light" className="py-24 sm:py-32 scroll-mt-20" density="quiet">
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-6 border-brand-green/30 text-brand-green bg-brand-green/5 px-4 py-1">
@@ -543,25 +576,25 @@ export default function LandingPage() {
               return (
                 <Card 
                   key={feature.title} 
-                  className={`group relative overflow-hidden rounded-2xl border-border bg-surface/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,135,90,0.15)] hover:bg-surface ${
-                    feature.size === "large" ? "sm:col-span-2 lg:col-span-1 lg:row-span-2" : ""
+                  className={`group relative isolate overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(245,247,246,0.085),rgba(245,247,246,0.028)_42%,rgba(30,215,96,0.06))] shadow-[inset_0_1px_0_rgba(245,247,246,0.12),0_24px_80px_rgba(0,0,0,0.36)] backdrop-blur-xl transition-[border-color,box-shadow,background,transform] duration-300 hover:-translate-y-1 hover:border-brand-green/35 hover:shadow-[inset_0_1px_0_rgba(245,247,246,0.18),0_28px_90px_rgba(0,0,0,0.44),0_0_36px_rgba(30,215,96,0.10)] ${
+                    feature.size === "large" ? "sm:col-span-2 lg:col-span-1" : ""
                   }`}
                   data-parallax={0.05 + index * 0.02}
                 >
                   <CardContent className="p-8 flex flex-col h-full">
                     <div>
                       <div className="flex items-center justify-between">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10 text-green-500 transition-all duration-300">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-brand-green/20 bg-brand-green/10 text-brand-green shadow-[inset_0_1px_0_rgba(245,247,246,0.08)] transition-all duration-300">
                           <feature.icon className="h-6 w-6" strokeWidth={1.75} />
                         </div>
                         {feature.badge && (
-                          <span className="text-[10px] font-semibold tracking-wide px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                          <span className="rounded-full border border-brand-green/25 bg-brand-green/10 px-2.5 py-0.5 text-[10px] font-semibold text-brand-green">
                             {feature.badge}
                           </span>
                         )}
                       </div>
-                      <h3 className="mt-6 text-lg font-semibold text-foreground">{feature.title}</h3>
-                      <p className="mt-3 text-foreground-muted leading-relaxed text-sm">{feature.description}</p>
+                      <h3 className="mt-6 text-lg font-semibold text-[#F5F7F6]">{feature.title}</h3>
+                      <p className="mt-3 text-sm leading-relaxed text-[#B8C0BC]">{feature.description}</p>
 
                       {/* Visual snippet */}
                       {SnippetComponent && <SnippetComponent />}
@@ -569,14 +602,14 @@ export default function LandingPage() {
 
                     <button
                       onClick={() => setActiveModal(feature.id)}
-                      className="mt-6 flex items-center text-sm text-brand-green opacity-100 md:opacity-0 transition-all duration-300 group-hover:opacity-100 focus:outline-none focus-visible:opacity-100"
+                      className="mt-6 flex items-center rounded-lg text-sm font-semibold text-brand-green opacity-100 transition-all duration-300 hover:text-[#6DF0A0] focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-brand-green/50 focus-visible:ring-offset-4 focus-visible:ring-offset-[#07100C] md:opacity-0 md:group-hover:opacity-100"
                     >
                       <span>Learn more</span>
                       <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </button>
                   </CardContent>
                   {/* Hover glow effect */}
-                  <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-green/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_22%_16%,rgba(245,247,246,0.12),transparent_24%),radial-gradient(circle_at_86%_88%,rgba(30,215,96,0.14),transparent_34%)] opacity-60 transition-opacity duration-300 group-hover:opacity-90" />
                 </Card>
               )
             })}
@@ -645,7 +678,7 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════
           6. PAN-AFRICAN VISION
           ════════════════════════════════════════════════════ */}
-      <AmbientSection id="vision" className="border-t border-border py-24 sm:py-32 scroll-mt-20" density="quiet">
+      <AmbientSection id="vision" tone="green" className="border-t border-brand-green/10 py-24 sm:py-32 scroll-mt-20" density="quiet">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
@@ -705,9 +738,9 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════
           7. FINAL CTA
           ════════════════════════════════════════════════════ */}
-      <AmbientSection className="py-24" tone="gold" density="quiet">
+      <AmbientSection className="py-24" tone="light" density="quiet">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Card className="relative overflow-hidden border-brand-green/30 bg-gradient-to-br from-brand-green/10 via-surface to-surface">
+          <Card className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(135deg,rgba(30,215,96,0.14),rgba(245,247,246,0.055)_46%,rgba(5,7,6,0.78))] shadow-[inset_0_1px_0_rgba(245,247,246,0.14),0_32px_110px_rgba(0,0,0,0.42)] backdrop-blur-xl">
             <CardContent className="relative p-12 sm:p-16 text-center">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground text-balance">
                 Ready to pilot compliance automation{" "}
@@ -737,6 +770,7 @@ export default function LandingPage() {
                 </Button>
               </div>
             </CardContent>
+            <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,rgba(245,247,246,0.16),transparent_26%),radial-gradient(circle_at_80%_88%,rgba(30,215,96,0.14),transparent_34%)]" />
           </Card>
         </div>
       </AmbientSection>

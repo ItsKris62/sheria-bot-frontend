@@ -136,13 +136,13 @@ export function ComplianceEvidenceSection() {
     <section
       id="workflow"
       data-ambient-section
-      className="relative isolate overflow-hidden border-y border-[#1D2925] bg-[#050706] py-24 sm:py-32 scroll-mt-20"
+      className="relative isolate overflow-hidden border-y border-brand-green/10 bg-[#07100C] py-24 sm:py-32 scroll-mt-20"
     >
       <div
         className="absolute inset-0 -z-10 transition-[background,transform] duration-700 ease-out"
         style={{
           background:
-            "radial-gradient(circle at var(--mouse-x,72%) var(--mouse-y,8%), rgba(30,215,96,0.12), transparent 34%), linear-gradient(180deg,#080D0B 0%,#050706 48%,#0D1411 100%)",
+            "radial-gradient(circle at var(--mouse-x,72%) var(--mouse-y,8%), rgba(30,215,96,0.13), transparent 34%), linear-gradient(180deg,#06110C 0%,#07160E 48%,#0D1411 100%)",
           transform:
             "translate3d(var(--drift-x-px,0px), calc(var(--parallax-y,0px) + var(--drift-y-px,0px)), 0)",
         }}
@@ -158,7 +158,7 @@ export function ComplianceEvidenceSection() {
         data-parallax="0.02"
         data-ambient-layer
       />
-      <div className="absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-[#D8B76E]/30 to-transparent" />
+      <div className="absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-brand-green/25 to-transparent" />
 
       <div className="mx-auto max-w-[92rem] px-4 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[0.58fr_1.42fr] lg:items-start">

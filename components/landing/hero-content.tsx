@@ -6,11 +6,7 @@ import { Button } from "@/components/ui/button"
 export function HeroContent() {
   return (
     <div className="flex max-w-3xl flex-col items-center text-center lg:items-start lg:text-left">
-      <div className="hero-reveal inline-flex items-center rounded-full border border-brand-green/25 bg-brand-green/10 px-3 py-1 text-xs font-semibold tracking-normal text-brand-green">
-        Evidence-led regulatory intelligence
-      </div>
-
-      <h1 className="hero-reveal hero-delay-1 mt-6 max-w-[11ch] text-5xl font-bold leading-[0.94] tracking-normal text-foreground text-balance sm:max-w-[12ch] sm:text-6xl lg:text-[4.75rem] xl:text-[5.35rem]">
+      <h1 className="hero-reveal hero-delay-1 max-w-[11ch] text-5xl font-bold leading-[0.94] tracking-normal text-foreground text-balance sm:max-w-[12ch] sm:text-6xl lg:text-[4.75rem] xl:text-[5.35rem]">
         <span className="block">Know the regulation.</span>
         {" "}
         <span className="mt-2 block">
