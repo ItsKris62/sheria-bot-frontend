@@ -238,6 +238,21 @@
   100% { transform: translateX(360%); opacity: 0; }
 }
 
+@keyframes hero-reveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes hero-glow-breathe {
+  0%, 100% { opacity: 0.82; }
+  50% { opacity: 1; }
+}
+
 /* ── Animation Utilities */
 .animate-glow-pulse {
   animation: glow-pulse 2.4s ease-in-out infinite;
@@ -292,6 +307,37 @@
 
 .animate-thread-pulse {
   animation: thread-pulse 3.8s ease-in-out infinite;
+}
+
+/* Homepage hero motion stays CSS-only and optional. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-reveal {
+    animation: hero-reveal 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .hero-delay-1 { animation-delay: 80ms; }
+  .hero-delay-2 { animation-delay: 160ms; }
+  .hero-delay-3 { animation-delay: 240ms; }
+  .hero-delay-4 { animation-delay: 320ms; }
+  .hero-delay-5 { animation-delay: 400ms; }
+  .hero-delay-6 { animation-delay: 480ms; }
+  .hero-delay-7 { animation-delay: 560ms; }
+
+  .hero-float-slow {
+    animation: hero-float 8s ease-in-out infinite;
+  }
+
+  .hero-float-offset {
+    animation-delay: 1.2s;
+  }
+
+  .hero-float-late {
+    animation-delay: 2.1s;
+  }
+
+  .hero-glow-breathe {
+    animation: hero-glow-breathe 7s ease-in-out infinite;
+  }
 }
 
 /* ── Stagger Animation Delays */
@@ -514,4 +560,3 @@ html {
     -webkit-backdrop-filter: none;
   }
 }
-
