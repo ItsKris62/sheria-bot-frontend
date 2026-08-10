@@ -555,7 +555,7 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════
           4. FEATURES — BENTO GRID
           ════════════════════════════════════════════════════ */}
-      <AmbientSection id="features" tone="light" className="py-24 sm:py-32 scroll-mt-20" density="quiet">
+      <AmbientSection id="features" tone="white" className="py-24 sm:py-32 scroll-mt-20" density="quiet">
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-6 border-brand-green/30 text-brand-green bg-brand-green/5 px-4 py-1">
@@ -738,7 +738,7 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════
           7. FINAL CTA
           ════════════════════════════════════════════════════ */}
-      <AmbientSection className="py-24" tone="light" density="quiet">
+      <AmbientSection className="py-24" tone="white" density="quiet">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Card className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(135deg,rgba(30,215,96,0.14),rgba(245,247,246,0.055)_46%,rgba(5,7,6,0.78))] shadow-[inset_0_1px_0_rgba(245,247,246,0.14),0_32px_110px_rgba(0,0,0,0.42)] backdrop-blur-xl">
             <CardContent className="relative p-12 sm:p-16 text-center">

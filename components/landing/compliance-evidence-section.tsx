@@ -142,7 +142,7 @@ export function ComplianceEvidenceSection() {
         className="absolute inset-0 -z-10 transition-[background,transform] duration-700 ease-out"
         style={{
           background:
-            "radial-gradient(circle at var(--mouse-x,72%) var(--mouse-y,8%), rgba(30,215,96,0.13), transparent 34%), linear-gradient(180deg,#06110C 0%,#07160E 48%,#0D1411 100%)",
+            "radial-gradient(circle at var(--mouse-x,72%) var(--mouse-y,8%), rgba(30,215,96,0.14), transparent 34%), linear-gradient(180deg,#06110C 0%,#082514 44%,#10251A 78%,rgba(245,247,246,0.07) 100%)",
           transform:
             "translate3d(var(--drift-x-px,0px), calc(var(--parallax-y,0px) + var(--drift-y-px,0px)), 0)",
         }}

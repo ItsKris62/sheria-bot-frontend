@@ -1,6 +1,6 @@
 import { type ReactNode } from "react"
 
-type AmbientTone = "dark" | "green" | "light" | "gold"
+type AmbientTone = "dark" | "green" | "light" | "white" | "gold"
 type AmbientDensity = "quiet" | "normal"
 
 const toneStyles: Record<
@@ -9,35 +9,48 @@ const toneStyles: Record<
     base: string
     accent: string
     secondary: string
+    wash: string
     line: string
     gridOpacity: string
   }
 > = {
   dark: {
-    base: "linear-gradient(180deg,#000000 0%,#030705 48%,#06110C 100%)",
-    accent: "rgba(30,215,96,0.10)",
-    secondary: "rgba(15,169,88,0.045)",
+    base: "linear-gradient(180deg,#000000 0%,#020504 42%,#06110C 100%)",
+    accent: "rgba(30,215,96,0.09)",
+    secondary: "rgba(15,169,88,0.05)",
+    wash: "linear-gradient(180deg,rgba(0,0,0,0.45) 0%,transparent 34%,rgba(30,215,96,0.055) 100%)",
     line: "rgba(30,215,96,0.22)",
     gridOpacity: "opacity-[0.09]",
   },
   green: {
-    base: "linear-gradient(180deg,#06110C 0%,#081D12 46%,#0D1411 100%)",
-    accent: "rgba(30,215,96,0.14)",
-    secondary: "rgba(34,197,94,0.075)",
+    base: "linear-gradient(180deg,#06110C 0%,#082514 44%,#0F3A22 74%,#10251A 100%)",
+    accent: "rgba(30,215,96,0.16)",
+    secondary: "rgba(34,197,94,0.09)",
+    wash: "linear-gradient(180deg,rgba(0,0,0,0.12) 0%,rgba(30,215,96,0.055) 48%,rgba(245,247,246,0.035) 100%)",
     line: "rgba(30,215,96,0.28)",
     gridOpacity: "opacity-[0.11]",
   },
   light: {
-    base: "linear-gradient(180deg,#0D1411 0%,#10251A 42%,rgba(245,247,246,0.08) 100%)",
+    base: "linear-gradient(180deg,#10251A 0%,#123622 46%,#173F28 72%,rgba(245,247,246,0.11) 100%)",
     accent: "rgba(245,247,246,0.11)",
-    secondary: "rgba(30,215,96,0.06)",
+    secondary: "rgba(30,215,96,0.07)",
+    wash: "linear-gradient(180deg,rgba(30,215,96,0.04) 0%,rgba(245,247,246,0.055) 64%,rgba(245,247,246,0.10) 100%)",
     line: "rgba(245,247,246,0.20)",
     gridOpacity: "opacity-[0.13]",
   },
+  white: {
+    base: "linear-gradient(180deg,#173F28 0%,#1B4A30 34%,rgba(245,247,246,0.18) 72%,rgba(245,247,246,0.26) 100%)",
+    accent: "rgba(245,247,246,0.16)",
+    secondary: "rgba(30,215,96,0.065)",
+    wash: "linear-gradient(180deg,rgba(16,37,26,0.32) 0%,rgba(245,247,246,0.07) 48%,rgba(245,247,246,0.18) 100%)",
+    line: "rgba(245,247,246,0.24)",
+    gridOpacity: "opacity-[0.12]",
+  },
   gold: {
-    base: "linear-gradient(180deg,#0D1411 0%,#0B100D 46%,#050706 100%)",
+    base: "linear-gradient(180deg,rgba(245,247,246,0.08) 0%,#10251A 22%,#0B100D 58%,#07100C 100%)",
     accent: "rgba(198,161,91,0.12)",
     secondary: "rgba(30,215,96,0.045)",
+    wash: "linear-gradient(180deg,rgba(245,247,246,0.055) 0%,transparent 44%,rgba(198,161,91,0.035) 100%)",
     line: "rgba(198,161,91,0.24)",
     gridOpacity: "opacity-[0.10]",
   },
@@ -58,6 +71,10 @@ function SectionAtmosphere({
       <div
         className="pointer-events-none absolute inset-0 -z-20"
         style={{ background: style.base }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{ background: style.wash }}
       />
       <div
         className={`pointer-events-none absolute inset-0 -z-10 transition-[background,transform,opacity] duration-700 ease-out ${opacity}`}
