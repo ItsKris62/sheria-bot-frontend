@@ -41,7 +41,7 @@ export default function PricingPage() {
     <div className="flex flex-col bg-[#050706]">
       <PricingSection />
 
-      <section className="border-b border-[#1D2925] bg-[#050706] py-20">
+      <section className="relative overflow-hidden border-b border-[#1D2925] bg-[#050706] py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge
@@ -55,7 +55,7 @@ export default function PricingPage() {
             </h2>
           </div>
 
-          <div className="mt-12 overflow-x-auto rounded-3xl border border-[#1D2925] bg-[#080D0B]">
+          <div className="mt-12 overflow-x-auto rounded-[28px] border border-white/[0.08] bg-white/[0.035] shadow-[0_1px_0_rgba(255,255,255,0.06)_inset,0_30px_80px_rgba(0,0,0,0.22)] backdrop-blur-2xl">
             <table className="w-full min-w-[680px]">
               <thead>
                 <tr className="border-b border-[#1D2925]">
@@ -94,7 +94,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="bg-[#050706] py-20">
+      <section className="relative overflow-hidden bg-[#050706] py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge
@@ -115,7 +115,7 @@ export default function PricingPage() {
                 <AccordionItem
                   key={faq.question}
                   value={`item-${index}`}
-                  className="rounded-2xl border border-[#1D2925] bg-[#0D1411] px-5"
+                  className="rounded-[22px] border border-white/[0.08] bg-white/[0.035] px-5 backdrop-blur-xl transition-colors data-[state=open]:border-[#1ED760]/30 data-[state=open]:bg-[#1ED760]/[0.05]"
                 >
                   <AccordionTrigger className="text-left font-semibold text-[#F5F7F6] hover:no-underline">
                     {faq.question}
@@ -130,9 +130,9 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="border-t border-[#1D2925] bg-[#080D0B] py-20">
+      <section className="border-t border-[#1D2925] bg-[#080D0B] py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Card className="overflow-hidden rounded-[28px] border-[#1D2925] bg-[radial-gradient(circle_at_top,rgba(30,215,96,0.12),transparent_42%),linear-gradient(180deg,#101814_0%,#070A09_100%)]">
+          <Card className="relative overflow-hidden rounded-[30px] border-white/[0.1] bg-[radial-gradient(circle_at_top,rgba(30,215,96,0.14),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.02))] shadow-[0_1px_0_rgba(255,255,255,0.08)_inset,0_40px_100px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
             <CardContent className="p-10 text-center sm:p-14">
               <h2 className="text-3xl font-bold text-[#F5F7F6]">
                 Not sure which plan is right?

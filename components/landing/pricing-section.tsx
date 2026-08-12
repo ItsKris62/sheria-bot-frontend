@@ -295,7 +295,7 @@ function PricingCard({
 
   return (
     <article
-      className={`group relative flex h-full w-full max-w-[19rem] flex-col overflow-hidden rounded-[28px] border p-5 transition duration-500 ease-out hover:-translate-y-1 hover:border-[#1ED760]/45 hover:shadow-[0_30px_100px_rgba(0,0,0,0.34)] sm:max-w-none sm:p-9 ${getCardClasses(plan.tone)}`}
+      className={`group relative flex h-full w-full max-w-[19rem] flex-col overflow-hidden rounded-[30px] border p-5 backdrop-blur-2xl transition duration-500 ease-out hover:-translate-y-1 hover:border-[#1ED760]/45 hover:shadow-[0_30px_100px_rgba(0,0,0,0.34)] sm:max-w-none sm:p-9 ${getCardClasses(plan.tone)}`}
     >
       <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       {isBusiness && (
@@ -417,13 +417,13 @@ export function PricingSection({ showEnterpriseReassurance = true }: { showEnter
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#1ED760]">
-            Pricing
+Simple, transparent access
           </p>
           <h2 className="mx-auto mt-6 max-w-[22rem] text-balance text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-[#F5F7F6] sm:max-w-3xl sm:text-5xl lg:text-6xl">
-            Enterprise-Grade Compliance. <span className="block sm:inline">Startup-Friendly Pricing.</span>
+            Choose the level of compliance intelligence <span className="block sm:inline">your team needs.</span>
           </h2>
           <p className="mx-auto mt-6 max-w-[20rem] text-base leading-7 text-[#B8C0BC] sm:max-w-xl sm:text-lg sm:leading-8">
-            Lock in our early-adopter rates during the closed pilot phase.
+            Compare SheriaBot plans and choose the level of regulatory intelligence, compliance tooling, and organizational access that fits your team.
           </p>
 
           <div className="mt-10 flex justify-center">
