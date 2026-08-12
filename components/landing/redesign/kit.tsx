@@ -24,7 +24,6 @@ export function Reveal({
   delay = 0,
   y = 22,
   once = true,
-  as,
   ...rest
 }: {
   children: ReactNode

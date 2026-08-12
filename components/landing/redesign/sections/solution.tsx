@@ -39,7 +39,7 @@ const capabilities = [
 
 export function Solution() {
   return (
-    <SectionShell id="product" className="py-24 sm:py-32" atmosphere="top">
+    <SectionShell id="features" className="py-24 sm:py-32" atmosphere="top">
       <div className="mx-auto max-w-3xl">
         <Reveal>
           <Eyebrow>The SheriaBot solution</Eyebrow>
