@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { PricingSection } from "@/components/landing/pricing-section"
 import { Hero } from "@/components/landing/redesign/sections/hero"
 import { Problem } from "@/components/landing/redesign/sections/problem"
 import { OldWay } from "@/components/landing/redesign/sections/old-way"
@@ -80,9 +79,7 @@ export default function HomePage() {
       <Workflow />
       {/* 14 */}
       <Knowledge />
-      {/* 15 - pricing (preserved from original) */}
-      <PricingSection />
-      {/* 16 */}
+      {/* 15 */}
       <TrustSection />
       {/* 17 */}
       <ComparisonSection />
