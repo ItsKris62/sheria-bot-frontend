@@ -27,20 +27,6 @@ export function Hero() {
             "radial-gradient(1200px 560px at 78% 8%, rgba(34,197,94,0.14), transparent 62%), radial-gradient(900px 500px at 10% 100%, rgba(34,197,94,0.06), transparent 70%)",
         }}
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.12]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
-          maskImage:
-            "radial-gradient(680px 420px at 75% 12%, black, transparent 75%)",
-          WebkitMaskImage:
-            "radial-gradient(680px 420px at 75% 12%, black, transparent 75%)",
-        }}
-      />
-
       <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:px-8">
         {/* Left — narrative */}
         <div>
