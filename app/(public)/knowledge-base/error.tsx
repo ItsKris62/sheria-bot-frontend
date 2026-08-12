@@ -19,7 +19,7 @@ export default function KnowledgeBaseError({
   }, [error]);
 
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-3xl items-center px-4 py-16 sm:px-6 lg:px-8">
+    <div className="mx-auto flex min-h-[60vh] max-w-3xl items-center bg-[#050706] px-4 py-16 sm:px-6 lg:px-8">
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" aria-hidden="true" />
         <AlertTitle>Knowledge Base could not be loaded</AlertTitle>

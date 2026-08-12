@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function KnowledgeBaseLoading() {
   return (
-    <div className="flex flex-col" aria-busy="true" aria-label="Loading Knowledge Base">
+    <div className="flex flex-col bg-[#050706]" aria-busy="true" aria-label="Loading Knowledge Base">
       <section className="border-b border-border bg-background py-14 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl space-y-5 text-center">

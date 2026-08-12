@@ -25,12 +25,12 @@ export function KnowledgeBaseArticleCard({
   return (
     <Link
       href={`/knowledge-base/${article.slug}`}
-      className="group block h-full rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="group block h-full rounded-[22px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1ED760] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050706]"
     >
       <Card
         className={cn(
-          "h-full overflow-hidden border-border/70 bg-card/70 transition-colors hover:border-primary/60",
-          isFeatured && "border-primary/40 bg-primary/5"
+          "h-full overflow-hidden border-white/[0.08] bg-white/[0.035] shadow-[0_1px_0_rgba(255,255,255,0.05)_inset,0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-[#1ED760]/45 hover:bg-white/[0.055]",
+          isFeatured && "border-[#1ED760]/35 bg-[#1ED760]/[0.06] shadow-[0_1px_0_rgba(255,255,255,0.08)_inset,0_30px_90px_rgba(30,215,96,0.08)]"
         )}
       >
         <CardContent className={cn("flex h-full flex-col p-5", isFeatured && "p-6 sm:p-8")}>
@@ -52,7 +52,7 @@ export function KnowledgeBaseArticleCard({
 
           <h3
             className={cn(
-              "mt-4 text-balance font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary",
+              "mt-4 text-balance font-heading font-semibold tracking-tight text-white transition-colors group-hover:text-[#1ED760]",
               isFeatured ? "text-2xl sm:text-3xl" : "text-lg"
             )}
           >

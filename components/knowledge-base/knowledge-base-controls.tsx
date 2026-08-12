@@ -93,7 +93,7 @@ export function KnowledgeBaseControls({
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-5">
+    <div className="rounded-[26px] border border-white/[0.1] bg-white/[0.045] p-4 shadow-[0_1px_0_rgba(255,255,255,0.08)_inset,0_30px_90px_rgba(0,0,0,0.28)] backdrop-blur-2xl sm:p-5">
       <form
         role="search"
         aria-label="Search Knowledge Base articles"
@@ -112,7 +112,7 @@ export function KnowledgeBaseControls({
               name="q"
               defaultValue={query}
               placeholder="Search AML, licensing, data protection..."
-              className="h-11 pl-9"
+              className="h-12 border-white/[0.1] bg-black/20 pl-10 text-white placeholder:text-white/35 focus-visible:border-[#1ED760]/50 focus-visible:ring-[#1ED760]/20"
             />
           </div>
         </div>
@@ -121,7 +121,7 @@ export function KnowledgeBaseControls({
           <Label id="knowledge-base-category-label">Category</Label>
           <Select value={category || "all"} onValueChange={handleCategoryChange}>
             <SelectTrigger
-              className="h-11"
+              className="h-12 border-white/[0.1] bg-black/20 text-white"
               aria-labelledby="knowledge-base-category-label"
             >
               <SelectValue placeholder="All categories" />
@@ -140,7 +140,7 @@ export function KnowledgeBaseControls({
         <div className="space-y-2">
           <Label id="knowledge-base-tag-label">Tag</Label>
           <Select value={tag || "all"} onValueChange={handleTagChange}>
-            <SelectTrigger className="h-11" aria-labelledby="knowledge-base-tag-label">
+            <SelectTrigger className="h-12 border-white/[0.1] bg-black/20 text-white" aria-labelledby="knowledge-base-tag-label">
               <SelectValue placeholder="All tags" />
             </SelectTrigger>
             <SelectContent>

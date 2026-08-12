@@ -197,15 +197,17 @@ export default async function KnowledgeBasePage({
         page={page}
       />
 
-      <section className="border-b border-border bg-background py-14 sm:py-20">
+      <section className="relative overflow-hidden border-b border-white/[0.08] bg-[#050706] py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              Kenyan fintech compliance guidance, ready when you need it
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-[#1ED760]">
+              Regulatory knowledge
+            </p>
+            <h1 className="mt-5 text-balance font-heading text-4xl font-semibold tracking-[-0.04em] text-white sm:text-6xl">
+              Understand the rules behind the decisions.
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-              Search published SheriaBot guidance across licensing, AML, reporting,
-              data protection and regulatory operations.
+            <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-7 text-white/60 sm:text-lg">
+              Explore regulatory updates, practical compliance guidance and evidence-led resources for fintech and regulated businesses across Africa.
             </p>
           </div>
 
@@ -222,7 +224,7 @@ export default async function KnowledgeBasePage({
         </div>
       </section>
 
-      <section className="py-12 sm:py-16">
+      <section className="bg-[#050706] py-14 sm:py-20">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
           <main className="min-w-0 space-y-8" aria-labelledby="knowledge-base-results">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -332,7 +334,7 @@ export default async function KnowledgeBasePage({
           </main>
 
           <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start" aria-label="Knowledge Base resources">
-            <Card className="border-border/70 bg-card/70">
+            <Card className="border-white/[0.08] bg-white/[0.035] shadow-[0_1px_0_rgba(255,255,255,0.06)_inset,0_30px_80px_rgba(0,0,0,0.24)] backdrop-blur-2xl">
               <CardHeader>
                 <CardTitle className="text-lg">Useful resources</CardTitle>
               </CardHeader>
