@@ -2,101 +2,29 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
+import { ArrowRight, CheckCircle2 } from "lucide-react"
 import {
-  ArrowRight,
-  CheckCircle2,
-  FileCheck2,
-  Headphones,
-  LockKeyhole,
-  ShieldCheck,
-} from "lucide-react"
+  PUBLIC_PRICING_PLANS,
+  getAnnualSavings,
+  type PlanConfig,
+} from "@/lib/config/plans"
 
 type BillingCycle = "monthly" | "yearly"
 type PlanTone = "startup" | "business" | "enterprise"
-
 type PriceValue = number | "Custom"
 
-interface PricingPlan {
-  name: string
-  tone: PlanTone
-  label?: string
-  description: string
-  bestFor: string
-  monthlyPrice: PriceValue
-  yearlyPrice: PriceValue
-  features: string[]
-  cta: string
-  href: string
+function getTone(plan: PlanConfig): PlanTone {
+  return plan.id.toLowerCase() as PlanTone
 }
 
-const plans: PricingPlan[] = [
-  {
-    name: "Startup",
-    tone: "startup",
-    description:
-      "For pre-seed and seed fintech teams.",
-    bestFor:
-      "Replacing manual regulatory research with AI-cited answers and basic compliance tracking.",
-    monthlyPrice: 4999,
-    yearlyPrice: 49790,
-    features: [
-      "Basic RAG compliance queries",
-      "Standard compliance checklists",
-      "1 admin seat",
-      "Kenyan regulatory source citations",
-      "Closed pilot access",
-    ],
-    cta: "Start Compliance Trial",
-    href: "/register?plan=startup",
-  },
-  {
-    name: "Business",
-    tone: "business",
-    label: "Most Popular",
-    description:
-      "For Series A and scaling fintech teams.",
-    bestFor:
-      "Teams needing audit-ready workflows, recurring monitoring, and operational compliance visibility.",
-    monthlyPrice: 44999,
-    yearlyPrice: 448190,
-    features: [
-      "Advanced Gap Analysis",
-      "Unlimited checklist generations",
-      "API access",
-      "6 team seats",
-      "Priority compliance workflows",
-    ],
-    cta: "Run Business Compliance Trial",
-    href: "/register?plan=business",
-  },
-  {
-    name: "Enterprise",
-    tone: "enterprise",
-    description:
-      "For banks, PSPs, and regulated institutions.",
-    bestFor:
-      "Organizations requiring institutional-grade compliance operations, custom ingestion, and oversight.",
-    monthlyPrice: "Custom",
-    yearlyPrice: "Custom",
-    features: [
-      "Everything in Business",
-      "On-premise deployment options",
-      "Custom regulatory ingestion",
-      "Dedicated account manager",
-      "Enterprise controls and reporting",
-      "Multi-organization support",
-    ],
-    cta: "Book Enterprise Demo",
-    href: "/contact?subject=enterprise",
-  },
-]
+function getPrice(plan: PlanConfig, cycle: BillingCycle): PriceValue {
+  return cycle === "yearly" ? plan.price.yearly ?? "Custom" : plan.price.monthly ?? "Custom"
+}
 
-const trustSignals = [
-  { icon: LockKeyhole, label: "Secure payments" },
-  { icon: FileCheck2, label: "Audit-ready exports" },
-  { icon: ShieldCheck, label: "Data protection controls" },
-  { icon: Headphones, label: "Dedicated support" },
-]
+function getPlanHref(plan: PlanConfig) {
+  if (plan.cta.type === "contact-sales") return "/contact?subject=enterprise"
+  return `/register?plan=${plan.id.toLowerCase()}`
+}
 
 function usePrefersReducedMotion() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
@@ -201,9 +129,11 @@ function AnimatedPrice({ value }: { value: PriceValue }) {
 function BillingToggle({
   cycle,
   onChange,
+  savings,
 }: {
   cycle: BillingCycle
   onChange: (cycle: BillingCycle) => void
+  savings: string | null
 }) {
   const isYearly = cycle === "yearly"
 
@@ -257,7 +187,7 @@ function BillingToggle({
               : "translate-y-px border-[#26352F] bg-[#101814] text-[#8D9994]"
           }`}
         >
-          Save 17%
+          {savings ?? "Annual"}
         </span>
       </button>
       </div>
@@ -265,8 +195,8 @@ function BillingToggle({
   )
 }
 
-function getPlanPrice(plan: PricingPlan, cycle: BillingCycle) {
-  return cycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice
+function getPlanPrice(plan: PlanConfig, cycle: BillingCycle) {
+  return getPrice(plan, cycle)
 }
 
 function getCardClasses(tone: PlanTone) {
@@ -285,17 +215,18 @@ function PricingCard({
   plan,
   cycle,
 }: {
-  plan: PricingPlan
+  plan: PlanConfig
   cycle: BillingCycle
 }) {
-  const isBusiness = plan.tone === "business"
-  const isEnterprise = plan.tone === "enterprise"
+  const tone = getTone(plan)
+  const isBusiness = tone === "business"
+  const isEnterprise = tone === "enterprise"
   const price = getPlanPrice(plan, cycle)
   const cadence = typeof price === "number" ? (cycle === "yearly" ? "/year" : "/month") : ""
 
   return (
     <article
-      className={`group relative flex h-full w-full max-w-[19rem] flex-col overflow-hidden rounded-[30px] border p-5 backdrop-blur-2xl transition duration-500 ease-out hover:-translate-y-1 hover:border-[#1ED760]/45 hover:shadow-[0_30px_100px_rgba(0,0,0,0.34)] sm:max-w-none sm:p-9 ${getCardClasses(plan.tone)}`}
+      className={`group relative flex h-full w-full max-w-[19rem] flex-col overflow-hidden rounded-[30px] border p-5 backdrop-blur-2xl transition duration-500 ease-out hover:-translate-y-1 hover:border-[#1ED760]/45 hover:shadow-[0_30px_100px_rgba(0,0,0,0.34)] sm:max-w-none sm:p-9 ${getCardClasses(tone)}`}
     >
       <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       {isBusiness && (
@@ -303,9 +234,9 @@ function PricingCard({
       )}
 
       <div className="relative z-10 flex min-h-9 items-start justify-end">
-        {plan.label && (
+        {plan.badge && (
           <span className="rounded-full border border-[#1ED760]/25 bg-[#1ED760]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#1ED760]">
-            {plan.label}
+            {plan.badge}
           </span>
         )}
       </div>
@@ -315,7 +246,7 @@ function PricingCard({
           {plan.name}
         </h3>
         <p className="mt-4 text-[15px] leading-7 text-[#B8C0BC] sm:min-h-[84px]">
-          {plan.description}
+          {plan.tagline}
         </p>
       </div>
 
@@ -335,41 +266,45 @@ function PricingCard({
           )}
         </div>
         <p className="mt-4 text-sm leading-6 text-[#7F8A85]">
-          {cycle === "yearly" && typeof price === "number"
-            ? "Annual billing with two months of runway returned to your budget."
-            : isEnterprise
-              ? "Sales-led pricing for governed rollout, integrations, and oversight."
-              : "Trial included. No credit card required. Cancel anytime."}
+          {typeof price === "number"
+            ? cycle === "yearly"
+              ? "Billed annually."
+              : "Billed monthly."
+            : "Contact sales for a tailored quote."}
+          {plan.trialDays > 0 ? ` ${plan.trialDays}-day free trial.` : ""}
         </p>
       </div>
 
       <div className="relative z-10 mt-7">
-        <p
-          className={`text-xs font-bold uppercase tracking-[0.14em] ${
+          <p
+            className={`text-xs font-bold uppercase tracking-[0.14em] ${
             isEnterprise ? "text-[#D8B76E]" : "text-[#1ED760]"
           }`}
         >
-          Best for
+          Included capabilities
         </p>
-        <p className="mt-3 text-[15px] leading-7 text-[#B8C0BC]">{plan.bestFor}</p>
       </div>
 
       <ul className="relative z-10 mt-8 flex-1 space-y-4">
         {plan.features.map((feature) => (
-          <li key={feature} className="flex gap-3 text-[15px] leading-6 text-[#DDE3E0]">
+          <li key={feature.text} className="flex gap-3 text-[15px] leading-6 text-[#DDE3E0]">
             <CheckCircle2
               className={`mt-0.5 h-4 w-4 shrink-0 ${
-                isEnterprise ? "text-[#D8B76E]" : "text-[#1ED760]"
+                feature.included
+                  ? isEnterprise ? "text-[#D8B76E]" : "text-[#1ED760]"
+                  : "text-[#7F8A85]"
               }`}
               aria-hidden="true"
             />
-            <span>{feature}</span>
+            <span className={feature.included ? "" : "text-[#7F8A85] line-through decoration-[#7F8A85]/50"}>
+              {feature.text}
+            </span>
           </li>
         ))}
       </ul>
 
       <Link
-        href={plan.href}
+        href={getPlanHref(plan)}
         className={`relative z-10 mt-9 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-2xl px-5 py-4 text-center text-sm font-bold transition duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050706] ${
           isBusiness
             ? "bg-[#1ED760] text-[#06110A] shadow-[0_16px_44px_rgba(30,215,96,0.22)] hover:-translate-y-0.5 hover:bg-[#33E875] focus-visible:ring-[#1ED760]"
@@ -378,7 +313,7 @@ function PricingCard({
               : "border border-[#27342F] bg-[#101814] text-[#F5F7F6] hover:-translate-y-0.5 hover:border-[#1ED760]/50 hover:bg-[#122018] focus-visible:ring-[#1ED760]"
         }`}
       >
-        {plan.cta}
+        {plan.cta.type === "none" ? "Included" : plan.cta.label}
         <ArrowRight className="h-4 w-4 transition duration-300 group-hover:translate-x-0.5" />
       </Link>
     </article>
@@ -387,6 +322,7 @@ function PricingCard({
 
 export function PricingSection({ showEnterpriseReassurance = true }: { showEnterpriseReassurance?: boolean }) {
   const [cycle, setCycle] = useState<BillingCycle>("monthly")
+  const annualSavings = getAnnualSavings(PUBLIC_PRICING_PLANS[0])
   const activePriceNarrative = useMemo(
     () =>
       cycle === "yearly"
@@ -417,54 +353,35 @@ export function PricingSection({ showEnterpriseReassurance = true }: { showEnter
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#1ED760]">
-Simple, transparent access
+SHERIABOT PRICING
           </p>
           <h2 className="mx-auto mt-6 max-w-[22rem] text-balance text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-[#F5F7F6] sm:max-w-3xl sm:text-5xl lg:text-6xl">
-            Choose the level of compliance intelligence <span className="block sm:inline">your team needs.</span>
+            Transparent pricing for regulatory intelligence.
           </h2>
           <p className="mx-auto mt-6 max-w-[20rem] text-base leading-7 text-[#B8C0BC] sm:max-w-xl sm:text-lg sm:leading-8">
-            Compare SheriaBot plans and choose the level of regulatory intelligence, compliance tooling, and organizational access that fits your team.
+            Choose the SheriaBot package that fits your organization, compare capabilities, and understand exactly what is included before you subscribe.
           </p>
 
           <div className="mt-10 flex justify-center">
-            <BillingToggle cycle={cycle} onChange={setCycle} />
+            <BillingToggle cycle={cycle} onChange={setCycle} savings={annualSavings} />
           </div>
           <p className="sr-only" aria-live="polite">
             {activePriceNarrative}
           </p>
           <p className="mx-auto mt-4 max-w-[20rem] text-sm leading-6 text-[#7F8A85] sm:max-w-none">
-            Early-adopter pricing. Subject to change after pilot.
+            Annual totals and savings are calculated from the configured plan prices.
           </p>
         </div>
 
         <div className="mt-20 grid justify-items-center gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-7">
-          {plans.map((plan) => (
-            <PricingCard key={plan.name} plan={plan} cycle={cycle} />
+          {PUBLIC_PRICING_PLANS.map((plan) => (
+            <PricingCard key={plan.id} plan={plan} cycle={cycle} />
           ))}
         </div>
 
-        <div className="mt-16 grid gap-3 rounded-[24px] border border-[#1D2925] bg-[#080D0B]/80 p-3 sm:grid-cols-2 lg:grid-cols-4">
-          {trustSignals.map((item) => (
-            <div
-              key={item.label}
-              className="flex items-center gap-3 rounded-2xl px-4 py-4 text-sm font-semibold text-[#B8C0BC]"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1D2925] bg-[#0D1411] text-[#1ED760]">
-                <item.icon className="h-4 w-4" />
-              </span>
-              {item.label}
-            </div>
-          ))}
-        </div>
-
-        {showEnterpriseReassurance && (
-          <div className="mx-auto mt-10 max-w-3xl text-center">
-            <p className="text-sm leading-7 text-[#7F8A85]">
-              Enterprise deployments can include custom onboarding, legal workflow mapping,
-              role-based access controls, and support for internal audit review.
-            </p>
-          </div>
-        )}
+        <p className="mx-auto mt-10 max-w-3xl text-center text-sm leading-7 text-[#7F8A85]">
+          Prices, included capabilities, and limits shown here are based on the current SheriaBot plan configuration.
+        </p>
       </div>
     </section>
   )

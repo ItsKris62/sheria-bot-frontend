@@ -10,29 +10,24 @@ import { PLAN_COMPARISON_ROWS } from "@/lib/config/plans"
 
 const faqs = [
   {
-    question: "What payment methods do you accept?",
-    answer:
-      "We accept M-Pesa, bank transfers, and major credit/debit cards. Enterprise plans can also be invoiced with NET 30 terms.",
-  },
-  {
-    question: "Can I change my plan later?",
-    answer:
-      "Yes. You can upgrade or downgrade from billing settings. Upgrades are prorated, while downgrades take effect at the next billing period.",
+    question: "Can I pay annually?",
+    answer: "Yes. Annual pricing is available for Startup and Business and is shown by the billing selector above.",
   },
   {
     question: "Is there a free trial?",
-    answer:
-      "Yes. Startup and Business plans include a 14-day free trial with no credit card required.",
+    answer: "The current plan configuration includes a 14-day trial for Startup and Business.",
   },
   {
-    question: "What happens to my data if I cancel?",
-    answer:
-      "You can export your data at any time. After cancellation, access continues during the grace period, and retention follows the policy in your account terms.",
+    question: "How many users are included?",
+    answer: "Startup includes 1 seat, Business includes 6 seats, and Enterprise is configured with unlimited seats.",
   },
   {
-    question: "Do you support regulated institutions?",
-    answer:
-      "Yes. Enterprise deployments can include onboarding, governance workflows, audit logs, custom integrations, and dedicated support.",
+    question: "What are the usage limits?",
+    answer: "Limits are shown directly in each plan's included capabilities and in the comparison table, including checklist generations, API calls, seats, and storage.",
+  },
+  {
+    question: "What is included with Enterprise?",
+    answer: "Enterprise includes the Business capabilities plus policy generation, legal corpus management, unlimited API access, custom integrations and SSO, on-premise deployment options, and a 99.9% uptime SLA guarantee.",
   },
 ]
 
