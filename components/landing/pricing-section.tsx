@@ -8,6 +8,7 @@ import {
   getAnnualSavings,
   type PlanConfig,
 } from "@/lib/config/plans"
+import { Eyebrow, Reveal, Stagger, StaggerItem, LiquidGlassCard } from "@/components/landing/redesign/kit"
 
 type BillingCycle = "monthly" | "yearly"
 type PlanTone = "startup" | "business" | "enterprise"
@@ -225,8 +226,8 @@ function PricingCard({
   const cadence = typeof price === "number" ? (cycle === "yearly" ? "/year" : "/month") : ""
 
   return (
-    <article
-      className={`group relative flex h-full w-full max-w-[19rem] flex-col overflow-hidden rounded-[30px] border p-5 backdrop-blur-2xl transition duration-500 ease-out hover:-translate-y-1 hover:border-[#1ED760]/45 hover:shadow-[0_30px_100px_rgba(0,0,0,0.34)] sm:max-w-none sm:p-9 ${getCardClasses(tone)}`}
+    <LiquidGlassCard
+      className={`group relative flex h-full w-full max-w-[19rem] flex-col p-5 transition duration-500 ease-out hover:-translate-y-1 hover:border-[#1ED760]/45 hover:shadow-[0_30px_100px_rgba(0,0,0,0.34)] sm:max-w-none sm:p-9 ${getCardClasses(tone)}`}
     >
       <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       {isBusiness && (
@@ -316,7 +317,7 @@ function PricingCard({
         {plan.cta.type === "none" ? "Included" : plan.cta.label}
         <ArrowRight className="h-4 w-4 transition duration-300 group-hover:translate-x-0.5" />
       </Link>
-    </article>
+    </LiquidGlassCard>
   )
 }
 
@@ -351,33 +352,43 @@ export function PricingSection({ showEnterpriseReassurance = true }: { showEnter
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#1ED760]/35 to-transparent" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#1ED760]">
-SHERIABOT PRICING
-          </p>
-          <h2 className="mx-auto mt-6 max-w-[22rem] text-balance text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-[#F5F7F6] sm:max-w-3xl sm:text-5xl lg:text-6xl">
-            Transparent pricing for regulatory intelligence.
-          </h2>
-          <p className="mx-auto mt-6 max-w-[20rem] text-base leading-7 text-[#B8C0BC] sm:max-w-xl sm:text-lg sm:leading-8">
-            Choose the SheriaBot package that fits your organization, compare capabilities, and understand exactly what is included before you subscribe.
-          </p>
+        <div className="mx-auto max-w-3xl text-center flex flex-col items-center">
+          <Reveal>
+            <Eyebrow>SHERIABOT PRICING</Eyebrow>
+          </Reveal>
+          <Reveal delay={0.06}>
+            <h2 className="mx-auto mt-6 font-heading text-balance text-4xl font-semibold leading-[1.04] tracking-tight text-foreground sm:max-w-3xl sm:text-5xl lg:text-6xl">
+              Transparent pricing for regulatory intelligence.
+            </h2>
+          </Reveal>
+          <Reveal delay={0.12}>
+            <p className="mx-auto mt-6 max-w-[20rem] text-lg leading-relaxed text-foreground-muted sm:max-w-xl">
+              Choose the SheriaBot package that fits your organization, compare capabilities, and understand exactly what is included before you subscribe.
+            </p>
+          </Reveal>
 
-          <div className="mt-10 flex justify-center">
-            <BillingToggle cycle={cycle} onChange={setCycle} savings={annualSavings} />
+          <Reveal delay={0.18}>
+            <div className="mt-10 flex justify-center">
+              <BillingToggle cycle={cycle} onChange={setCycle} savings={annualSavings} />
+            </div>
+            <p className="sr-only" aria-live="polite">
+              {activePriceNarrative}
+            </p>
+            <p className="mx-auto mt-4 max-w-[20rem] text-sm leading-6 text-[#7F8A85] sm:max-w-none">
+              Annual totals and savings are calculated from the configured plan prices.
+            </p>
+          </Reveal>
+        </div>
+
+        <Stagger delayChildren={0.25} stagger={0.15}>
+          <div className="mt-20 grid justify-items-center gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-7">
+            {PUBLIC_PRICING_PLANS.map((plan) => (
+              <StaggerItem key={plan.id} className="w-full flex">
+                <PricingCard plan={plan} cycle={cycle} />
+              </StaggerItem>
+            ))}
           </div>
-          <p className="sr-only" aria-live="polite">
-            {activePriceNarrative}
-          </p>
-          <p className="mx-auto mt-4 max-w-[20rem] text-sm leading-6 text-[#7F8A85] sm:max-w-none">
-            Annual totals and savings are calculated from the configured plan prices.
-          </p>
-        </div>
-
-        <div className="mt-20 grid justify-items-center gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-7">
-          {PUBLIC_PRICING_PLANS.map((plan) => (
-            <PricingCard key={plan.id} plan={plan} cycle={cycle} />
-          ))}
-        </div>
+        </Stagger>
 
         <p className="mx-auto mt-10 max-w-3xl text-center text-sm leading-7 text-[#7F8A85]">
           Prices, included capabilities, and limits shown here are based on the current SheriaBot plan configuration.
