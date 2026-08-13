@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useSyncExternalStore } from "react"
+import { useState, useEffect, useSyncExternalStore, type MouseEvent } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -124,10 +124,11 @@ export function Header() {
     }
   }, [isHome])
 
-  const handleNavClick = (item: NavItem) => {
+  const handleNavClick = (event: MouseEvent<HTMLAnchorElement>, item: NavItem) => {
     if (item.sectionId && isHome) {
       const el = document.getElementById(item.sectionId)
       if (el) {
+        event.preventDefault()
         el.scrollIntoView({ behavior: "smooth", block: "start" })
       }
     }
@@ -208,10 +209,10 @@ export function Header() {
             }
 
             return (
-              <button
+              <Link
                 key={item.name}
-                type="button"
-                onClick={() => handleNavClick(item)}
+                href={item.href}
+                onClick={(event) => handleNavClick(event, item)}
                 className={cn(
                   "relative px-3 py-2 text-sm font-medium rounded-xl transition-all duration-300 outline-none",
                   isActive
@@ -219,11 +220,7 @@ export function Header() {
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                {item.sectionId && isHome ? (
-                  <span>{item.name}</span>
-                ) : (
-                  <Link href={item.href}>{item.name}</Link>
-                )}
+                {item.name}
 
                 {/* Active indicator pill */}
                 <span
@@ -232,7 +229,7 @@ export function Header() {
                     isActive ? "w-5 opacity-100" : "w-0 opacity-0"
                   )}
                 />
-              </button>
+              </Link>
             )
           })}
         </div>
