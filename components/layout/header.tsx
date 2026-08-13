@@ -76,6 +76,7 @@ export function Header() {
   )
   const [activeSection, setActiveSection] = useState("")
   const pathname = usePathname()
+  // Keep navigation markup identical during SSR and hydration; section scrolling is handled only on click.
   const isHome = pathname === "/"
 
   const { user, isAuthenticated, isInitialized } = useAuthStore()
