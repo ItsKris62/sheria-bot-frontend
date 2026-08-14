@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 type Cell = "yes" | "no" | "partial"
 
-const COLUMNS = ["Sheria", "General AI chatbots", "Manual research"]
+const COLUMNS = ["SheriaBot", "General AI chatbots", "Manual research"]
 
 const ROWS: { label: string; cells: [Cell, Cell, Cell] }[] = [
   { label: "Answers cited to primary African regulation", cells: ["yes", "no", "yes"] },

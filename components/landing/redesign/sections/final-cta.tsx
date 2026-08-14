@@ -64,7 +64,7 @@ export function FinalCta() {
 
         <Reveal delay={0.22}>
           <p className="mt-6 text-xs text-white/40">
-            No card required · Kenya, Nigeria &amp; South Africa live · SOC 2-aligned controls
+            No card required · Kenya, Nigeria &amp; Rwanda live · SOC 2-aligned controls
           </p>
         </Reveal>
       </div>

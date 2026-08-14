@@ -58,7 +58,7 @@ export function Problem() {
             <p className="mt-6 max-w-md text-lg leading-relaxed text-foreground-muted">
               Regulatory obligations are scattered across legislation,
               regulations, circulars, guidelines, notices and regulator
-              websites — rarely in the order a team actually needs them.
+              websites rarely in the order a team actually needs them.
             </p>
           </Reveal>
           <Reveal delay={0.18}>
