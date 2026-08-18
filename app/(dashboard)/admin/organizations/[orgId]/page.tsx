@@ -103,6 +103,11 @@ function formatDate(value: string | Date | null | undefined, withLongMonth = fal
   })
 }
 
+function maskMpesaPhone(value: string | null | undefined) {
+  if (!value) return "-"
+  return `**** ${value.slice(-4)}`
+}
+
 export default function OrgDetailPage() {
   const params = useParams()
   const orgId = params.orgId as string
@@ -212,6 +217,16 @@ export default function OrgDetailPage() {
   const isSuspended =
     org.subscriptionStatus === "SUSPENDED" ||
     org.subscriptionStatus === "CANCELLED"
+  const billingOrg = org as typeof org & {
+    preferredPaymentMethod?: string | null
+    mpesaPhoneNumber?: string | null
+    mpesaNextPaymentDueDate?: string | Date | null
+    subscriptionCycleEnd?: string | Date | null
+    mpesaFailedRenewalAttempts?: number
+    mpesaLastRenewalAttemptAt?: string | Date | null
+    mpesaNextRenewalRetryAt?: string | Date | null
+    mpesaCancelledByUserAt?: string | Date | null
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -552,6 +567,42 @@ export default function OrgDetailPage() {
               <div className="flex items-start justify-between gap-3">
                 <span className="text-muted-foreground">Cancelled at</span>
                 <span className="text-right text-foreground">{formatDate(org.cancelledAt)}</span>
+              </div>
+              <div className="border-t border-border/60 pt-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground">Payment method</span>
+                  <span className="text-right text-foreground">
+                    {billingOrg.preferredPaymentMethod === "MPESA" ? "M-Pesa via IntaSend" : billingOrg.preferredPaymentMethod ?? "-"}
+                  </span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground">M-Pesa number</span>
+                  <span className="text-right text-foreground">{maskMpesaPhone(billingOrg.mpesaPhoneNumber)}</span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground">Cycle ends</span>
+                  <span className="text-right text-foreground">{formatDate(billingOrg.subscriptionCycleEnd)}</span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground">Next payment due</span>
+                  <span className="text-right text-foreground">{formatDate(billingOrg.mpesaNextPaymentDueDate)}</span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground">Failed renewals</span>
+                  <span className="text-right text-foreground">{billingOrg.mpesaFailedRenewalAttempts ?? 0}</span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground">Last renewal attempt</span>
+                  <span className="text-right text-foreground">{formatDate(billingOrg.mpesaLastRenewalAttemptAt)}</span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground">Next retry</span>
+                  <span className="text-right text-foreground">{formatDate(billingOrg.mpesaNextRenewalRetryAt)}</span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-muted-foreground">Wallet cancelled</span>
+                  <span className="text-right text-foreground">{formatDate(billingOrg.mpesaCancelledByUserAt)}</span>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -125,6 +125,10 @@ export interface PlanBilling {
   preferredPaymentMethod: "STRIPE" | "MPESA" | null;
   mpesaNextPaymentDueDate: string | null; // ISO-8601
   subscriptionCycleEnd:    string | null; // ISO-8601, mirrors mpesaNextPaymentDueDate
+  mpesaPhoneNumber:        string | null;
+  activePaymentProvider:   "INTASEND" | "STRIPE";
+  stripeEnabled:           boolean;
+  catalogPrice: Record<"STARTUP" | "BUSINESS", { monthly: number; yearly: number; currency: "KES" }>;
 }
 
 export interface PlanData {

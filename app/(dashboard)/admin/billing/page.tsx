@@ -236,6 +236,30 @@ export default function AdminBillingPage() {
   const [planEditsOverride, setPlanEditsOverride] = useState<PlanEdit[] | null>(null)
   const planEdits = planEditsOverride ?? catalogPlanEdits
   const [catalogDirty, setCatalogDirty] = useState(false)
+  const [opsAction, setOpsAction] = useState<{ type: "reconcile" | "expire"; paymentId: string } | null>(null)
+  const [opsReason, setOpsReason] = useState("")
+
+  const reconcileMutation = trpc.admin.reconcileIntaSendPayment.useMutation({
+    onSuccess: () => {
+      toast.success("Payment reconciled against IntaSend")
+      setOpsAction(null)
+      setOpsReason("")
+      void utils.admin.getBillingOperationsSummary.invalidate()
+      void utils.admin.getRecentPayments.invalidate()
+    },
+    onError: (err: unknown) => toast.error(getErrorMessage(err)),
+  })
+
+  const expireMutation = trpc.admin.expireIntaSendPayment.useMutation({
+    onSuccess: () => {
+      toast.success("Expiry request completed")
+      setOpsAction(null)
+      setOpsReason("")
+      void utils.admin.getBillingOperationsSummary.invalidate()
+      void utils.admin.getRecentPayments.invalidate()
+    },
+    onError: (err: unknown) => toast.error(getErrorMessage(err)),
+  })
 
   function updatePlanEdit(planId: string, changes: Partial<PlanEdit>) {
     setPlanEditsOverride((prev) => (prev ?? catalogPlanEdits).map((e) => (e.id === planId ? { ...e, ...changes } : e)))
@@ -265,7 +289,23 @@ export default function AdminBillingPage() {
     }
   }
 
+  function submitOpsAction() {
+    if (!opsAction) return
+    if (opsReason.trim().length < 8) {
+      toast.error("Enter a reason with at least 8 characters.")
+      return
+    }
+    const payload = { paymentId: opsAction.paymentId, reason: opsReason.trim() }
+    if (opsAction.type === "reconcile") {
+      reconcileMutation.mutate(payload)
+    } else {
+      expireMutation.mutate(payload)
+    }
+  }
+
   const kpiLoading = revLoading || subLoading
+  const pendingIntaSendPayments = opsSummary?.pendingIntaSendPayments ?? []
+  const opsBusy = reconcileMutation.isPending || expireMutation.isPending
 
   return (
     <div className="p-6 space-y-6">
@@ -753,6 +793,96 @@ export default function AdminBillingPage() {
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Pending IntaSend Payments</CardTitle>
+              <CardDescription>Stale pending payments eligible for provider-backed operations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {opsLoading ? (
+                <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded" />)}</div>
+              ) : pendingIntaSendPayments.length === 0 ? (
+                <div className="text-center py-6 text-gray-400">
+                  <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-green-400 opacity-80" />
+                  <p className="text-sm font-medium">No stale pending IntaSend payments</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs text-muted-foreground">
+                        <th className="px-3 py-2 font-medium">Organization</th>
+                        <th className="px-3 py-2 font-medium">Invoice</th>
+                        <th className="px-3 py-2 font-medium">Provider Tx</th>
+                        <th className="px-3 py-2 font-medium">Phone</th>
+                        <th className="px-3 py-2 font-medium">Amount</th>
+                        <th className="px-3 py-2 font-medium">Age</th>
+                        <th className="px-3 py-2 font-medium text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingIntaSendPayments.map((payment) => (
+                        <tr key={payment.id} className="border-b last:border-0">
+                          <td className="px-3 py-3 font-medium">{payment.orgName}</td>
+                          <td className="px-3 py-3 font-mono text-xs">{payment.invoiceNumber ?? payment.id.slice(0, 8)}</td>
+                          <td className="px-3 py-3 font-mono text-xs">{payment.providerTransactionId ?? "Missing"}</td>
+                          <td className="px-3 py-3">{payment.maskedPhone ?? "Not saved"}</td>
+                          <td className="px-3 py-3">{formatKES(payment.amount)}</td>
+                          <td className="px-3 py-3">{payment.ageMinutes}m</td>
+                          <td className="px-3 py-3">
+                            <div className="flex justify-end gap-2">
+                              <Button size="sm" variant="outline" onClick={() => setOpsAction({ type: "reconcile", paymentId: payment.id })}>
+                                Reconcile
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setOpsAction({ type: "expire", paymentId: payment.id })}>
+                                Expire
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {opsAction && (
+            <Card className="border-amber-500/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">
+                  {opsAction.type === "reconcile" ? "Reconcile IntaSend Payment" : "Expire IntaSend Payment"}
+                </CardTitle>
+                <CardDescription>
+                  {opsAction.type === "reconcile"
+                    ? "The backend will query IntaSend and apply provider truth."
+                    : "Expiry is allowed only after IntaSend confirms the payment is still pending."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="billing-ops-reason">Reason</Label>
+                  <Input
+                    id="billing-ops-reason"
+                    value={opsReason}
+                    onChange={(event) => setOpsReason(event.target.value)}
+                    placeholder="e.g. Support ticket SB-123 reconciliation"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => { setOpsAction(null); setOpsReason("") }} disabled={opsBusy}>
+                    Cancel
+                  </Button>
+                  <Button onClick={submitOpsAction} disabled={opsBusy}>
+                    {opsBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Confirm
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
             <Card>

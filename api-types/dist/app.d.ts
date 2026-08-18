@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyServerOptions } from 'fastify';
 type TrustProxyValue = NonNullable<FastifyServerOptions['trustProxy']>;
-export declare function parseTrustProxy(rawValue: string | undefined): TrustProxyValue;
+export declare function parseTrustProxy(rawValue: string | undefined, rawHopValue?: string | undefined): TrustProxyValue;
 /**
  * Build and configure the Fastify application.
  *

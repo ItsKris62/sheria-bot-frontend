@@ -10,6 +10,10 @@ declare const envSchema: z.ZodObject<{
         production: "production";
         test: "test";
     }>>;
+    APP_RUNTIME_MODE: z.ZodDefault<z.ZodEnum<{
+        standard: "standard";
+        preview: "preview";
+    }>>;
     PORT: z.ZodPipe<z.ZodPipe<z.ZodDefault<z.ZodString>, z.ZodTransform<number, string>>, z.ZodNumber>;
     APP_URL: z.ZodString;
     FRONTEND_URL: z.ZodString;
@@ -20,6 +24,12 @@ declare const envSchema: z.ZodObject<{
         fatal: "fatal";
         warn: "warn";
         trace: "trace";
+    }>>;
+    DATABASE_ENVIRONMENT: z.ZodDefault<z.ZodEnum<{
+        unknown: "unknown";
+        production: "production";
+        preview: "preview";
+        "development-uat": "development-uat";
     }>>;
     DATABASE_URL: z.ZodString;
     DIRECT_URL: z.ZodOptional<z.ZodString>;
@@ -50,6 +60,10 @@ declare const envSchema: z.ZodObject<{
     CLAMAV_PORT: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
     CLAMAV_TIMEOUT_MS: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
     AGENTS_ENABLED: z.ZodDefault<z.ZodCoercedBoolean<unknown>>;
+    DISABLE_BACKGROUND_WORKERS: z.ZodDefault<z.ZodCoercedBoolean<unknown>>;
+    DISABLE_SCHEDULED_JOBS: z.ZodDefault<z.ZodCoercedBoolean<unknown>>;
+    DISABLE_OUTBOUND_EMAIL: z.ZodDefault<z.ZodCoercedBoolean<unknown>>;
+    DISABLE_N8N_AUTOMATION: z.ZodDefault<z.ZodCoercedBoolean<unknown>>;
     AGENT_MAX_COST_PER_RUN_USD: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
     AGENT_MAX_COST_PER_DAY_USD: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
     AGENT_MAX_ITERATIONS_PER_RUN: z.ZodDefault<z.ZodCoercedNumber<unknown>>;

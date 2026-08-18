@@ -2,33 +2,22 @@
  * IntaSend Webhook Service
  *
  * Handles POST events from IntaSend at /api/webhooks/intasend.
- *
- * Security:
- *   IntaSend does not sign webhook payloads with HMAC. On every webhook
- *   receipt we re-call intaSendService.getPaymentStatus(invoice_id) to
- *   confirm the reported state from IntaSend's API before acting on it.
- *
- * Idempotency:
- *   All handlers guard against duplicate delivery using the Payment record's
- *   providerTransactionId (= IntaSend invoice_id) dedup check in
- *   paymentService.createPaymentRecord().
- *
- * Handled events (IntaSend state field):
- *   COMPLETE  -> activate subscription, generate invoice, send receipt email
- *   FAILED    -> mark payment FAILED, send failure email
- *   PENDING   -> upsert payment record as PENDING (no further action)
+ * Webhooks verify the shared challenge in the Fastify route, then this service
+ * re-checks the referenced invoice directly with IntaSend before mutating local
+ * finance records.
  */
 import { type IntaSendWebhookPayload } from '@/modules/intasend/intasend.types';
+export type IntaSendWebhookOperationalEvent = 'WEBHOOK_RECEIVED' | 'WEBHOOK_ACCEPTED' | 'WEBHOOK_REJECTED_IP' | 'WEBHOOK_REJECTED_CHALLENGE' | 'WEBHOOK_INVALID_PAYLOAD' | 'WEBHOOK_UNKNOWN_TRANSACTION' | 'WEBHOOK_PROVIDER_LOOKUP_FAILED' | 'WEBHOOK_FINALIZATION_SUCCEEDED' | 'WEBHOOK_FINALIZATION_FAILED';
 declare class IntaSendWebhookService {
-    /**
-     * Main entry point. Called by the Fastify /api/webhooks/intasend route.
-     *
-     * Verification: re-calls IntaSend status API to confirm state before acting.
-     */
+    recordOperationalEvent(input: {
+        event: IntaSendWebhookOperationalEvent;
+        providerTransactionId?: string | null;
+        paymentId?: string | null;
+        reasonCode?: string | null;
+        requestId?: string | null;
+        ipHash?: string | null;
+    }): Promise<void>;
     handleEvent(rawPayload: IntaSendWebhookPayload): Promise<void>;
-    private handleComplete;
-    private handleFailed;
-    private handlePending;
 }
 export declare const intaSendWebhookService: IntaSendWebhookService;
 export { IntaSendWebhookService };

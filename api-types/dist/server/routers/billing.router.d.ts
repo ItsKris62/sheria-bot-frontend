@@ -65,11 +65,14 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
                 preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
                 mpesaNextPaymentDueDate: string | null;
                 subscriptionCycleEnd: string | null;
+                mpesaPhoneNumber: string | null;
                 catalogPrice: Record<"STARTUP" | "BUSINESS", {
                     monthly: number;
                     yearly: number;
                     currency: "KES";
                 }>;
+                activePaymentProvider: "INTASEND" | "STRIPE";
+                stripeEnabled: boolean;
             };
             trial: import("@/modules/trial").TrialStatus | null;
             effectivePlanSource: import("../../types/plan.types").EffectivePlanSource;
@@ -182,6 +185,7 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             plan: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
             phoneNumber?: string | undefined;
+            paymentPurpose?: "INITIAL_PURCHASE" | "RENEWAL" | undefined;
         };
         output: {
             paymentId: string;

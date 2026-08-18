@@ -10,6 +10,7 @@
  * are silently ignored (upsert semantics via `createOrUpdate` guard).
  */
 import { PaymentProvider, PaymentStatus } from '@prisma/client';
+import type { PaymentPurpose } from '@prisma/client';
 export interface CreatePaymentInput {
     orgId: string;
     subscriptionId?: string;
@@ -18,6 +19,7 @@ export interface CreatePaymentInput {
     amount: number;
     currency?: string;
     status: PaymentStatus;
+    paymentPurpose?: PaymentPurpose;
     description?: string;
     paidAt?: Date;
     metadata?: Record<string, unknown>;
@@ -53,6 +55,7 @@ declare class PaymentService {
         subscriptionId: string | null;
         provider: import(".prisma/client").$Enums.PaymentProvider;
         providerTransactionId: string | null;
+        paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
         invoiceNumber: string | null;
         subscriptionPlan: string | null;
         billingPeriodStart: Date | null;
@@ -77,6 +80,7 @@ declare class PaymentService {
             subscriptionId: string | null;
             provider: import(".prisma/client").$Enums.PaymentProvider;
             providerTransactionId: string | null;
+            paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
             invoiceNumber: string | null;
             subscriptionPlan: string | null;
             billingPeriodStart: Date | null;
@@ -105,6 +109,7 @@ declare class PaymentService {
         subscriptionId: string | null;
         provider: import(".prisma/client").$Enums.PaymentProvider;
         providerTransactionId: string | null;
+        paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
         invoiceNumber: string | null;
         subscriptionPlan: string | null;
         billingPeriodStart: Date | null;
@@ -138,6 +143,7 @@ declare class PaymentService {
         subscriptionId: string | null;
         provider: import(".prisma/client").$Enums.PaymentProvider;
         providerTransactionId: string | null;
+        paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
         invoiceNumber: string | null;
         subscriptionPlan: string | null;
         billingPeriodStart: Date | null;

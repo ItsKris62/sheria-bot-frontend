@@ -29,10 +29,11 @@ import { toast } from "sonner"
 type FlowState = "initiate" | "waiting" | "success" | "failed" | "timeout"
 
 type Plan = "STARTUP" | "BUSINESS"
+type PaymentPurpose = "INITIAL_PURCHASE" | "RENEWAL"
 
-const PLAN_PRICES: Record<Plan, { kes: number; label: string }> = {
-  STARTUP:  { kes: 4999, label: "Startup" },
-  BUSINESS: { kes: 44999, label: "Business" },
+const PLAN_LABELS: Record<Plan, string> = {
+  STARTUP: "Startup",
+  BUSINESS: "Business",
 }
 
 const POLL_INTERVAL_MS  = 5000   // 5 seconds
@@ -83,12 +84,14 @@ function useCountdown(seconds: number, active: boolean) {
 
 interface MpesaPaymentFlowProps {
   plan:              Plan
+  planPriceKes?:     number | null
+  paymentPurpose?:   PaymentPurpose
   storedPhone?:      string | null
   onClose:           () => void
   onSuccess?:        () => void
 }
 
-export function MpesaPaymentFlow({ plan, storedPhone, onClose, onSuccess }: MpesaPaymentFlowProps) {
+export function MpesaPaymentFlow({ plan, planPriceKes, paymentPurpose = "INITIAL_PURCHASE", storedPhone, onClose, onSuccess }: MpesaPaymentFlowProps) {
   const [flowState,  setFlowState]  = useState<FlowState>("initiate")
   const [phoneInput, setPhoneInput] = useState(
     storedPhone ? formatPhoneDisplay(storedPhone) : ""
@@ -173,7 +176,7 @@ export function MpesaPaymentFlow({ plan, storedPhone, onClose, onSuccess }: Mpes
       return
     }
 
-    initiateMutation.mutate({ plan, phoneNumber: normalised })
+    initiateMutation.mutate({ plan, phoneNumber: normalised, paymentPurpose })
   }
 
   function handleRetry() {
@@ -183,7 +186,12 @@ export function MpesaPaymentFlow({ plan, storedPhone, onClose, onSuccess }: Mpes
     timedOutRef.current = false
   }
 
-  const planInfo = PLAN_PRICES[plan]
+  const planInfo = {
+    label: PLAN_LABELS[plan],
+    kes: planPriceKes ?? 0,
+  }
+  const hasPrice = typeof planPriceKes === "number" && planPriceKes > 0
+  const isRenewal = paymentPurpose === "RENEWAL"
 
   // ── UI ────────────────────────────────────────────────────────────────────
 
@@ -212,8 +220,8 @@ export function MpesaPaymentFlow({ plan, storedPhone, onClose, onSuccess }: Mpes
                   <Smartphone className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Pay with M-Pesa</h3>
-                  <p className="text-xs text-muted-foreground">Safaricom mobile money</p>
+                  <h3 className="font-semibold text-foreground">{isRenewal ? "Renew with M-Pesa" : "Pay with M-Pesa"}</h3>
+                  <p className="text-xs text-muted-foreground">Customer-confirmed Safaricom mobile money</p>
                 </div>
               </div>
 
@@ -222,11 +230,11 @@ export function MpesaPaymentFlow({ plan, storedPhone, onClose, onSuccess }: Mpes
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-foreground">{planInfo.label} Plan</p>
-                    <p className="text-xs text-muted-foreground">Monthly subscription</p>
+                    <p className="text-xs text-muted-foreground">{isRenewal ? "Monthly renewal" : "Monthly subscription"}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-bold text-foreground">
-                      KES {planInfo.kes.toLocaleString("en-KE")}
+                      {hasPrice ? `KES ${planInfo.kes.toLocaleString("en-KE")}` : "Current price"}
                     </p>
                     <p className="text-xs text-muted-foreground">per month</p>
                   </div>
@@ -270,7 +278,7 @@ export function MpesaPaymentFlow({ plan, storedPhone, onClose, onSuccess }: Mpes
                 ) : (
                   <>
                     <Smartphone className="mr-2 h-4 w-4" />
-                    Pay KES {planInfo.kes.toLocaleString("en-KE")}
+                    {hasPrice ? `${isRenewal ? "Renew" : "Pay"} KES ${planInfo.kes.toLocaleString("en-KE")}` : "Continue to M-Pesa"}
                   </>
                 )}
               </Button>
@@ -339,7 +347,7 @@ export function MpesaPaymentFlow({ plan, storedPhone, onClose, onSuccess }: Mpes
               <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm">
                 <p className="font-medium text-foreground">{planInfo.label} Plan</p>
                 <p className="text-muted-foreground mt-0.5">
-                  KES {planInfo.kes.toLocaleString("en-KE")} — active for 30 days
+                  {hasPrice ? `KES ${planInfo.kes.toLocaleString("en-KE")} - ` : ""}active for 30 days
                 </p>
               </div>
 

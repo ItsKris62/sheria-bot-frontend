@@ -24,6 +24,8 @@ export declare function isStrongIntaSendWebhookChallenge(value: string | undefin
  * authenticity" section.
  */
 export declare function verifyIntaSendWebhook(input: WebhookVerifyInput): WebhookVerifyResult;
-export declare function isAllowedIntaSendIp(req: FastifyRequest, allowedIps: readonly string[]): boolean;
+export declare function isAllowedIntaSendIp(req: FastifyRequest, allowedIps: readonly string[], trustedProxyHops?: number): boolean;
 export declare function parseAllowedIps(csv: string): string[];
+export declare function parseTrustedProxyHops(rawValue: string | undefined): number;
+export declare function getIntaSendWebhookClientIp(req: FastifyRequest, trustedProxyHops?: number): string;
 //# sourceMappingURL=webhook-verifier.d.ts.map

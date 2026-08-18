@@ -82,6 +82,8 @@ interface PaymentRecord {
 
 type PaymentMethodProvider = "STRIPE" | "MPESA"
 type MpesaPlan = "STARTUP" | "BUSINESS"
+type MpesaPaymentPurpose = "INITIAL_PURCHASE" | "RENEWAL"
+type MpesaFlowState = { plan: MpesaPlan; paymentPurpose: MpesaPaymentPurpose }
 
 interface EnterpriseFormState {
   name: string;
@@ -331,7 +333,7 @@ export default function BillingSettingsPage() {
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null)
 
   // M-Pesa payment flow state
-  const [mpesaFlowPlan, setMpesaFlowPlan] = useState<MpesaPlan | null>(null)
+  const [mpesaFlow, setMpesaFlow] = useState<MpesaFlowState | null>(null)
 
   // Payment method selector state
   const [selectedProvider, setSelectedProvider] = useState<PaymentMethodProvider | null>(null)
@@ -374,13 +376,25 @@ export default function BillingSettingsPage() {
     { staleTime: 5 * 60 * 1000 },
   )
 
-  function startCheckout(selectedPlan: "STARTUP" | "BUSINESS") {
+  function startCheckout(selectedPlan: "STARTUP" | "BUSINESS", paymentPurpose: MpesaPaymentPurpose = "INITIAL_PURCHASE") {
     trackEvent("upgrade_clicked", { target_plan: selectedPlan })
+    const activeProvider = billing?.activePaymentProvider ?? "INTASEND"
+    const stripeEnabled = billing?.stripeEnabled ?? false
+    if (activeProvider === "INTASEND" || !stripeEnabled) {
+      setMpesaFlow({ plan: selectedPlan, paymentPurpose })
+      return
+    }
     const input: CheckoutInput = { plan: selectedPlan }
     checkoutMutation.mutate(input)
   }
 
   function openPortal() {
+    const activeProvider = billing?.activePaymentProvider ?? "INTASEND"
+    const stripeEnabled = billing?.stripeEnabled ?? false
+    if (activeProvider !== "STRIPE" || !stripeEnabled) {
+      router.push("/settings/billing")
+      return
+    }
     portalMutation.mutate()
   }
 
@@ -390,7 +404,10 @@ export default function BillingSettingsPage() {
   const status = billing?.subscriptionStatus ?? null
   const trialDays = daysUntil(billing?.trialEndsAt ?? null)
   const graceDays = daysUntil(billing?.gracePeriodEndsAt ?? null)
-  const isManagedByStripe = billing?.stripeCustomerId != null
+  const activePaymentProvider = billing?.activePaymentProvider ?? "INTASEND"
+  const stripeEnabled = billing?.stripeEnabled ?? false
+  const isStripeProviderActive = activePaymentProvider === "STRIPE" && stripeEnabled
+  const isManagedByStripe = isStripeProviderActive && billing?.stripeCustomerId != null
   const isRegulator = currentPlanId === "REGULATOR"
   const isEnterprise = !isPilotAccess && currentPlanId === "ENTERPRISE"
   const isPastDue = status === "PAST_DUE"
@@ -400,6 +417,7 @@ export default function BillingSettingsPage() {
   const isActive = status === "ACTIVE"
   const currentPlanIndex = PLAN_ORDER.indexOf(currentPlanId)
   const displayPlanName = isPilotAccess ? "Pilot Access" : PLANS[currentPlanId].name
+  const mpesaPriceForPlan = (selectedPlan: MpesaPlan) => billing?.catalogPrice?.[selectedPlan]?.monthly ?? null
 
   return (
     <div className="space-y-8">
@@ -432,9 +450,15 @@ export default function BillingSettingsPage() {
               Your last payment failed. Please update your payment method to avoid service interruption.
             </p>
           </div>
-          <LoadingButton size="sm" variant="outline" className="ml-auto shrink-0" onClick={openPortal} loading={portalMutation.isPending} loadingText="Opening...">
-            Update Payment
-          </LoadingButton>
+          {isManagedByStripe ? (
+            <LoadingButton size="sm" variant="outline" className="ml-auto shrink-0" onClick={openPortal} loading={portalMutation.isPending} loadingText="Opening...">
+              Update Payment
+            </LoadingButton>
+          ) : (
+            <LoadingButton size="sm" variant="outline" className="ml-auto shrink-0" onClick={() => startCheckout(currentPlanId === "BUSINESS" ? "BUSINESS" : "STARTUP", "RENEWAL")} loading={checkoutMutation.isPending} loadingText="Opening...">
+              Pay renewal
+            </LoadingButton>
+          )}
         </div>
       )}
 
@@ -454,7 +478,7 @@ export default function BillingSettingsPage() {
             <LoadingButton
               size="sm"
               className="ml-auto shrink-0"
-              onClick={() => startCheckout(currentPlanId === "BUSINESS" ? "BUSINESS" : "STARTUP")}
+              onClick={() => startCheckout(currentPlanId === "BUSINESS" ? "BUSINESS" : "STARTUP", "RENEWAL")}
               loading={checkoutMutation.isPending}
               loadingText="Opening..."
             >
@@ -511,9 +535,16 @@ export default function BillingSettingsPage() {
             const isEnterprisePlan = planId === "ENTERPRISE"
             const isCurrent = !isPilotAccess && planId === currentPlanId
             const isLowerTier = PLAN_ORDER.indexOf(planId) < currentPlanIndex
-            const displayPrice = billingCycle === "yearly" && planConfig.price.yearly !== null
-              ? planConfig.price.yearly
-              : planConfig.price.monthly
+            const runtimePrice = planId === "STARTUP" || planId === "BUSINESS"
+              ? billing?.catalogPrice?.[planId]
+              : null
+            const displayPrice = planId === "STARTUP" || planId === "BUSINESS"
+              ? runtimePrice
+                ? (billingCycle === "yearly" ? runtimePrice.yearly : runtimePrice.monthly)
+                : null
+              : billingCycle === "yearly" && planConfig.price.yearly !== null
+                ? planConfig.price.yearly
+                : planConfig.price.monthly
 
             return (
               <article
@@ -602,8 +633,8 @@ export default function BillingSettingsPage() {
                       }`}
                       onClick={() => {
                         const preferredMethod = billing?.preferredPaymentMethod ?? null
-                        if (preferredMethod === "MPESA") {
-                          setMpesaFlowPlan(planId as MpesaPlan)
+                        if (activePaymentProvider === "INTASEND" || preferredMethod === "MPESA") {
+                          setMpesaFlow({ plan: planId as MpesaPlan, paymentPurpose: "INITIAL_PURCHASE" })
                         } else {
                           startCheckout(planId as "STARTUP" | "BUSINESS")
                         }
@@ -613,7 +644,7 @@ export default function BillingSettingsPage() {
                     >
                       {(() => {
                         const preferredMethod = billing?.preferredPaymentMethod ?? null
-                        return preferredMethod === "MPESA"
+                        return activePaymentProvider === "INTASEND" || preferredMethod === "MPESA"
                           ? <><Smartphone className="mr-1 h-3 w-3" />{planConfig.cta.label}</>
                           : <><Zap className="mr-1 h-3 w-3" />{planConfig.cta.label}</>
                       })()}
@@ -770,26 +801,28 @@ export default function BillingSettingsPage() {
             return (
               <div className="space-y-3">
                 {/* Card option */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedProvider(prev => prev === "STRIPE" ? null : "STRIPE")}
-                  className={`w-full flex items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors ${
-                    selectedProvider === "STRIPE"
-                      ? "border-primary bg-primary/5"
-                      : "border-border/50 hover:border-border"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Card (Stripe)</p>
-                      <p className="text-xs text-muted-foreground">Credit / debit card</p>
+                {isStripeProviderActive && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProvider(prev => prev === "STRIPE" ? null : "STRIPE")}
+                    className={`w-full flex items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors ${
+                      selectedProvider === "STRIPE"
+                        ? "border-primary bg-primary/5"
+                        : "border-border/50 hover:border-border"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <CreditCard className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Card (Stripe)</p>
+                        <p className="text-xs text-muted-foreground">Credit / debit card</p>
+                      </div>
                     </div>
-                  </div>
-                  {selectedProvider === "STRIPE" && (
-                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                  )}
-                </button>
+                    {selectedProvider === "STRIPE" && (
+                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                    )}
+                  </button>
+                )}
 
                 {/* M-Pesa option */}
                 <div className="space-y-2">
@@ -1244,16 +1277,18 @@ export default function BillingSettingsPage() {
       )}
 
       {/* -- M-Pesa payment flow modal -- */}
-      {mpesaFlowPlan && (
+      {mpesaFlow && (
         <MpesaPaymentFlow
-          plan={mpesaFlowPlan}
+          plan={mpesaFlow.plan}
+          planPriceKes={mpesaPriceForPlan(mpesaFlow.plan)}
+          paymentPurpose={mpesaFlow.paymentPurpose}
           storedPhone={
             billing && "mpesaPhoneNumber" in billing
               ? (billing as unknown as { mpesaPhoneNumber?: string | null }).mpesaPhoneNumber ?? null
               : null
           }
-          onClose={() => setMpesaFlowPlan(null)}
-          onSuccess={() => setMpesaFlowPlan(null)}
+          onClose={() => setMpesaFlow(null)}
+          onSuccess={() => setMpesaFlow(null)}
         />
       )}
     </div>

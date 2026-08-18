@@ -2,11 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { AlertTriangle, Clock, XCircle, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePlan } from "@/lib/plan-context";
-import { trpc } from "@/lib/trpc";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -14,8 +12,6 @@ function daysUntil(iso: string | null): number {
   if (!iso) return 0;
   return Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000));
 }
-
-type SessionResult = { url: string | null };
 
 // ── Component ──────────────────────────────────────────────────────────────
 
@@ -34,16 +30,8 @@ type SessionResult = { url: string | null };
  * Dismissible for the current browser session (useState — no persistence needed).
  */
 export function SubscriptionStatusBanner() {
-  const router = useRouter();
   const { plan, billing, isLoading } = usePlan();
   const [dismissed, setDismissed] = useState(false);
-
-  const portalMutation = trpc.billing.createPortalSession.useMutation({
-    onSuccess: (data) => {
-      const result = data as SessionResult;
-      if (result?.url) router.push(result.url);
-    },
-  });
 
   // Nothing to show while loading, dismissed, or for unauthenticated / REGULATOR users
   if (isLoading || dismissed || !plan || plan === "REGULATOR") return null;
@@ -78,15 +66,11 @@ export function SubscriptionStatusBanner() {
         </span>
       ),
       cta: (
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-6 px-3 text-xs"
-          onClick={() => portalMutation.mutate()}
-          disabled={portalMutation.isPending}
-        >
-          {portalMutation.isPending ? "Opening…" : "Add Payment Method"}
-        </Button>
+        <Link href="/settings/billing">
+          <Button size="sm" variant="outline" className="h-6 px-3 text-xs">
+            Add M-Pesa
+          </Button>
+        </Link>
       ),
     };
   } else if (status === "PAST_DUE") {
@@ -97,19 +81,15 @@ export function SubscriptionStatusBanner() {
       text:   (
         <span className="text-muted-foreground text-xs">
           <span className="font-semibold text-foreground">Payment failed.</span>{" "}
-          Update your payment method to avoid service interruption.
+          Complete renewal with M-Pesa to avoid service interruption.
         </span>
       ),
       cta: (
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-6 px-3 text-xs"
-          onClick={() => portalMutation.mutate()}
-          disabled={portalMutation.isPending}
-        >
-          {portalMutation.isPending ? "Opening…" : "Update Payment"}
-        </Button>
+        <Link href="/settings/billing">
+          <Button size="sm" variant="outline" className="h-6 px-3 text-xs">
+            Pay Renewal
+          </Button>
+        </Link>
       ),
     };
   } else if (status === "GRACE_PERIOD") {

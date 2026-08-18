@@ -4,6 +4,14 @@
  */
 export declare const appConfig: {
     readonly env: "development" | "production" | "test";
+    readonly runtime: {
+        readonly mode: "standard" | "preview";
+        readonly isPreview: boolean;
+        readonly disableBackgroundWorkers: boolean;
+        readonly disableScheduledJobs: boolean;
+        readonly disableOutboundEmail: boolean;
+        readonly disableN8nAutomation: boolean;
+    };
     readonly isDevelopment: boolean;
     readonly isProduction: boolean;
     readonly isTest: boolean;
@@ -16,6 +24,11 @@ export declare const appConfig: {
     readonly features: {
         readonly orchestratorEnabled: boolean;
         readonly agentsEnabled: boolean;
+    };
+    readonly payments: {
+        readonly activeProvider: "INTASEND" | "STRIPE";
+        readonly stripeEnabled: boolean;
+        readonly intasendEnabled: boolean;
     };
     readonly editorial: {
         readonly humanReviewPolicyEnabled: boolean;
@@ -67,6 +80,7 @@ export declare const appConfig: {
     readonly appUrl: string;
     readonly frontendUrl: string;
     readonly database: {
+        readonly environment: "unknown" | "production" | "preview" | "development-uat";
         readonly url: string;
         readonly directUrl: string | undefined;
     };
@@ -141,6 +155,13 @@ export declare const appConfig: {
                 readonly monthly: string;
                 readonly yearly: string;
             };
+        };
+        readonly reconciliation: {
+            readonly staleMinutes: number;
+            readonly pendingExpireHours: number;
+        };
+        readonly renewal: {
+            readonly graceDays: number;
         };
     };
     readonly marketing: {

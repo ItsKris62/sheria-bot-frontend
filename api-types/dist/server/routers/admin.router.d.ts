@@ -1051,16 +1051,39 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             provider: {
                 name: string;
-                status: "unknown";
+                status: "unknown" | "healthy" | "degraded";
                 message: string;
-                lastWebhookAt: null;
+                lastWebhookAt: string | null;
+                lastReceivedWebhookAt: string | null;
+                lastSuccessfulWebhookAt: string | null;
+                lastRejectedWebhookAt: string | null;
+                lastFinalizationFailureAt: string | null;
+                verificationFailuresLast24Hours: number;
+                providerLookupFailuresLast24Hours: number;
+                unknownTransactionsLast24Hours: number;
+                stalePendingPaymentCount: number;
             };
+            pendingIntaSendPayments: {
+                id: string;
+                orgId: string;
+                orgName: string;
+                invoiceNumber: string | null;
+                providerTransactionId: string | null;
+                maskedPhone: string | null;
+                status: import(".prisma/client").$Enums.PaymentStatus;
+                provider: import(".prisma/client").$Enums.PaymentProvider;
+                amount: number;
+                currency: string;
+                ageMinutes: number;
+                createdAt: string;
+                lastReconciliationAt: string | null;
+            }[];
             problemAccounts: {
                 organizationId: string | null;
                 organizationName: string | null;
                 userId?: string | null;
                 userEmail?: string | null;
-                issueType: "failed_payment" | "past_due" | "trial_expiring" | "suspended" | "unknown";
+                issueType: "failed_payment" | "stale_pending_payment" | "past_due" | "trial_expiring" | "suspended" | "unknown";
                 amount?: number | null;
                 currency?: string | null;
                 lastEventAt?: string | null;
@@ -1075,6 +1098,52 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: string;
                 actionHref?: string | null;
             }[];
+        };
+        meta: object;
+    }>;
+    reconcileIntaSendPayment: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            paymentId: string;
+            reason: string;
+        };
+        output: {
+            providerState: "COMPLETE";
+            result: import("@/modules/billing/intasend-finalization.service").FinalizeIntaSendPaymentResult;
+        } | {
+            providerState: "FAILED" | "PENDING";
+            result: null;
+        };
+        meta: object;
+    }>;
+    expireIntaSendPayment: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            paymentId: string;
+            reason: string;
+        };
+        output: {
+            success: boolean;
+            expired: boolean;
+            paymentStatus: "EXPIRED" | "COMPLETED" | "FAILED" | "REFUNDED";
+            result: "already_terminal";
+            providerState?: undefined;
+        } | {
+            success: boolean;
+            expired: boolean;
+            providerState: "COMPLETE";
+            result: import("@/modules/billing/intasend-finalization.service").FinalizeIntaSendPaymentResult;
+            paymentStatus?: undefined;
+        } | {
+            success: boolean;
+            expired: boolean;
+            providerState: "FAILED";
+            result: "marked_failed";
+            paymentStatus?: undefined;
+        } | {
+            success: boolean;
+            expired: boolean;
+            providerState: "PENDING";
+            result: "expired";
+            paymentStatus?: undefined;
         };
         meta: object;
     }>;
