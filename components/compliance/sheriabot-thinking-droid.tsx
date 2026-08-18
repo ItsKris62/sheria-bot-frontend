@@ -35,10 +35,6 @@ export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidP
 
   // Preload images on mount
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_R2_ASSETS_URL) {
-      setImageError(true);
-      return;
-    }
 
     const preloadImages = (urls: string[]) => {
       urls.forEach((url) => {
@@ -133,11 +129,6 @@ export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidP
 
   const currentFrameUrl = sequence[frameIndex] || frames.FOCUS;
 
-  // Fallback to existing indicator if assets fail to load
-  if (imageError) {
-    return <ThinkingIndicator query={query} />;
-  }
-  
   if (state.phase === "idle" || state.phase === "error") {
     return null;
   }
@@ -150,46 +141,50 @@ export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidP
       )}
       aria-live="polite"
     >
-      <div className="flex items-center gap-4 bg-transparent pt-2 pb-4 w-full">
-        {/* Mascot Image Container */}
-        <div className="relative shrink-0 w-[88px] h-[88px] md:w-[112px] md:h-[112px] lg:w-[130px] lg:h-[130px]">
-          {/* Optional subtle glow based on state */}
-          <div className={cn(
-            "absolute inset-0 bg-emerald-500/20 blur-xl rounded-full transition-opacity duration-1000",
-            (state.phase === "verifying" || state.phase === "complete") ? "opacity-100" : "opacity-0"
-          )} />
-          
-          <div className={cn(
-            "relative w-full h-full transition-transform duration-1000",
-            // Gentle bobbing animation only when not in reduced motion and not in complete/error
-            "motion-safe:animate-[bob_4s_ease-in-out_infinite]",
-            state.phase === "complete" && "motion-safe:animate-none"
-          )}>
-            {/* We use standard img to ensure pixelated rendering works correctly across browsers 
-                without Next.js Image optimization modifying the pixel art */}
-            <img
-              src={currentFrameUrl}
-              alt=""
-              aria-hidden="true"
-              className="w-full h-full object-contain [image-rendering:pixelated]"
-              onError={() => setImageError(true)}
-            />
+      {imageError ? (
+        <ThinkingIndicator query={query} />
+      ) : (
+        <div className="flex items-center gap-4 bg-transparent pt-2 pb-4 w-full">
+          {/* Mascot Image Container */}
+          <div className="relative shrink-0 w-[88px] h-[88px] md:w-[112px] md:h-[112px] lg:w-[130px] lg:h-[130px]">
+            {/* Optional subtle glow based on state */}
+            <div className={cn(
+              "absolute inset-0 bg-emerald-500/20 blur-xl rounded-full transition-opacity duration-1000",
+              (state.phase === "verifying" || state.phase === "complete") ? "opacity-100" : "opacity-0"
+            )} />
+            
+            <div className={cn(
+              "relative w-full h-full transition-transform duration-1000",
+              // Gentle bobbing animation only when not in reduced motion and not in complete/error
+              "motion-safe:animate-[bob_4s_ease-in-out_infinite]",
+              state.phase === "complete" && "motion-safe:animate-none"
+            )}>
+              {/* We use standard img to ensure pixelated rendering works correctly across browsers 
+                  without Next.js Image optimization modifying the pixel art */}
+              <img
+                src={currentFrameUrl}
+                alt=""
+                aria-hidden="true"
+                className="w-full h-full object-contain [image-rendering:pixelated]"
+                onError={() => setImageError(true)}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Status Text */}
-        <div className="flex flex-col gap-1.5 min-w-[200px]">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-foreground">SheriaBot</span>
-            <span className="text-[10px] text-muted-foreground/80 uppercase tracking-wider font-medium">
-              {state.phase === "verifying" ? "Verifying" : state.phase === "complete" ? "Complete" : "Processing"}
+          {/* Status Text */}
+          <div className="flex flex-col gap-1.5 min-w-[200px]">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-foreground">SheriaBot</span>
+              <span className="text-[10px] text-muted-foreground/80 uppercase tracking-wider font-medium">
+                {state.phase === "verifying" ? "Verifying" : state.phase === "complete" ? "Complete" : "Processing"}
+              </span>
+            </div>
+            <span className="text-sm text-muted-foreground leading-relaxed font-medium">
+              {statusText}
             </span>
           </div>
-          <span className="text-sm text-muted-foreground leading-relaxed font-medium">
-            {statusText}
-          </span>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -352,8 +352,8 @@ html {
 
 .portal-shell,
 [data-portal-shell="true"] {
-  --portal-background: #030712;
-  --portal-background-elevated: #0B0F19;
+  --portal-background: #000000;
+  --portal-background-elevated: #050505;
 
   --portal-surface: rgba(17, 24, 39, 0.65);
   --portal-surface-raised: rgba(31, 41, 55, 0.6);

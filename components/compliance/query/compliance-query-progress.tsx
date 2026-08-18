@@ -117,7 +117,7 @@ export function ComplianceQueryProgress({
                 )}
               >
                 {message.type === "user" ? (
-                  <div className="max-w-[88%] sm:max-w-[80%] rounded-2xl border border-slate-700/60 bg-slate-800/90 px-4.5 py-3 text-slate-100 shadow-xs">
+                  <div className="max-w-[88%] sm:max-w-[80%] rounded-2xl rounded-br-sm bg-emerald-600 px-4 py-3 text-white shadow-sm">
                     <p className="text-sm leading-relaxed whitespace-pre-line">
                       {message.content}
                     </p>
