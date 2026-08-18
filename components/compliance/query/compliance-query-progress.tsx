@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { AlertCircle, Loader2, Sparkles } from "lucide-react"
 import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
-import { ThinkingIndicator } from "@/components/compliance/thinking-indicator"
+import { SheriaBotThinkingDroid } from "@/components/compliance/sheriabot-thinking-droid"
 import { AbstainCard } from "@/components/compliance/abstain-card"
 import { UngroundedBanner } from "@/components/compliance/ungrounded-banner"
 import { cn } from "@/lib/utils"
@@ -154,6 +154,11 @@ export function ComplianceQueryProgress({
                       <UngroundedBanner className="my-3" />
                     )}
 
+                    {/* Droid Animation for just-completed message */}
+                    {streamState.phase === "complete" && streamState.queryId === message.queryId && (
+                      <SheriaBotThinkingDroid state={streamState} query={message.question ?? ""} />
+                    )}
+
                     {/* Main Markdown Content */}
                     <ComplianceFeedback content={message.content} variant="chat" />
 
@@ -195,10 +200,12 @@ export function ComplianceQueryProgress({
                       </Badge>
                     )}
                   </div>
-                  {streamState.content ? (
+
+                  {/* The Droid is always visible during streaming */}
+                  <SheriaBotThinkingDroid state={streamState} query={pendingQuestion} />
+
+                  {streamState.content && (
                     <ComplianceFeedback content={streamState.content} variant="chat" />
-                  ) : (
-                    <ThinkingIndicator query={pendingQuestion} />
                   )}
                 </div>
               </div>
