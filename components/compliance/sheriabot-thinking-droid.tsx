@@ -27,7 +27,7 @@ interface SheriaBotThinkingDroidProps {
 }
 
 export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidProps) {
-  const [frameIndex, setFrameIndex] = useState(0);
+  const [frameState, setFrameState] = useState({ phase: state.phase, index: 0 });
   const [imageError, setImageError] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
 
@@ -72,15 +72,9 @@ export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidP
     }
   }, [state.phase, frames]);
 
-  // Reset frame index when phase changes
-  useEffect(() => {
-    setFrameIndex(0);
-  }, [state.phase]);
-
   // Handle frame cycling
   useEffect(() => {
     if (sequence.length <= 1) {
-      setFrameIndex(0);
       return;
     }
 
@@ -91,14 +85,15 @@ export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidP
     
     if (!prefersReducedMotion) {
       intervalId = setInterval(() => {
-        setFrameIndex((prev) => (prev + 1) % sequence.length);
+        setFrameState((prev) => ({
+          phase: state.phase,
+          index: prev.phase === state.phase ? (prev.index + 1) % sequence.length : 1 % sequence.length,
+        }));
       }, FRAME_INTERVAL_MS);
-    } else {
-      setFrameIndex(0);
     }
 
     return () => clearInterval(intervalId);
-  }, [sequence]);
+  }, [sequence, state.phase]);
 
   // Fade out effect when complete
   useEffect(() => {
@@ -107,8 +102,6 @@ export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidP
         setIsFadingOut(true);
       }, 1000);
       return () => clearTimeout(timer);
-    } else {
-      setIsFadingOut(false);
     }
   }, [state.phase]);
 
@@ -127,7 +120,9 @@ export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidP
     }
   }, [state.phase]);
 
-  const currentFrameUrl = sequence[frameIndex] || frames.FOCUS;
+  const frameIndex = frameState.phase === state.phase ? frameState.index : 0;
+  const currentFrameUrl = sequence[frameIndex % sequence.length] || frames.FOCUS;
+  const shouldFadeOut = state.phase === "complete" && isFadingOut;
 
   if (state.phase === "idle" || state.phase === "error") {
     return null;
@@ -137,10 +132,11 @@ export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidP
     <div 
       className={cn(
         "flex flex-col items-start gap-4 transition-opacity duration-500 ease-in-out",
-        isFadingOut ? "opacity-0 h-0 overflow-hidden" : "opacity-100"
+        shouldFadeOut ? "opacity-0 h-0 overflow-hidden" : "opacity-100"
       )}
       aria-live="polite"
     >
+      {state.phase !== "complete" && <span className="sr-only">Thinking</span>}
       {imageError ? (
         <ThinkingIndicator query={query} />
       ) : (

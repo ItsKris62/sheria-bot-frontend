@@ -157,9 +157,11 @@ export default function RegisterPage() {
   return (
     <Card className="w-full max-w-md border-border/50 bg-card/50 backdrop-blur">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-foreground">Create your account</CardTitle>
+        <CardTitle className="text-2xl font-bold text-foreground">
+          {hasInvitation ? "Accept your invitation" : "Create your account"}
+        </CardTitle>
         <CardDescription className="text-muted-foreground">
-          {step === 1 ? "Choose your organization type" : "Complete your profile"}
+          {hasInvitation ? "Join your SheriaBot Business organization" : step === 1 ? "Choose your organization type" : "Complete your profile"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -174,6 +176,16 @@ export default function RegisterPage() {
             <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive" role="alert">
               <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
               <p>{displayError}</p>
+            </div>
+          )}
+
+          {hasInvitation && (
+            <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <p>
+                This invitation is for <strong>{invitedEmail || "the email address on the invitation"}</strong>.
+                Your account will be added to the inviting organization after registration.
+              </p>
             </div>
           )}
 
@@ -229,17 +241,19 @@ export default function RegisterPage() {
             </>
           ) : (
             <>
-              <div className="space-y-2">
-                <Label htmlFor="companyName" className="text-foreground">Organization Name</Label>
-                <Input
-                  id="companyName"
-                  placeholder="Enter your company name"
-                  value={formData.companyName}
-                  onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  required={!hasInvitation}
-                  className="bg-background"
-                />
-              </div>
+              {!hasInvitation && (
+                <div className="space-y-2">
+                  <Label htmlFor="companyName" className="text-foreground">Organization Name</Label>
+                  <Input
+                    id="companyName"
+                    placeholder="Enter your company name"
+                    value={formData.companyName}
+                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                    required
+                    className="bg-background"
+                  />
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">

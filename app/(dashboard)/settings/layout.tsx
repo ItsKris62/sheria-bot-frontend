@@ -19,14 +19,16 @@ import {
   Key,
   ChevronLeft,
   FileQuestion,
+  Users,
 } from "lucide-react"
 
 const settingsNav = [
   { title: "Profile", href: "/settings", icon: User },
   { title: "Organization", href: "/settings/organization", icon: Building2 },
+  { title: "Team", href: "/settings/team", icon: Users },
   { title: "Security", href: "/settings/security", icon: Shield },
-  { title: "Notifications", href: "/settings/notifications", icon: Bell },
   { title: "Billing", href: "/settings/billing", icon: CreditCard },
+  { title: "Notifications", href: "/settings/notifications", icon: Bell },
   { title: "Corpus Reports", href: "/settings/corpus-reports", icon: FileQuestion },
   { title: "API Keys", href: "/settings/api-keys", icon: Key },
 ]
@@ -93,7 +95,7 @@ export default function SettingsLayout({
 
         {/* Settings Content */}
         <main className="flex-1 p-6">
-          <div className="mx-auto max-w-3xl">
+          <div className="mx-auto max-w-6xl">
             {children}
           </div>
         </main>

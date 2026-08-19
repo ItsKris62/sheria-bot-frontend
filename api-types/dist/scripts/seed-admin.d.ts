@@ -7,7 +7,7 @@
  * Usage:
  *   ADMIN_EMAIL=admin@yourcompany.com ADMIN_PASSWORD=YourPass123! pnpm seed:admin
  *
- * Or use defaults from .env:
+ * Or use required values from .env:
  *   pnpm seed:admin
  */
 import 'dotenv/config';

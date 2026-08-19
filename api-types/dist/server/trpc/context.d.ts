@@ -30,6 +30,7 @@ export interface User {
     sessionId?: string;
     supabaseAuthId: string;
     mustChangePassword?: boolean;
+    totpEnabled?: boolean;
     /** Unix ms timestamp of Session.expiresAt  -  enforced on every request (B6). */
     sessionExpiresAt?: number;
 }

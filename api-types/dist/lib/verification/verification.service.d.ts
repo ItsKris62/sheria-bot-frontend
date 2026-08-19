@@ -28,6 +28,7 @@ export interface ValidatedInvitation {
     id: string;
     email: string;
     role: string;
+    organizationRole?: string | null;
     organizationId?: string | null;
     invitedBy: string;
 }
@@ -35,7 +36,8 @@ export interface ValidatedInvitation {
  * Find and validate an invitation token.
  * Returns null if the token is missing, expired, or already used.
  */
-export declare function findValidInvitation(email: string): Promise<ValidatedInvitation | null>;
+export declare function findValidInvitation(email: string, token?: string): Promise<ValidatedInvitation | null>;
+export declare function hasPendingInvitation(email: string): Promise<boolean>;
 /**
  * Mark an invitation as used.
  */

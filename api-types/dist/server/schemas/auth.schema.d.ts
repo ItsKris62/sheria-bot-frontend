@@ -14,7 +14,7 @@ import { z } from 'zod';
  *   password: "SecurePass123!",
  *   name: "John Doe",
  *   role: "STARTUP",
- *   organizationId: "org_123" // optional
+ *   invitationToken: "raw_invitation_token" // optional, required to accept an invitation
  * }
  */
 export declare const registerSchema: z.ZodObject<{
@@ -27,9 +27,9 @@ export declare const registerSchema: z.ZodObject<{
         ENTERPRISE: "ENTERPRISE";
     }>;
     companyName: z.ZodOptional<z.ZodString>;
-    organizationId: z.ZodOptional<z.ZodString>;
+    invitationToken: z.ZodOptional<z.ZodString>;
     phone: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>>;
-}, z.core.$strip>;
+}, z.core.$strict>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 /**
  * Login with email and password

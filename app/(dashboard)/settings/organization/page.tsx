@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Building2, Loader2, Save, Info, Users } from "lucide-react"
 import { trpc } from "@/lib/trpc"
@@ -77,6 +78,9 @@ export default function OrganizationSettingsPage() {
     enabled: !isRegulator,
   })
   const { data: seatUsage } = trpc.organization.getSeatUsage.useQuery(undefined, {
+    enabled: !isRegulator,
+  })
+  const { data: teamOverview } = trpc.organization.getTeamOverview.useQuery(undefined, {
     enabled: !isRegulator,
   })
 
@@ -212,6 +216,41 @@ export default function OrganizationSettingsPage() {
                   Your plan includes {seatUsage.seatLimit} seats. Revoke a pending invite or remove a member before inviting another user.
                 </p>
               )}
+            </CardContent>
+          </Card>
+        )}
+
+        {teamOverview && (
+          <Card className="border-border/50 bg-card/50 backdrop-blur">
+            <CardHeader>
+              <CardTitle>Business Overview</CardTitle>
+              <CardDescription>Organization plan, ownership, and team capacity</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-md border border-border/50 bg-muted/30 p-3">
+                  <p className="text-muted-foreground">Plan</p>
+                  <div className="mt-1">
+                    <Badge variant="outline">{teamOverview.organization.plan}</Badge>
+                  </div>
+                </div>
+                <div className="rounded-md border border-border/50 bg-muted/30 p-3">
+                  <p className="text-muted-foreground">Organization owner</p>
+                  <p className="mt-1 font-semibold text-foreground">
+                    {teamOverview.owner?.name || teamOverview.owner?.email || "No active owner"}
+                  </p>
+                </div>
+                <div className="rounded-md border border-border/50 bg-muted/30 p-3">
+                  <p className="text-muted-foreground">Members</p>
+                  <p className="mt-1 font-semibold text-foreground">
+                    {teamOverview.memberCounts.active} active, {teamOverview.memberCounts.suspended} suspended
+                  </p>
+                </div>
+                <div className="rounded-md border border-border/50 bg-muted/30 p-3">
+                  <p className="text-muted-foreground">Pending invites</p>
+                  <p className="mt-1 font-semibold text-foreground">{teamOverview.memberCounts.pendingInvitations}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}

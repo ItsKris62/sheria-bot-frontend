@@ -10,7 +10,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Switch } from "@/components/ui/switch"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
@@ -51,6 +61,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { format, formatDistanceToNow } from "date-fns"
 import { PasswordStrengthIndicator, checkPasswordStrength } from "@/components/auth/password-strength-indicator"
 import { generateStrongPassword } from "@/lib/password"
+import { getErrorMessage, trpc } from "@/lib/trpc"
 
 // ─── Change Password ───────────────────────────────────────────────────────────
 
@@ -705,6 +716,236 @@ function ActiveSessionsCard() {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
+type OrganizationSecurityCenterData = {
+  policy: {
+    requireMfa: boolean
+    mfaPolicyEnabledAt: string | Date | null
+  }
+  posture: {
+    totalMembers: number
+    mfaEnabled: number
+    mfaMissing: number
+    percentage: number
+  }
+  canManageSecurity: boolean
+  currentUserMfaEnabled: boolean
+  members: Array<{
+    id: string
+    name: string | null
+    email: string
+    role: string
+    status: string
+    totpEnabled: boolean
+    lastActive: string | Date | null
+  }>
+}
+
+type OrganizationActivityLogData = {
+  logs: Array<{
+    id: string
+    timestamp: string | Date
+    actor: { name: string | null; email: string } | null
+    action: string
+    target: string | null
+    result: string
+  }>
+}
+
+function OrganizationSecurityCenter() {
+  const utils = trpc.useUtils()
+  const useSecurityCenterQuery = trpc.organization.getSecurityCenter.useQuery as unknown as () => {
+    data?: OrganizationSecurityCenterData
+    isLoading: boolean
+    isError: boolean
+  }
+  const useActivityLogQuery = trpc.organization.getActivityLog.useQuery as unknown as (
+    input: { limit: number },
+    opts: { enabled: boolean }
+  ) => {
+    data?: OrganizationActivityLogData
+    isFetching: boolean
+    isError: boolean
+    error: unknown
+  }
+  const useUpdatePolicyMutation = trpc.organization.updateSecurityPolicy.useMutation as unknown as (
+    opts: { onSuccess: () => void; onError: (error: unknown) => void }
+  ) => {
+    mutate: (input: { requireMfa: boolean }) => void
+    isPending: boolean
+  }
+
+  const securityQuery = useSecurityCenterQuery()
+  const activityQuery = useActivityLogQuery(
+    { limit: 25 },
+    { enabled: Boolean(securityQuery.data?.canManageSecurity) }
+  )
+
+  const updatePolicy = useUpdatePolicyMutation({
+    onSuccess: () => {
+      toast.success("Organization security policy updated")
+      void utils.organization.getSecurityCenter.invalidate()
+      void utils.organization.getActivityLog.invalidate()
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  })
+
+  if (securityQuery.isLoading) {
+    return (
+      <Card className="border-border/50 bg-card/50 backdrop-blur">
+        <CardHeader>
+          <Skeleton className="h-6 w-56" />
+          <Skeleton className="h-4 w-80" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (securityQuery.isError) return null
+
+  const data = securityQuery.data
+  const requireMfa = Boolean(data?.policy.requireMfa)
+  const canManageSecurity = Boolean(data?.canManageSecurity)
+  const currentUserCanEnable = Boolean(data?.currentUserMfaEnabled)
+
+  return (
+    <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5 text-primary" />
+          Organization Security
+        </CardTitle>
+        <CardDescription>Business team MFA posture and organization activity</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-md border border-border/50 bg-muted/30 p-3">
+            <p className="text-sm text-muted-foreground">MFA enabled</p>
+            <p className="mt-1 text-2xl font-semibold">{data?.posture.mfaEnabled ?? 0}</p>
+          </div>
+          <div className="rounded-md border border-border/50 bg-muted/30 p-3">
+            <p className="text-sm text-muted-foreground">MFA missing</p>
+            <p className="mt-1 text-2xl font-semibold">{data?.posture.mfaMissing ?? 0}</p>
+          </div>
+          <div className="rounded-md border border-border/50 bg-muted/30 p-3">
+            <p className="text-sm text-muted-foreground">Coverage</p>
+            <p className="mt-1 text-2xl font-semibold">{data?.posture.percentage ?? 0}%</p>
+          </div>
+        </div>
+
+        <Progress value={data?.posture.percentage ?? 0} className="h-2" />
+
+        <div className="flex flex-col gap-4 rounded-lg border border-border/50 bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-medium text-foreground">Require MFA for organization members</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Members without MFA are flagged as non-compliant until they configure an authenticator app.
+            </p>
+            {requireMfa && data?.policy.mfaPolicyEnabledAt && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Enabled {formatDistanceToNow(new Date(data.policy.mfaPolicyEnabledAt), { addSuffix: true })}
+              </p>
+            )}
+          </div>
+          <Switch
+            checked={requireMfa}
+            disabled={!canManageSecurity || updatePolicy.isPending || (!requireMfa && !currentUserCanEnable)}
+            onCheckedChange={(checked) => updatePolicy.mutate({ requireMfa: checked })}
+            aria-label="Require MFA for organization members"
+          />
+        </div>
+
+        {!canManageSecurity && (
+          <div className="rounded-md border border-border/50 bg-muted/30 p-3 text-sm text-muted-foreground">
+            Only organization owners and admins can change organization security policy.
+          </div>
+        )}
+        {canManageSecurity && !currentUserCanEnable && !requireMfa && (
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+            Enable two-factor authentication on your own account before requiring MFA for the organization.
+          </div>
+        )}
+
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="font-medium text-foreground">Team MFA Status</h3>
+            <Badge variant="outline">{data?.posture.totalMembers ?? 0} members</Badge>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Member</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>MFA</TableHead>
+                <TableHead>Last active</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(data?.members ?? []).map((member) => (
+                <TableRow key={member.id}>
+                  <TableCell>
+                    <div className="font-medium">{member.name || member.email}</div>
+                    <div className="text-xs text-muted-foreground">{member.email}</div>
+                  </TableCell>
+                  <TableCell>{member.role}</TableCell>
+                  <TableCell>{member.status}</TableCell>
+                  <TableCell>{member.totpEnabled ? "Enabled" : "Missing"}</TableCell>
+                  <TableCell>{member.lastActive ? formatDistanceToNow(new Date(member.lastActive), { addSuffix: true }) : "Never"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {canManageSecurity && (
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-medium text-foreground">Activity Log</h3>
+              {activityQuery.isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
+            {activityQuery.isError ? (
+              <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                {getErrorMessage(activityQuery.error)}
+              </div>
+            ) : (activityQuery.data?.logs ?? []).length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No organization activity has been recorded yet.
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Timestamp</TableHead>
+                    <TableHead>Actor</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Target</TableHead>
+                    <TableHead>Result</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(activityQuery.data?.logs ?? []).map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell>{format(new Date(log.timestamp), "dd MMM yyyy HH:mm")}</TableCell>
+                      <TableCell>{log.actor?.name || log.actor?.email || "System"}</TableCell>
+                      <TableCell>{log.action.replaceAll("_", " ")}</TableCell>
+                      <TableCell>{log.target ?? "Organization"}</TableCell>
+                      <TableCell>{log.result}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function SecuritySettingsPage() {
   return (
     <div className="space-y-6">
@@ -716,6 +957,7 @@ export default function SecuritySettingsPage() {
       </div>
 
       <div className="grid gap-6">
+        <OrganizationSecurityCenter />
         <ChangePasswordCard />
         <TwoFactorCard />
         <ActiveSessionsCard />

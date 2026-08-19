@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     question: "How many users are included?",
-    answer: "Startup includes 1 seat, Business includes 6 seats, and Enterprise is configured with unlimited seats.",
+    answer: "Startup includes 1 seat, Business includes 6 total seats, and Enterprise is configured with unlimited seats.",
   },
   {
     question: "What are the usage limits?",

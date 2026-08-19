@@ -7,6 +7,7 @@ import { z } from 'zod';
 declare const envSchema: z.ZodObject<{
     NODE_ENV: z.ZodDefault<z.ZodEnum<{
         development: "development";
+        staging: "staging";
         production: "production";
         test: "test";
     }>>;

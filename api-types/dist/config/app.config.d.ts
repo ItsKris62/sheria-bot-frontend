@@ -3,7 +3,7 @@
  * All app settings centralized and typed
  */
 export declare const appConfig: {
-    readonly env: "development" | "production" | "test";
+    readonly env: "development" | "staging" | "production" | "test";
     readonly runtime: {
         readonly mode: "standard" | "preview";
         readonly isPreview: boolean;
@@ -13,6 +13,7 @@ export declare const appConfig: {
         readonly disableN8nAutomation: boolean;
     };
     readonly isDevelopment: boolean;
+    readonly isStaging: boolean;
     readonly isProduction: boolean;
     readonly isTest: boolean;
     readonly malwareScanEnabled: boolean;
