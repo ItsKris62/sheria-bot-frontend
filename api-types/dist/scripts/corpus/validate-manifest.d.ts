@@ -8,6 +8,7 @@
  *   pnpm corpus:validate --country=international
  *   pnpm corpus:validate --country=malawi
  *   pnpm corpus:validate --country=nigeria
+ *   pnpm corpus:validate --country=rwanda
  *   pnpm corpus:validate --all
  */
 export {};

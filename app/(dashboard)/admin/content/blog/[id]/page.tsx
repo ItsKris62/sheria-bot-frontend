@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
@@ -122,8 +122,9 @@ function normalizeAutomationSources(sources: unknown): AutomationSuggestionSourc
     }))
 }
 
-export default function BlogEditorPage({ params }: { params: { id: string } }) {
+export default function BlogEditorPage() {
   const router = useRouter()
+  const params = useParams<{ id: string }>()
   const utils = trpc.useUtils()
   
   const { data: post, isLoading } = trpc.blog.adminGetById.useQuery({ id: params.id })

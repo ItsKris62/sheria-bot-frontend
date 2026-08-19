@@ -8,9 +8,9 @@
  *   pnpm ingest
  *
  * Workflow:
- *   1. Place documents in documents/kenya/ or documents/international/
- *   2. Set the correct `fileName` in DOCUMENT_REGISTRY below
- *   3. Run `pnpm ingest`
+ *   1. Place documents in documents/<country-or-scope>/
+ *   2. Set hardcoded registry entries below or add entries to a corpus manifest
+ *   3. Run `pnpm ingest`, optionally filtered with `--country=rwanda`
  *
  * Documents are processed sequentially (not in parallel) to avoid rate-limiting
  * on embedding APIs. Already-indexed documents (same SHA-256 checksum) are

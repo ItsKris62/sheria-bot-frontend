@@ -8,12 +8,13 @@ export declare const EMAIL_THEME: {
         readonly primary: "#15803D";
         readonly primaryLight: "#22C55E";
         readonly accent: "#15803D";
-        readonly background: "#F8F9FA";
+        readonly headerBackground: "#0F172A";
+        readonly background: "#F8FAFC";
         readonly cardBackground: "#FFFFFF";
-        readonly text: "#111827";
-        readonly textSecondary: "#6B7280";
-        readonly textMuted: "#9CA3AF";
-        readonly border: "#E5E7EB";
+        readonly text: "#1E293B";
+        readonly textSecondary: "#64748B";
+        readonly textMuted: "#94A3B8";
+        readonly border: "#E2E8F0";
         readonly success: "#15803D";
         readonly warning: "#D97706";
         readonly danger: "#DC2626";
@@ -31,6 +32,7 @@ export declare const EMAIL_THEME: {
     };
 };
 export declare const LOGO_URL: string;
+export declare const EMAIL_SIGNATURE_LOGO_URL: string;
 export declare const APP_NAME = "SheriaBot";
 export declare const SUPPORT_EMAIL: string;
 export declare const CURRENT_YEAR: number;

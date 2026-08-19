@@ -1,7 +1,7 @@
 /**
  * Lightweight error tracking for production.
  * Tracks error rates and logs critical alerts when thresholds are breached.
- * No external dependency  -  uses structured logging for Railway log drain.
+ * No external dependency - uses structured logging for Render logs/drains.
  */
 interface ErrorEntry {
     message: string;

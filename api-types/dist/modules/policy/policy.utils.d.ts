@@ -31,8 +31,8 @@ export declare const policyGenerationSchema: z.ZodObject<{
     additionalContext: z.ZodOptional<z.ZodString>;
     includeRecommendations: z.ZodDefault<z.ZodBoolean>;
     detailLevel: z.ZodDefault<z.ZodEnum<{
-        brief: "brief";
         standard: "standard";
+        brief: "brief";
         comprehensive: "comprehensive";
     }>>;
     targetAudience: z.ZodDefault<z.ZodEnum<{

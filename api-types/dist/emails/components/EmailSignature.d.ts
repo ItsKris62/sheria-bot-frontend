@@ -15,14 +15,12 @@ export interface EmailSignatureProps {
  * Reusable email footer / signature block.
  *
  * Renders:
- *   - Horizontal divider
- *   - Brand tagline
- *   - Contact info (support email)
+ *   - New official SheriaBot Email Signature Banner (R2 served)
+ *   - Contact info & support email
  *   - Optional unsubscribe link
  *   - Copyright notice
  *
  * Used by BaseLayout so all 16 templates inherit it automatically.
- * Can also be imported directly into one-off transactional emails.
  */
 export declare function EmailSignature({ showUnsubscribe, recipientEmail }: EmailSignatureProps): React.JSX.Element;
 //# sourceMappingURL=EmailSignature.d.ts.map

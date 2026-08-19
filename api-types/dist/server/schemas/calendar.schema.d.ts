@@ -18,10 +18,10 @@ export declare const createComplianceEventSchema: z.ZodObject<{
         CRITICAL: "CRITICAL";
     }>>;
     category: z.ZodDefault<z.ZodEnum<{
+        RENEWAL: "RENEWAL";
         CUSTOM: "CUSTOM";
         FILING: "FILING";
         AUDIT: "AUDIT";
-        RENEWAL: "RENEWAL";
         REVIEW: "REVIEW";
         REGULATORY_DEADLINE: "REGULATORY_DEADLINE";
         DOCUMENT_EXPIRY: "DOCUMENT_EXPIRY";
@@ -55,10 +55,10 @@ export declare const updateComplianceEventSchema: z.ZodObject<{
         UPCOMING: "UPCOMING";
     }>>;
     category: z.ZodOptional<z.ZodEnum<{
+        RENEWAL: "RENEWAL";
         CUSTOM: "CUSTOM";
         FILING: "FILING";
         AUDIT: "AUDIT";
-        RENEWAL: "RENEWAL";
         REVIEW: "REVIEW";
         REGULATORY_DEADLINE: "REGULATORY_DEADLINE";
         DOCUMENT_EXPIRY: "DOCUMENT_EXPIRY";

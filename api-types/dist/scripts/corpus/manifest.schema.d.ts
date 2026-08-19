@@ -11,6 +11,7 @@ import { z } from 'zod';
 export declare const CountryEnum: z.ZodEnum<{
     Kenya: "Kenya";
     Malawi: "Malawi";
+    Rwanda: "Rwanda";
     Nigeria: "Nigeria";
     International: "International";
 }>;
@@ -18,6 +19,7 @@ export type Country = z.infer<typeof CountryEnum>;
 export declare const JurisdictionCodeEnum: z.ZodEnum<{
     KE: "KE";
     MW: "MW";
+    RW: "RW";
     NG: "NG";
     GLOBAL: "GLOBAL";
     EU: "EU";
@@ -98,12 +100,14 @@ export declare const CorpusManifestEntrySchema: z.ZodObject<{
     country: z.ZodEnum<{
         Kenya: "Kenya";
         Malawi: "Malawi";
+        Rwanda: "Rwanda";
         Nigeria: "Nigeria";
         International: "International";
     }>;
     jurisdictionCode: z.ZodEnum<{
         KE: "KE";
         MW: "MW";
+        RW: "RW";
         NG: "NG";
         GLOBAL: "GLOBAL";
         EU: "EU";
@@ -194,12 +198,14 @@ export declare const CorpusManifestSchema: z.ZodObject<{
     country: z.ZodEnum<{
         Kenya: "Kenya";
         Malawi: "Malawi";
+        Rwanda: "Rwanda";
         Nigeria: "Nigeria";
         International: "International";
     }>;
     jurisdictionCode: z.ZodEnum<{
         KE: "KE";
         MW: "MW";
+        RW: "RW";
         NG: "NG";
         GLOBAL: "GLOBAL";
         EU: "EU";
@@ -210,12 +216,14 @@ export declare const CorpusManifestSchema: z.ZodObject<{
         country: z.ZodEnum<{
             Kenya: "Kenya";
             Malawi: "Malawi";
+            Rwanda: "Rwanda";
             Nigeria: "Nigeria";
             International: "International";
         }>;
         jurisdictionCode: z.ZodEnum<{
             KE: "KE";
             MW: "MW";
+            RW: "RW";
             NG: "NG";
             GLOBAL: "GLOBAL";
             EU: "EU";

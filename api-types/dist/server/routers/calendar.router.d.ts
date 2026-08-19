@@ -33,7 +33,7 @@ export declare const calendarRouter: import("@trpc/server").TRPCBuiltRouter<{
             dueDate: string;
             description?: string | undefined;
             priority?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
-            category?: "CUSTOM" | "FILING" | "AUDIT" | "RENEWAL" | "REVIEW" | "REGULATORY_DEADLINE" | "DOCUMENT_EXPIRY" | "COMPLIANCE_TASK" | undefined;
+            category?: "RENEWAL" | "CUSTOM" | "FILING" | "AUDIT" | "REVIEW" | "REGULATORY_DEADLINE" | "DOCUMENT_EXPIRY" | "COMPLIANCE_TASK" | undefined;
             regulation?: string | undefined;
             recurrence?: "NONE" | "MONTHLY" | "QUARTERLY" | "ANNUALLY" | undefined;
             assigneeId?: string | undefined;
@@ -76,7 +76,7 @@ export declare const calendarRouter: import("@trpc/server").TRPCBuiltRouter<{
             dueDate?: string | undefined;
             priority?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
             status?: "COMPLETED" | "IN_PROGRESS" | "OVERDUE" | "UPCOMING" | undefined;
-            category?: "CUSTOM" | "FILING" | "AUDIT" | "RENEWAL" | "REVIEW" | "REGULATORY_DEADLINE" | "DOCUMENT_EXPIRY" | "COMPLIANCE_TASK" | undefined;
+            category?: "RENEWAL" | "CUSTOM" | "FILING" | "AUDIT" | "REVIEW" | "REGULATORY_DEADLINE" | "DOCUMENT_EXPIRY" | "COMPLIANCE_TASK" | undefined;
             regulation?: string | undefined;
             recurrence?: "NONE" | "MONTHLY" | "QUARTERLY" | "ANNUALLY" | undefined;
             assigneeId?: string | undefined;
