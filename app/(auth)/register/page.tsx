@@ -4,7 +4,7 @@ import React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Input } from "@/components/ui/input"
@@ -42,19 +42,23 @@ function isFreeEmailDomain(email: string): boolean {
 
 export default function RegisterPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const invitationToken = searchParams.get("token") ?? ""
+  const invitedEmail = searchParams.get("email") ?? ""
+  const hasInvitation = invitationToken.length > 0
   const { register, isRegisterLoading, registerError } = useAuth()
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(hasInvitation ? 2 : 1)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [openLegalDoc, setOpenLegalDoc] = useState<LegalDocumentType | null>(null)
   const [formData, setFormData] = useState({
-    organizationType: "" as "" | "startup" | "enterprise" | "regulator",
+    organizationType: (hasInvitation ? "startup" : "") as "" | "startup" | "enterprise" | "regulator",
     companyName: "",
     firstName: "",
     lastName: "",
-    email: "",
+    email: invitedEmail,
     password: "",
     confirmPassword: "",
     cbkLicenseNumber: "",
@@ -110,7 +114,8 @@ export default function RegisterPage() {
         password: formData.password,
         name: `${formData.firstName} ${formData.lastName}`,
         role: ROLE_MAP[formData.organizationType],
-        companyName: formData.companyName || undefined,
+        companyName: hasInvitation ? undefined : formData.companyName || undefined,
+        invitationToken: invitationToken || undefined,
       })
       setSuccess(true)
     } catch (err: unknown) {
@@ -231,7 +236,7 @@ export default function RegisterPage() {
                   placeholder="Enter your company name"
                   value={formData.companyName}
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  required
+                  required={!hasInvitation}
                   className="bg-background"
                 />
               </div>
@@ -271,8 +276,9 @@ export default function RegisterPage() {
                   placeholder={formData.organizationType === "regulator" ? "name@cbk.go.ke" : "name@company.com"}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  readOnly={Boolean(invitedEmail)}
                   required
-                  className={`bg-background ${showFreeEmailWarning ? "border-yellow-500 focus-visible:ring-yellow-500" : ""}`}
+                  className={`bg-background ${invitedEmail ? "text-muted-foreground" : ""} ${showFreeEmailWarning ? "border-yellow-500 focus-visible:ring-yellow-500" : ""}`}
                   aria-describedby={showFreeEmailWarning ? "email-warning" : undefined}
                 />
                 {showFreeEmailWarning && (
@@ -407,6 +413,7 @@ export default function RegisterPage() {
                   variant="outline"
                   className="flex-1 bg-transparent"
                   onClick={() => setStep(1)}
+                  disabled={hasInvitation}
                 >
                   Back
                 </Button>

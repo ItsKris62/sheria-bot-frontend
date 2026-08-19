@@ -72,6 +72,7 @@ export function useAuth() {
       name: string;
       role: "REGULATOR" | "STARTUP" | "ENTERPRISE";
       companyName?: string;
+      invitationToken?: string;
       phone?: string;
     }) => {
       const result = await registerMutation.mutateAsync(data);
