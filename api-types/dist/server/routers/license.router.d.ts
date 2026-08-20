@@ -170,10 +170,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -316,10 +316,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -463,10 +463,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -616,10 +616,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -761,10 +761,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -897,10 +897,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -1036,10 +1036,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -1172,10 +1172,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -1314,10 +1314,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -1457,10 +1457,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -1726,10 +1726,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {
@@ -1874,10 +1874,10 @@ export declare const licenseRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 dueDate: Date | null;
                 amount: import("@prisma/client-runtime-utils").Decimal | null;
+                currency: string;
                 paidAt: Date | null;
                 createdByUserId: string;
                 updatedByUserId: string | null;
-                currency: string;
                 licenseId: string;
             })[];
             assignedOwner: {

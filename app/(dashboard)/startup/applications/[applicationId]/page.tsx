@@ -13,10 +13,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { getErrorMessage, trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import { AlertTriangle, ArrowLeft, Building2, Calendar, CheckCircle2, Clock, FileText, MessageSquare, Plus } from "lucide-react"
+import { currencyForJurisdiction, jurisdictionLabel } from "@/lib/jurisdictions"
 
 type ApplicationDetail = {
   id: string
   title: string
+  jurisdictionCode?: string
   regulator: string
   licenseType: string
   status: string
@@ -29,7 +31,7 @@ type ApplicationDetail = {
   updatedAt: Date | string
   timelineEvents: Array<{ id: string; title: string; description: string | null; eventDate: Date | string; completed: boolean }>
   documents: Array<{ id: string; name: string; status: string; notes: string | null; uploadedAt: Date | string | null }>
-  fees: Array<{ id: string; description: string; amount: number; status: string; paidAt: Date | string | null }>
+  fees: Array<{ id: string; description: string; amount: number; currency?: string; status: string; paidAt: Date | string | null }>
   regulatorFeedback: Array<{ id: string; fromName: string | null; message: string; actionRequired: boolean; dueDate: Date | string | null; receivedAt: Date | string }>
 }
 
@@ -76,6 +78,7 @@ export default function ApplicationDetailPage() {
   }
 
   const totalFees = app.fees.reduce((sum, fee) => sum + fee.amount, 0)
+  const feeCurrency = currencyForJurisdiction(app.jurisdictionCode)
 
   return (
     <div className="space-y-6">
@@ -87,6 +90,7 @@ export default function ApplicationDetailPage() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold text-foreground">{app.title}</h1>
+              <Badge variant="secondary">{jurisdictionLabel(app.jurisdictionCode)}</Badge>
               {app.referenceNumber ? <Badge variant="outline" className="font-mono text-xs">{app.referenceNumber}</Badge> : null}
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -188,17 +192,17 @@ export default function ApplicationDetailPage() {
             <CardContent className="space-y-3">
               <div className="flex gap-2">
                 <Input placeholder="Fee" value={feeDescription} onChange={(e) => setFeeDescription(e.target.value)} />
-                <Input className="w-28" type="number" placeholder="KES" value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} />
-                <Button onClick={() => addFee.mutate({ applicationId: app.id, description: feeDescription, amount: Number(feeAmount), status: "PENDING" })} disabled={!feeDescription || !feeAmount || addFee.isPending}><Plus className="h-4 w-4" /></Button>
+                <Input className="w-28" type="number" placeholder={feeCurrency} value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} />
+                <Button onClick={() => addFee.mutate({ applicationId: app.id, description: feeDescription, amount: Number(feeAmount), currency: feeCurrency, status: "PENDING" })} disabled={!feeDescription || !feeAmount || addFee.isPending}><Plus className="h-4 w-4" /></Button>
               </div>
               {app.fees.map((fee) => (
                 <div key={fee.id} className="flex items-center justify-between">
-                  <div><p className="text-sm font-medium text-foreground">{fee.description}</p><p className="text-xs text-muted-foreground">KES {fee.amount.toLocaleString()}</p></div>
+                  <div><p className="text-sm font-medium text-foreground">{fee.description}</p><p className="text-xs text-muted-foreground">{fee.currency ?? feeCurrency} {fee.amount.toLocaleString()}</p></div>
                   <Badge variant="outline">{fee.status}</Badge>
                 </div>
               ))}
               <Separator />
-              <div className="flex items-center justify-between font-medium"><span>Total</span><span>KES {totalFees.toLocaleString()}</span></div>
+              <div className="flex items-center justify-between font-medium"><span>Total</span><span>{feeCurrency} {totalFees.toLocaleString()}</span></div>
             </CardContent>
           </Card>
 

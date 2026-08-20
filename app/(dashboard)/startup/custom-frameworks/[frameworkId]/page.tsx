@@ -14,6 +14,33 @@ import { Textarea } from "@/components/ui/textarea"
 import { FeatureGate, LockedFeatureCard } from "@/components/plan/feature-gate"
 import { getErrorMessage, trpc } from "@/lib/trpc"
 
+type CustomFrameworkDetail = {
+  id: string
+  name: string
+  jurisdiction: string | null
+  regulator: string | null
+  category: string | null
+  status: string
+  version: number
+  sections?: Array<{
+    id: string
+    title: string
+    description: string | null
+  }>
+  controls?: Array<{
+    id: string
+    title: string
+    requirement: string
+    severity: string | null
+  }>
+}
+
+type CustomFrameworkVersion = {
+  id: string
+  version: number
+  createdAt: string | Date
+}
+
 export default function CustomFrameworkDetailPage() {
   const params = useParams<{ frameworkId: string }>()
   const frameworkId = params.frameworkId
@@ -58,7 +85,10 @@ export default function CustomFrameworkDetailPage() {
     onError: (error) => toast.error("Archive failed", { description: getErrorMessage(error) }),
   })
 
-  const framework = query.data as any
+  const framework: CustomFrameworkDetail | undefined = query.data
+  const sections = framework?.sections ?? []
+  const controls = framework?.controls ?? []
+  const versionHistory: CustomFrameworkVersion[] = versions.data ?? []
   const isDraft = framework?.status === "DRAFT"
 
   return (
@@ -119,10 +149,10 @@ export default function CustomFrameworkDetailPage() {
                     <CardTitle className="text-base">Sections</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {(framework.sections ?? []).length === 0 ? (
+                    {sections.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No sections yet.</p>
                     ) : (
-                      framework.sections.map((section: any) => (
+                      sections.map((section) => (
                         <div key={section.id} className="rounded-lg border border-border/50 p-3">
                           <p className="font-medium text-foreground">{section.title}</p>
                           {section.description && <p className="mt-1 text-sm text-muted-foreground">{section.description}</p>}
@@ -137,10 +167,10 @@ export default function CustomFrameworkDetailPage() {
                     <CardTitle className="text-base">Controls</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {(framework.controls ?? []).length === 0 ? (
+                    {controls.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No controls yet.</p>
                     ) : (
-                      framework.controls.map((control: any) => (
+                      controls.map((control) => (
                         <div key={control.id} className="rounded-lg border border-border/50 p-3">
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="font-medium text-foreground">{control.title}</p>
@@ -163,7 +193,7 @@ export default function CustomFrameworkDetailPage() {
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <Input placeholder="Section title" value={sectionTitle} onChange={(event) => setSectionTitle(event.target.value)} />
-                        <Button className="w-full" disabled={sectionTitle.trim().length < 2 || createSection.isPending} onClick={() => createSection.mutate({ frameworkId, title: sectionTitle, order: framework.sections?.length ?? 0 })}>
+                        <Button className="w-full" disabled={sectionTitle.trim().length < 2 || createSection.isPending} onClick={() => createSection.mutate({ frameworkId, title: sectionTitle, order: sections.length })}>
                           <Plus className="mr-2 h-4 w-4" />
                           Add Section
                         </Button>
@@ -189,7 +219,7 @@ export default function CustomFrameworkDetailPage() {
                             title: controlTitle,
                             requirement,
                             severity: severity || null,
-                            order: framework.controls?.length ?? 0,
+                            order: controls.length,
                           })}
                         >
                           <Plus className="mr-2 h-4 w-4" />
@@ -205,10 +235,10 @@ export default function CustomFrameworkDetailPage() {
                     <CardTitle className="text-base">Version History</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    {(versions.data ?? []).length === 0 ? (
+                    {versionHistory.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No published snapshots yet.</p>
                     ) : (
-                      (versions.data ?? []).map((version: any) => (
+                      versionHistory.map((version) => (
                         <div key={version.id} className="flex items-center justify-between rounded-lg border border-border/50 p-2 text-sm">
                           <span>Version {version.version}</span>
                           <span className="text-muted-foreground">{new Date(version.createdAt).toLocaleDateString("en-KE")}</span>

@@ -21,10 +21,11 @@ import {
 import { Loader2, Megaphone, Plus, Send, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { AdminEmptyState, AdminErrorState, AdminPageHeader } from "@/components/admin/portal"
 import { PortalSurface } from "@/components/portal"
+import { AUDITED_JURISDICTIONS, jurisdictionLabel, type AuditedJurisdictionCode } from "@/lib/jurisdictions"
 
 // --- Constants ----------------------------------------------------------------
 
-const REGULATORY_BODIES = ["CBK", "CMA", "ODPC", "CA", "GAZETTE"] as const
+const REGULATORY_BODIES = ["CBK", "CMA", "ODPC", "CA", "GAZETTE", "BNR", "RURA", "RISA", "RWANDA_GAZETTE", "RBM", "MACRA", "MALAWI_GAZETTE"] as const
 const ALERT_CATEGORIES = [
   "PRUDENTIAL",
   "DATA_PROTECTION",
@@ -46,6 +47,7 @@ const createAlertSchema = z.object({
   summary: z.string().min(10, "Summary must be at least 10 characters").max(500),
   body: z.string().min(20, "Body must be at least 20 characters"),
   sourceUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
+  jurisdictionCode: z.enum(["KE", "RW", "MW"], { required_error: "Select a country" }),
   regulatoryBody: z.enum(REGULATORY_BODIES, { required_error: "Select a regulatory body" }),
   category: z.enum(ALERT_CATEGORIES, { required_error: "Select a category" }),
   severity: z.enum(ALERT_SEVERITIES),
@@ -61,6 +63,7 @@ interface AdminAlert {
   id: string
   title: string
   summary: string
+  jurisdictionCode: string
   regulatoryBody: string
   category: string
   severity: string
@@ -85,6 +88,7 @@ const EMPTY_FORM = {
   summary: "",
   body: "",
   sourceUrl: "",
+  jurisdictionCode: "KE" as AuditedJurisdictionCode,
   regulatoryBody: "" as RegulatoryBody | "",
   category: "" as AlertCategory | "",
   severity: "MEDIUM" as AlertSeverity,
@@ -271,8 +275,26 @@ export default function AdminAlertsPage() {
               {errors.body && <p className="text-xs text-destructive">{errors.body}</p>}
             </div>
 
-            {/* Row: regulatory body + category + severity */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {/* Row: jurisdiction + regulatory body + category + severity */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+              <div className="space-y-1.5">
+                <Label>Country</Label>
+                <Select
+                  value={form.jurisdictionCode}
+                  onValueChange={(v) => setField("jurisdictionCode", v as AuditedJurisdictionCode)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AUDITED_JURISDICTIONS.map((item) => (
+                      <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.jurisdictionCode && <p className="text-xs text-destructive">{errors.jurisdictionCode}</p>}
+              </div>
+
               <div className="space-y-1.5">
                 <Label>Regulatory Body</Label>
                 <Select
@@ -423,7 +445,7 @@ export default function AdminAlertsPage() {
                             {sev}
                           </span>
                           <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                            {alert.regulatoryBody}
+                            {jurisdictionLabel(alert.jurisdictionCode)} - {alert.regulatoryBody}
                           </span>
                           <span className="text-[10px] text-muted-foreground">
                             {alert.category.replace(/_/g, " ")}

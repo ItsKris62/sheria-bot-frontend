@@ -1,5 +1,6 @@
 import { z } from 'zod';
-export declare const REGULATORY_BODIES: readonly ["CBK", "CMA", "ODPC", "CA", "GAZETTE"];
+export declare const ALERT_JURISDICTIONS: readonly ["KE", "RW", "MW"];
+export declare const REGULATORY_BODIES: readonly ["CBK", "CMA", "ODPC", "CA", "GAZETTE", "BNR", "RURA", "RISA", "RWANDA_GAZETTE", "RBM", "MACRA", "MALAWI_GAZETTE"];
 export declare const ALERT_CATEGORIES: readonly ["PRUDENTIAL", "DATA_PROTECTION", "AML_CFT", "LICENSING", "CAPITAL_MARKETS", "GENERAL"];
 export declare const ALERT_SEVERITIES: readonly ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 export declare const EMAIL_FREQUENCIES: readonly ["REALTIME", "DAILY", "WEEKLY"];
@@ -8,12 +9,24 @@ export declare const createAlertSchema: z.ZodObject<{
     summary: z.ZodString;
     body: z.ZodString;
     sourceUrl: z.ZodOptional<z.ZodString>;
+    jurisdictionCode: z.ZodDefault<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+    }>>;
     regulatoryBody: z.ZodEnum<{
         GAZETTE: "GAZETTE";
         CBK: "CBK";
         CMA: "CMA";
         ODPC: "ODPC";
         CA: "CA";
+        BNR: "BNR";
+        RURA: "RURA";
+        RISA: "RISA";
+        RWANDA_GAZETTE: "RWANDA_GAZETTE";
+        RBM: "RBM";
+        MACRA: "MACRA";
+        MALAWI_GAZETTE: "MALAWI_GAZETTE";
     }>;
     category: z.ZodEnum<{
         DATA_PROTECTION: "DATA_PROTECTION";
@@ -35,12 +48,24 @@ export declare const createAlertSchema: z.ZodObject<{
 export declare const getAlertsSchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
+    jurisdictionCode: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+    }>>;
     regulatoryBody: z.ZodOptional<z.ZodEnum<{
         GAZETTE: "GAZETTE";
         CBK: "CBK";
         CMA: "CMA";
         ODPC: "ODPC";
         CA: "CA";
+        BNR: "BNR";
+        RURA: "RURA";
+        RISA: "RISA";
+        RWANDA_GAZETTE: "RWANDA_GAZETTE";
+        RBM: "RBM";
+        MACRA: "MACRA";
+        MALAWI_GAZETTE: "MALAWI_GAZETTE";
     }>>;
     severity: z.ZodOptional<z.ZodEnum<{
         LOW: "LOW";
@@ -51,12 +76,24 @@ export declare const getAlertsSchema: z.ZodObject<{
     unreadOnly: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 export declare const upsertSubscriptionSchema: z.ZodObject<{
+    jurisdictions: z.ZodDefault<z.ZodArray<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+    }>>>;
     regulatoryBodies: z.ZodArray<z.ZodEnum<{
         GAZETTE: "GAZETTE";
         CBK: "CBK";
         CMA: "CMA";
         ODPC: "ODPC";
         CA: "CA";
+        BNR: "BNR";
+        RURA: "RURA";
+        RISA: "RISA";
+        RWANDA_GAZETTE: "RWANDA_GAZETTE";
+        RBM: "RBM";
+        MACRA: "MACRA";
+        MALAWI_GAZETTE: "MALAWI_GAZETTE";
     }>>;
     categories: z.ZodArray<z.ZodEnum<{
         DATA_PROTECTION: "DATA_PROTECTION";

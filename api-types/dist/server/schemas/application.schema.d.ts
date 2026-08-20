@@ -1,4 +1,12 @@
 import { z } from 'zod';
+export declare const jurisdictionCodeSchema: z.ZodEnum<{
+    KE: "KE";
+    MW: "MW";
+    RW: "RW";
+}>;
+export declare const applicationCurrencySchema: z.ZodEnum<{
+    [x: string]: string;
+}>;
 export declare const applicationStatusSchema: z.ZodEnum<{
     DRAFT: "DRAFT";
     IN_PROGRESS: "IN_PROGRESS";
@@ -22,6 +30,11 @@ export declare const feeStatusSchema: z.ZodEnum<{
 export declare const listApplicationsSchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
+    jurisdictionCode: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+    }>>;
     status: z.ZodOptional<z.ZodEnum<{
         DRAFT: "DRAFT";
         IN_PROGRESS: "IN_PROGRESS";
@@ -38,6 +51,11 @@ export declare const getApplicationSchema: z.ZodObject<{
 }, z.core.$strip>;
 export declare const createApplicationSchema: z.ZodObject<{
     title: z.ZodString;
+    jurisdictionCode: z.ZodDefault<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+    }>>;
     regulator: z.ZodString;
     licenseType: z.ZodString;
     status: z.ZodDefault<z.ZodEnum<{
@@ -56,6 +74,11 @@ export declare const createApplicationSchema: z.ZodObject<{
 }, z.core.$strip>;
 export declare const updateApplicationSchema: z.ZodObject<{
     title: z.ZodOptional<z.ZodString>;
+    jurisdictionCode: z.ZodOptional<z.ZodDefault<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+    }>>>;
     regulator: z.ZodOptional<z.ZodString>;
     licenseType: z.ZodOptional<z.ZodString>;
     status: z.ZodOptional<z.ZodDefault<z.ZodEnum<{
@@ -99,6 +122,9 @@ export declare const addApplicationFeeSchema: z.ZodObject<{
     applicationId: z.ZodString;
     description: z.ZodString;
     amount: z.ZodNumber;
+    currency: z.ZodDefault<z.ZodEnum<{
+        [x: string]: string;
+    }>>;
     status: z.ZodDefault<z.ZodEnum<{
         PENDING: "PENDING";
         WAIVED: "WAIVED";

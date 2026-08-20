@@ -49,9 +49,9 @@ declare class PaymentService {
         createdAt: Date;
         updatedAt: Date;
         amount: number;
+        currency: string;
         paidAt: Date | null;
         orgId: string;
-        currency: string;
         subscriptionId: string | null;
         provider: import(".prisma/client").$Enums.PaymentProvider;
         providerTransactionId: string | null;
@@ -74,9 +74,9 @@ declare class PaymentService {
             createdAt: Date;
             updatedAt: Date;
             amount: number;
+            currency: string;
             paidAt: Date | null;
             orgId: string;
-            currency: string;
             subscriptionId: string | null;
             provider: import(".prisma/client").$Enums.PaymentProvider;
             providerTransactionId: string | null;
@@ -103,9 +103,9 @@ declare class PaymentService {
         createdAt: Date;
         updatedAt: Date;
         amount: number;
+        currency: string;
         paidAt: Date | null;
         orgId: string;
-        currency: string;
         subscriptionId: string | null;
         provider: import(".prisma/client").$Enums.PaymentProvider;
         providerTransactionId: string | null;
@@ -137,9 +137,9 @@ declare class PaymentService {
         createdAt: Date;
         updatedAt: Date;
         amount: number;
+        currency: string;
         paidAt: Date | null;
         orgId: string;
-        currency: string;
         subscriptionId: string | null;
         provider: import(".prisma/client").$Enums.PaymentProvider;
         providerTransactionId: string | null;

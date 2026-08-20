@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, ChevronLeft, ExternalLink, Calendar, Building2, Megaphone } from "lucide-react"
+import { jurisdictionLabel } from "@/lib/jurisdictions"
 
 type AlertSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
 
@@ -23,6 +24,7 @@ interface AlertDetail {
   title: string
   summary: string
   body: string
+  jurisdictionCode: string
   regulatoryBody: string
   severity: string
   publishedAt: string | Date
@@ -93,7 +95,7 @@ export default function AlertDetailPage({ params }: { params: Promise<{ alertId:
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               <Building2 className="h-3 w-3" />
-              {alert.regulatoryBody}
+              {jurisdictionLabel(alert.jurisdictionCode)} - {alert.regulatoryBody}
             </span>
             <span className="ml-auto text-xs text-muted-foreground">
               Published {formatDate(alert.publishedAt)}

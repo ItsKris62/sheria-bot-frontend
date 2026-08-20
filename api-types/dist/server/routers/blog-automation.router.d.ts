@@ -288,10 +288,10 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                     jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                     reason: string | null;
                     approvedAt: Date | null;
+                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     blogPostId: string | null;
                     dismissedReason: string | null;
                     suggestedSlug: string | null;
-                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     articleType: import(".prisma/client").$Enums.BlogArticleType;
                     relevanceScore: number;
                     sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
@@ -380,10 +380,10 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                 reason: string | null;
                 approvedAt: Date | null;
+                jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                 blogPostId: string | null;
                 dismissedReason: string | null;
                 suggestedSlug: string | null;
-                jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                 articleType: import(".prisma/client").$Enums.BlogArticleType;
                 relevanceScore: number;
                 sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;

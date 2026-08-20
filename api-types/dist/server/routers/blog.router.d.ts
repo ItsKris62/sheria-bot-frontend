@@ -354,10 +354,10 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
                 jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                 reason: string | null;
                 approvedAt: Date | null;
+                jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                 blogPostId: string | null;
                 dismissedReason: string | null;
                 suggestedSlug: string | null;
-                jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                 articleType: import(".prisma/client").$Enums.BlogArticleType;
                 relevanceScore: number;
                 sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;

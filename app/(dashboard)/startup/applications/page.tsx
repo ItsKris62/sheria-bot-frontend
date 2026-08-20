@@ -12,10 +12,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { getErrorMessage, trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import { AlertCircle, ArrowRight, Building2, Calendar, CheckCircle2, Clock, FileText, Plus, Search } from "lucide-react"
+import { AUDITED_JURISDICTIONS, jurisdictionLabel, type AuditedJurisdictionCode } from "@/lib/jurisdictions"
 
 type ApplicationRow = {
   id: string
   title: string
+  jurisdictionCode?: string
   regulator: string
   licenseType: string
   status: string
@@ -27,6 +29,18 @@ type ApplicationRow = {
   updatedAt: Date | string
   _count?: { documents: number; fees: number; regulatorFeedback: number; timelineEvents: number }
 }
+
+const APPLICATION_STATUSES = [
+  "DRAFT",
+  "IN_PROGRESS",
+  "SUBMITTED",
+  "AWAITING_FEEDBACK",
+  "APPROVED",
+  "REJECTED",
+  "WITHDRAWN",
+] as const
+
+type ApplicationStatus = (typeof APPLICATION_STATUSES)[number]
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof FileText }> = {
   DRAFT: { label: "Draft", icon: FileText, color: "bg-muted text-muted-foreground" },
@@ -41,10 +55,12 @@ const statusConfig: Record<string, { label: string; color: string; icon: typeof 
 export default function ApplicationsPage() {
   const utils = trpc.useUtils()
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">("all")
+  const [jurisdictionFilter, setJurisdictionFilter] = useState<AuditedJurisdictionCode | "all">("all")
   const [formOpen, setFormOpen] = useState(false)
   const [form, setForm] = useState({
     title: "",
+    jurisdictionCode: "KE" as AuditedJurisdictionCode,
     regulator: "",
     licenseType: "",
     referenceNumber: "",
@@ -55,12 +71,13 @@ export default function ApplicationsPage() {
   const { data, isLoading, isError } = trpc.application.list.useQuery({
     page: 1,
     limit: 50,
-    status: statusFilter === "all" ? undefined : statusFilter as never,
+    jurisdictionCode: jurisdictionFilter === "all" ? undefined : jurisdictionFilter,
+    status: statusFilter === "all" ? undefined : statusFilter,
     search: searchQuery.trim() || undefined,
   })
   const createMutation = trpc.application.create.useMutation({
     onSuccess: () => {
-      setForm({ title: "", regulator: "", licenseType: "", referenceNumber: "", nextAction: "", dueDate: "" })
+      setForm({ title: "", jurisdictionCode: "KE", regulator: "", licenseType: "", referenceNumber: "", nextAction: "", dueDate: "" })
       setFormOpen(false)
       void utils.application.list.invalidate()
       toast.success("Application tracking record created")
@@ -68,7 +85,7 @@ export default function ApplicationsPage() {
     onError: (err) => toast.error("Could not create application", { description: getErrorMessage(err) }),
   })
 
-  const applications: ApplicationRow[] = Array.isArray(data?.applications) ? (data.applications as ApplicationRow[]) : []
+  const applications: ApplicationRow[] = Array.isArray(data?.applications) ? (data.applications as unknown as ApplicationRow[]) : []
   const stats = data?.stats ?? { total: 0, inProgress: 0, submitted: 0, approved: 0 }
   const statCards = [
     { label: "Total Applications", value: stats.total, Icon: FileText },
@@ -80,6 +97,7 @@ export default function ApplicationsPage() {
   const submit = () => {
     createMutation.mutate({
       title: form.title,
+      jurisdictionCode: form.jurisdictionCode,
       regulator: form.regulator,
       licenseType: form.licenseType,
       referenceNumber: form.referenceNumber || undefined,
@@ -94,7 +112,7 @@ export default function ApplicationsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">License Applications</h1>
+            <h1 className="text-2xl font-bold text-foreground">License Applications</h1>
           <p className="text-muted-foreground mt-1">Track application status, documents, fees, timelines, and regulator feedback</p>
         </div>
         <Button className="bg-primary text-primary-foreground" onClick={() => setFormOpen((value) => !value)}>
@@ -110,8 +128,18 @@ export default function ApplicationsPage() {
             <CardDescription>Start tracking a real regulatory application for your organization.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2">
-            <Input placeholder="Payment Service Provider License" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
-            <Input placeholder="Central Bank of Kenya" value={form.regulator} onChange={(e) => setForm((f) => ({ ...f, regulator: e.target.value }))} />
+            <Input placeholder="Payment service provider license" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+            <Select value={form.jurisdictionCode} onValueChange={(value) => setForm((f) => ({ ...f, jurisdictionCode: value as AuditedJurisdictionCode }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Jurisdiction" />
+              </SelectTrigger>
+              <SelectContent>
+                {AUDITED_JURISDICTIONS.map((item) => (
+                  <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input placeholder="Regulator or authority" value={form.regulator} onChange={(e) => setForm((f) => ({ ...f, regulator: e.target.value }))} />
             <Input placeholder="License type" value={form.licenseType} onChange={(e) => setForm((f) => ({ ...f, licenseType: e.target.value }))} />
             <Input placeholder="Reference number (optional)" value={form.referenceNumber} onChange={(e) => setForm((f) => ({ ...f, referenceNumber: e.target.value }))} />
             <Input placeholder="Next action (optional)" value={form.nextAction} onChange={(e) => setForm((f) => ({ ...f, nextAction: e.target.value }))} />
@@ -156,15 +184,29 @@ export default function ApplicationsPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Search applications..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 sm:w-[250px] bg-muted/50" />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={jurisdictionFilter} onValueChange={(value) => setJurisdictionFilter(value as AuditedJurisdictionCode | "all")}>
+                <SelectTrigger className="sm:w-[160px] bg-muted/50">
+                  <SelectValue placeholder="Country" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Countries</SelectItem>
+                  {AUDITED_JURISDICTIONS.map((item) => (
+                    <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ApplicationStatus | "all")}>
                 <SelectTrigger className="sm:w-[190px] bg-muted/50">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  {Object.entries(statusConfig).map(([value, config]) => (
+                  {APPLICATION_STATUSES.map((value) => {
+                    const config = statusConfig[value]
+                    return (
                     <SelectItem key={value} value={value}>{config.label}</SelectItem>
-                  ))}
+                    )
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -199,6 +241,7 @@ export default function ApplicationsPage() {
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="font-medium text-foreground">{app.title}</h3>
+                            <Badge variant="secondary">{jurisdictionLabel(app.jurisdictionCode)}</Badge>
                             {app.referenceNumber ? <Badge variant="outline" className="font-mono text-xs">{app.referenceNumber}</Badge> : null}
                           </div>
                           <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">

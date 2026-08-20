@@ -21,7 +21,7 @@ export function RegulatoryAlertsCard({ alerts = [], isLoading, isError }: Regula
         icon={Bell}
         action={
           <Button variant="ghost" size="sm" asChild className="text-xs text-[var(--portal-text-secondary)] hover:text-white">
-            <Link href="/startup/monitor">
+            <Link href="/dashboard/alerts">
               View all
               <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
             </Link>

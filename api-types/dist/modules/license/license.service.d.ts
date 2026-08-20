@@ -158,10 +158,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {
@@ -293,10 +293,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {
@@ -429,10 +429,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {
@@ -572,10 +572,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {
@@ -707,10 +707,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {
@@ -842,10 +842,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {
@@ -977,10 +977,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {
@@ -1112,10 +1112,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {
@@ -1247,10 +1247,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {
@@ -1382,10 +1382,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {
@@ -1640,10 +1640,10 @@ export declare class LicenseService {
             updatedAt: Date;
             dueDate: Date | null;
             amount: Prisma.Decimal | null;
+            currency: string;
             paidAt: Date | null;
             createdByUserId: string;
             updatedByUserId: string | null;
-            currency: string;
             licenseId: string;
         })[];
         assignedOwner: {

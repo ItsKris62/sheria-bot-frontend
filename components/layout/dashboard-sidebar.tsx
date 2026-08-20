@@ -25,7 +25,6 @@ import {
   AlertTriangle,
   Calendar,
   Folder,
-  Bell,
   Sparkles,
   Lock,
   Megaphone,
@@ -118,7 +117,6 @@ export const startupNav: NavGroup[] = [
       { title: "Licenses", href: "/startup/licenses", icon: BadgeCheck, lockedFeature: "licenseManagement" },
       { title: "Calendar", href: "/startup/calendar", icon: Calendar },
       { title: "Documents", href: "/startup/documents", icon: Folder, lockedFeature: "documentRepository" },
-      { title: "Monitor", href: "/startup/monitor", icon: Bell },
       { title: "Regulatory Alerts", href: "/dashboard/alerts", icon: Megaphone },
     ],
   },
@@ -143,14 +141,14 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
 
   const baseNavGroups = userType === "regulator" ? regulatorNav : startupNav
 
-  // Inject the live alert unread count into the Monitor nav item badge
+  // Inject the live alert unread count into the canonical Regulatory Alerts nav item badge
   const navGroups = useMemo(() => {
     if (userType !== "startup" || alertUnreadCount <= 0) return baseNavGroups
 
     return baseNavGroups.map((group) => ({
       ...group,
       items: group.items.map((item) =>
-        item.href === "/startup/monitor"
+        item.href === "/dashboard/alerts"
           ? { ...item, badge: alertUnreadCount }
           : item
       ),

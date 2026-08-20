@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { FeatureGate, LockedFeatureCard } from "@/components/plan/feature-gate"
 import { getErrorMessage, trpc } from "@/lib/trpc"
+import { AUDITED_JURISDICTIONS, jurisdictionLabel, type AuditedJurisdictionCode } from "@/lib/jurisdictions"
 
 type FrameworkStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED"
 
@@ -23,7 +24,7 @@ function formatDate(value: Date | string) {
 export default function CustomFrameworksPage() {
   const [status, setStatus] = useState<FrameworkStatus | "ALL">("ALL")
   const [name, setName] = useState("")
-  const [jurisdiction, setJurisdiction] = useState("")
+  const [jurisdiction, setJurisdiction] = useState<AuditedJurisdictionCode>("KE")
   const [regulator, setRegulator] = useState("")
   const [category, setCategory] = useState("")
   const [description, setDescription] = useState("")
@@ -33,7 +34,7 @@ export default function CustomFrameworksPage() {
     onSuccess: async () => {
       toast.success("Custom framework created")
       setName("")
-      setJurisdiction("")
+      setJurisdiction("KE")
       setRegulator("")
       setCategory("")
       setDescription("")
@@ -108,10 +109,10 @@ export default function CustomFrameworksPage() {
                             <Badge variant="outline">v{framework.version}</Badge>
                           </div>
                           <p className="mt-1 text-sm text-muted-foreground">
-                            {[framework.jurisdiction, framework.regulator, framework.category].filter(Boolean).join(" · ") || "No metadata set"}
+                            {[framework.jurisdiction ? jurisdictionLabel(framework.jurisdiction) : null, framework.regulator, framework.category].filter(Boolean).join(" - ") || "No metadata set"}
                           </p>
                           <p className="mt-2 text-xs text-muted-foreground">
-                            {framework._count?.sections ?? 0} sections · {framework._count?.controls ?? 0} controls · Updated {formatDate(framework.updatedAt)}
+                            {framework._count?.sections ?? 0} sections - {framework._count?.controls ?? 0} controls - Updated {formatDate(framework.updatedAt)}
                           </p>
                         </div>
                       </div>
@@ -138,7 +139,16 @@ export default function CustomFrameworksPage() {
                 <Input id="framework-name" value={name} onChange={(event) => setName(event.target.value)} />
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                <Input placeholder="Jurisdiction" value={jurisdiction} onChange={(event) => setJurisdiction(event.target.value)} />
+                <Select value={jurisdiction} onValueChange={(value) => setJurisdiction(value as AuditedJurisdictionCode)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Jurisdiction" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AUDITED_JURISDICTIONS.map((item) => (
+                      <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Input placeholder="Regulator" value={regulator} onChange={(event) => setRegulator(event.target.value)} />
                 <Input placeholder="Category" value={category} onChange={(event) => setCategory(event.target.value)} />
               </div>
@@ -148,7 +158,7 @@ export default function CustomFrameworksPage() {
                 disabled={create.isPending || name.trim().length < 2}
                 onClick={() => create.mutate({
                   name,
-                  jurisdiction: jurisdiction || null,
+                  jurisdiction,
                   regulator: regulator || null,
                   category: category || null,
                   description: description || null,

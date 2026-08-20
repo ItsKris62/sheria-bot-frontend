@@ -14,16 +14,18 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Loader2, Megaphone, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react"
+import { AUDITED_JURISDICTIONS, jurisdictionLabel, type AuditedJurisdictionCode } from "@/lib/jurisdictions"
 
 // --- Types --------------------------------------------------------------------
 
 type AlertSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
-type RegulatoryBody = "CBK" | "CMA" | "ODPC" | "CA" | "GAZETTE"
+type RegulatoryBody = "CBK" | "CMA" | "ODPC" | "CA" | "GAZETTE" | "BNR" | "RURA" | "RISA" | "RWANDA_GAZETTE" | "RBM" | "MACRA" | "MALAWI_GAZETTE"
 
 interface AlertItem {
   id: string
   title: string
   summary: string
+  jurisdictionCode: string
   regulatoryBody: string
   severity: string
   publishedAt: string | Date
@@ -40,7 +42,7 @@ const SEVERITY_CONFIG: Record<AlertSeverity, { pillCls: string; dotCls: string }
   LOW:      { pillCls: "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20", dotCls: "bg-emerald-500" },
 }
 
-const REGULATORY_BODIES: RegulatoryBody[] = ["CBK", "CMA", "ODPC", "CA", "GAZETTE"]
+const REGULATORY_BODIES: RegulatoryBody[] = ["CBK", "CMA", "ODPC", "CA", "GAZETTE", "BNR", "RURA", "RISA", "RWANDA_GAZETTE", "RBM", "MACRA", "MALAWI_GAZETTE"]
 const SEVERITIES: AlertSeverity[] = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
 
 function relativeTime(dateStr: string | Date): string {
@@ -58,6 +60,7 @@ function relativeTime(dateStr: string | Date): string {
 
 export default function AlertsPage() {
   const [page, setPage] = useState(1)
+  const [jurisdictionCode, setJurisdictionCode] = useState<AuditedJurisdictionCode | "ALL">("ALL")
   const [severity, setSeverity] = useState<AlertSeverity | "ALL">("ALL")
   const [regulatoryBody, setRegulatoryBody] = useState<RegulatoryBody | "ALL">("ALL")
   const [unreadOnly, setUnreadOnly] = useState(false)
@@ -65,6 +68,7 @@ export default function AlertsPage() {
   const { data, isLoading, isFetching } = trpc.alert.getAlerts.useQuery({
     page,
     limit: 20,
+    jurisdictionCode: jurisdictionCode === "ALL" ? undefined : jurisdictionCode,
     severity: severity === "ALL" ? undefined : severity,
     regulatoryBody: regulatoryBody === "ALL" ? undefined : regulatoryBody,
     unreadOnly: unreadOnly || undefined,
@@ -85,7 +89,7 @@ export default function AlertsPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Regulatory Alerts</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Stay informed about the latest regulatory updates from CBK, CMA, ODPC, and other bodies.
+            Stay informed about regulatory updates across Kenya, Rwanda, and Malawi.
           </p>
         </div>
         {total > 0 && (
@@ -95,6 +99,21 @@ export default function AlertsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
+        <Select
+          value={jurisdictionCode}
+          onValueChange={(v) => { setJurisdictionCode(v as AuditedJurisdictionCode | "ALL"); handleFilterChange() }}
+        >
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="All countries" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All countries</SelectItem>
+            {AUDITED_JURISDICTIONS.map((item) => (
+              <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <Select
           value={regulatoryBody}
           onValueChange={(v) => { setRegulatoryBody(v as RegulatoryBody | "ALL"); handleFilterChange() }}
@@ -172,6 +191,7 @@ export default function AlertsPage() {
                             {sev}
                           </span>
                           <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                            {jurisdictionLabel(alert.jurisdictionCode)} -{" "}
                             {alert.regulatoryBody}
                           </span>
                           <span className="text-[10px] text-muted-foreground ml-auto">

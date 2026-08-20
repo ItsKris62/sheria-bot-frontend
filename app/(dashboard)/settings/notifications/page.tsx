@@ -43,6 +43,7 @@ import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import { useCategoryPreferences, useUpdateCategoryPreference } from "@/hooks/use-notifications"
 import { useAuthStore } from "@/lib/auth-store"
+import { AUDITED_JURISDICTIONS, type AuditedJurisdictionCode } from "@/lib/jurisdictions"
 
 type CategoryName = "SECURITY" | "COMPLIANCE" | "DOCUMENTS" | "ACCOUNT" | "SUPPORT" | "SYSTEM"
 
@@ -57,7 +58,7 @@ const CATEGORY_META: Record<CategoryName, { label: string; desc: string; Icon: R
 
 // --- Alert subscription constants --------------------------------------------
 
-const REGULATORY_BODIES = ["CBK", "CMA", "ODPC", "CA", "GAZETTE"] as const
+const REGULATORY_BODIES = ["CBK", "CMA", "ODPC", "CA", "GAZETTE", "BNR", "RURA", "RISA", "RWANDA_GAZETTE", "RBM", "MACRA", "MALAWI_GAZETTE"] as const
 const ALERT_CATEGORIES = ["PRUDENTIAL", "DATA_PROTECTION", "AML_CFT", "LICENSING", "CAPITAL_MARKETS", "GENERAL"] as const
 const CATEGORY_LABELS: Record<string, string> = {
   PRUDENTIAL: "Prudential",
@@ -73,6 +74,7 @@ type SubState = {
   emailEnabled: boolean
   emailFrequency: "REALTIME" | "DAILY" | "WEEKLY"
   severityThreshold: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+  jurisdictions: AuditedJurisdictionCode[]
   regulatoryBodies: Array<(typeof REGULATORY_BODIES)[number]>
   categories: Array<(typeof ALERT_CATEGORIES)[number]>
 }
@@ -82,16 +84,18 @@ const DEFAULT_SUB: SubState = {
   emailEnabled: false,
   emailFrequency: "DAILY",
   severityThreshold: "LOW",
+  jurisdictions: ["KE"],
   regulatoryBodies: [...REGULATORY_BODIES],
   categories: [...ALERT_CATEGORIES],
 }
 
-function subscriptionToForm(sub: SubState & { regulatoryBodies?: string[]; categories?: string[] }): SubState {
+function subscriptionToForm(sub: SubState & { jurisdictions?: string[]; regulatoryBodies?: string[]; categories?: string[] }): SubState {
   return {
     inAppEnabled: sub.inAppEnabled,
     emailEnabled: sub.emailEnabled,
     emailFrequency: sub.emailFrequency,
     severityThreshold: sub.severityThreshold,
+    jurisdictions: sub.jurisdictions as AuditedJurisdictionCode[] ?? ["KE"],
     regulatoryBodies: sub.regulatoryBodies as SubState["regulatoryBodies"] ?? [...REGULATORY_BODIES],
     categories: sub.categories as SubState["categories"] ?? [...ALERT_CATEGORIES],
   }
@@ -107,7 +111,7 @@ function AlertSubscriptionSection() {
   })
 
   const remoteForm = useMemo(
-    () => sub ? subscriptionToForm(sub as SubState & { regulatoryBodies?: string[]; categories?: string[] }) : DEFAULT_SUB,
+    () => sub ? subscriptionToForm(sub as unknown as SubState & { jurisdictions?: string[]; regulatoryBodies?: string[]; categories?: string[] }) : DEFAULT_SUB,
     [sub],
   )
   const form = draftForm ?? remoteForm
@@ -132,6 +136,13 @@ function AlertSubscriptionSection() {
       ? form.regulatoryBodies.filter((b) => b !== body)
       : [...form.regulatoryBodies, body]
     patch({ regulatoryBodies: next })
+  }
+
+  function toggleJurisdiction(jurisdiction: AuditedJurisdictionCode) {
+    const next = form.jurisdictions.includes(jurisdiction)
+      ? form.jurisdictions.filter((item) => item !== jurisdiction)
+      : [...form.jurisdictions, jurisdiction]
+    patch({ jurisdictions: next.length > 0 ? next : [jurisdiction] })
   }
 
   function toggleCategory(cat: (typeof ALERT_CATEGORIES)[number]) {
@@ -244,6 +255,28 @@ function AlertSubscriptionSection() {
                   <SelectItem value="CRITICAL">Critical</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <Separator />
+
+            {/* Countries */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">Countries</p>
+              <p className="text-xs text-muted-foreground">Receive alerts for these jurisdictions.</p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {AUDITED_JURISDICTIONS.map((item) => (
+                  <div key={item.code} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`jurisdiction-${item.code}`}
+                      checked={form.jurisdictions.includes(item.code)}
+                      onCheckedChange={() => toggleJurisdiction(item.code)}
+                    />
+                    <Label htmlFor={`jurisdiction-${item.code}`} className="text-sm font-normal cursor-pointer">
+                      {item.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <Separator />

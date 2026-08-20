@@ -423,6 +423,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     createdAt: Date;
                     updatedAt: Date;
                     deletedAt: Date | null;
+                    jurisdictionCode: string;
                     regulator: string;
                     licenseType: string;
                     progress: number;
@@ -440,6 +441,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     createdAt: Date;
                     updatedAt: Date;
                     deletedAt: Date | null;
+                    jurisdictionCode: string;
                     regulator: string;
                     licenseType: string;
                     progress: number;
@@ -547,10 +549,10 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 } | {
                     id: string;
@@ -561,10 +563,10 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[] | ({
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -898,9 +900,9 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     createdAt: Date;
                     updatedAt: Date;
                     amount: number;
+                    currency: string;
                     paidAt: Date | null;
                     orgId: string;
-                    currency: string;
                     subscriptionId: string | null;
                     provider: import(".prisma/client").$Enums.PaymentProvider;
                     providerTransactionId: string | null;
@@ -917,9 +919,9 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     createdAt: Date;
                     updatedAt: Date;
                     amount: number;
+                    currency: string;
                     paidAt: Date | null;
                     orgId: string;
-                    currency: string;
                     subscriptionId: string | null;
                     provider: import(".prisma/client").$Enums.PaymentProvider;
                     providerTransactionId: string | null;
@@ -972,6 +974,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     deletedAt: Date | null;
                     notes: string | null;
+                    currency: string | null;
                     startsAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
@@ -980,7 +983,6 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     endsAt: Date | null;
                     renewalDate: Date | null;
                     billingCycle: string | null;
-                    currency: string | null;
                     monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
                     annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
                     approvedByUserId: string | null;
@@ -992,6 +994,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     deletedAt: Date | null;
                     notes: string | null;
+                    currency: string | null;
                     startsAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
@@ -1000,7 +1003,6 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     endsAt: Date | null;
                     renewalDate: Date | null;
                     billingCycle: string | null;
-                    currency: string | null;
                     monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
                     annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
                     approvedByUserId: string | null;
@@ -1209,6 +1211,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     createdAt: Date;
                     updatedAt: Date;
                     deletedAt: Date | null;
+                    jurisdictionCode: string;
                     regulator: string;
                     licenseType: string;
                     progress: number;
@@ -1271,10 +1274,10 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 }[] | {
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -1446,9 +1449,9 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     createdAt: Date;
                     updatedAt: Date;
                     amount: number;
+                    currency: string;
                     paidAt: Date | null;
                     orgId: string;
-                    currency: string;
                     subscriptionId: string | null;
                     provider: import(".prisma/client").$Enums.PaymentProvider;
                     providerTransactionId: string | null;
@@ -1483,6 +1486,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     deletedAt: Date | null;
                     notes: string | null;
+                    currency: string | null;
                     startsAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
@@ -1491,7 +1495,6 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     endsAt: Date | null;
                     renewalDate: Date | null;
                     billingCycle: string | null;
-                    currency: string | null;
                     monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
                     annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
                     approvedByUserId: string | null;

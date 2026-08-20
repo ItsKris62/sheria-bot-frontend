@@ -32,7 +32,7 @@ export declare const customFrameworkRouter: import("@trpc/server").TRPCBuiltRout
         input: {
             name: string;
             description?: string | null | undefined;
-            jurisdiction?: string | null | undefined;
+            jurisdiction?: "KE" | "MW" | "RW" | null | undefined;
             regulator?: string | null | undefined;
             category?: string | null | undefined;
         };
@@ -44,7 +44,7 @@ export declare const customFrameworkRouter: import("@trpc/server").TRPCBuiltRout
             id: string;
             name?: string | undefined;
             description?: string | null | undefined;
-            jurisdiction?: string | null | undefined;
+            jurisdiction?: "KE" | "MW" | "RW" | null | undefined;
             regulator?: string | null | undefined;
             category?: string | null | undefined;
         };

@@ -456,6 +456,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         deletedAt: Date | null;
+                        jurisdictionCode: string;
                         regulator: string;
                         licenseType: string;
                         progress: number;
@@ -473,6 +474,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         deletedAt: Date | null;
+                        jurisdictionCode: string;
                         regulator: string;
                         licenseType: string;
                         progress: number;
@@ -580,10 +582,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         dueDate: Date | null;
                         amount: import("@prisma/client-runtime-utils").Decimal | null;
+                        currency: string;
                         paidAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
-                        currency: string;
                         licenseId: string;
                     } | {
                         id: string;
@@ -594,10 +596,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         dueDate: Date | null;
                         amount: import("@prisma/client-runtime-utils").Decimal | null;
+                        currency: string;
                         paidAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
-                        currency: string;
                         licenseId: string;
                     })[] | ({
                         metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -931,9 +933,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         amount: number;
+                        currency: string;
                         paidAt: Date | null;
                         orgId: string;
-                        currency: string;
                         subscriptionId: string | null;
                         provider: import(".prisma/client").$Enums.PaymentProvider;
                         providerTransactionId: string | null;
@@ -950,9 +952,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         amount: number;
+                        currency: string;
                         paidAt: Date | null;
                         orgId: string;
-                        currency: string;
                         subscriptionId: string | null;
                         provider: import(".prisma/client").$Enums.PaymentProvider;
                         providerTransactionId: string | null;
@@ -1005,6 +1007,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         deletedAt: Date | null;
                         notes: string | null;
+                        currency: string | null;
                         startsAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
@@ -1013,7 +1016,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         endsAt: Date | null;
                         renewalDate: Date | null;
                         billingCycle: string | null;
-                        currency: string | null;
                         monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         approvedByUserId: string | null;
@@ -1025,6 +1027,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         deletedAt: Date | null;
                         notes: string | null;
+                        currency: string | null;
                         startsAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
@@ -1033,7 +1036,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         endsAt: Date | null;
                         renewalDate: Date | null;
                         billingCycle: string | null;
-                        currency: string | null;
                         monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         approvedByUserId: string | null;
@@ -1242,6 +1244,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         deletedAt: Date | null;
+                        jurisdictionCode: string;
                         regulator: string;
                         licenseType: string;
                         progress: number;
@@ -1304,10 +1307,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         dueDate: Date | null;
                         amount: import("@prisma/client-runtime-utils").Decimal | null;
+                        currency: string;
                         paidAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
-                        currency: string;
                         licenseId: string;
                     }[] | {
                         metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -1479,9 +1482,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         amount: number;
+                        currency: string;
                         paidAt: Date | null;
                         orgId: string;
-                        currency: string;
                         subscriptionId: string | null;
                         provider: import(".prisma/client").$Enums.PaymentProvider;
                         providerTransactionId: string | null;
@@ -1516,6 +1519,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         deletedAt: Date | null;
                         notes: string | null;
+                        currency: string | null;
                         startsAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
@@ -1524,7 +1528,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         endsAt: Date | null;
                         renewalDate: Date | null;
                         billingCycle: string | null;
-                        currency: string | null;
                         monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         approvedByUserId: string | null;
@@ -2678,6 +2681,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         deletedAt: Date | null;
+                        jurisdictionCode: string;
                         regulator: string;
                         licenseType: string;
                         progress: number;
@@ -2695,6 +2699,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         deletedAt: Date | null;
+                        jurisdictionCode: string;
                         regulator: string;
                         licenseType: string;
                         progress: number;
@@ -2802,10 +2807,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         dueDate: Date | null;
                         amount: import("@prisma/client-runtime-utils").Decimal | null;
+                        currency: string;
                         paidAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
-                        currency: string;
                         licenseId: string;
                     } | {
                         id: string;
@@ -2816,10 +2821,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         dueDate: Date | null;
                         amount: import("@prisma/client-runtime-utils").Decimal | null;
+                        currency: string;
                         paidAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
-                        currency: string;
                         licenseId: string;
                     })[] | ({
                         metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -3153,9 +3158,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         amount: number;
+                        currency: string;
                         paidAt: Date | null;
                         orgId: string;
-                        currency: string;
                         subscriptionId: string | null;
                         provider: import(".prisma/client").$Enums.PaymentProvider;
                         providerTransactionId: string | null;
@@ -3172,9 +3177,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         amount: number;
+                        currency: string;
                         paidAt: Date | null;
                         orgId: string;
-                        currency: string;
                         subscriptionId: string | null;
                         provider: import(".prisma/client").$Enums.PaymentProvider;
                         providerTransactionId: string | null;
@@ -3227,6 +3232,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         deletedAt: Date | null;
                         notes: string | null;
+                        currency: string | null;
                         startsAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
@@ -3235,7 +3241,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         endsAt: Date | null;
                         renewalDate: Date | null;
                         billingCycle: string | null;
-                        currency: string | null;
                         monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         approvedByUserId: string | null;
@@ -3247,6 +3252,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         deletedAt: Date | null;
                         notes: string | null;
+                        currency: string | null;
                         startsAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
@@ -3255,7 +3261,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         endsAt: Date | null;
                         renewalDate: Date | null;
                         billingCycle: string | null;
-                        currency: string | null;
                         monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         approvedByUserId: string | null;
@@ -3464,6 +3469,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         deletedAt: Date | null;
+                        jurisdictionCode: string;
                         regulator: string;
                         licenseType: string;
                         progress: number;
@@ -3526,10 +3532,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         dueDate: Date | null;
                         amount: import("@prisma/client-runtime-utils").Decimal | null;
+                        currency: string;
                         paidAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
-                        currency: string;
                         licenseId: string;
                     }[] | {
                         metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -3701,9 +3707,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdAt: Date;
                         updatedAt: Date;
                         amount: number;
+                        currency: string;
                         paidAt: Date | null;
                         orgId: string;
-                        currency: string;
                         subscriptionId: string | null;
                         provider: import(".prisma/client").$Enums.PaymentProvider;
                         providerTransactionId: string | null;
@@ -3738,6 +3744,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         deletedAt: Date | null;
                         notes: string | null;
+                        currency: string | null;
                         startsAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
@@ -3746,7 +3753,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         endsAt: Date | null;
                         renewalDate: Date | null;
                         billingCycle: string | null;
-                        currency: string | null;
                         monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
                         approvedByUserId: string | null;
@@ -7610,9 +7616,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 title: string;
                 summary: string;
                 body: string;
-                regulatoryBody: "GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA";
+                regulatoryBody: "GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA" | "BNR" | "RURA" | "RISA" | "RWANDA_GAZETTE" | "RBM" | "MACRA" | "MALAWI_GAZETTE";
                 category: "DATA_PROTECTION" | "AML_CFT" | "PRUDENTIAL" | "LICENSING" | "CAPITAL_MARKETS" | "GENERAL";
                 sourceUrl?: string | undefined;
+                jurisdictionCode?: "KE" | "MW" | "RW" | undefined;
                 severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
                 effectiveDate?: string | undefined;
                 expiresAt?: string | undefined;
@@ -7629,6 +7636,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 summary: string;
                 category: string;
                 publishedAt: Date;
+                jurisdictionCode: string;
                 isActive: boolean;
                 body: string;
                 sourceUrl: string | null;
@@ -7647,7 +7655,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 page?: number | undefined;
                 limit?: number | undefined;
-                regulatoryBody?: "GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA" | undefined;
+                jurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+                regulatoryBody?: "GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA" | "BNR" | "RURA" | "RISA" | "RWANDA_GAZETTE" | "RBM" | "MACRA" | "MALAWI_GAZETTE" | undefined;
                 severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
                 unreadOnly?: boolean | undefined;
             };
@@ -7682,12 +7691,13 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         }>;
         upsertSubscription: import("@trpc/server").TRPCMutationProcedure<{
             input: {
-                regulatoryBodies: ("GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA")[];
+                regulatoryBodies: ("GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA" | "BNR" | "RURA" | "RISA" | "RWANDA_GAZETTE" | "RBM" | "MACRA" | "MALAWI_GAZETTE")[];
                 categories: ("DATA_PROTECTION" | "AML_CFT" | "PRUDENTIAL" | "LICENSING" | "CAPITAL_MARKETS" | "GENERAL")[];
                 severityThreshold: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
                 emailEnabled: boolean;
                 inAppEnabled: boolean;
                 emailFrequency: "REALTIME" | "DAILY" | "WEEKLY";
+                jurisdictions?: ("KE" | "MW" | "RW")[] | undefined;
             };
             output: {
                 emailFrequency: string;
@@ -7697,6 +7707,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 inAppEnabled: boolean;
                 emailEnabled: boolean;
+                jurisdictions: string[];
                 regulatoryBodies: string[];
                 categories: string[];
                 severityThreshold: string;
@@ -7713,6 +7724,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 inAppEnabled: boolean;
                 emailEnabled: boolean;
+                jurisdictions: string[];
                 regulatoryBodies: string[];
                 categories: string[];
                 severityThreshold: string;
@@ -8843,6 +8855,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 page?: number | undefined;
                 limit?: number | undefined;
+                jurisdictionCode?: "KE" | "MW" | "RW" | undefined;
                 status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "REJECTED" | "AWAITING_FEEDBACK" | "WITHDRAWN" | undefined;
                 search?: string | undefined;
             };
@@ -8863,6 +8876,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     createdAt: Date;
                     updatedAt: Date;
                     deletedAt: Date | null;
+                    jurisdictionCode: string;
                     regulator: string;
                     licenseType: string;
                     progress: number;
@@ -8928,6 +8942,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     applicationId: string;
                     amount: number;
+                    currency: string;
                     paidAt: Date | null;
                 }[];
                 regulatorFeedback: {
@@ -8950,6 +8965,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
+                jurisdictionCode: string;
                 regulator: string;
                 licenseType: string;
                 progress: number;
@@ -8966,6 +8982,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 title: string;
                 regulator: string;
                 licenseType: string;
+                jurisdictionCode?: "KE" | "MW" | "RW" | undefined;
                 status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "REJECTED" | "AWAITING_FEEDBACK" | "WITHDRAWN" | undefined;
                 progress?: number | undefined;
                 referenceNumber?: string | undefined;
@@ -8981,6 +8998,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
+                jurisdictionCode: string;
                 regulator: string;
                 licenseType: string;
                 progress: number;
@@ -8996,6 +9014,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 id: string;
                 title?: string | undefined;
+                jurisdictionCode?: "KE" | "MW" | "RW" | undefined;
                 regulator?: string | undefined;
                 licenseType?: string | undefined;
                 status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "REJECTED" | "AWAITING_FEEDBACK" | "WITHDRAWN" | undefined;
@@ -9015,6 +9034,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
+                jurisdictionCode: string;
                 regulator: string;
                 licenseType: string;
                 progress: number;
@@ -9083,6 +9103,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 applicationId: string;
                 description: string;
                 amount: number;
+                currency?: string | undefined;
                 status?: "PENDING" | "WAIVED" | "PAID" | undefined;
                 paidAt?: Date | null | undefined;
             };
@@ -9095,6 +9116,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 updatedAt: Date;
                 applicationId: string;
                 amount: number;
+                currency: string;
                 paidAt: Date | null;
             };
             meta: object;
@@ -9294,10 +9316,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -9440,10 +9462,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -9587,10 +9609,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -9740,10 +9762,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -9885,10 +9907,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -10021,10 +10043,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -10160,10 +10182,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -10296,10 +10318,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -10438,10 +10460,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -10581,10 +10603,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -10850,10 +10872,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -10998,10 +11020,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     dueDate: Date | null;
                     amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
-                    currency: string;
                     licenseId: string;
                 })[];
                 assignedOwner: {
@@ -11079,7 +11101,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 name: string;
                 description?: string | null | undefined;
-                jurisdiction?: string | null | undefined;
+                jurisdiction?: "KE" | "MW" | "RW" | null | undefined;
                 regulator?: string | null | undefined;
                 category?: string | null | undefined;
             };
@@ -11091,7 +11113,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 id: string;
                 name?: string | undefined;
                 description?: string | null | undefined;
-                jurisdiction?: string | null | undefined;
+                jurisdiction?: "KE" | "MW" | "RW" | null | undefined;
                 regulator?: string | null | undefined;
                 category?: string | null | undefined;
             };
@@ -11889,10 +11911,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                     reason: string | null;
                     approvedAt: Date | null;
+                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     blogPostId: string | null;
                     dismissedReason: string | null;
                     suggestedSlug: string | null;
-                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     articleType: import(".prisma/client").$Enums.BlogArticleType;
                     relevanceScore: number;
                     sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
@@ -12390,10 +12412,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                         reason: string | null;
                         approvedAt: Date | null;
+                        jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                         blogPostId: string | null;
                         dismissedReason: string | null;
                         suggestedSlug: string | null;
-                        jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                         articleType: import(".prisma/client").$Enums.BlogArticleType;
                         relevanceScore: number;
                         sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
@@ -12482,10 +12504,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                     reason: string | null;
                     approvedAt: Date | null;
+                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     blogPostId: string | null;
                     dismissedReason: string | null;
                     suggestedSlug: string | null;
-                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     articleType: import(".prisma/client").$Enums.BlogArticleType;
                     relevanceScore: number;
                     sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
