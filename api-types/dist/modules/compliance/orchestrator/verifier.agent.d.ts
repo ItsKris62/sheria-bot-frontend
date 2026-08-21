@@ -1,5 +1,6 @@
 import type { AgentTokens } from './types';
 import type { SearchResult } from '@/lib/rag/rag.service';
+import { type JurisdictionContext } from '@/types/jurisdiction';
 export type VerifierVerdict = 'PASS' | 'PARTIAL' | 'FAIL';
 export interface VerifierAgentResult {
     verdict: VerifierVerdict;
@@ -7,5 +8,5 @@ export interface VerifierAgentResult {
     tokens: AgentTokens;
     parseFailed: boolean;
 }
-export declare function runVerifierAgent(answer: string, evidence: SearchResult[]): Promise<VerifierAgentResult>;
+export declare function runVerifierAgent(answer: string, evidence: SearchResult[], jurisdictionContext: JurisdictionContext): Promise<VerifierAgentResult>;
 //# sourceMappingURL=verifier.agent.d.ts.map

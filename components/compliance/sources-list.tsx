@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import type { CitationItem } from "@/hooks/use-compliance"
 import { Scale } from "lucide-react"
 import { trackEvent } from "@/lib/analytics"
+import { JurisdictionBadge } from "@/components/compliance/query/jurisdiction-context"
+import type { JurisdictionCode } from "@/lib/jurisdictions"
 
 type SourceCitation = Partial<CitationItem> | null | undefined
 
@@ -22,6 +24,7 @@ type SourceEntry = {
   authorityStatus: string
   isBinding: boolean
   version: string | null
+  jurisdictionCode: JurisdictionCode | null
   verified: boolean | null
   verificationStatus: "verified" | "unverified" | "not_checked" | null
   baseName: string
@@ -86,6 +89,7 @@ function dedupeSources(citations: SourceCitation[]): SourceEntry[] {
       authorityStatus: citation?.authorityStatus ?? "IN_FORCE",
       isBinding: citation?.isBinding ?? true,
       version: citation?.version?.trim() || null,
+      jurisdictionCode: citation?.jurisdictionCode ?? null,
       verified: citation?.verified ?? null,
       verificationStatus: citation?.verificationStatus ?? null,
       baseName: baseNameOf(documentTitle),
@@ -145,6 +149,7 @@ export function SourcesList({ citations }: SourcesListProps) {
                 </p>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
+                <JurisdictionBadge code={source.jurisdictionCode} className="h-5 px-1.5" />
                 {label ? (
                   <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-700">
                     {label}

@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
         id: "q-hist-1",
         query: "What are the KYC limits for Tier 1 mobile wallets?",
         createdAt: "2026-08-01T10:00:00Z",
+        primaryJurisdiction: "KE",
       },
     ],
     pagination: { page: 1, limit: 3, total: 1, pages: 1 },
@@ -30,9 +31,17 @@ const mocks = vi.hoisted(() => ({
       { id: "sug-1", text: "What are the CBK capital requirements for payment processors?" },
     ],
   },
+  jurisdictionCapabilitiesData: {
+    jurisdictions: [
+      { code: "KE", name: "Kenya", queryEnabled: true, status: "ACTIVE" },
+      { code: "RW", name: "Rwanda", queryEnabled: true, status: "ACTIVE" },
+      { code: "MW", name: "Malawi", queryEnabled: true, status: "ACTIVE" },
+      { code: "NG", name: "Nigeria", queryEnabled: false, status: "COMING_SOON" },
+    ],
+  },
   planData: {
     usage: {
-      complianceQueries: { remaining: 10, limit: 100 },
+      complianceQueries: { current: 90, limit: 100 },
     },
   },
   feedbackMutate: vi.fn(),
@@ -98,6 +107,11 @@ vi.mock("@/lib/trpc", () => ({
           isError: false,
         }),
       },
+      jurisdictionCapabilities: {
+        useQuery: () => ({
+          data: mocks.jurisdictionCapabilitiesData,
+        }),
+      },
       submitFeedback: {
         useMutation: () => ({ mutateAsync: mocks.feedbackMutate }),
       },
@@ -116,6 +130,22 @@ vi.mock("@/lib/trpc", () => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
+  window.localStorage.clear()
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = vi.fn(() => false)
+  }
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = vi.fn()
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = vi.fn()
+  }
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = vi.fn()
+  }
+  if (!Element.prototype.scrollTo) {
+    Element.prototype.scrollTo = vi.fn()
+  }
   mocks.streamState = {
     phase: "idle",
     queryId: null,
@@ -132,9 +162,7 @@ describe("ComplianceQueryPage Integration Baseline Suite", () => {
 
     expect(screen.getByRole("heading", { name: "Compliance Query" })).toBeInTheDocument()
     expect(screen.getByRole("heading", { name: "Ask a Compliance Question" })).toBeInTheDocument()
-    expect(
-      screen.getByText("What are the CBK capital requirements for payment processors?"),
-    ).toBeInTheDocument()
+    expect(screen.getAllByText("Suggested for Kenya").length).toBeGreaterThan(0)
     expect(
       screen.getByText("What are the KYC limits for Tier 1 mobile wallets?"),
     ).toBeInTheDocument()
@@ -143,7 +171,7 @@ describe("ComplianceQueryPage Integration Baseline Suite", () => {
   it("submits question via input form and calls streamSubmit", async () => {
     render(<ComplianceQueryPage />)
 
-    const input = screen.getByPlaceholderText(/Ask about KYC requirements/i)
+    const input = screen.getByPlaceholderText(/Ask a compliance question about Kenya/i)
     fireEvent.change(input, {
       target: { value: "What are the data localization rules in Kenya?" },
     })
@@ -153,6 +181,8 @@ describe("ComplianceQueryPage Integration Baseline Suite", () => {
 
     expect(mocks.submit).toHaveBeenCalledWith({
       question: "What are the data localization rules in Kenya?",
+      mode: "SINGLE",
+      jurisdictions: ["KE"],
       answerDetail: "standard",
     })
     expect(mocks.trackEvent).toHaveBeenCalledWith(
@@ -164,7 +194,7 @@ describe("ComplianceQueryPage Integration Baseline Suite", () => {
   it("submits question using Ctrl+Enter keyboard shortcut", () => {
     render(<ComplianceQueryPage />)
 
-    const input = screen.getByPlaceholderText(/Ask about KYC requirements/i)
+    const input = screen.getByPlaceholderText(/Ask a compliance question about Kenya/i)
     fireEvent.change(input, {
       target: { value: "What is the penalty for late AML reporting?" },
     })
@@ -173,6 +203,43 @@ describe("ComplianceQueryPage Integration Baseline Suite", () => {
 
     expect(mocks.submit).toHaveBeenCalledWith({
       question: "What is the penalty for late AML reporting?",
+      mode: "SINGLE",
+      jurisdictions: ["KE"],
+      answerDetail: "standard",
+    })
+  })
+
+  it.each([
+    ["Rwanda", "RW"],
+    ["Malawi", "MW"],
+  ] as const)("submits explicit SINGLE jurisdiction for %s", async (country, code) => {
+    window.localStorage.setItem("sheriabot:compliance-query:selected-jurisdiction", code)
+    render(<ComplianceQueryPage />)
+
+    const input = screen.getByPlaceholderText(new RegExp(`Ask a compliance question about ${country}`, "i"))
+    fireEvent.change(input, { target: { value: `What licensing requirements apply in ${country}?` } })
+    fireEvent.click(screen.getByRole("button", { name: "Submit query" }))
+
+    expect(mocks.submit).toHaveBeenCalledWith({
+      question: `What licensing requirements apply in ${country}?`,
+      mode: "SINGLE",
+      jurisdictions: [code],
+      answerDetail: "standard",
+    })
+  })
+
+  it("does not submit Nigeria when an invalid stored selection is present", () => {
+    window.localStorage.setItem("sheriabot:compliance-query:selected-jurisdiction", "NG")
+    render(<ComplianceQueryPage />)
+
+    const input = screen.getByPlaceholderText(/Ask a compliance question about Kenya/i)
+    fireEvent.change(input, { target: { value: "What licensing requirements apply in Nigeria?" } })
+    fireEvent.click(screen.getByRole("button", { name: "Submit query" }))
+
+    expect(mocks.submit).toHaveBeenCalledWith({
+      question: "What licensing requirements apply in Nigeria?",
+      mode: "SINGLE",
+      jurisdictions: ["KE"],
       answerDetail: "standard",
     })
   })

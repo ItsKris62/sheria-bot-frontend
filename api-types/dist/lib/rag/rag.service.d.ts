@@ -1,7 +1,10 @@
 import { ChunkConfig } from './chunking';
+import { type JurisdictionCode, type JurisdictionContext } from '@/types/jurisdiction';
+import { type CorpusVersionSnapshot } from '@/lib/rag/corpus-version';
 /**
  * Document to index
  */
+export declare const REGULATORY_EVIDENCE_RETRIEVAL_VERSION = "regulatory-evidence-v1";
 export interface DocumentToIndex {
     id: string;
     title: string;
@@ -10,6 +13,9 @@ export interface DocumentToIndex {
     actName?: string;
     year?: number;
     regulatoryArea?: string;
+    jurisdictionCode?: JurisdictionCode;
+    jurisdiction?: string;
+    country?: string;
     authorityStatus?: string;
     isBinding?: boolean;
     source?: string;
@@ -27,9 +33,14 @@ export interface DocumentToIndex {
  * Search result with context
  */
 export interface SearchResult {
+    vectorId: string;
+    chunkId: string;
     documentId: string;
     documentTitle: string;
     chunkText: string;
+    jurisdictionCode?: JurisdictionCode;
+    jurisdiction?: string;
+    country?: string;
     section?: string;
     citation?: string;
     score: number;
@@ -57,6 +68,7 @@ export interface SearchResult {
     effectiveDate?: string;
     effectiveEndDate?: string;
     sourceLimited?: boolean;
+    matchingStrategy?: 'vectorId' | 'chunkId' | 'document_section_rank' | 'document_section';
 }
 /**
  * Search options
@@ -79,6 +91,16 @@ export interface SearchOptions {
         minV2DocumentDiversity?: number;
     };
 }
+export interface RegulatoryEvidenceSearchOptions {
+    query: string;
+    jurisdictionContext: JurisdictionContext;
+    topK?: number;
+    minScore?: number;
+    namespace?: string;
+    preferActiveSources?: boolean;
+    sourceIndexMode?: SearchOptions['sourceIndexMode'];
+}
+export declare function buildRegulatoryEvidenceFilter(context: JurisdictionContext, sourceIndexMode?: SearchOptions['sourceIndexMode']): Record<string, unknown>;
 /**
  * RAG Service
  * Handles document indexing and semantic search
@@ -107,6 +129,7 @@ export declare class RAGService {
      * @param options Search options
      */
     searchWithReranking(query: string, options?: SearchOptions): Promise<SearchResult[]>;
+    searchRegulatoryEvidence(options: RegulatoryEvidenceSearchOptions): Promise<SearchResult[]>;
     /**
      * Find similar chunks to a given document chunk
      * @param documentId Document ID
@@ -161,6 +184,13 @@ export declare function searchAndGetContext(query: string, options?: SearchOptio
     context: string;
     results: SearchResult[];
     citations: string[];
+}>;
+export declare function searchAndGetRegulatoryEvidenceContext(options: RegulatoryEvidenceSearchOptions): Promise<{
+    context: string;
+    results: SearchResult[];
+    citations: string[];
+    corpusVersions: CorpusVersionSnapshot;
+    retrievalVersion: string;
 }>;
 /**
  * Helper: Index Kenyan legal act

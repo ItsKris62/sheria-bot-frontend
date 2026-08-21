@@ -34,7 +34,9 @@ import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
 import { ReportMissingDocumentDialog } from "@/components/corpus-gap-report/report-missing-document-dialog"
 import { RelatedTopics } from "@/components/compliance/related-topics"
 import { SourcesList } from "@/components/compliance/sources-list"
+import { JurisdictionBadge } from "@/components/compliance/query/jurisdiction-context"
 import type { CitationItem } from "@/hooks/use-compliance"
+import { jurisdictionLabel, type JurisdictionCode } from "@/lib/jurisdictions"
 import {
   isRegulatoryArea,
   REGULATORY_AREA_NAMES,
@@ -156,6 +158,7 @@ type FollowUpEntry = {
   question: string
   answer: string | null
   citations: CitationItem[]
+  jurisdictionCode?: JurisdictionCode | null
   isLoading: boolean
   createdAt?: Date | string
 }
@@ -173,6 +176,8 @@ type QueryRecordLite = {
   tokensUsed?: number | null
   model?: string | null
   status?: string | null
+  primaryJurisdiction?: JurisdictionCode | null
+  jurisdictionSource?: string | null
 }
 
 function FollowUpSourcesDisclosure({ citations }: { citations: CitationItem[] }) {
@@ -212,6 +217,7 @@ export default function QueryDetailPage() {
   const [savedOverride, setSavedOverride] = useState<boolean | undefined>(undefined)
   const [copied, setCopied] = useState(false)
   const followUpTextareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const optimisticFollowUpCounterRef = useRef(0)
 
   const utils = trpc.useUtils()
 
@@ -247,6 +253,7 @@ export default function QueryDetailPage() {
           question: item.query,
           answer: item.response,
           citations: Array.isArray(item.citations) ? (item.citations as CitationItem[]) : [],
+          jurisdictionCode: item.primaryJurisdiction,
           isLoading: false,
           createdAt: item.createdAt,
         }))
@@ -353,12 +360,14 @@ export default function QueryDetailPage() {
 
     setFollowUpError(null)
 
-    const optimisticId = `follow-up-${Date.now()}`
+    optimisticFollowUpCounterRef.current += 1
+    const optimisticId = `follow-up-${optimisticFollowUpCounterRef.current}`
     const optimisticEntry: FollowUpEntry = {
       id: optimisticId,
       question,
       answer: null,
       citations: [],
+      jurisdictionCode: q.primaryJurisdiction ?? "KE",
       isLoading: true,
     }
 
@@ -372,6 +381,9 @@ export default function QueryDetailPage() {
       const resultCitations = Array.isArray(result.citations)
         ? (result.citations as CitationItem[])
         : []
+      const resultWithJurisdiction = result as typeof result & {
+        primaryJurisdiction?: JurisdictionCode | null
+      }
 
       setFollowUps((items) =>
         items.map((item) =>
@@ -381,6 +393,7 @@ export default function QueryDetailPage() {
                 question,
                 answer: result.answer,
                 citations: resultCitations,
+                jurisdictionCode: resultWithJurisdiction.primaryJurisdiction ?? q.primaryJurisdiction ?? "KE",
                 isLoading: false,
               }
             : item,
@@ -463,11 +476,16 @@ export default function QueryDetailPage() {
     regulatoryAreas?: unknown
     citations?: unknown
     confidence?: number | null
+    primaryJurisdiction?: JurisdictionCode | null
+    jurisdictionSource?: string | null
   }
 
   const hasResponse = !!(q.response && q.response.trim().length > 0)
   const citations = Array.isArray(q.citations) ? (q.citations as CitationItem[]) : []
   const areas = Array.isArray(q.regulatoryAreas) ? q.regulatoryAreas : []
+  const queryJurisdiction = q.primaryJurisdiction ?? "KE"
+  const queryCountry = jurisdictionLabel(queryJurisdiction)
+  const citationMismatch = citations.some((citation) => citation.jurisdictionCode !== queryJurisdiction)
 
   return (
     <div className="space-y-6">
@@ -484,6 +502,11 @@ export default function QueryDetailPage() {
             <Badge variant="outline" className="font-mono text-xs">
               {q.id}
             </Badge>
+            <JurisdictionBadge
+              code={queryJurisdiction}
+              showLabel
+              legacy={queryRecord?.jurisdictionSource === "LEGACY_DEFAULT"}
+            />
           </div>
           <p className="text-muted-foreground text-sm mt-1">
             <Clock className="inline h-3 w-3 mr-1" />
@@ -508,6 +531,12 @@ export default function QueryDetailPage() {
                     <CardTitle className="text-lg font-medium text-foreground">
                       Your Question
                     </CardTitle>
+                    <JurisdictionBadge
+                      code={queryJurisdiction}
+                      showLabel
+                      legacy={queryRecord?.jurisdictionSource === "LEGACY_DEFAULT"}
+                      className="mt-2"
+                    />
                     <CardDescription className="mt-2 text-foreground/80 text-base">
                       {q.query}
                     </CardDescription>
@@ -532,7 +561,7 @@ export default function QueryDetailPage() {
                   </div>
                   <div>
                     <CardTitle className="text-lg font-medium text-foreground">
-                      AI Response
+                      {queryCountry} Regulatory Guidance
                     </CardTitle>
                     {confidence != null && (
                       <CardDescription className="flex items-center gap-2">
@@ -590,11 +619,21 @@ export default function QueryDetailPage() {
             </CardHeader>
             <CardContent>
               {hasResponse ? (
-                <ComplianceFeedback
-                  content={q.response!}
-                  variant="report"
-                  collapsible
-                />
+                citationMismatch ? (
+                  <Alert role="alert" className="border-amber-500/40 bg-amber-500/10">
+                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    <AlertDescription>
+                      SheriaBot could not verify that this response&apos;s citations match {queryCountry}.
+                      Treat this result as source-insufficient and ask again if needed.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <ComplianceFeedback
+                    content={q.response!}
+                    variant="report"
+                    collapsible
+                  />
+                )
               ) : (
                 <p className="text-sm text-muted-foreground py-4 text-center">
                   No response available for this query.
@@ -612,10 +651,11 @@ export default function QueryDetailPage() {
                       <p className="mb-3 text-sm font-medium text-foreground">
                         Q: {item.question}
                       </p>
+                      <JurisdictionBadge code={item.jurisdictionCode ?? queryJurisdiction} className="mb-3" />
                       {item.isLoading ? (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Getting follow-up answer...
+                          Getting follow-up answer for {queryCountry}...
                         </div>
                       ) : item.answer ? (
                         <>
@@ -665,14 +705,14 @@ export default function QueryDetailPage() {
           <Card className="border-border/50 bg-card/50 backdrop-blur">
             <CardHeader>
               <CardTitle className="text-lg font-medium text-foreground">
-                Follow-up Question
+                Follow-up on {queryCountry}
               </CardTitle>
-              <CardDescription>Ask a related question for more details</CardDescription>
+              <CardDescription>Ask a related question in the same jurisdiction</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Textarea
                 ref={followUpTextareaRef}
-                placeholder="e.g., What are the penalties for non-compliance with KYC requirements?"
+                placeholder={`Ask a follow-up about ${queryCountry}...`}
                 value={followUpQuestion}
                 onChange={(e) => {
                   setFollowUpQuestion(e.target.value)
@@ -720,7 +760,13 @@ export default function QueryDetailPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <SourcesList citations={citations} />
+              {citationMismatch ? (
+                <p className="text-sm text-muted-foreground">
+                  Sources are hidden because citation jurisdiction provenance is inconsistent.
+                </p>
+              ) : (
+                <SourcesList citations={citations} />
+              )}
             </CardContent>
           </Card>
 

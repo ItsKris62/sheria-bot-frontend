@@ -8,6 +8,7 @@
  * Compliance Query Prompt Templates
  * Answers specific regulatory compliance questions with citations
  */
+import { type JurisdictionContext } from '@/types/jurisdiction';
 /**
  * Compliance query request parameters
  */
@@ -19,11 +20,12 @@ export interface ComplianceQueryParams {
     urgency?: 'LOW' | 'MEDIUM' | 'HIGH';
     ragContext?: string;
     answerDetail?: 'standard' | 'detailed';
+    jurisdictionContext?: JurisdictionContext;
 }
 /**
  * Generate system prompt for compliance queries
  */
-export declare function generateComplianceSystemPrompt(answerDetail?: 'standard' | 'detailed'): string;
+export declare function generateComplianceSystemPrompt(answerDetail?: 'standard' | 'detailed', jurisdictionContext?: JurisdictionContext): string;
 /**
  * Generate user prompt for compliance query
  */
@@ -31,7 +33,7 @@ export declare function generateComplianceUserPrompt(params: ComplianceQueryPara
 /**
  * Generate prompt for follow-up query
  */
-export declare function generateFollowUpQueryPrompt(originalQuestion: string, originalAnswer: string, followUpQuestion: string, ragContext?: string): string;
+export declare function generateFollowUpQueryPrompt(originalQuestion: string, originalAnswer: string, followUpQuestion: string, ragContext?: string, jurisdictionContext?: JurisdictionContext): string;
 /**
  * Generate prompt for quick compliance check
  */

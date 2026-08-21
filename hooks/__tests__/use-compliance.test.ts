@@ -8,6 +8,12 @@ const mocks = vi.hoisted(() => ({
   playNotificationSound: vi.fn(),
 }))
 
+const streamInput = (question: string) => ({
+  question,
+  mode: "SINGLE" as const,
+  jurisdictions: ["KE"] as ["KE"],
+})
+
 vi.stubGlobal("fetch", mocks.fetch)
 
 vi.mock("@/lib/notification-sounds", () => ({
@@ -38,7 +44,7 @@ describe("useComplianceStream State Machine", () => {
     const { result } = renderHook(() => useComplianceStream())
 
     act(() => {
-      result.current.submit({ question: "What are the KYC rules for mobile lenders?" })
+      result.current.submit(streamInput("What are the KYC rules for mobile lenders?"))
     })
 
     expect(result.current.state.phase).toBe("error")
@@ -50,7 +56,7 @@ describe("useComplianceStream State Machine", () => {
     const { result } = renderHook(() => useComplianceStream())
 
     act(() => {
-      result.current.submit({ question: "   " })
+      result.current.submit(streamInput("   "))
     })
 
     expect(result.current.state.phase).toBe("error")
@@ -62,7 +68,7 @@ describe("useComplianceStream State Machine", () => {
     const { result } = renderHook(() => useComplianceStream())
 
     act(() => {
-      result.current.submit({ question: "A".repeat(5001) })
+      result.current.submit(streamInput("A".repeat(5001)))
     })
 
     expect(result.current.state.phase).toBe("error")
@@ -80,7 +86,7 @@ describe("useComplianceStream State Machine", () => {
     const { result } = renderHook(() => useComplianceStream())
 
     await act(async () => {
-      result.current.submit({ question: "What are the AML rules for payments?" })
+      result.current.submit(streamInput("What are the AML rules for payments?"))
     })
 
     expect(result.current.state.phase).toBe("error")
@@ -103,7 +109,7 @@ describe("useComplianceStream State Machine", () => {
     const { result } = renderHook(() => useComplianceStream())
 
     act(() => {
-      result.current.submit({ question: "What are CBK capital adequacy ratios?" })
+      result.current.submit(streamInput("What are CBK capital adequacy ratios?"))
     })
 
     expect(result.current.state.phase).toBe("connecting")

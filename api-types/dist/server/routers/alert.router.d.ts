@@ -116,9 +116,9 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            jurisdictions: string[];
             inAppEnabled: boolean;
             emailEnabled: boolean;
-            jurisdictions: string[];
             regulatoryBodies: string[];
             categories: string[];
             severityThreshold: string;
@@ -133,9 +133,9 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            jurisdictions: string[];
             inAppEnabled: boolean;
             emailEnabled: boolean;
-            jurisdictions: string[];
             regulatoryBodies: string[];
             categories: string[];
             severityThreshold: string;

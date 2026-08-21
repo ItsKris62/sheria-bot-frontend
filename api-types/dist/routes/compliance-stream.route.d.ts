@@ -5,8 +5,9 @@ import type { EffectivePlanSource, PilotEntitlementProfile } from '@/types/plan.
 import type { PlanEntitlementConfig } from '@/config/entitlements.config';
 import type { OrgMembershipEntry } from '@/server/trpc/context';
 import { type ComplianceFallbackReason } from '@/lib/source-grounding/source-insufficiency';
+import { type JurisdictionContext } from '@/types/jurisdiction';
 export declare function extractNamedRegulations(question: string): string[];
-export declare function buildComplianceRagQuery(question: string, detectedRegulations?: string[]): string;
+export declare function buildComplianceRagQuery(question: string, detectedRegulations?: string[], jurisdictionContext?: JurisdictionContext): string;
 export declare function getFallbackReasonForRetrieval(resultsCount: number, context: string | null | undefined): ComplianceFallbackReason;
 export declare function hasUsableRetrievedChunks(results: Array<{
     documentTitle?: string | null;

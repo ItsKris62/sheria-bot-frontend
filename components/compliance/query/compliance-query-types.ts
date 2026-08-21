@@ -1,4 +1,5 @@
 import type { CitationItem, ComplianceFallbackReason } from "@/hooks/use-compliance"
+import type { JurisdictionCode } from "@/lib/jurisdictions"
 
 export interface Message {
   id: string
@@ -7,6 +8,8 @@ export interface Message {
   citations?: CitationItem[]
   confidence?: number | null
   queryId?: string
+  jurisdictionCode?: JurisdictionCode
+  jurisdictionSource?: string | null
   timestamp: Date
   abstained?: boolean
   route?: string | null

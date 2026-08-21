@@ -39,6 +39,7 @@ export type SafeEventProperties = {
   required_plan?: string;
   document_type?: string;
   jurisdiction?: string;
+  jurisdictionCode?: string;
   
   // Blog specific
   blog_category?: string;
@@ -97,6 +98,7 @@ export type AnalyticsEvent =
   | "compliance_query_completed"
   | "compliance_query_source_insufficient"
   | "compliance_query_citation_expanded"
+  | "suggested_query_selected"
   // Gap Analysis
   | "gap_analysis_opened"
   | "gap_analysis_file_uploaded"
@@ -189,6 +191,7 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "required_plan",
   "document_type",
   "jurisdiction",
+  "jurisdictionCode",
   "blog_category",
   "blog_slug",
   "read_time_seconds",
@@ -243,13 +246,13 @@ export function trackEvent(eventName: AnalyticsEvent, properties?: SafeEventProp
     // Only capture if running in browser and PostHog is initialized
     if (typeof window !== "undefined" && posthog.__loaded) {
       
-      let safeProperties: Record<string, any> | undefined = undefined;
+      let safeProperties: Record<string, unknown> | undefined = undefined;
       
       if (properties) {
         safeProperties = {};
         for (const key of Object.keys(properties)) {
           if (ALLOWED_PROPERTY_KEYS.has(key)) {
-            safeProperties[key] = (properties as any)[key];
+            safeProperties[key] = properties[key as keyof SafeEventProperties];
           }
         }
       }

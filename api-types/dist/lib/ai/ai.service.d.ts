@@ -85,7 +85,7 @@ export declare class AIService {
      * @param originalAnswer Original answer
      * @param followUpQuestion Follow-up question
      */
-    answerFollowUpQuery(originalQuestion: string, originalAnswer: string, followUpQuestion: string, ragContext?: string): Promise<ComplianceQueryResult>;
+    answerFollowUpQuery(originalQuestion: string, originalAnswer: string, followUpQuestion: string, ragContext?: string, jurisdictionContext?: ComplianceQueryParams['jurisdictionContext']): Promise<ComplianceQueryResult>;
     /**
      * Perform quick compliance check
      * @param scenario Scenario to check

@@ -4,11 +4,13 @@ import { LoadingButton } from "@/components/ui/loading-button"
 import { AlertCircle, Send, Sparkles, Command } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { DetailLevel } from "./compliance-query-types"
+import { jurisdictionLabel, type QueryableJurisdictionCode } from "@/lib/jurisdictions"
 
 export interface ComplianceQueryComposerProps {
   query: string
   answerDetail: DetailLevel
   isStreaming: boolean
+  jurisdiction: QueryableJurisdictionCode
   remainingCredits?: number
   onQueryChange: (value: string) => void
   onAnswerDetailChange: (detail: DetailLevel) => void
@@ -19,6 +21,7 @@ export function ComplianceQueryComposer({
   query,
   answerDetail,
   isStreaming,
+  jurisdiction,
   remainingCredits,
   onQueryChange,
   onAnswerDetailChange,
@@ -28,6 +31,7 @@ export function ComplianceQueryComposer({
 
   const isDetailedCreditWarning =
     answerDetail === "detailed" && remainingCredits === 1
+  const country = jurisdictionLabel(jurisdiction)
 
   return (
     <div className="border-t border-border/50 bg-card/80 p-4 sm:p-5 space-y-3.5 rounded-b-xl">
@@ -105,7 +109,7 @@ export function ComplianceQueryComposer({
                 formRef.current?.requestSubmit()
               }
             }}
-            placeholder="Ask about KYC requirements, data protection, CBK guidelines..."
+            placeholder={`Ask a compliance question about ${country}...`}
             className="flex-1 border-0 bg-transparent py-3.5 pl-4 pr-14 text-sm text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[48px]"
             disabled={isStreaming}
           />
@@ -127,7 +131,7 @@ export function ComplianceQueryComposer({
       {/* Footer Helper & Keyboard Shortcut Hint */}
       <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground/80">
         <p>
-          Answers are evidence-backed from Kenya&apos;s legal corpus. Always verify critical decisions.
+          Answers are evidence-backed from {country}&apos;s indexed regulatory corpus. Always verify critical decisions.
         </p>
         <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
           <Command className="h-3 w-3" aria-hidden="true" />

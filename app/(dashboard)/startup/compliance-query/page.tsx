@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import {
@@ -12,17 +12,47 @@ import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 import { trackEvent } from "@/lib/analytics"
 import {
+  DEFAULT_JURISDICTION,
+  isQueryableJurisdictionCode,
+  type JurisdictionCapability,
+  type JurisdictionCode,
+  type QueryableJurisdictionCode,
+} from "@/lib/jurisdictions"
+import {
   ComplianceQueryHeader,
   ComplianceQueryComposer,
   ComplianceQueryProgress,
   ComplianceQuerySidebar,
+  JurisdictionContextBar,
   type Message,
   type FeedbackRating,
   type FeedbackPulse,
-  type SuggestionItem,
   type DetailLevel,
   type HistoryItem,
 } from "@/components/compliance/query"
+
+const JURISDICTION_STORAGE_KEY = "sheriabot:compliance-query:selected-jurisdiction"
+
+function readStoredJurisdiction(): QueryableJurisdictionCode {
+  if (typeof window === "undefined") return DEFAULT_JURISDICTION
+  const stored = window.localStorage.getItem(JURISDICTION_STORAGE_KEY)
+  return isQueryableJurisdictionCode(stored) ? stored : DEFAULT_JURISDICTION
+}
+
+function responseJurisdictionOf(
+  result: { primaryJurisdiction?: JurisdictionCode; jurisdictions?: JurisdictionCode[] },
+  fallback: QueryableJurisdictionCode,
+): JurisdictionCode {
+  return result.primaryJurisdiction ?? result.jurisdictions?.[0] ?? fallback
+}
+
+function hasCitationJurisdictionMismatch(
+  citations: Array<{ jurisdictionCode?: JurisdictionCode | null }> | undefined,
+  jurisdiction: JurisdictionCode,
+): boolean {
+  if (!citations || citations.length === 0) return false
+  return citations.some((citation) => citation.jurisdictionCode !== jurisdiction)
+}
 
 export default function ComplianceQueryPage() {
   const router = useRouter()
@@ -36,6 +66,8 @@ export default function ComplianceQueryPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [answerDetail, setAnswerDetail] = useState<DetailLevel>("standard")
   const [pendingQuestion, setPendingQuestion] = useState("")
+  const [selectedJurisdiction, setSelectedJurisdiction] = useState<QueryableJurisdictionCode>(readStoredJurisdiction)
+  const [activeQueryJurisdiction, setActiveQueryJurisdiction] = useState<QueryableJurisdictionCode | null>(null)
 
   const [feedbackState, setFeedbackState] = useState<Record<string, FeedbackRating>>({})
   const [savedState, setSavedState] = useState<Record<string, boolean>>({})
@@ -52,18 +84,13 @@ export default function ComplianceQueryPage() {
   const clickTrackingMutation = trpc.compliance.recordSuggestionClick.useMutation()
 
   const { data: planData } = trpc.billing.getPlanAndUsage.useQuery()
-
-  // Suggested queries - server-driven personalised list, 1h client cache
-  const {
-    data: suggestedQueriesData,
-    isLoading: suggestedQueriesLoading,
-    isError: suggestedQueriesError,
-  } = trpc.compliance.getSuggestedQueries.useQuery({}, {
-    staleTime: 60 * 60 * 1000, // 1 hour - matches Redis TTL
+  const { data: jurisdictionCapabilitiesData } = trpc.compliance.jurisdictionCapabilities.useQuery(undefined, {
+    staleTime: 60 * 60 * 1000,
   })
-  const suggestions: SuggestionItem[] = suggestedQueriesData?.suggestions ?? []
-
-  const utils = trpc.useUtils()
+  const jurisdictionCapabilities: JurisdictionCapability[] = useMemo(
+    () => jurisdictionCapabilitiesData?.jurisdictions ?? [],
+    [jurisdictionCapabilitiesData?.jurisdictions],
+  )
 
   // Dedup guard - prevents double-push in React StrictMode
   const lastPushedQueryIdRef = useRef<string | null>(null)
@@ -75,6 +102,21 @@ export default function ComplianceQueryPage() {
   const isStreaming = (["connecting", "streaming", "verifying"] as const).some(
     (p) => p === streamState.phase,
   )
+  const selectedCapability = jurisdictionCapabilities.find((item) => item.code === selectedJurisdiction)
+  const fallbackJurisdiction = jurisdictionCapabilities.find(
+    (item) => item.queryEnabled && isQueryableJurisdictionCode(item.code),
+  )
+  const effectiveSelectedJurisdiction =
+    selectedCapability?.queryEnabled === false
+      ? isQueryableJurisdictionCode(fallbackJurisdiction?.code)
+        ? fallbackJurisdiction.code
+        : DEFAULT_JURISDICTION
+      : selectedJurisdiction
+  const complianceQueryUsage = planData?.usage?.complianceQueries
+  const remainingComplianceCredits =
+    complianceQueryUsage && complianceQueryUsage.limit >= 0
+      ? Math.max(complianceQueryUsage.limit - complianceQueryUsage.current, 0)
+      : undefined
 
   const chatScrollRef = useRef<HTMLDivElement>(null)
 
@@ -85,12 +127,18 @@ export default function ComplianceQueryPage() {
     // Track page open
     trackEvent("compliance_query_opened", {
       source: topic ? "topic_link" : "direct",
+      jurisdictionCode: effectiveSelectedJurisdiction,
     })
 
     if (!isRegulatoryArea(topic)) return
 
     router.replace("/startup/compliance-query", { scroll: false })
-  }, [router, topic])
+  }, [effectiveSelectedJurisdiction, router, topic])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    window.localStorage.setItem(JURISDICTION_STORAGE_KEY, effectiveSelectedJurisdiction)
+  }, [effectiveSelectedJurisdiction])
 
   const scrollChatToBottom = () => {
     if (typeof window === "undefined") return
@@ -118,40 +166,53 @@ export default function ComplianceQueryPage() {
       result.queryId !== lastPushedQueryIdRef.current
     ) {
       lastPushedQueryIdRef.current = result.queryId
+      const messageJurisdiction = responseJurisdictionOf(
+        result,
+        activeQueryJurisdiction ?? effectiveSelectedJurisdiction,
+      )
+      const hasInvalidCitations = hasCitationJurisdictionMismatch(result.citations, messageJurisdiction)
       setMessages((prev) => [
         ...prev,
         {
           id: `assistant-${Date.now()}`,
           type: "assistant",
           content: result.answer,
-          citations: result.citations,
-          confidence: result.confidence,
+          citations: hasInvalidCitations ? [] : result.citations,
+          confidence: hasInvalidCitations ? null : result.confidence,
           queryId: result.queryId,
+          jurisdictionCode: messageJurisdiction,
           timestamp: new Date(),
-          abstained: result.abstained,
-          route: result.route,
+          abstained: result.abstained || hasInvalidCitations,
+          route: hasInvalidCitations ? "abstain" : result.route,
           runId: result.runId,
-          grounded: result.grounded,
-          fallbackReason: result.fallbackReason ?? null,
+          grounded: hasInvalidCitations ? false : result.grounded,
+          fallbackReason: hasInvalidCitations ? "ALL_CHUNKS_FAILED_VERIFICATION" : result.fallbackReason ?? null,
           question: pendingQuestionRef.current,
         },
       ])
 
       trackEvent("compliance_query_completed", {
-        citation_count: result.citations?.length || 0,
-        status: result.abstained ? "abstained" : "answered",
+        citation_count: hasInvalidCitations ? 0 : result.citations?.length || 0,
+        status: result.abstained || hasInvalidCitations ? "abstained" : "answered",
         answer_detail: answerDetail,
-        usage_units_consumed: result.abstained ? 0 : (answerDetail === "detailed" ? 2 : 1),
-        fallback_triggered: result.abstained,
-        fallback_reason: result.fallbackReason ?? (result.abstained ? result.route ?? undefined : undefined),
+        usage_units_consumed: result.abstained || hasInvalidCitations ? 0 : (answerDetail === "detailed" ? 2 : 1),
+        fallback_triggered: result.abstained || hasInvalidCitations,
+        fallback_reason: hasInvalidCitations
+          ? "citation_jurisdiction_mismatch"
+          : result.fallbackReason ?? (result.abstained ? result.route ?? undefined : undefined),
+        jurisdictionCode: messageJurisdiction,
         response_word_count: result.answer.split(/\s+/).length,
       })
 
-      if (result.grounded === false || (result.abstained && result.route === "corpus-gap")) {
-        trackEvent("compliance_query_source_insufficient")
+      if (result.grounded === false || hasInvalidCitations || (result.abstained && result.route === "corpus-gap")) {
+        trackEvent("compliance_query_source_insufficient", {
+          jurisdictionCode: messageJurisdiction,
+        })
       }
+
+      setActiveQueryJurisdiction(null)
     }
-  }, [answerDetail, streamState])
+  }, [activeQueryJurisdiction, answerDetail, effectiveSelectedJurisdiction, streamState])
 
   // Handlers
 
@@ -159,8 +220,16 @@ export default function ComplianceQueryPage() {
     e.preventDefault()
     const trimmed = query.trim()
     if (!trimmed || isStreaming) return
+    const effectiveCapability = jurisdictionCapabilities.find((item) => item.code === effectiveSelectedJurisdiction)
+    if (effectiveCapability && !effectiveCapability.queryEnabled) return
 
-    trackEvent("compliance_query_started", { source: "manual_input" })
+    const requestJurisdiction = effectiveSelectedJurisdiction
+    setActiveQueryJurisdiction(requestJurisdiction)
+
+    trackEvent("compliance_query_started", {
+      source: "manual_input",
+      jurisdictionCode: requestJurisdiction,
+    })
 
     pendingQuestionRef.current = trimmed
     setPendingQuestion(trimmed)
@@ -170,11 +239,17 @@ export default function ComplianceQueryPage() {
         id: `user-${Date.now()}`,
         type: "user",
         content: trimmed,
+        jurisdictionCode: requestJurisdiction,
         timestamp: new Date(),
       },
     ])
     setQuery("")
-    streamSubmit({ question: trimmed, answerDetail })
+    streamSubmit({
+      question: trimmed,
+      mode: "SINGLE",
+      jurisdictions: [requestJurisdiction],
+      answerDetail,
+    })
     scrollChatToBottom()
   }
 
@@ -183,7 +258,10 @@ export default function ComplianceQueryPage() {
     suggestionId?: string,
     surface: "empty_state" | "sidebar" = "sidebar",
   ) => {
-    trackEvent("compliance_query_started", { source: "suggestion_" + surface })
+    trackEvent("suggested_query_selected", {
+      source: surface,
+      jurisdictionCode: effectiveSelectedJurisdiction,
+    })
     setQuery(suggestionText)
     if (suggestionId) {
       clickTrackingMutation.mutate(
@@ -242,6 +320,13 @@ export default function ComplianceQueryPage() {
       {/* Header */}
       <ComplianceQueryHeader />
 
+      <JurisdictionContextBar
+        capabilities={jurisdictionCapabilities}
+        selectedJurisdiction={effectiveSelectedJurisdiction}
+        disabled={isStreaming}
+        onJurisdictionChange={setSelectedJurisdiction}
+      />
+
       {/* Structured Dark Workspace Grid (66% Main / 33% Sidebar) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Main Regulatory Answer Workspace (66.7%) */}
@@ -253,8 +338,8 @@ export default function ComplianceQueryPage() {
               isStreaming={isStreaming}
               streamState={streamState}
               pendingQuestion={pendingQuestion}
-              suggestedQueries={suggestions}
-              suggestedQueriesLoading={suggestedQueriesLoading}
+              selectedJurisdiction={effectiveSelectedJurisdiction}
+              activeQueryJurisdiction={activeQueryJurisdiction}
               onSuggestedQuerySelect={handleSuggestedQuery}
               onCopy={handleCopy}
               onFeedback={handleFeedback}
@@ -272,7 +357,8 @@ export default function ComplianceQueryPage() {
               query={query}
               answerDetail={answerDetail}
               isStreaming={isStreaming}
-              remainingCredits={planData?.usage?.complianceQueries?.remaining}
+              jurisdiction={effectiveSelectedJurisdiction}
+              remainingCredits={remainingComplianceCredits}
               onQueryChange={setQuery}
               onAnswerDetailChange={setAnswerDetail}
               onSubmit={handleSubmit}
@@ -283,10 +369,7 @@ export default function ComplianceQueryPage() {
         {/* Right Sidebar Rail (33.3%) */}
         <div className="lg:col-span-4">
           <ComplianceQuerySidebar
-            suggestions={suggestions}
-            suggestedQueriesLoading={suggestedQueriesLoading}
-            suggestedQueriesError={suggestedQueriesError}
-            onRetrySuggestions={() => void utils.compliance.getSuggestedQueries.invalidate()}
+            selectedJurisdiction={effectiveSelectedJurisdiction}
             onSuggestionSelect={handleSuggestedQuery}
             historyQueries={historyData?.queries as HistoryItem[] | undefined}
             showAllQueries={showAllQueries}

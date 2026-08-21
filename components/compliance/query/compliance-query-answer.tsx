@@ -21,6 +21,7 @@ import type {
   FeedbackRating,
   FeedbackPulse,
 } from "./compliance-query-types"
+import { JurisdictionBadge } from "./jurisdiction-context"
 
 export function SheriaBotLogo({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -190,9 +191,10 @@ export function MessageActionBar({
 
 export interface ComplianceAnswerCitationsProps {
   citations: CitationItem[]
+  expectedJurisdiction?: string | null
 }
 
-export function ComplianceAnswerCitations({ citations }: ComplianceAnswerCitationsProps) {
+export function ComplianceAnswerCitations({ citations, expectedJurisdiction }: ComplianceAnswerCitationsProps) {
   if (!citations || citations.length === 0) return null
 
   return (
@@ -234,6 +236,10 @@ export function ComplianceAnswerCitations({ citations }: ComplianceAnswerCitatio
                   {citation.documentTitle}
                 </p>
                 <div className="flex flex-wrap items-center gap-1.5">
+                  <JurisdictionBadge
+                    code={citation.jurisdictionCode ?? expectedJurisdiction}
+                    className="h-5 px-1.5 text-[10px]"
+                  />
                   {citation.authorityStatus && citation.authorityStatus !== "IN_FORCE" && (
                     <Badge variant="outline" className="h-5 border-amber-500/35 px-1.5 text-[10px] text-amber-400">
                       {citation.authorityStatus.replace(/_/g, " ")}

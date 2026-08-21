@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import type { StreamState } from "@/hooks/use-compliance";
 import { ThinkingIndicator } from "@/components/compliance/thinking-indicator";
+import { jurisdictionLabel, type JurisdictionCode } from "@/lib/jurisdictions";
 
 const MASCOT_PATH = "/mascots/sheriabot-droid/compliance-query/v1";
 
@@ -24,9 +25,10 @@ const FRAME_INTERVAL_MS = 700;
 interface SheriaBotThinkingDroidProps {
   state: StreamState;
   query: string;
+  jurisdictionCode?: JurisdictionCode;
 }
 
-export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidProps) {
+export function SheriaBotThinkingDroid({ state, query, jurisdictionCode }: SheriaBotThinkingDroidProps) {
   const [frameState, setFrameState] = useState({ phase: state.phase, index: 0 });
   const [imageError, setImageError] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -106,19 +108,20 @@ export function SheriaBotThinkingDroid({ state, query }: SheriaBotThinkingDroidP
   }, [state.phase]);
 
   const statusText = useMemo(() => {
+    const country = jurisdictionLabel(jurisdictionCode);
     switch (state.phase) {
       case "connecting":
-        return "Finding relevant regulatory sources...";
+        return `Searching verified ${country} regulatory sources...`;
       case "streaming":
-        return "Reviewing evidence and preparing your answer...";
+        return `Reviewing ${country} regulatory evidence...`;
       case "verifying":
-        return "Checking the answer against its sources...";
+        return `Verifying against ${country} regulatory sources...`;
       case "complete":
         return "Answer ready";
       default:
         return "Thinking...";
     }
-  }, [state.phase]);
+  }, [jurisdictionCode, state.phase]);
 
   const frameIndex = frameState.phase === state.phase ? frameState.index : 0;
   const currentFrameUrl = sequence[frameIndex % sequence.length] || frames.FOCUS;

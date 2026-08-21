@@ -4,12 +4,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { trpc, getErrorMessage } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { playNotificationSound } from "@/lib/notification-sounds";
+import type { JurisdictionCode, QueryableJurisdictionCode } from "@/lib/jurisdictions";
 
 // ── Shared response types ─────────────────────────────────────────────────────
 
 export interface CitationItem {
+  vectorId?:       string | null;
+  chunkId?:        string | null;
   documentId:    string | null;
   documentTitle: string;
+  jurisdictionCode?: JurisdictionCode | null;
   section:       string;
   textSnippet:   string;
   score:         number;
@@ -26,7 +30,6 @@ export interface CitationItem {
   sectionTitle?: string;
   sectionNumber?: string;
   pageNumber?: number;
-  chunkId?: string;
 }
 
 /** Full orchestrated-path shape returned by both tRPC and SSE paths. */
@@ -36,6 +39,9 @@ export interface ComplianceQueryResponse {
   citations: CitationItem[];
   confidence: number | null;
   suggestedFollowUps: string[];
+  mode?: "SINGLE";
+  jurisdictions?: JurisdictionCode[];
+  primaryJurisdiction?: JurisdictionCode;
   /** null on legacy shadow path (ORCHESTRATOR_ENABLED=false) */
   route: string | null;
   grounded: boolean;
@@ -76,6 +82,8 @@ export interface StreamState {
 
 export interface ComplianceStreamInput {
   question: string;
+  mode: "SINGLE";
+  jurisdictions: [QueryableJurisdictionCode];
   organizationType?: string;
   industry?: string;
   context?: string;
@@ -87,7 +95,7 @@ type SSEEvent =
   | { type: "connected"; queryId: string; ragSources: number }
   | { type: "chunk"; text: string }
   | { type: "synthesis_complete" }
-  | { type: "done"; queryId: string; route: string; grounded: boolean; abstained: boolean; runId: string | null; citations: CitationItem[]; confidence: number | null; fallbackReason?: ComplianceFallbackReason | null }
+  | { type: "done"; queryId: string; route: string; grounded: boolean; abstained: boolean; runId: string | null; citations: CitationItem[]; confidence: number | null; fallbackReason?: ComplianceFallbackReason | null; mode?: "SINGLE"; jurisdictions?: JurisdictionCode[]; primaryJurisdiction?: JurisdictionCode }
   | { type: "error"; message: string };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -243,6 +251,9 @@ export function useComplianceStream() {
                     citations: event.citations,
                     confidence: event.confidence,
                     suggestedFollowUps: [],
+                    mode: event.mode,
+                    jurisdictions: event.jurisdictions,
+                    primaryJurisdiction: event.primaryJurisdiction,
                     route: event.route,
                     grounded: event.grounded,
                     abstained: event.abstained,

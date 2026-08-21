@@ -4080,9 +4080,23 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         transformer: false;
     }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
+        jurisdictionCapabilities: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                jurisdictions: {
+                    code: "KE" | "MW" | "RW" | "NG";
+                    name: string;
+                    queryEnabled: boolean;
+                    status: import("../../types/jurisdiction").JurisdictionAvailabilityStatus;
+                }[];
+            };
+            meta: object;
+        }>;
         query: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 question: string;
+                mode?: "SINGLE" | "COMPARE" | undefined;
+                jurisdictions?: ("KE" | "MW" | "RW" | "NG")[] | undefined;
                 organizationType?: "OTHER" | "FINTECH" | "BANK" | "TELECOM" | "INSURANCE" | undefined;
                 industry?: string | undefined;
                 context?: string | undefined;
@@ -4094,6 +4108,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 citations: import("../../lib/source-grounding/citations").SourceCitation[];
                 confidence: number | null;
                 suggestedFollowUps: never[];
+                mode: "SINGLE";
+                jurisdictions: ("KE" | "MW" | "RW" | "NG")[];
+                primaryJurisdiction: "KE" | "MW" | "RW" | "NG";
+                jurisdictionSource: import("../../types/jurisdiction").JurisdictionSource;
                 route: string;
                 grounded: boolean;
                 abstained: false;
@@ -4104,6 +4122,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 citations: import("../../lib/source-grounding/citations").SourceCitation[];
                 confidence: null;
                 suggestedFollowUps: never[];
+                mode: "SINGLE";
+                jurisdictions: ("KE" | "MW" | "RW" | "NG")[];
+                primaryJurisdiction: "KE" | "MW" | "RW" | "NG";
+                jurisdictionSource: import("../../types/jurisdiction").JurisdictionSource;
                 route: string | null;
                 grounded: boolean;
                 abstained: boolean;
@@ -4120,6 +4142,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 queryId: any;
                 answer: string;
                 citations: import("../../lib/source-grounding/citations").SourceCitation[];
+                mode: "SINGLE";
+                jurisdictions: ("KE" | "MW" | "RW" | "NG")[];
+                primaryJurisdiction: "KE" | "MW" | "RW" | "NG";
+                jurisdictionSource: import("../../types/jurisdiction").JurisdictionSource;
             };
             meta: object;
         }>;
@@ -4173,6 +4199,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         fullName: string;
                     };
                     createdAt: Date;
+                    jurisdictions: string[];
+                    primaryJurisdiction: string | null;
+                    jurisdictionSource: string | null;
                 }[];
                 pagination: {
                     page: number;
@@ -4209,6 +4238,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 response: string | null;
                 citations: import("@prisma/client/runtime/client").JsonValue | null;
                 processingTimeMs: number | null;
+                mode: string | null;
+                jurisdictions: string[];
+                primaryJurisdiction: string | null;
+                jurisdictionSource: string | null;
+                corpusVersionSnapshot: import("@prisma/client/runtime/client").JsonValue | null;
                 productCategory: string | null;
                 regulations: import("@prisma/client/runtime/client").JsonValue | null;
                 requirements: import("@prisma/client/runtime/client").JsonValue | null;
@@ -7705,9 +7739,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 organizationId: string;
                 createdAt: Date;
                 updatedAt: Date;
+                jurisdictions: string[];
                 inAppEnabled: boolean;
                 emailEnabled: boolean;
-                jurisdictions: string[];
                 regulatoryBodies: string[];
                 categories: string[];
                 severityThreshold: string;
@@ -7722,9 +7756,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 organizationId: string;
                 createdAt: Date;
                 updatedAt: Date;
+                jurisdictions: string[];
                 inAppEnabled: boolean;
                 emailEnabled: boolean;
-                jurisdictions: string[];
                 regulatoryBodies: string[];
                 categories: string[];
                 severityThreshold: string;
@@ -11907,11 +11941,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     targetAudience: string[];
                     summary: string | null;
                     category: string;
+                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
                     jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                     reason: string | null;
                     approvedAt: Date | null;
-                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     blogPostId: string | null;
                     dismissedReason: string | null;
                     suggestedSlug: string | null;
@@ -12408,11 +12442,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         targetAudience: string[];
                         summary: string | null;
                         category: string;
+                        jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                         priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
                         jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                         reason: string | null;
                         approvedAt: Date | null;
-                        jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                         blogPostId: string | null;
                         dismissedReason: string | null;
                         suggestedSlug: string | null;
@@ -12500,11 +12534,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     targetAudience: string[];
                     summary: string | null;
                     category: string;
+                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
                     jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                     reason: string | null;
                     approvedAt: Date | null;
-                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
                     blogPostId: string | null;
                     dismissedReason: string | null;
                     suggestedSlug: string | null;

@@ -11,6 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { ComplianceFallbackReason } from "@/hooks/use-compliance";
+import { jurisdictionLabel, type JurisdictionCode } from "@/lib/jurisdictions";
 
 // ── Authority registry ────────────────────────────────────────────────────────
 
@@ -51,6 +52,7 @@ export interface AbstainCardProps {
   /** Determines which copy variant to show */
   route: string | null;
   fallbackReason?: ComplianceFallbackReason | null;
+  jurisdictionCode?: JurisdictionCode;
   className?: string;
 }
 
@@ -198,13 +200,14 @@ function getFallbackCopy(fallbackReason: ComplianceFallbackReason | null | undef
   };
 }
 
-export function AbstainCard({ queryId, runId, question, route, fallbackReason, className }: AbstainCardProps) {
+export function AbstainCard({ queryId, runId, question, route, fallbackReason, jurisdictionCode, className }: AbstainCardProps) {
   const [formOpen, setFormOpen] = useState(false);
 
   const isRouteScopeAbstain = route === "abstain" || fallbackReason === "OUT_OF_SCOPE";
   const fallbackCopy = getFallbackCopy(fallbackReason);
   const authorityCodes = isRouteScopeAbstain ? [] : selectAuthorityCodes(question);
   const authorities = AUTHORITIES.filter((a) => authorityCodes.includes(a.code));
+  const country = jurisdictionLabel(jurisdictionCode);
 
   return (
     <Card
@@ -235,15 +238,18 @@ export function AbstainCard({ queryId, runId, question, route, fallbackReason, c
       <CardContent className="space-y-4 text-sm text-muted-foreground">
         {isRouteScopeAbstain ? (
           <p>
-            SheriaBot specialises in Kenyan fintech compliance — banking, payments, lending, data
-            protection, AML/CFT, and related regulations supervised by CBK, ODPC, FRC, IRA, and
-            CMA. For questions outside this domain, a specialist resource or regulator would be
-            better placed to help.
+            SheriaBot could not locate sufficient verified {country} regulatory sources to answer
+            this question confidently. A specialist resource or regulator may be better placed to
+            help.
           </p>
         ) : (
           <>
-            <p>{fallbackCopy.body}</p>
+            <p>
+              {fallbackCopy.body} SheriaBot could not locate sufficient verified {country}
+              regulatory sources to answer confidently.
+            </p>
 
+            {authorities.length > 0 ? (
             <div>
               <p className="font-medium text-foreground mb-2">Consider checking directly with:</p>
               <ul className="space-y-1" aria-label="Relevant regulatory authorities">
@@ -264,6 +270,7 @@ export function AbstainCard({ queryId, runId, question, route, fallbackReason, c
                 ))}
               </ul>
             </div>
+            ) : null}
           </>
         )}
 

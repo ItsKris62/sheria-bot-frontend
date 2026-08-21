@@ -15,9 +15,13 @@ export interface TokenBudget {
 }
 export declare const TOKEN_BUDGETS: Record<'simple' | 'complex', TokenBudget>;
 export interface AcceptedChunkRef {
+    vectorId?: string;
+    chunkId?: string;
     documentId: string;
     documentTitle: string;
+    jurisdictionCode?: string;
     section?: string;
+    contentHash?: string;
     rank: number;
 }
 export interface QueryRunTrace {
@@ -32,6 +36,12 @@ export interface QueryRunTrace {
     ragSources: number;
     subQuestions: string[];
     retrievalQueries: string[];
+    jurisdictions?: string[];
+    primaryJurisdiction?: string | null;
+    jurisdictionSource?: string | null;
+    corpusVersionSnapshot?: Record<string, string | undefined>;
+    retrievalVersion?: string | null;
+    retrievedVectorIds?: string[];
     gradeChunksInspected: number;
     acceptedChunkIds: AcceptedChunkRef[];
     rejectedChunkCount: number;

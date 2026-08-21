@@ -26,7 +26,7 @@ export function ComplianceQueryHeader({
         <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
         <span className="font-medium">Verified Legal Corpus</span>
         <span className="text-muted-foreground/60">•</span>
-        <span className="text-muted-foreground">CBK, ODPC, FRC, IRA, CMA</span>
+        <span className="text-muted-foreground">Kenya, Rwanda, Malawi</span>
       </div>
     </div>
   )

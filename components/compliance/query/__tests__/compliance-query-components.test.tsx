@@ -82,13 +82,14 @@ describe("Extracted Compliance Query Presentation Components with Phase 3 Motion
           query="What is the AML threshold?"
           answerDetail="standard"
           isStreaming={false}
+          jurisdiction="KE"
           onQueryChange={mocks.onQueryChange}
           onAnswerDetailChange={mocks.onAnswerDetailChange}
           onSubmit={mocks.onSubmit}
         />,
       )
 
-      const input = screen.getByPlaceholderText(/Ask about KYC requirements/i)
+      const input = screen.getByPlaceholderText(/Ask a compliance question about Kenya/i)
       expect(input).toHaveValue("What is the AML threshold?")
 
       fireEvent.change(input, { target: { value: "What is the new AML threshold?" } })
@@ -107,6 +108,7 @@ describe("Extracted Compliance Query Presentation Components with Phase 3 Motion
           answerDetail="detailed"
           remainingCredits={1}
           isStreaming={false}
+          jurisdiction="KE"
           onQueryChange={mocks.onQueryChange}
           onAnswerDetailChange={mocks.onAnswerDetailChange}
           onSubmit={mocks.onSubmit}
@@ -198,8 +200,8 @@ describe("Extracted Compliance Query Presentation Components with Phase 3 Motion
           isStreaming={true}
           streamState={streamState}
           pendingQuestion="What are the capital requirements?"
-          suggestedQueries={[]}
-          suggestedQueriesLoading={false}
+          selectedJurisdiction="RW"
+          activeQueryJurisdiction="RW"
           onSuggestedQuerySelect={mocks.onSuggestedQuerySelect}
           onCopy={mocks.onCopy}
           onFeedback={mocks.onFeedback}
@@ -241,8 +243,8 @@ describe("Extracted Compliance Query Presentation Components with Phase 3 Motion
           isStreaming={false}
           streamState={streamState}
           pendingQuestion=""
-          suggestedQueries={[]}
-          suggestedQueriesLoading={false}
+          selectedJurisdiction="KE"
+          activeQueryJurisdiction={null}
           onSuggestedQuerySelect={mocks.onSuggestedQuerySelect}
           onCopy={mocks.onCopy}
           onFeedback={mocks.onFeedback}
@@ -284,10 +286,7 @@ describe("Extracted Compliance Query Presentation Components with Phase 3 Motion
     it("renders sidebar with correct card section order (Recent Queries, Suggested Queries, Legal Corpus)", () => {
       render(
         <ComplianceQuerySidebar
-          suggestions={[{ id: "s-1", text: "What is the capital requirement?" }]}
-          suggestedQueriesLoading={false}
-          suggestedQueriesError={false}
-          onRetrySuggestions={mocks.onRetrySuggestions}
+          selectedJurisdiction="MW"
           onSuggestionSelect={mocks.onSuggestedQuerySelect}
           showAllQueries={false}
           onShowAllQueriesChange={mocks.onShowAllQueriesChange}
@@ -295,27 +294,28 @@ describe("Extracted Compliance Query Presentation Components with Phase 3 Motion
       )
 
       expect(screen.getByText("Recent Queries")).toBeInTheDocument()
-      expect(screen.getByText("Suggested Queries")).toBeInTheDocument()
+      expect(screen.getAllByText("Suggested for Malawi").length).toBeGreaterThan(0)
       expect(screen.getByText("Legal Corpus Coverage")).toBeInTheDocument()
     })
 
-    it("renders suggested queries sidebar with retry button on error", () => {
+    it("renders country-aware curated suggestions", () => {
       render(
         <ComplianceQuerySidebar
-          suggestions={[]}
-          suggestedQueriesLoading={false}
-          suggestedQueriesError={true}
-          onRetrySuggestions={mocks.onRetrySuggestions}
+          selectedJurisdiction="RW"
           onSuggestionSelect={mocks.onSuggestedQuerySelect}
           showAllQueries={false}
           onShowAllQueriesChange={mocks.onShowAllQueriesChange}
         />,
       )
 
-      expect(screen.getByText("Could not load suggestions")).toBeInTheDocument()
-      const retryBtn = screen.getByRole("button", { name: "Retry" })
-      fireEvent.click(retryBtn)
-      expect(mocks.onRetrySuggestions).toHaveBeenCalled()
+      expect(screen.getAllByText("Suggested for Rwanda").length).toBeGreaterThan(0)
+      const licensingButton = screen.getByRole("button", { name: /Licensing/i })
+      fireEvent.click(licensingButton)
+      expect(mocks.onSuggestedQuerySelect).toHaveBeenCalledWith(
+        "What licensing requirements apply to payment service providers in Rwanda?",
+        "regional-rw-licensing",
+        "sidebar",
+      )
     })
   })
 })

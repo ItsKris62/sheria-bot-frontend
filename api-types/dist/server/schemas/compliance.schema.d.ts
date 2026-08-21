@@ -17,6 +17,16 @@ import { z } from 'zod';
  */
 export declare const complianceQuerySchema: z.ZodObject<{
     question: z.ZodString;
+    mode: z.ZodOptional<z.ZodEnum<{
+        SINGLE: "SINGLE";
+        COMPARE: "COMPARE";
+    }>>;
+    jurisdictions: z.ZodOptional<z.ZodArray<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>>;
     organizationType: z.ZodOptional<z.ZodEnum<{
         OTHER: "OTHER";
         FINTECH: "FINTECH";

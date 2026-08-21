@@ -5,11 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Clock, ChevronRight, History } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { AllQueriesDialog } from "@/components/compliance/all-queries-dialog"
+import { JurisdictionBadge } from "./jurisdiction-context"
+import type { JurisdictionCode } from "@/lib/jurisdictions"
 
 export interface HistoryItem {
   id: string
   query: string
   createdAt: string
+  primaryJurisdiction?: JurisdictionCode | null
+  jurisdictionSource?: string | null
 }
 
 export interface ComplianceQueryHistoryProps {
@@ -47,6 +51,11 @@ export function ComplianceQueryHistory({
                   >
                     <Clock className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-emerald-400 transition-colors" />
                     <div className="flex-1 min-w-0">
+                      <JurisdictionBadge
+                        code={item.primaryJurisdiction}
+                        legacy={item.jurisdictionSource === "LEGACY_DEFAULT"}
+                        className="mb-1 h-5 px-1.5"
+                      />
                       <p className="text-xs font-medium text-foreground truncate group-hover:text-emerald-300 transition-colors">
                         {item.query}
                       </p>

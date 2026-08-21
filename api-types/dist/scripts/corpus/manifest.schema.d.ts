@@ -10,8 +10,8 @@
 import { z } from 'zod';
 export declare const CountryEnum: z.ZodEnum<{
     Kenya: "Kenya";
-    Malawi: "Malawi";
     Rwanda: "Rwanda";
+    Malawi: "Malawi";
     Nigeria: "Nigeria";
     International: "International";
 }>;
@@ -99,8 +99,8 @@ export declare const CorpusManifestEntrySchema: z.ZodObject<{
     id: z.ZodString;
     country: z.ZodEnum<{
         Kenya: "Kenya";
-        Malawi: "Malawi";
         Rwanda: "Rwanda";
+        Malawi: "Malawi";
         Nigeria: "Nigeria";
         International: "International";
     }>;
@@ -197,8 +197,8 @@ export declare const CorpusManifestSchema: z.ZodObject<{
     version: z.ZodNumber;
     country: z.ZodEnum<{
         Kenya: "Kenya";
-        Malawi: "Malawi";
         Rwanda: "Rwanda";
+        Malawi: "Malawi";
         Nigeria: "Nigeria";
         International: "International";
     }>;
@@ -215,8 +215,8 @@ export declare const CorpusManifestSchema: z.ZodObject<{
         id: z.ZodString;
         country: z.ZodEnum<{
             Kenya: "Kenya";
-            Malawi: "Malawi";
             Rwanda: "Rwanda";
+            Malawi: "Malawi";
             Nigeria: "Nigeria";
             International: "International";
         }>;

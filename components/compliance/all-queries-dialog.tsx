@@ -22,6 +22,8 @@ import {
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { formatDistanceToNow } from "date-fns"
+import { JurisdictionBadge } from "@/components/compliance/query/jurisdiction-context"
+import type { JurisdictionCode } from "@/lib/jurisdictions"
 
 interface AllQueriesDialogProps {
     open: boolean
@@ -32,6 +34,8 @@ type QueryRow = {
     id: string
     query: string
     createdAt: string
+    primaryJurisdiction?: JurisdictionCode | null
+    jurisdictionSource?: string | null
 }
 
 export function AllQueriesDialog({ open, onOpenChange }: AllQueriesDialogProps) {
@@ -133,6 +137,11 @@ export function AllQueriesDialog({ open, onOpenChange }: AllQueriesDialogProps) 
                                 >
                                     <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
                                     <div className="flex-1 min-w-0">
+                                        <JurisdictionBadge
+                                            code={item.primaryJurisdiction}
+                                            legacy={item.jurisdictionSource === "LEGACY_DEFAULT"}
+                                            className="mb-1 h-5 px-1.5"
+                                        />
                                         <p className="text-sm font-medium text-foreground truncate">
                                             {item.query}
                                         </p>
