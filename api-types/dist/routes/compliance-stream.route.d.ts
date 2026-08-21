@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import type { GraderAgentResult } from '@/modules/compliance/orchestrator/grader.agent';
 import type { TrialContextState } from '@/modules/trial/trial.types';
 import type { EffectivePlan } from '@/types/plan.types';
 import type { EffectivePlanSource, PilotEntitlementProfile } from '@/types/plan.types';
@@ -13,10 +14,11 @@ export declare function hasUsableRetrievedChunks(results: Array<{
     documentTitle?: string | null;
     chunkText?: string | null;
 }>): boolean;
-export declare function selectGenerationSources<T>(retrievedResults: T[], acceptedResults: T[], gradeFailed: boolean): {
+export declare function selectGenerationSources<T>(retrievedResults: T[], acceptedResults: T[], gradeFailed: boolean, graderDiagnostics?: GraderAgentResult['diagnostics']): {
     sources: T[];
     usedVerifierFallback: boolean;
     allChunksFailedVerification: boolean;
+    externalProviderBillingBlocked: boolean;
 };
 interface AuthContext {
     userId: string;

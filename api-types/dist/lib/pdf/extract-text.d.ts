@@ -17,4 +17,14 @@
  * @throws Error if the buffer is not a valid PDF or pdf-parse is misconfigured
  */
 export declare function extractPdfText(buffer: Buffer): Promise<string>;
+export interface PdfTextExtractionResult {
+    text: string;
+    meaningfulText: string;
+    pageCount: number | null;
+}
+/**
+ * Extract text and page metadata from a PDF buffer without rejecting empty text.
+ * Ingestion uses this to decide whether local OCR fallback is eligible.
+ */
+export declare function extractPdfTextWithMetadata(buffer: Buffer): Promise<PdfTextExtractionResult>;
 //# sourceMappingURL=extract-text.d.ts.map

@@ -1,4 +1,5 @@
 import type { SearchResult } from '@/lib/rag/rag.service';
+import type { AnswerClaimVerification } from '@/lib/source-grounding/claim-verification';
 import type { JurisdictionContext, JurisdictionCode } from '@/types/jurisdiction';
 export type CitationVerificationStatus = 'verified' | 'unverified' | 'not_checked';
 export type SourceCitation = {
@@ -26,6 +27,7 @@ export type SourceCitation = {
 };
 export declare function buildCitationFromSearchResult(source: SearchResult, verificationStatus?: CitationVerificationStatus): SourceCitation;
 export declare function buildCitationsFromChunks(chunks: SearchResult[], verificationStatus?: CitationVerificationStatus): SourceCitation[];
+export declare function buildCitationsFromSupportedClaims(claims: AnswerClaimVerification[], verificationStatus?: CitationVerificationStatus): SourceCitation[];
 export declare function hasUsableCitations(citations: SourceCitation[]): boolean;
 export declare function findAcceptedChunks(acceptedChunkIds: unknown, ragResults: SearchResult[]): SearchResult[];
 export declare function validateCitationsForJurisdiction(citations: SourceCitation[], jurisdictionContext: JurisdictionContext): {

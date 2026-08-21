@@ -1,5 +1,6 @@
 import type { SearchResult } from '@/lib/rag/rag.service';
-export type ComplianceFallbackReason = 'NO_RAG_CHUNKS' | 'ALL_CHUNKS_FAILED_VERIFICATION' | 'LOW_RELEVANCE' | 'OUT_OF_SCOPE' | 'ROUTE_ERROR';
+import type { AnswerClaimVerification } from './claim-verification';
+export type ComplianceFallbackReason = 'NO_RAG_CHUNKS' | 'ALL_CHUNKS_FAILED_VERIFICATION' | 'EXTERNAL_PROVIDER_BILLING_BLOCKER' | 'LOW_RELEVANCE' | 'OUT_OF_SCOPE' | 'ROUTE_ERROR';
 export declare const COMPLIANCE_SOURCE_INSUFFICIENCY_MESSAGE = "SheriaBot could not find a sufficiently verified source in the indexed corpus for this specific question.";
 export declare const COMPLIANCE_FALLBACK_MESSAGES: Record<ComplianceFallbackReason, string>;
 export declare const GAP_ANALYSIS_SOURCE_INSUFFICIENCY_MESSAGE = "The selected benchmark/source documents do not provide enough verified regulatory evidence to complete this legal gap assessment. Please select stronger benchmark documents or add the missing regulatory source.";
@@ -10,6 +11,7 @@ export declare function hasUsableSourceContext(input: {
 }): boolean;
 export declare function buildComplianceSourceInsufficiencyAnswer(fallbackReason?: ComplianceFallbackReason | null): string;
 export declare function buildUnsupportedClaimsAnswer(unsupportedClaims: string[]): string;
+export declare function buildPartiallySupportedClaimsAnswer(supportedClaims: AnswerClaimVerification[], unsupportedClaims: AnswerClaimVerification[]): string;
 export declare class SourceInsufficiencyError extends Error {
     constructor(message: string);
 }
