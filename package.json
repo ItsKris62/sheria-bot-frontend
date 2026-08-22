@@ -37,7 +37,7 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "@sentry/nextjs": "^10.55.0",
-    "@sheriabot/api-types": "file:./api-types",
+    "@sheriabot/api-types": "link:./api-types",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.0",
     "@tailwindcss/typography": "^0.5.19",
@@ -76,6 +76,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@prisma/client": "7.8.0",
     "@tailwindcss/postcss": "^4.1.13",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",

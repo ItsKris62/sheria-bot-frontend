@@ -90,8 +90,8 @@ importers:
         specifier: ^10.55.0
         version: 10.55.0(@opentelemetry/core@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.1(@opentelemetry/api@1.9.1))(next@16.1.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(webpack@5.107.2(postcss@8.5.6))
       '@sheriabot/api-types':
-        specifier: file:./api-types
-        version: file:api-types(@prisma/client@7.8.0(typescript@5.7.3))(@trpc/server@11.10.0(typescript@5.7.3))
+        specifier: link:./api-types
+        version: link:api-types
       '@supabase/ssr':
         specifier: ^0.10.2
         version: 0.10.2(@supabase/supabase-js@2.104.0)
@@ -201,6 +201,9 @@ importers:
         specifier: ^5.0.11
         version: 5.0.11(@types/react@19.2.13)(react@19.2.4)
     devDependencies:
+      '@prisma/client':
+        specifier: 7.8.0
+        version: 7.8.0(typescript@5.7.3)
       '@tailwindcss/postcss':
         specifier: ^4.1.13
         version: 4.1.18
@@ -1971,12 +1974,6 @@ packages:
     peerDependencies:
       webpack: '>=5.0.0'
 
-  '@sheriabot/api-types@file:api-types':
-    resolution: {directory: api-types, type: directory}
-    peerDependencies:
-      '@prisma/client': ^7.4.0
-      '@trpc/server': ^11.9.0
-
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
@@ -2321,6 +2318,7 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@unrs/resolver-binding-android-arm-eabi@1.12.2':
     resolution: {integrity: sha512-g5T90pqg1bo/7mytQx6F4iBNC0Wsh9cu+z9veDbFjc7HjpesJFWD7QMS0NGStXM075+7dJPPVvBbpZlnrdpi/w==}
@@ -3236,6 +3234,7 @@ packages:
   eslint@9.39.4:
     resolution: {integrity: sha512-XoMjdBOwe/esVgEvLmNsD3IRHkm7fbKIUGvrleloJXUZgDHig2IPWNniv+GwjyJXzuNqVjlr5+4yVUZjycJwfQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -4596,6 +4595,7 @@ packages:
   recharts@2.15.0:
     resolution: {integrity: sha512-cIvMxDfpAmqAmVgc4yb7pgm/O1tmmkl/CjrvXuW+62/+7jj/iF9Ykm+hb/UJt42TREHMyd3gb+pkgoa2MxgDIw==}
     engines: {node: '>=14'}
+    deprecated: 1.x and 2.x branches are no longer active. Bump to Recharts v3 to receive latest features and bugfixes. See https://github.com/recharts/recharts/wiki/3.0-migration-guide
     peerDependencies:
       react: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -6998,11 +6998,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
-
-  '@sheriabot/api-types@file:api-types(@prisma/client@7.8.0(typescript@5.7.3))(@trpc/server@11.10.0(typescript@5.7.3))':
-    dependencies:
-      '@prisma/client': 7.8.0(typescript@5.7.3)
-      '@trpc/server': 11.10.0(typescript@5.7.3)
 
   '@standard-schema/spec@1.1.0': {}
 
