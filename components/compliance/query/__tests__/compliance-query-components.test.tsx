@@ -200,8 +200,8 @@ describe("Extracted Compliance Query Presentation Components with Phase 3 Motion
           isStreaming={true}
           streamState={streamState}
           pendingQuestion="What are the capital requirements?"
-          selectedJurisdiction="RW"
-          activeQueryJurisdiction="RW"
+          selectedJurisdictions={["RW"]}
+          activeQueryJurisdictions={["RW"]}
           onSuggestedQuerySelect={mocks.onSuggestedQuerySelect}
           onCopy={mocks.onCopy}
           onFeedback={mocks.onFeedback}
@@ -243,8 +243,8 @@ describe("Extracted Compliance Query Presentation Components with Phase 3 Motion
           isStreaming={false}
           streamState={streamState}
           pendingQuestion=""
-          selectedJurisdiction="KE"
-          activeQueryJurisdiction={null}
+          selectedJurisdictions={["KE"]}
+          activeQueryJurisdictions={null}
           onSuggestedQuerySelect={mocks.onSuggestedQuerySelect}
           onCopy={mocks.onCopy}
           onFeedback={mocks.onFeedback}

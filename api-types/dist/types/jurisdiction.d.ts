@@ -21,14 +21,19 @@ export interface SingleJurisdictionContext {
     primaryJurisdiction: JurisdictionCode;
     jurisdictionSource: JurisdictionSource;
 }
-export type JurisdictionContext = SingleJurisdictionContext;
+export interface CompareJurisdictionContext {
+    mode: 'COMPARE';
+    jurisdictions: readonly JurisdictionCode[];
+    jurisdictionSource: JurisdictionSource;
+}
+export type JurisdictionContext = SingleJurisdictionContext | CompareJurisdictionContext;
 export interface JurisdictionContractInput {
     mode?: QueryMode;
     jurisdictions?: readonly JurisdictionCode[];
 }
 export declare class JurisdictionContractError extends Error {
-    readonly code: 'JURISDICTION_REQUIRED' | 'JURISDICTION_UNSUPPORTED' | 'JURISDICTION_NOT_AVAILABLE' | 'COMPARISON_NOT_ENABLED';
-    constructor(code: 'JURISDICTION_REQUIRED' | 'JURISDICTION_UNSUPPORTED' | 'JURISDICTION_NOT_AVAILABLE' | 'COMPARISON_NOT_ENABLED', message: string);
+    readonly code: 'JURISDICTION_REQUIRED' | 'JURISDICTION_UNSUPPORTED' | 'JURISDICTION_NOT_AVAILABLE' | 'COMPARISON_NOT_ENABLED' | 'COMPARISON_MIN_JURISDICTIONS' | 'COMPARISON_MAX_JURISDICTIONS' | 'COMPARISON_DUPLICATE_JURISDICTION';
+    constructor(code: 'JURISDICTION_REQUIRED' | 'JURISDICTION_UNSUPPORTED' | 'JURISDICTION_NOT_AVAILABLE' | 'COMPARISON_NOT_ENABLED' | 'COMPARISON_MIN_JURISDICTIONS' | 'COMPARISON_MAX_JURISDICTIONS' | 'COMPARISON_DUPLICATE_JURISDICTION', message: string);
 }
 export declare function resolveJurisdictionContext(input: JurisdictionContractInput, options?: {
     allowLegacyDefault?: boolean;
@@ -41,9 +46,9 @@ export declare function resolvePersistedJurisdictionContext(input: {
     metadata?: unknown;
 }): JurisdictionContext;
 export declare function serializeJurisdictionContext(context: JurisdictionContext): {
-    mode: 'SINGLE';
+    mode: QueryMode;
     jurisdictions: JurisdictionCode[];
-    primaryJurisdiction: JurisdictionCode;
+    primaryJurisdiction: JurisdictionCode | null;
     jurisdictionSource: JurisdictionSource;
 };
 //# sourceMappingURL=jurisdiction.d.ts.map

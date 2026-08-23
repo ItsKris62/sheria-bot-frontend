@@ -104,7 +104,7 @@ export interface RegulatoryEvidenceSearchOptions {
     preferActiveSources?: boolean;
     sourceIndexMode?: SearchOptions['sourceIndexMode'];
 }
-export declare function buildRegulatoryEvidenceFilter(context: JurisdictionContext, sourceIndexMode?: SearchOptions['sourceIndexMode']): Record<string, unknown>;
+export declare function buildRegulatoryEvidenceFilter(jurisdictionCode: JurisdictionCode, sourceIndexMode?: SearchOptions['sourceIndexMode']): Record<string, unknown>;
 /**
  * RAG Service
  * Handles document indexing and semantic search

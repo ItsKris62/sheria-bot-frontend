@@ -1,6 +1,6 @@
 {
   "name": "@sheriabot/api-types",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Declaration-only tRPC API types for SheriaBot frontend clients.",
   "private": false,
   "type": "commonjs",

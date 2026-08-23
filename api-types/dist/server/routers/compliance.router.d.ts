@@ -55,9 +55,9 @@ export declare const complianceRouter: import("@trpc/server").TRPCBuiltRouter<{
             citations: SourceCitation[];
             confidence: number | null;
             suggestedFollowUps: never[];
-            mode: "SINGLE";
+            mode: "SINGLE" | "COMPARE";
             jurisdictions: ("KE" | "MW" | "RW" | "NG")[];
-            primaryJurisdiction: "KE" | "MW" | "RW" | "NG";
+            primaryJurisdiction: "KE" | "MW" | "RW" | "NG" | null;
             jurisdictionSource: import("@/types/jurisdiction").JurisdictionSource;
             route: string;
             grounded: boolean;
@@ -69,9 +69,9 @@ export declare const complianceRouter: import("@trpc/server").TRPCBuiltRouter<{
             citations: SourceCitation[];
             confidence: null;
             suggestedFollowUps: never[];
-            mode: "SINGLE";
+            mode: "SINGLE" | "COMPARE";
             jurisdictions: ("KE" | "MW" | "RW" | "NG")[];
-            primaryJurisdiction: "KE" | "MW" | "RW" | "NG";
+            primaryJurisdiction: "KE" | "MW" | "RW" | "NG" | null;
             jurisdictionSource: import("@/types/jurisdiction").JurisdictionSource;
             route: string | null;
             grounded: boolean;
@@ -95,9 +95,9 @@ export declare const complianceRouter: import("@trpc/server").TRPCBuiltRouter<{
             queryId: any;
             answer: string;
             citations: SourceCitation[];
-            mode: "SINGLE";
+            mode: "SINGLE" | "COMPARE";
             jurisdictions: ("KE" | "MW" | "RW" | "NG")[];
-            primaryJurisdiction: "KE" | "MW" | "RW" | "NG";
+            primaryJurisdiction: "KE" | "MW" | "RW" | "NG" | null;
             jurisdictionSource: import("@/types/jurisdiction").JurisdictionSource;
         };
         meta: object;

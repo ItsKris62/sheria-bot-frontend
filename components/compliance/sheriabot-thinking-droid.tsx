@@ -25,10 +25,10 @@ const FRAME_INTERVAL_MS = 700;
 interface SheriaBotThinkingDroidProps {
   state: StreamState;
   query: string;
-  jurisdictionCode?: JurisdictionCode;
+  jurisdictions?: JurisdictionCode[];
 }
 
-export function SheriaBotThinkingDroid({ state, query, jurisdictionCode }: SheriaBotThinkingDroidProps) {
+export function SheriaBotThinkingDroid({ state, query, jurisdictions }: SheriaBotThinkingDroidProps) {
   const [frameState, setFrameState] = useState({ phase: state.phase, index: 0 });
   const [imageError, setImageError] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -108,7 +108,7 @@ export function SheriaBotThinkingDroid({ state, query, jurisdictionCode }: Sheri
   }, [state.phase]);
 
   const statusText = useMemo(() => {
-    const country = jurisdictionLabel(jurisdictionCode);
+    const country = jurisdictions?.length ? jurisdictions.map(jurisdictionLabel).join(", ") : "applicable";
     switch (state.phase) {
       case "connecting":
         return `Searching verified ${country} regulatory sources...`;
@@ -121,7 +121,7 @@ export function SheriaBotThinkingDroid({ state, query, jurisdictionCode }: Sheri
       default:
         return "Thinking...";
     }
-  }, [jurisdictionCode, state.phase]);
+  }, [jurisdictions, state.phase]);
 
   const frameIndex = frameState.phase === state.phase ? frameState.index : 0;
   const currentFrameUrl = sequence[frameIndex % sequence.length] || frames.FOCUS;

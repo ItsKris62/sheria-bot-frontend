@@ -4,7 +4,7 @@ import { type JurisdictionContext } from '@/types/jurisdiction';
 export type GraderFailureClassification = 'NONE' | 'EXTERNAL_PROVIDER_BILLING_BLOCKER' | 'GRADER_MODEL_ERROR' | 'GRADER_PARSE_ERROR' | 'GRADER_INCOMPLETE_OUTPUT' | 'GRADER_ZERO_RELEVANT' | 'GRADER_JURISDICTION_MISMATCH';
 export interface GraderDiagnostics {
     questionHash: string;
-    jurisdiction: string;
+    jurisdiction?: string;
     inputChunkCount: number;
     gradedChunkCount: number;
     acceptedCount: number;

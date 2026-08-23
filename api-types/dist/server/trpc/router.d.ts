@@ -4108,9 +4108,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 citations: import("../../lib/source-grounding/citations").SourceCitation[];
                 confidence: number | null;
                 suggestedFollowUps: never[];
-                mode: "SINGLE";
+                mode: "SINGLE" | "COMPARE";
                 jurisdictions: ("KE" | "MW" | "RW" | "NG")[];
-                primaryJurisdiction: "KE" | "MW" | "RW" | "NG";
+                primaryJurisdiction: "KE" | "MW" | "RW" | "NG" | null;
                 jurisdictionSource: import("../../types/jurisdiction").JurisdictionSource;
                 route: string;
                 grounded: boolean;
@@ -4122,9 +4122,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 citations: import("../../lib/source-grounding/citations").SourceCitation[];
                 confidence: null;
                 suggestedFollowUps: never[];
-                mode: "SINGLE";
+                mode: "SINGLE" | "COMPARE";
                 jurisdictions: ("KE" | "MW" | "RW" | "NG")[];
-                primaryJurisdiction: "KE" | "MW" | "RW" | "NG";
+                primaryJurisdiction: "KE" | "MW" | "RW" | "NG" | null;
                 jurisdictionSource: import("../../types/jurisdiction").JurisdictionSource;
                 route: string | null;
                 grounded: boolean;
@@ -4142,9 +4142,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 queryId: any;
                 answer: string;
                 citations: import("../../lib/source-grounding/citations").SourceCitation[];
-                mode: "SINGLE";
+                mode: "SINGLE" | "COMPARE";
                 jurisdictions: ("KE" | "MW" | "RW" | "NG")[];
-                primaryJurisdiction: "KE" | "MW" | "RW" | "NG";
+                primaryJurisdiction: "KE" | "MW" | "RW" | "NG" | null;
                 jurisdictionSource: import("../../types/jurisdiction").JurisdictionSource;
             };
             meta: object;
@@ -13621,7 +13621,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             recordApprovalDecision: import("@trpc/server").TRPCMutationProcedure<{
                 input: {
                     approvalId: string;
-                    decision: "approved" | "rejected";
+                    decision: "rejected" | "approved";
                 };
                 output: {
                     approvalId: string;
@@ -13635,7 +13635,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     limit?: number | undefined;
                     department?: string | undefined;
                     workflow?: string | undefined;
-                    status?: "pending" | "approved" | "rejected" | undefined;
+                    status?: "rejected" | "pending" | "approved" | undefined;
                 };
                 output: import("../../modules/agents/automation/approval.service").ListApprovalsResult;
                 meta: object;

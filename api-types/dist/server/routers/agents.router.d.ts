@@ -395,7 +395,7 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
         recordApprovalDecision: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 approvalId: string;
-                decision: "approved" | "rejected";
+                decision: "rejected" | "approved";
             };
             output: {
                 approvalId: string;
@@ -409,7 +409,7 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
                 limit?: number | undefined;
                 department?: string | undefined;
                 workflow?: string | undefined;
-                status?: "pending" | "approved" | "rejected" | undefined;
+                status?: "rejected" | "pending" | "approved" | undefined;
             };
             output: import("@/modules/agents/automation/approval.service").ListApprovalsResult;
             meta: object;

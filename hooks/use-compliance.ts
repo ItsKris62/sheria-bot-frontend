@@ -82,8 +82,8 @@ export interface StreamState {
 
 export interface ComplianceStreamInput {
   question: string;
-  mode: "SINGLE";
-  jurisdictions: [QueryableJurisdictionCode];
+  mode: "SINGLE" | "COMPARE";
+  jurisdictions: QueryableJurisdictionCode[];
   organizationType?: string;
   industry?: string;
   context?: string;

@@ -52,7 +52,7 @@ export interface AbstainCardProps {
   /** Determines which copy variant to show */
   route: string | null;
   fallbackReason?: ComplianceFallbackReason | null;
-  jurisdictionCode?: JurisdictionCode;
+  jurisdictions?: JurisdictionCode[];
   className?: string;
 }
 
@@ -200,14 +200,14 @@ function getFallbackCopy(fallbackReason: ComplianceFallbackReason | null | undef
   };
 }
 
-export function AbstainCard({ queryId, runId, question, route, fallbackReason, jurisdictionCode, className }: AbstainCardProps) {
+export function AbstainCard({ queryId, runId, question, route, fallbackReason, jurisdictions, className }: AbstainCardProps) {
   const [formOpen, setFormOpen] = useState(false);
 
   const isRouteScopeAbstain = route === "abstain" || fallbackReason === "OUT_OF_SCOPE";
   const fallbackCopy = getFallbackCopy(fallbackReason);
   const authorityCodes = isRouteScopeAbstain ? [] : selectAuthorityCodes(question);
   const authorities = AUTHORITIES.filter((a) => authorityCodes.includes(a.code));
-  const country = jurisdictionLabel(jurisdictionCode);
+  const country = jurisdictions?.length ? jurisdictions.map(jurisdictionLabel).join(" and ") : "your selected jurisdictions";
 
   return (
     <Card
