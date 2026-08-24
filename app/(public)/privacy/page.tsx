@@ -1,10 +1,14 @@
 import type { Metadata } from "next"
 import { LegalDocumentOverlay } from "@/components/legal/legal-document-overlay"
+import { absoluteUrl } from "@/lib/site-url"
 
 export const metadata: Metadata = {
   title: "Privacy Policy | SheriaBot",
   description:
     "SheriaBot's Privacy Policy — how we collect, process, and protect your personal data in compliance with the Kenya Data Protection Act, 2019.",
+  alternates: {
+    canonical: absoluteUrl("/privacy"),
+  },
 }
 
 // Full-page render for users who navigate directly to /privacy via a shared link

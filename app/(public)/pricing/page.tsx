@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowRight, HelpCircle } from "lucide-react"
 
@@ -7,6 +8,22 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { PLAN_COMPARISON_ROWS } from "@/lib/config/plans"
+import { absoluteUrl } from "@/lib/site-url"
+
+export const metadata: Metadata = {
+  title: "Pricing & Compliance Plans | SheriaBot",
+  description:
+    "Transparent compliance plans for fintech startups, growing businesses, and enterprise financial institutions in Kenya. 14-day free trial.",
+  alternates: {
+    canonical: absoluteUrl("/pricing"),
+  },
+  openGraph: {
+    title: "Pricing & Compliance Plans | SheriaBot",
+    description:
+      "Transparent compliance plans for fintech startups, growing businesses, and enterprise financial institutions in Kenya. 14-day free trial.",
+    url: absoluteUrl("/pricing"),
+  },
+}
 
 const faqs = [
   {

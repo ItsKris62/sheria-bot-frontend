@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,60 +14,81 @@ import {
   CheckCircle2,
   Building2,
   GraduationCap,
+  Code2,
+  Cpu,
 } from "lucide-react"
+import { absoluteUrl } from "@/lib/site-url"
+
+export const metadata: Metadata = {
+  title: "About Us — Regulatory Intelligence for FinTech | SheriaBot",
+  description:
+    "Learn about SheriaBot's mission to make financial regulation and compliance management accessible, accurate, and actionable for African fintechs.",
+  alternates: {
+    canonical: absoluteUrl("/about"),
+  },
+  openGraph: {
+    title: "About Us — Regulatory Intelligence for FinTech | SheriaBot",
+    description:
+      "Learn about SheriaBot's mission to make financial regulation and compliance management accessible, accurate, and actionable for African fintechs.",
+    url: absoluteUrl("/about"),
+  },
+}
 
 const values = [
   {
     icon: Target,
     title: "Accuracy First",
-    description: "Every citation, every policy recommendation is grounded in Kenya's actual legal framework.",
+    description: "Every citation, checklist item, and policy recommendation is strictly grounded in primary statute.",
   },
   {
     icon: Shield,
     title: "Trust & Security",
-    description: "Enterprise-grade security with Kenya data residency for sensitive regulatory information.",
+    description: "Enterprise-grade security with encrypted document storage for sensitive regulatory intelligence.",
   },
   {
     icon: Lightbulb,
-    title: "Innovation",
-    description: "Leveraging cutting-edge AI to solve complex regulatory challenges.",
+    title: "Domain Innovation",
+    description: "Leveraging specialized retrieval-augmented intelligence to solve complex regulatory challenges.",
   },
   {
     icon: Heart,
-    title: "Kenya-First",
-    description: "Built by Kenyans, for Kenya's unique fintech ecosystem and regulatory environment.",
+    title: "Kenya-First Architecture",
+    description: "Purpose-built for Kenya's unique fintech ecosystem, CBK regulations, and ODPC requirements.",
   },
 ]
 
 const team = [
   {
-    name: "Dr. Amina Ochieng",
-    role: "CEO & Co-Founder",
-    bio: "Former CBK policy analyst with 15 years in financial regulation",
+    icon: Scale,
+    name: "Regulatory Policy & Legal Research",
+    role: "Domain Compliance",
+    bio: "Continuously monitoring, structuring, and verifying Kenyan financial sector regulations, gazette notices, and circulars.",
   },
   {
-    name: "Peter Kamau",
-    role: "CTO & Co-Founder",
-    bio: "Ex-Safaricom engineer, AI/ML specialist from MIT",
+    icon: Cpu,
+    name: "AI & RAG Infrastructure",
+    role: "Engineering",
+    bio: "Designing hallucination-resistant, citation-grounded retrieval architectures for legal and regulatory intelligence.",
   },
   {
-    name: "Grace Wanjiru",
-    role: "Head of Legal",
-    bio: "Banking & fintech lawyer, former KBA legal counsel",
+    icon: Code2,
+    name: "Product & Regulatory Workflows",
+    role: "Product Engineering",
+    bio: "Building intuitive compliance checklists, gap analysis tools, and policy generation workflows for growing teams.",
   },
   {
-    name: "David Mwangi",
-    role: "Head of Product",
-    bio: "Product leader from Equity Bank's digital division",
+    icon: Shield,
+    name: "Security & Data Governance",
+    role: "Infrastructure & Security",
+    bio: "Maintaining rigorous RBAC, data encryption, and local data compliance standards across the platform.",
   },
 ]
 
 const milestones = [
-  { year: "2022", event: "Founded in Nairobi with seed funding" },
-  { year: "2023", event: "Launched beta with 10 pilot fintech companies" },
-  { year: "2023", event: "Partnership with Kenya Bankers Association" },
-  { year: "2024", event: "Expanded to serve regulators and 100+ fintechs" },
-  { year: "2025", event: "Series A funding, regional expansion plans" },
+  { year: "Phase 1", event: "Platform Architecture & Primary Kenyan Legal Corpus Ingestion" },
+  { year: "Phase 2", event: "RAG-Powered Compliance Query Engine & Citation Grounding Release" },
+  { year: "Phase 3", event: "Automated Policy Generator, Gap Analysis & Licensing Checklists" },
+  { year: "Phase 4", event: "Multi-Entity Enterprise Management & Continuous Regulatory Change Monitoring" },
 ]
 
 export default function AboutPage() {
@@ -125,10 +147,10 @@ export default function AboutPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: Building2, value: "100+", label: "Fintech Clients" },
-                { icon: Scale, value: "5", label: "Regulatory Partners" },
-                { icon: GraduationCap, value: "50+", label: "Laws Indexed" },
-                { icon: Users, value: "15", label: "Team Members" },
+                { icon: GraduationCap, value: "50+", label: "Laws & Circulars Indexed" },
+                { icon: Scale, value: "5", label: "Core Regulatory Pillars" },
+                { icon: Shield, value: "100%", label: "Primary-Source Grounded" },
+                { icon: Building2, value: "14-Day", label: "Free Evaluation Trial" },
               ].map((stat) => (
                 <Card key={stat.label} className="border-border/50 bg-card/50">
                   <CardContent className="p-6 text-center">
@@ -171,18 +193,18 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team Section */}
+      {/* Team / Focus Areas Section */}
       <section className="border-y border-border bg-muted/30 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-4">
-              Leadership
+              Our Disciplines
             </Badge>
             <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
-              Meet Our Team
+              Cross-Disciplinary Expertise
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Industry veterans combining regulatory expertise with technical innovation.
+              Combining regulatory research, AI engineering, and African fintech compliance.
             </p>
           </div>
 
@@ -190,12 +212,12 @@ export default function AboutPage() {
             {team.map((member) => (
               <Card key={member.name} className="border-border/50 bg-card">
                 <CardContent className="p-6 text-center">
-                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
-                    {member.name.split(" ").map((n) => n[0]).join("")}
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <member.icon className="h-8 w-8" />
                   </div>
                   <h3 className="mt-4 font-semibold text-foreground">{member.name}</h3>
-                  <p className="text-sm text-primary">{member.role}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">{member.bio}</p>
+                  <p className="text-xs font-medium text-primary mt-1">{member.role}</p>
+                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{member.bio}</p>
                 </CardContent>
               </Card>
             ))}

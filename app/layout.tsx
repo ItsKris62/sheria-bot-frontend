@@ -86,11 +86,6 @@ export const metadata: Metadata = {
   creator: 'SheriaBot',
   publisher: 'SheriaBot',
 
-  // ── Canonical & Alternates ────────────────────────────────────────────────
-  alternates: {
-    canonical: '/',
-  },
-
   // ── Open Graph ────────────────────────────────────────────────────────────
   openGraph: {
     type: 'website',

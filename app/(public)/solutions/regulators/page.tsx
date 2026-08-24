@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,6 +17,22 @@ import {
   Bell,
   Layers,
 } from "lucide-react"
+import { absoluteUrl } from "@/lib/site-url"
+
+export const metadata: Metadata = {
+  title: "Regulatory Intelligence & Supervision Tools for Regulators | SheriaBot",
+  description:
+    "AI-assisted policy drafting grounded in statute, legal corpus management, and compliance supervision for regulatory authorities.",
+  alternates: {
+    canonical: absoluteUrl("/solutions/regulators"),
+  },
+  openGraph: {
+    title: "Regulatory Intelligence & Supervision Tools for Regulators | SheriaBot",
+    description:
+      "AI-assisted policy drafting grounded in statute, legal corpus management, and compliance supervision for regulatory authorities.",
+    url: absoluteUrl("/solutions/regulators"),
+  },
+}
 
 const features = [
   {
