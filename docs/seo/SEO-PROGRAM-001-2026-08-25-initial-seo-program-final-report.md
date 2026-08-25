@@ -1,6 +1,8 @@
 # SheriaBot SEO Programme — Comprehensive Final Report (Sprints 01–06)
 **File ID:** `SEO-PROGRAM-DOC-FINAL-001`  
 **Programme:** Initial SEO & Search Authority Programme  
+**Release SHA:** `d03fcd3`  
+**Release Date:** 2026-08-25  
 **Review Status:** Code-Audited, Locally Verified & Ready for Operator Production Release  
 
 ---
@@ -43,7 +45,7 @@ SEO-S06: Production Verification, Search Console, CRO & Regional Expansion Readi
 
 1. **Statutory Grounding:** All citations verified against primary gazetted Legal Notices (POCAMLA LN 153/2023, CBK DCP LN 46/2022, ODPC Registration LN 265/2021, ODPC General LN 263/2021, CMA Sandbox PGN 2019).
 2. **Negative Wave B Gates:** Non-cleared topics (`/kenya/cbk-payment-service-provider-licensing`, `/kenya/cbk-cybersecurity-compliance`, `/knowledge-base/form-cbk-dcp-1-application-guide`) strictly prohibited from sitemaps and indexes.
-3. **Canonical Discipline:** Zero homepage canonical collapse; uniform HTTPS domain canonicals on all prerendered pages.
+3. **Canonical Discipline:** Zero homepage canonical collapse; uniform HTTPS domain canonicals on all 16 indexable prerendered pages.
 4. **Editorial Integrity:** Zero paid link farming, automated directory spam, or unsupported marketing claims.
 
 ---
@@ -51,17 +53,17 @@ SEO-S06: Production Verification, Search Console, CRO & Regional Expansion Readi
 ## 4. Programme Validation Results
 
 ```text
-TEST SUITE:      PASS (33/33 test files passed, 137/137 tests green)
+TEST SUITE:      PASS (34/34 test files passed, 140/140 tests green)
 TYPECHECK:       PASS (0 errors via npx tsc --noEmit --pretty false)
 ESLINT:          PASS (0 errors via eslint .)
 PRODUCTION BUILD:PASS (Next.js production build succeeded; 108/108 static pages generated)
-DIFF INTEGRITY:  PASS (0 formatting errors)
+DIFF INTEGRITY:  PASS (0 formatting errors; clean working tree)
 ```
 
 ---
 
 ## 5. Next Steps for Operator
 
-1. Merge `feat/phase3-multi-jurisdiction-comparison` and deploy to production.
+1. Merge release commit `d03fcd3` (`feat/phase3-multi-jurisdiction-comparison`) into production `main` and trigger production deployment.
 2. Verify domain property in Google Search Console (`sheriabot.com`) and submit `https://sheriabot.com/sitemap.xml`.
-3. Begin 90-day operating plan cadence (`SEO-S06-DOC-OPERATIONS-007`).
+3. Activate the 90-day ongoing operating plan cadence (`SEO-S06-DOC-OPERATIONS-007`).
