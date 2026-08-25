@@ -1,4 +1,5 @@
 import posthog from "posthog-js";
+import { useAuthStore } from "./auth-store";
 
 // Safe properties we are allowed to send
 export type SafeEventProperties = {
@@ -229,6 +230,43 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "has_search",
   "result_count",
   "page",
+  "blog_category",
+  "blog_slug",
+  "read_time_seconds",
+  "share_platform",
+  "postId",
+  "slug",
+  "category",
+  "tags",
+  "authorId",
+  "publishedAt",
+  "placement",
+  "referrerType",
+  "readingSessionId",
+  "resultCount",
+  "queryLength",
+  "queryFingerprint",
+  "hasResults",
+  "activeReadSeconds",
+  "maxScrollDepthBucket",
+  "estimatedReadMinutes",
+  "sourcePosition",
+  "sourcePublisher",
+  "sourceType",
+  "sourceDomain",
+  "destinationPostId",
+  "relatedCardPosition",
+  "relationshipBasis",
+  "ctaId",
+  "sharePlatform",
+  "feedbackValue",
+  "topicCategory",
+  "kb_category",
+  "kb_tag",
+  "kb_slug",
+  "has_search",
+  "result_count",
+  "page",
   "blog_automation_action",
   "blog_automation_type",
   "blog_automation_priority",
@@ -245,7 +283,16 @@ export function trackEvent(eventName: AnalyticsEvent, properties?: SafeEventProp
   try {
     // Only capture if running in browser and PostHog is initialized
     if (typeof window !== "undefined" && posthog.__loaded) {
-      
+      // Check Section 34 Statutory Processing Restriction
+      const user = useAuthStore.getState().user;
+      if (user?.preferences?.section34Restriction?.status === "RESTRICTED") {
+        return;
+      }
+
+      if (typeof posthog.has_opted_out_capturing === "function" && posthog.has_opted_out_capturing()) {
+        return;
+      }
+
       let safeProperties: Record<string, unknown> | undefined = undefined;
       
       if (properties) {

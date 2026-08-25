@@ -14,6 +14,17 @@ export interface AuthUser {
   emailVerified: boolean;
   mustChangePassword?: boolean;
   createdAt: string;
+  preferences?: {
+    section34Restriction?: {
+      status: 'RESTRICTED' | 'LIFTED' | 'NONE';
+      reason?: string;
+      requestId?: string;
+      restrictedPurposes?: string[];
+      liftedAt?: string;
+      liftReason?: string;
+    };
+    [key: string]: unknown;
+  } | null;
 }
 
 interface AuthState {

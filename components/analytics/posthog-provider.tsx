@@ -32,15 +32,41 @@ if (typeof window !== "undefined") {
 
 function PostHogAuthSync() {
   const { user, isInitialized, isAuthenticated } = useAuthStore();
-  const { plan, isPilotAccess, entitlements, hasFeature } = usePlan();
+  const { plan, isPilotAccess } = usePlan();
 
   useEffect(() => {
     if (!isInitialized) return;
 
     if (isAuthenticated && user) {
-      // Create a hashed version of the ID to avoid raw PII (if user ID is considered sensitive)
-      // Since it's an internal SaaS, using the raw ID is usually fine, but we will use it safely.
-      // We will not send email or name.
+      const isSection34Restricted =
+        user.preferences?.section34Restriction?.status === "RESTRICTED";
+
+      if (isSection34Restricted) {
+        // Section 34 Statutory Processing Restriction: forcibly disable PostHog telemetry & reset user state
+        if (typeof posthog.opt_out_capturing === "function") {
+          posthog.opt_out_capturing();
+        }
+        posthog.reset();
+        return;
+      }
+
+      // Check cookie/analytics consent separately (conceptually separate from s.34 statutory restriction)
+      const consentDenied =
+        typeof window !== "undefined" &&
+        localStorage.getItem("sheriabot:cookie_consent:analytics") === "denied";
+
+      if (consentDenied) {
+        if (typeof posthog.opt_out_capturing === "function") {
+          posthog.opt_out_capturing();
+        }
+        return;
+      }
+
+      // Normal permitted & consented user: ensure opted in & identify
+      if (typeof posthog.opt_in_capturing === "function") {
+        posthog.opt_in_capturing();
+      }
+
       posthog.identify(user.id, {
         role: user.role,
         plan: plan,
@@ -65,9 +91,18 @@ function PostHogAuthSync() {
 function PostHogPageViewTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (pathname && posthog) {
+      // Check Section 34 statutory restriction before emitting pageview
+      if (user?.preferences?.section34Restriction?.status === "RESTRICTED") {
+        return;
+      }
+      if (typeof posthog.has_opted_out_capturing === "function" && posthog.has_opted_out_capturing()) {
+        return;
+      }
+
       const params = new URLSearchParams(searchParams?.toString());
       if (pathname === "/blog" || pathname.startsWith("/blog/")) {
         params.delete("q");
@@ -80,7 +115,7 @@ function PostHogPageViewTracker() {
         $current_url: url,
       });
     }
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, user]);
 
   return null;
 }
