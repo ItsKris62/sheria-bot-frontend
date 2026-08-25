@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -18,6 +19,22 @@ import {
   FileCheck,
   Layers,
 } from "lucide-react"
+import { absoluteUrl } from "@/lib/site-url"
+
+export const metadata: Metadata = {
+  title: "Enterprise Regulatory Compliance & GRC Platform | SheriaBot",
+  description:
+    "Enterprise-grade compliance management, multi-entity supervision, REST API integrations, and custom regulatory workflows for financial institutions.",
+  alternates: {
+    canonical: absoluteUrl("/solutions/enterprise"),
+  },
+  openGraph: {
+    title: "Enterprise Regulatory Compliance & GRC Platform | SheriaBot",
+    description:
+      "Enterprise-grade compliance management, multi-entity supervision, REST API integrations, and custom regulatory workflows for financial institutions.",
+    url: absoluteUrl("/solutions/enterprise"),
+  },
+}
 
 const features = [
   {

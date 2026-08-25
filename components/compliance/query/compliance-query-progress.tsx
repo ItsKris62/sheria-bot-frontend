@@ -23,8 +23,8 @@ export interface ComplianceQueryProgressProps {
   isStreaming: boolean
   streamState: StreamState
   pendingQuestion: string
-  selectedJurisdiction: QueryableJurisdictionCode
-  activeQueryJurisdiction: QueryableJurisdictionCode | null
+  selectedJurisdictions: QueryableJurisdictionCode[]
+  activeQueryJurisdictions: QueryableJurisdictionCode[] | null
   onSuggestedQuerySelect: (
     suggestionText: string,
     suggestionId?: string,
@@ -46,8 +46,8 @@ export function ComplianceQueryProgress({
   isStreaming,
   streamState,
   pendingQuestion,
-  selectedJurisdiction,
-  activeQueryJurisdiction,
+  selectedJurisdictions,
+  activeQueryJurisdictions,
   onSuggestedQuerySelect,
   onCopy,
   onFeedback,
@@ -60,8 +60,8 @@ export function ComplianceQueryProgress({
   chatScrollRef,
 }: ComplianceQueryProgressProps) {
   const showEmptyState = messages.length === 0 && !isStreaming
-  const selectedCountry = jurisdictionLabel(selectedJurisdiction)
-  const activeJurisdiction = activeQueryJurisdiction ?? selectedJurisdiction
+  const selectedCountry = selectedJurisdictions.map(jurisdictionLabel).join(", ")
+  const activeJurisdiction = activeQueryJurisdictions ?? selectedJurisdictions
 
   return (
     <>
@@ -82,7 +82,7 @@ export function ComplianceQueryProgress({
             {/* Suggested Queries Empty State Section */}
             <div className="mt-8 w-full max-w-xl">
               <RegionalQuerySuggestions
-                jurisdiction={selectedJurisdiction}
+                jurisdiction={selectedJurisdictions[0]}
                 centered
                 onSelect={(text, id) => onSuggestedQuerySelect(text, id, "empty_state")}
               />
@@ -111,7 +111,7 @@ export function ComplianceQueryProgress({
                     question={message.question ?? ""}
                     route={message.route ?? null}
                     fallbackReason={message.fallbackReason ?? null}
-                    jurisdictionCode={message.jurisdictionCode}
+                    jurisdictions={message.jurisdictions}
                     className="w-full max-w-[95%] sm:max-w-[90%]"
                   />
                 ) : (
@@ -125,12 +125,16 @@ export function ComplianceQueryProgress({
                         <span className="text-sm font-semibold text-foreground">SheriaBot</span>
                         <span className="ml-2 text-[10px] text-muted-foreground/80">Regulatory Guidance</span>
                       </div>
-                      <JurisdictionBadge
-                        code={message.jurisdictionCode}
-                        showLabel
-                        legacy={message.jurisdictionSource === "LEGACY_DEFAULT"}
-                        className="ml-auto"
-                      />
+                      <div className="ml-auto flex items-center gap-1.5">
+                        {message.jurisdictions?.map(code => (
+                          <JurisdictionBadge
+                            key={code}
+                            code={code}
+                            showLabel
+                            legacy={message.jurisdictionSource === "LEGACY_DEFAULT"}
+                          />
+                        ))}
+                      </div>
                       {message.confidence != null && (
                         <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
                           {Math.round(message.confidence * 100)}% confidence
@@ -148,7 +152,7 @@ export function ComplianceQueryProgress({
                       <SheriaBotThinkingDroid
                         state={streamState}
                         query={message.question ?? ""}
-                        jurisdictionCode={message.jurisdictionCode}
+                        jurisdictions={message.jurisdictions}
                       />
                     )}
 
@@ -159,7 +163,7 @@ export function ComplianceQueryProgress({
                     {message.citations && message.citations.length > 0 && (
                       <ComplianceAnswerCitations
                         citations={message.citations}
-                        expectedJurisdiction={message.jurisdictionCode}
+                        expectedJurisdictions={message.jurisdictions}
                       />
                     )}
 
@@ -189,7 +193,11 @@ export function ComplianceQueryProgress({
                       <SheriaBotLogo className="h-4 w-4 border-0 p-0 bg-transparent" />
                     </div>
                     <span className="text-sm font-semibold text-foreground">SheriaBot</span>
-                    <JurisdictionBadge code={activeJurisdiction} showLabel className="ml-auto" />
+                    <div className="ml-auto flex items-center gap-1.5">
+                      {activeJurisdiction?.map(code => (
+                        <JurisdictionBadge key={code} code={code} showLabel />
+                      ))}
+                    </div>
                     {streamState.phase === "verifying" && (
                       <Badge variant="outline" className="text-[10px] gap-1 border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
                         <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
@@ -202,7 +210,7 @@ export function ComplianceQueryProgress({
                   <SheriaBotThinkingDroid
                     state={streamState}
                     query={pendingQuestion}
-                    jurisdictionCode={activeJurisdiction}
+                    jurisdictions={activeJurisdiction}
                   />
 
                   {streamState.content && (

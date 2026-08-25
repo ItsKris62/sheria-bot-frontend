@@ -53,105 +53,26 @@ export function JurisdictionBadge({
   )
 }
 
-export function JurisdictionSelector({
-  capabilities,
-  value,
-  disabled,
-  onChange,
-}: {
-  capabilities: JurisdictionCapability[]
-  value: QueryableJurisdictionCode
-  disabled?: boolean
-  onChange: (value: QueryableJurisdictionCode) => void
-}) {
-  const selected = capabilities.find((item) => item.code === value)
-  const enabledCapabilities = capabilities.filter((item) => item.queryEnabled)
-  const disabledCapabilities = capabilities.filter((item) => !item.queryEnabled)
-  const renderCapability = (item: JurisdictionCapability) => {
-    const isDisabled = !item.queryEnabled
-    const statusText = item.status === "COMING_SOON" ? "Coming Soon" : item.status === "DISABLED" ? "Unavailable" : null
-
-    return (
-      <SelectItem
-        key={item.code}
-        value={item.code}
-        disabled={isDisabled}
-        aria-label={statusText ? `${item.name}, ${statusText}` : item.name}
-        className="min-h-[44px]"
-      >
-        <span className="flex w-full min-w-0 items-center justify-between gap-3">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="rounded-md border border-border/60 bg-muted/40 px-1.5 py-0.5 font-mono text-[10px]">
-              {item.code}
-            </span>
-            <span className="truncate">{item.name}</span>
-          </span>
-          {statusText ? (
-            <span className="shrink-0 text-[10px] text-muted-foreground">{statusText}</span>
-          ) : null}
-        </span>
-      </SelectItem>
-    )
-  }
-
-  return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Jurisdiction
-      </label>
-      <Select
-        value={value}
-        disabled={disabled || capabilities.length === 0}
-        onValueChange={(nextValue) => {
-          if (nextValue === "KE" || nextValue === "RW" || nextValue === "MW") {
-            onChange(nextValue)
-          }
-        }}
-      >
-        <SelectTrigger
-          aria-label="Select compliance query jurisdiction"
-          className="min-h-[44px] w-full rounded-lg border-border/70 bg-background/85 px-3 shadow-[0_0_15px_rgba(16,185,129,0.04)] transition-all duration-150 focus:ring-emerald-500/40 sm:w-[260px]"
-        >
-          <SelectValue>
-            <span className="flex min-w-0 items-center gap-2">
-              <span className="rounded-md border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] text-emerald-300">
-                {value}
-              </span>
-              <span className="truncate">{selected?.name ?? jurisdictionLabel(value)}</span>
-            </span>
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent className="max-h-[min(320px,calc(100vh-120px))] border-border/70 bg-popover/95">
-          {enabledCapabilities.map(renderCapability)}
-          {disabledCapabilities.length > 0 ? (
-            <SelectSeparator className="bg-border/60" />
-          ) : null}
-          {disabledCapabilities.map(renderCapability)}
-        </SelectContent>
-      </Select>
-      {disabled ? (
-        <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <Lock className="h-3 w-3" aria-hidden="true" />
-          Locked while SheriaBot is answering.
-        </p>
-      ) : null}
-    </div>
-  )
-}
+import { MultiSelect, type Option } from "@/components/ui/multi-select"
 
 export function JurisdictionContextBar({
   capabilities,
-  selectedJurisdiction,
+  selectedJurisdictions,
   disabled,
   onJurisdictionChange,
 }: {
   capabilities: JurisdictionCapability[]
-  selectedJurisdiction: QueryableJurisdictionCode
+  selectedJurisdictions: QueryableJurisdictionCode[]
   disabled?: boolean
-  onJurisdictionChange: (value: QueryableJurisdictionCode) => void
+  onJurisdictionChange: (values: QueryableJurisdictionCode[]) => void
 }) {
-  const selected = capabilities.find((item) => item.code === selectedJurisdiction)
-  const label = selected?.name ?? jurisdictionLabel(selectedJurisdiction)
+  const selectedLabels = selectedJurisdictions
+    .map(code => capabilities.find(c => c.code === code)?.name ?? jurisdictionLabel(code))
+    .join(", ");
+
+  const options: Option[] = capabilities
+    .filter(c => c.queryEnabled)
+    .map(c => ({ label: c.name, value: c.code }));
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-card/80 p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
@@ -160,21 +81,39 @@ export function JurisdictionContextBar({
           <MapPin className="h-4 w-4" aria-hidden="true" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground">Ask SheriaBot about {label} law</p>
+          <p className="text-sm font-semibold text-foreground">Ask SheriaBot about {selectedLabels || "all"} law</p>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            New Compliance Query requests are scoped to one selected jurisdiction.
+            Select up to 4 jurisdictions to compare regulatory requirements.
           </p>
         </div>
       </div>
-      <JurisdictionSelector
-        capabilities={capabilities}
-        value={selectedJurisdiction}
-        disabled={disabled}
-        onChange={onJurisdictionChange}
-      />
+      <div className="flex min-w-0 flex-col gap-1.5 sm:w-[260px]">
+        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Jurisdictions
+        </label>
+        <MultiSelect
+          options={options}
+          selected={selectedJurisdictions}
+          disabled={disabled}
+          placeholder="Select jurisdictions..."
+          onChange={(values) => {
+            if (values.length <= 4) {
+              onJurisdictionChange(values as QueryableJurisdictionCode[])
+            }
+          }}
+        />
+        {disabled ? (
+          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Lock className="h-3 w-3" aria-hidden="true" />
+            Locked while SheriaBot is answering.
+          </p>
+        ) : null}
+      </div>
     </div>
   )
 }
+
+
 
 const REGIONAL_SUGGESTIONS: Record<QueryableJurisdictionCode, SuggestionItem[]> = {
   KE: [
@@ -194,6 +133,12 @@ const REGIONAL_SUGGESTIONS: Record<QueryableJurisdictionCode, SuggestionItem[]> 
     { id: "regional-mw-data", text: "What data protection obligations apply to fintech companies in Malawi?", relatedArea: "Data Protection" },
     { id: "regional-mw-aml", text: "What AML and KYC obligations apply to financial service providers in Malawi?", relatedArea: "AML / KYC" },
     { id: "regional-mw-cyber", text: "What cybersecurity requirements apply to regulated financial institutions in Malawi?", relatedArea: "Cybersecurity" },
+  ],
+  NG: [
+    { id: "regional-ng-licensing", text: "What licensing requirements apply to payment service providers in Nigeria?", relatedArea: "Licensing" },
+    { id: "regional-ng-data", text: "What data protection obligations apply to fintech companies in Nigeria?", relatedArea: "Data Protection" },
+    { id: "regional-ng-aml", text: "What AML and KYC obligations apply to financial service providers in Nigeria?", relatedArea: "AML / KYC" },
+    { id: "regional-ng-cyber", text: "What cybersecurity requirements apply to regulated financial institutions in Nigeria?", relatedArea: "Cybersecurity" },
   ],
 }
 

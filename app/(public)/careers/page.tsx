@@ -18,11 +18,21 @@ import {
   Eye,
   Scale,
 } from "lucide-react"
+import { absoluteUrl } from "@/lib/site-url"
 
 export const metadata: Metadata = {
-  title: "Careers — SheriaBot",
+  title: "Careers — Join the Team | SheriaBot",
   description:
-    "Join SheriaBot and help build the future of regulatory compliance in Africa. We're looking for mission-driven engineers, compliance analysts, and growth leaders in Nairobi.",
+    "Join SheriaBot and help build the future of regulatory compliance in Africa. Engineering, compliance analysis, and growth roles in Nairobi.",
+  alternates: {
+    canonical: absoluteUrl("/careers"),
+  },
+  openGraph: {
+    title: "Careers — Join the Team | SheriaBot",
+    description:
+      "Join SheriaBot and help build the future of regulatory compliance in Africa. Engineering, compliance analysis, and growth roles in Nairobi.",
+    url: absoluteUrl("/careers"),
+  },
 }
 
 const whyJoin = [

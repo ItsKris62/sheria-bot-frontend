@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,6 +17,22 @@ import {
   Lock,
   HelpCircle,
 } from "lucide-react"
+import { absoluteUrl } from "@/lib/site-url"
+
+export const metadata: Metadata = {
+  title: "FinTech Compliance for Startups & Growth Companies | SheriaBot",
+  description:
+    "Accelerate your regulatory readiness, CBK licensing pathways, and compliance gap analysis with SheriaBot for Startups.",
+  alternates: {
+    canonical: absoluteUrl("/solutions/startups"),
+  },
+  openGraph: {
+    title: "FinTech Compliance for Startups & Growth Companies | SheriaBot",
+    description:
+      "Accelerate your regulatory readiness, CBK licensing pathways, and compliance gap analysis with SheriaBot for Startups.",
+    url: absoluteUrl("/solutions/startups"),
+  },
+}
 
 const features = [
   {

@@ -1,5 +1,6 @@
 import React from "react"
 import type { Metadata, Viewport } from 'next'
+import Script from 'next/script'
 import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -85,11 +86,6 @@ export const metadata: Metadata = {
   creator: 'SheriaBot',
   publisher: 'SheriaBot',
 
-  // ── Canonical & Alternates ────────────────────────────────────────────────
-  alternates: {
-    canonical: '/',
-  },
-
   // ── Open Graph ────────────────────────────────────────────────────────────
   openGraph: {
     type: 'website',
@@ -174,6 +170,21 @@ export default function RootLayout({
         <PostHogProvider>
           <Providers>{children}</Providers>
         </PostHogProvider>
+
+        {/* Google Analytics (gtag.js) — G-E23V39YL9V */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-E23V39YL9V"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-E23V39YL9V');
+          `}
+        </Script>
 
         {/* Vercel Analytics — tracks page views and custom events */}
         <Analytics />

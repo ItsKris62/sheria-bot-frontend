@@ -1,16 +1,13 @@
 /**
- * Global JSON-LD structured data injected into every page via the root layout.
- *
- * Schemas included:
- *  - WebSite  → enables Google Sitelinks Search Box
- *  - Organization → knowledge panel, logo, social links
- *  - SoftwareApplication → app store-style rich result for the SaaS product
- *
- * Per-page schemas (e.g. BlogPosting) live in their own page components.
- * Swap https://sheriabot.com for your real domain before going live.
+ * SheriaBot SEO
+ * File ID: SEO-S01-CORE-JSONLD-011
+ * Purpose: Global JSON-LD structured data (WebSite, Organization, SoftwareApplication)
+ * Sprint: SEO Sprint 1
  */
 
-const BASE_URL = 'https://sheriabot.com'
+import { getSiteUrl } from '@/lib/site-url'
+
+const BASE_URL = getSiteUrl()
 
 const webSiteSchema = {
   '@context': 'https://schema.org',
@@ -46,15 +43,10 @@ const organizationSchema = {
     'Data Protection Act Kenya',
     'Regulatory sandbox',
   ],
-  sameAs: [
-    // Add your real social URLs here:
-    // 'https://twitter.com/sheriabot',
-    // 'https://linkedin.com/company/sheriabot',
-  ],
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'customer support',
-    email: 'support@sheriabot.com',   // swap with real address
+    email: 'support@sheriabot.com',
     availableLanguage: ['English', 'Swahili'],
   },
 }
@@ -70,7 +62,7 @@ const softwareAppSchema = {
     '@type': 'Offer',
     price: '0',
     priceCurrency: 'USD',
-    description: 'Free trial available. Paid plans for full compliance suite.',
+    description: '14-day free trial available. Paid plans for full compliance suite.',
   },
   description:
     "AI-powered compliance intelligence for Kenya fintech — policy generation, gap analysis, regulatory tracking.",
@@ -81,7 +73,7 @@ const softwareAppSchema = {
     'Document-level compliance queries',
     'Audit log & compliance reporting',
   ],
-  screenshot: `${BASE_URL}/og-image.png`,
+  screenshot: `${BASE_URL}/open-graph-logo.png`,
   inLanguage: 'en-KE',
 }
 

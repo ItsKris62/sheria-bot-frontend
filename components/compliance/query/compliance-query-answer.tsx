@@ -22,6 +22,7 @@ import type {
   FeedbackPulse,
 } from "./compliance-query-types"
 import { JurisdictionBadge } from "./jurisdiction-context"
+import type { JurisdictionCode } from "@/lib/jurisdictions"
 
 export function SheriaBotLogo({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -191,10 +192,10 @@ export function MessageActionBar({
 
 export interface ComplianceAnswerCitationsProps {
   citations: CitationItem[]
-  expectedJurisdiction?: string | null
+  expectedJurisdictions?: JurisdictionCode[] | null
 }
 
-export function ComplianceAnswerCitations({ citations, expectedJurisdiction }: ComplianceAnswerCitationsProps) {
+export function ComplianceAnswerCitations({ citations, expectedJurisdictions }: ComplianceAnswerCitationsProps) {
   if (!citations || citations.length === 0) return null
 
   return (
@@ -237,7 +238,7 @@ export function ComplianceAnswerCitations({ citations, expectedJurisdiction }: C
                 </p>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <JurisdictionBadge
-                    code={citation.jurisdictionCode ?? expectedJurisdiction}
+                    code={citation.jurisdictionCode ?? expectedJurisdictions?.[0]}
                     className="h-5 px-1.5 text-[10px]"
                   />
                   {citation.authorityStatus && citation.authorityStatus !== "IN_FORCE" && (

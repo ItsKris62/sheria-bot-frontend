@@ -33,25 +33,38 @@ import {
 
 const JURISDICTION_STORAGE_KEY = "sheriabot:compliance-query:selected-jurisdiction"
 
-function readStoredJurisdiction(): QueryableJurisdictionCode {
-  if (typeof window === "undefined") return DEFAULT_JURISDICTION
+function readStoredJurisdictions(): QueryableJurisdictionCode[] {
+  if (typeof window === "undefined") return [DEFAULT_JURISDICTION]
   const stored = window.localStorage.getItem(JURISDICTION_STORAGE_KEY)
-  return isQueryableJurisdictionCode(stored) ? stored : DEFAULT_JURISDICTION
+  if (!stored) return [DEFAULT_JURISDICTION]
+  try {
+    const parsed = JSON.parse(stored)
+    if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(isQueryableJurisdictionCode)) {
+      return parsed
+    }
+  } catch {
+    if (isQueryableJurisdictionCode(stored)) {
+      return [stored]
+    }
+  }
+  return [DEFAULT_JURISDICTION]
 }
 
-function responseJurisdictionOf(
+function responseJurisdictionsOf(
   result: { primaryJurisdiction?: JurisdictionCode; jurisdictions?: JurisdictionCode[] },
-  fallback: QueryableJurisdictionCode,
-): JurisdictionCode {
-  return result.primaryJurisdiction ?? result.jurisdictions?.[0] ?? fallback
+  fallback: QueryableJurisdictionCode[],
+): JurisdictionCode[] {
+  if (result.jurisdictions && result.jurisdictions.length > 0) return result.jurisdictions
+  if (result.primaryJurisdiction) return [result.primaryJurisdiction]
+  return fallback
 }
 
 function hasCitationJurisdictionMismatch(
   citations: Array<{ jurisdictionCode?: JurisdictionCode | null }> | undefined,
-  jurisdiction: JurisdictionCode,
+  jurisdictions: JurisdictionCode[],
 ): boolean {
   if (!citations || citations.length === 0) return false
-  return citations.some((citation) => citation.jurisdictionCode !== jurisdiction)
+  return citations.some((citation) => citation.jurisdictionCode && !jurisdictions.includes(citation.jurisdictionCode))
 }
 
 export default function ComplianceQueryPage() {
@@ -66,8 +79,8 @@ export default function ComplianceQueryPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [answerDetail, setAnswerDetail] = useState<DetailLevel>("standard")
   const [pendingQuestion, setPendingQuestion] = useState("")
-  const [selectedJurisdiction, setSelectedJurisdiction] = useState<QueryableJurisdictionCode>(readStoredJurisdiction)
-  const [activeQueryJurisdiction, setActiveQueryJurisdiction] = useState<QueryableJurisdictionCode | null>(null)
+  const [selectedJurisdictions, setSelectedJurisdictions] = useState<QueryableJurisdictionCode[]>(readStoredJurisdictions)
+  const [activeQueryJurisdictions, setActiveQueryJurisdictions] = useState<QueryableJurisdictionCode[] | null>(null)
 
   const [feedbackState, setFeedbackState] = useState<Record<string, FeedbackRating>>({})
   const [savedState, setSavedState] = useState<Record<string, boolean>>({})
@@ -102,16 +115,19 @@ export default function ComplianceQueryPage() {
   const isStreaming = (["connecting", "streaming", "verifying"] as const).some(
     (p) => p === streamState.phase,
   )
-  const selectedCapability = jurisdictionCapabilities.find((item) => item.code === selectedJurisdiction)
   const fallbackJurisdiction = jurisdictionCapabilities.find(
     (item) => item.queryEnabled && isQueryableJurisdictionCode(item.code),
   )
-  const effectiveSelectedJurisdiction =
-    selectedCapability?.queryEnabled === false
-      ? isQueryableJurisdictionCode(fallbackJurisdiction?.code)
-        ? fallbackJurisdiction.code
-        : DEFAULT_JURISDICTION
-      : selectedJurisdiction
+  const effectiveSelectedJurisdictions = selectedJurisdictions.filter((code) => {
+    const capability = jurisdictionCapabilities.find((item) => item.code === code)
+    return capability?.queryEnabled !== false
+  })
+  if (effectiveSelectedJurisdictions.length === 0) {
+    effectiveSelectedJurisdictions.push(
+      isQueryableJurisdictionCode(fallbackJurisdiction?.code) ? fallbackJurisdiction.code : DEFAULT_JURISDICTION
+    )
+  }
+  const effectiveSelectedJurisdiction = effectiveSelectedJurisdictions[0]
   const complianceQueryUsage = planData?.usage?.complianceQueries
   const remainingComplianceCredits =
     complianceQueryUsage && complianceQueryUsage.limit >= 0
@@ -127,18 +143,18 @@ export default function ComplianceQueryPage() {
     // Track page open
     trackEvent("compliance_query_opened", {
       source: topic ? "topic_link" : "direct",
-      jurisdictionCode: effectiveSelectedJurisdiction,
+      jurisdictionCode: effectiveSelectedJurisdictions.join(","),
     })
 
     if (!isRegulatoryArea(topic)) return
 
     router.replace("/startup/compliance-query", { scroll: false })
-  }, [effectiveSelectedJurisdiction, router, topic])
+  }, [effectiveSelectedJurisdictions, router, topic])
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    window.localStorage.setItem(JURISDICTION_STORAGE_KEY, effectiveSelectedJurisdiction)
-  }, [effectiveSelectedJurisdiction])
+    window.localStorage.setItem(JURISDICTION_STORAGE_KEY, JSON.stringify(effectiveSelectedJurisdictions))
+  }, [effectiveSelectedJurisdictions])
 
   const scrollChatToBottom = () => {
     if (typeof window === "undefined") return
@@ -166,11 +182,11 @@ export default function ComplianceQueryPage() {
       result.queryId !== lastPushedQueryIdRef.current
     ) {
       lastPushedQueryIdRef.current = result.queryId
-      const messageJurisdiction = responseJurisdictionOf(
+      const messageJurisdictions = responseJurisdictionsOf(
         result,
-        activeQueryJurisdiction ?? effectiveSelectedJurisdiction,
+        activeQueryJurisdictions ?? effectiveSelectedJurisdictions,
       )
-      const hasInvalidCitations = hasCitationJurisdictionMismatch(result.citations, messageJurisdiction)
+      const hasInvalidCitations = hasCitationJurisdictionMismatch(result.citations, messageJurisdictions)
       setMessages((prev) => [
         ...prev,
         {
@@ -180,7 +196,7 @@ export default function ComplianceQueryPage() {
           citations: hasInvalidCitations ? [] : result.citations,
           confidence: hasInvalidCitations ? null : result.confidence,
           queryId: result.queryId,
-          jurisdictionCode: messageJurisdiction,
+          jurisdictions: messageJurisdictions,
           timestamp: new Date(),
           abstained: result.abstained || hasInvalidCitations,
           route: hasInvalidCitations ? "abstain" : result.route,
@@ -200,19 +216,19 @@ export default function ComplianceQueryPage() {
         fallback_reason: hasInvalidCitations
           ? "citation_jurisdiction_mismatch"
           : result.fallbackReason ?? (result.abstained ? result.route ?? undefined : undefined),
-        jurisdictionCode: messageJurisdiction,
+        jurisdictionCode: messageJurisdictions.join(","),
         response_word_count: result.answer.split(/\s+/).length,
       })
 
       if (result.grounded === false || hasInvalidCitations || (result.abstained && result.route === "corpus-gap")) {
         trackEvent("compliance_query_source_insufficient", {
-          jurisdictionCode: messageJurisdiction,
+          jurisdictionCode: messageJurisdictions.join(","),
         })
       }
 
-      setActiveQueryJurisdiction(null)
+      setActiveQueryJurisdictions(null)
     }
-  }, [activeQueryJurisdiction, answerDetail, effectiveSelectedJurisdiction, streamState])
+  }, [activeQueryJurisdictions, answerDetail, effectiveSelectedJurisdictions, streamState])
 
   // Handlers
 
@@ -220,15 +236,15 @@ export default function ComplianceQueryPage() {
     e.preventDefault()
     const trimmed = query.trim()
     if (!trimmed || isStreaming) return
-    const effectiveCapability = jurisdictionCapabilities.find((item) => item.code === effectiveSelectedJurisdiction)
+    const effectiveCapability = jurisdictionCapabilities.find((item) => effectiveSelectedJurisdictions.includes(item.code))
     if (effectiveCapability && !effectiveCapability.queryEnabled) return
 
-    const requestJurisdiction = effectiveSelectedJurisdiction
-    setActiveQueryJurisdiction(requestJurisdiction)
+    const requestJurisdictions = effectiveSelectedJurisdictions
+    setActiveQueryJurisdictions(requestJurisdictions)
 
     trackEvent("compliance_query_started", {
       source: "manual_input",
-      jurisdictionCode: requestJurisdiction,
+      jurisdictionCode: requestJurisdictions.join(","),
     })
 
     pendingQuestionRef.current = trimmed
@@ -239,7 +255,7 @@ export default function ComplianceQueryPage() {
         id: `user-${Date.now()}`,
         type: "user",
         content: trimmed,
-        jurisdictionCode: requestJurisdiction,
+        jurisdictions: requestJurisdictions,
         timestamp: new Date(),
       },
     ])
@@ -247,7 +263,7 @@ export default function ComplianceQueryPage() {
     streamSubmit({
       question: trimmed,
       mode: "SINGLE",
-      jurisdictions: [requestJurisdiction],
+      jurisdictions: requestJurisdictions,
       answerDetail,
     })
     scrollChatToBottom()
@@ -260,7 +276,7 @@ export default function ComplianceQueryPage() {
   ) => {
     trackEvent("suggested_query_selected", {
       source: surface,
-      jurisdictionCode: effectiveSelectedJurisdiction,
+      jurisdictionCode: effectiveSelectedJurisdictions.join(","),
     })
     setQuery(suggestionText)
     if (suggestionId) {
@@ -322,9 +338,9 @@ export default function ComplianceQueryPage() {
 
       <JurisdictionContextBar
         capabilities={jurisdictionCapabilities}
-        selectedJurisdiction={effectiveSelectedJurisdiction}
+        selectedJurisdictions={effectiveSelectedJurisdictions}
         disabled={isStreaming}
-        onJurisdictionChange={setSelectedJurisdiction}
+        onJurisdictionChange={setSelectedJurisdictions}
       />
 
       {/* Structured Dark Workspace Grid (66% Main / 33% Sidebar) */}
@@ -338,8 +354,8 @@ export default function ComplianceQueryPage() {
               isStreaming={isStreaming}
               streamState={streamState}
               pendingQuestion={pendingQuestion}
-              selectedJurisdiction={effectiveSelectedJurisdiction}
-              activeQueryJurisdiction={activeQueryJurisdiction}
+              selectedJurisdictions={effectiveSelectedJurisdictions}
+              activeQueryJurisdictions={activeQueryJurisdictions}
               onSuggestedQuerySelect={handleSuggestedQuery}
               onCopy={handleCopy}
               onFeedback={handleFeedback}

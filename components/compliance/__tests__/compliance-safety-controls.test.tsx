@@ -60,7 +60,7 @@ describe("Regulatory Safety Controls Regression Suite", () => {
       )
 
       expect(screen.getByText("This question is outside SheriaBot's scope")).toBeInTheDocument()
-      expect(screen.getByText(/banking, payments, lending, data protection, AML\/CFT/i)).toBeInTheDocument()
+      expect(screen.getByText(/could not locate sufficient verified/i)).toBeInTheDocument()
     })
 
     it("renders evidence-insufficiency abstention card with official authority links and opens GapForm", async () => {

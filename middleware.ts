@@ -17,6 +17,7 @@ const PUBLIC_ROUTES = [
   '/forgot-password',
   '/reset-password',
   '/verify-email',
+  '/change-password',
   '/auth/callback',
   // Marketing / (public) group
   '/about',
@@ -30,6 +31,8 @@ const PUBLIC_ROUTES = [
   '/security',
   '/solutions',
   '/terms',
+  '/pilot',
+  '/unsubscribe',
 ];
 
 function isPublicRoute(pathname: string): boolean {

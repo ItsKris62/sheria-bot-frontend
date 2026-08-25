@@ -23,6 +23,8 @@ const scriptSrc = [
   ...(isDevelopment ? ["'unsafe-eval'"] : []),
   "https://va.vercel-scripts.com",
   "https://*.i.posthog.com",
+  "https://www.googletagmanager.com",
+  "https://*.google-analytics.com",
 ].join(" ");
 const devConnectSrc = isDevelopment
   ? " http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*"
@@ -34,7 +36,7 @@ const cspDirectives = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' https://fonts.gstatic.com",
-  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https:${devConnectSrc}`,
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https:${devConnectSrc}`,
   `worker-src 'self'${isDevelopment ? " blob:" : ""}`,
   // Allow audio files served from the Cloudflare R2 public bucket
   "media-src 'self' https://*.r2.dev",

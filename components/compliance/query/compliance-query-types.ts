@@ -8,7 +8,7 @@ export interface Message {
   citations?: CitationItem[]
   confidence?: number | null
   queryId?: string
-  jurisdictionCode?: JurisdictionCode
+  jurisdictions?: JurisdictionCode[]
   jurisdictionSource?: string | null
   timestamp: Date
   abstained?: boolean
