@@ -19,7 +19,7 @@ Comparing existing public pages against the verified Kenya keyword universe reve
 | `AML compliance Kenya fintech` | **NOT COVERED** | None | No public page on POCAMLA, FRC reporting, or KYC thresholds. | **CREATE NEW** `/kenya/aml-cft-fintech-compliance` |
 | `compliance software Kenya` | **COVERED WEAKLY** | `/solutions/startups`, `/pricing` | Solutions page discusses features but lacks structured target keywords for Kenya RegTech and GRC queries. | **OPTIMIZE** `/solutions/startups` & `/solutions/enterprise` |
 | `CBK cybersecurity guidelines fintech` | **NOT COVERED** | None | Zero public coverage of CBK 2017 Guidance Note or cloud hosting regulations for banks and fintechs. | **CREATE NEW** `/kenya/cbk-cybersecurity-compliance` |
-| `Kenya regulatory sandbox CMA CBK` | **NOT COVERED** | None | Zero public guidance on sandbox entry criteria or live testing guidelines. | **CREATE NEW** `/kenya/regulatory-sandbox-guide` |
+| `Kenya regulatory sandbox CMA` | **NOT COVERED** | None | Zero public guidance on sandbox entry criteria or live testing guidelines. | **CREATE NEW** `/kenya/regulatory-sandbox-guide` |
 
 ---
 

@@ -34,13 +34,14 @@ Each cluster contains:
 * **Statutory Grounding:** CBK Act Cap 491, CBK (Digital Credit Providers) Regulations 2022.
 * **Hub Scope:**
   * Who is required to get a DCP licence vs who is exempt.
+  * Regulation 5 licensing terms: perpetual validity unless suspended/revoked under Regulation 5(5); annual KES 20,000 fee under Regulation 5(6) and Second Schedule; mandatory annual return certifying compliance under Regulation 5(7) due on or before December 31 each year.
   * Fit & proper requirements for directors and shareholders (CBK/PG/02).
   * Capital requirements and application fees (KES 20,000).
   * Required policies: AML, Consumer Protection, Credit Risk, Data Privacy.
   * Step-by-step submission via CBK GDI Portal.
 * **Spoke Sub-Topics:**
   1. `Form CBK DCP 1 Application Guide & Required Exhibits` (`/knowledge-base/...`)
-  2. `CBK DCP Annual Licence Renewal Deadlines & Procedures` (`/knowledge-base/...`)
+  2. `CBK DCP Annual Compliance Return & Fee Submission Guide` (`/knowledge-base/...`)
   3. `Consumer Protection & Debt Collection Restrictions under DCP 2022` (`/knowledge-base/...`)
 
 ---
@@ -50,7 +51,7 @@ Each cluster contains:
 * **Primary Query:** `payment service provider licence Kenya`
 * **Statutory Grounding:** National Payment System Act 2011, NPS Regulations 2014.
 * **Hub Scope:**
-  * The 4 licensing tiers: Electronic Retail PSP (KES 5M), Small E-Money (KES 1M), E-Money Issuer (KES 20M), Designated Payment Instrument (KES 50M).
+  * Licensing tiers: Electronic Retail PSP, Small E-Money, E-Money Issuer, Designated Payment Instrument (specific tiered capital adequacy schedules subject to primary gazetted instrument verification).
   * Mandatory Trust Account / Float management structure.
   * Interoperability and merchant acquiring rules.
   * CBK Banking & Payment Services department submission process.
@@ -64,17 +65,18 @@ Each cluster contains:
 ### Cluster 4: Data Protection & ODPC
 * **Hub URL:** `/kenya/odpc-data-protection-compliance`
 * **Primary Query:** `ODPC data controller registration Kenya`
-* **Statutory Grounding:** Data Protection Act 2019, Data Protection (Registration) Regulations 2021.
+* **Statutory Grounding:** Data Protection Act 2019, Data Protection (Registration) Regulations 2021, Data Protection (General) Regulations 2021.
 * **Hub Scope:**
-  * Mandatory registration thresholds (Fintech mandatory sector vs general KES 5M turnover).
+  * Mandatory registration thresholds: The small-entity exemption does not apply where the processing falls within a Third Schedule mandatory-registration purpose, including the provision of financial services.
+  * Registration certificate validity: 24 months under Regulation 9; renewal governed by Regulation 11.
   * Data Controller vs Data Processor differentiation and fee tiers.
   * Form DPR1 online submission steps on the ODPC portal.
-  * 72-hour mandatory breach notification rules (Section 43).
-  * Data Protection Impact Assessments (DPIA) for automated financial scoring.
+  * Notifiable data breach rules (Section 43): applies where personal data has been accessed/acquired without authorization AND there is a real risk of harm to the data subject; must notify the Data Commissioner without delay and within 72 hours of becoming aware.
+  * Data Protection Impact Assessments (DPIA) under Section 31 DPA and Regulation 49 General Regulations 2021 (statutory high-risk processing test).
   * Cross-border personal data transfer constraints (Section 48).
 * **Spoke Sub-Topics:**
   1. `Fintech DPIA Guide: Conducting Impact Assessments for Lending Apps` (`/knowledge-base/...`)
-  2. `72-Hour Data Breach Incident Response Workflow for ODPC Kenya` (`/knowledge-base/...`)
+  2. `Notifiable Data Breach Incident Response & Reporting Workflow for ODPC Kenya` (`/knowledge-base/...`)
   3. `Cross-Border Financial Data Transfer Rules under Kenya DPA 2019` (`/knowledge-base/...`)
 
 ---
@@ -82,13 +84,13 @@ Each cluster contains:
 ### Cluster 5: AML / CFT & Financial Reporting Centre (FRC)
 * **Hub URL:** `/kenya/aml-cft-fintech-compliance`
 * **Primary Query:** `AML compliance Kenya fintech`
-* **Statutory Grounding:** POCAMLA Cap 59B, POCAMLA Regulations 2013, Prevention of Terrorism Act.
+* **Statutory Grounding:** POCAMLA Cap. 59A, POCAMLA Regulations 2023, Prevention of Terrorism Act.
 * **Hub Scope:**
-  * Reporting Institution obligations under POCAMLA Section 2.
+  * Reporting Institution registration obligations with FRC under POCAMLA Section 47A.
   * Customer Due Diligence (CDD) and Enhanced Due Diligence (EDD) protocols.
   * Politically Exposed Persons (PEP) screening obligations in Kenya.
-  * Suspicious Transaction Reporting (STR) within 7 days via goAML.
-  * Cash Transaction Reporting (CTR) thresholds ($10,000 / KES 1,000,000).
+  * Suspicious Transaction Reporting (STR) within two days after the suspicion arose under Section 44(2).
+  * Cash Transaction Reporting (CTR) thresholds: US$15,000 or its equivalent in another currency under Section 44(6), Fourth Schedule and Regulation 40 of POCAMLA Regulations 2023 (legacy sources referenced prior US$10,000 / KES 1,000,000 threshold).
   * Appointing a qualified Money Laundering Reporting Officer (MLRO).
 * **Spoke Sub-Topics:**
   1. `Fintech AML/CFT Policy Requirements: Mandatory Clauses & Risk Assessment` (`/knowledge-base/...`)

@@ -36,6 +36,11 @@ type FetchResult =
   | { data: null; error: string };
 
 import { getTrpcUrl } from "@/lib/trpc-url";
+import {
+  mergeKnowledgeBaseDiscovery,
+  getStaticKnowledgeBaseRecords,
+  staticRecordToArticle,
+} from "@/lib/seo/seo-static-knowledge-base-registry";
 
 function firstParam(value: SearchParamValue) {
   return Array.isArray(value) ? value[0] : value;
@@ -168,14 +173,18 @@ export default async function KnowledgeBasePage({
     getPublishedKnowledgeBase({ page: 1, limit: 50 }),
   ]);
 
-  const articles = listingResult.data?.items || [];
-  const pagination = listingResult.data?.pagination || {
+  const mergedData = mergeKnowledgeBaseDiscovery(listingResult.data, {
     page,
     limit: PAGE_SIZE,
-    total: 0,
-    totalPages: 0,
-  };
-  const facetArticles = facetResult.data?.items || [];
+    search: query || undefined,
+    category: category || undefined,
+    tag: tag || undefined,
+  });
+
+  const articles = mergedData.items;
+  const pagination = mergedData.pagination;
+  const staticFacetArticles = getStaticKnowledgeBaseRecords().map(staticRecordToArticle);
+  const facetArticles = [...staticFacetArticles, ...(facetResult.data?.items || [])];
   const categories = uniqueSorted([...facetArticles.map((article) => article.category), category]);
   const tags = uniqueSorted([
     ...facetArticles.flatMap((article) => article.tags || []),

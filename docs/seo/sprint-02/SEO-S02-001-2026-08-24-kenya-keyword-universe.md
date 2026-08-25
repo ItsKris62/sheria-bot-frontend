@@ -64,7 +64,7 @@
 | `CBK DCP regulations` | OBSERVED SERP SIGNAL | Informational | TOFU | Legal Notice No. 46 of 2022 |
 | `Form CBK DCP 1 requirements` | OBSERVED SERP SIGNAL | Commercial Investigation | BOFU | CBK DCP Application Form 1 |
 | `digital lending regulations Kenya consumer protection` | OBSERVED SERP SIGNAL | Informational | MOFU | Section 21 DCP Regulations |
-| `digital credit provider annual renewal CBK` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | Section 11 DCP Regulations (Dec 31) |
+| `digital credit provider annual compliance return CBK` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | Regulation 5 DCP Regulations 2022 (Dec 31 Fee & Return) |
 
 ---
 
@@ -85,48 +85,48 @@
 ---
 
 ### Cluster E: Data Protection & ODPC (Office of the Data Protection Commissioner)
-*Focus: Data Protection Act 2019, ODPC registration, DPIA, cross-border transfers.*
+*Focus: Data Protection Act 2019, ODPC registration (24-month validity), Third Schedule financial services mandate, DPIA, notifiable breaches.*
 
 | Keyword Query | Signal Type | Intent | Funnel Stage | Core Regulatory Anchor |
 | :--- | :--- | :--- | :--- | :--- |
 | `ODPC compliance Kenya` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | Data Protection Act 2019 |
 | `Data Protection Act Kenya compliance` | OBSERVED SERP SIGNAL | Informational | TOFU | DPA No. 24 of 2019 |
-| `data controller registration Kenya` | OBSERVED SERP SIGNAL | Commercial Investigation | BOFU | ODPC Registration Regs 2021 |
+| `data controller registration Kenya` | OBSERVED SERP SIGNAL | Commercial Investigation | BOFU | ODPC Registration Regs 2021 (24-mo validity) |
 | `data processor registration Kenya` | OBSERVED SERP SIGNAL | Commercial Investigation | BOFU | ODPC Registration Regs 2021 |
-| `ODPC registration requirements fintech` | OBSERVED SERP SIGNAL | Commercial Investigation | BOFU | Mandatory Sectoral Threshold |
+| `ODPC registration requirements fintech` | OBSERVED SERP SIGNAL | Commercial Investigation | BOFU | Third Schedule Mandatory Financial Services Mandate |
 | `DPIA Kenya template fintech` | OBSERVED SERP SIGNAL | Commercial Investigation | BOFU | Section 31 DPA 2019 |
 | `data protection impact assessment Kenya` | OBSERVED SERP SIGNAL | Informational | MOFU | ODPC DPIA Guidelines |
 | `cross border data transfer Kenya fintech` | OBSERVED SERP SIGNAL | Informational | MOFU | Section 48 DPA 2019 |
 | `data protection officer requirements Kenya` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | Section 24 DPA 2019 |
-| `72 hour breach notification ODPC Kenya` | OBSERVED SERP SIGNAL | Informational | MOFU | Section 43 DPA 2019 |
+| `notifiable data breach reporting ODPC Kenya` | OBSERVED SERP SIGNAL | Informational | MOFU | Section 43 DPA 2019 (Real risk of harm standard) |
 
 ---
 
 ### Cluster F: Anti-Money Laundering (AML) / CFT / KYC & FRC Reporting
-*Focus: POCAMLA, Financial Reporting Centre reporting, CDD/EDD, and AML policies.*
+*Focus: POCAMLA Cap. 59A, POCAMLA Regulations 2023, Financial Reporting Centre reporting, CDD/EDD, and AML policies.*
 
 | Keyword Query | Signal Type | Intent | Funnel Stage | Core Regulatory Anchor |
 | :--- | :--- | :--- | :--- | :--- |
-| `AML compliance Kenya` | OBSERVED SERP SIGNAL | Informational | MOFU | POCAMLA Cap 59B |
-| `AML requirements Kenya fintech` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | POCAMLA Regulations 2013 |
-| `KYC requirements Kenya fintech` | OBSERVED SERP SIGNAL | Informational | TOFU | Section 44 POCAMLA / CBK Guidelines |
+| `AML compliance Kenya` | OBSERVED SERP SIGNAL | Informational | MOFU | POCAMLA Cap. 59A |
+| `AML requirements Kenya fintech` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | POCAMLA Regulations 2023 |
+| `KYC requirements Kenya fintech` | OBSERVED SERP SIGNAL | Informational | TOFU | Section 44 POCAMLA / FRC Guidelines |
 | `POCAMLA compliance checklist` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | FRC Guidelines on AML/CFT |
-| `FRC reporting requirements Kenya` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | FRC Reporting Portal (goAML) |
-| `suspicious transaction reporting Kenya STR` | OBSERVED SERP SIGNAL | Informational | MOFU | Section 44 POCAMLA (Within 7 days) |
-| `cash transaction reporting Kenya CTR threshold` | OBSERVED SERP SIGNAL | Informational | MOFU | POCAMLA Threshold ($10k / 1M KES) |
+| `FRC reporting requirements Kenya` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | FRC Reporting Portal (goAML) / Section 47A |
+| `suspicious transaction reporting Kenya STR` | OBSERVED SERP SIGNAL | Informational | MOFU | Section 44(2) POCAMLA (Within 2 days after suspicion arose) |
+| `cash transaction reporting Kenya CTR threshold` | OBSERVED SERP SIGNAL | Informational | MOFU | POCAMLA / 2023 Regs (US$15,000 / equivalent; prior US$10,000 in legacy texts) |
 | `AML policy template Kenya fintech` | OBSERVED SERP SIGNAL | Commercial Investigation | BOFU | Statutory AML Policy Framework |
 
 ---
 
 ### Cluster G: Capital Markets & CMA Regulatory Sandbox
-*Focus: Capital Markets Authority, sandbox testing, robo-advisors, crowdfunding.*
+*Focus: Capital Markets Authority, CMA Regulatory Sandbox Policy Guidance Note 2019, crowdfunding.*
 
 | Keyword Query | Signal Type | Intent | Funnel Stage | Core Regulatory Anchor |
 | :--- | :--- | :--- | :--- | :--- |
 | `CMA fintech regulations Kenya` | OBSERVED SERP SIGNAL | Informational | TOFU | Capital Markets Act Cap 485A |
-| `Kenya regulatory sandbox CMA` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | CMA Regulatory Sandbox Policy 2019 |
+| `Kenya regulatory sandbox CMA` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | CMA Regulatory Sandbox Policy Note 2019 |
 | `crowdfunding regulations Kenya CMA` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | CMA Crowdfunding Regulations 2022 |
-| `robo advisory compliance Kenya` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | CMA Sandbox Guidelines |
+| `robo advisory compliance Kenya` | OBSERVED SERP SIGNAL | Commercial Investigation | MOFU | CMA Regulatory Sandbox / Licensing |
 
 ---
 
@@ -149,7 +149,7 @@
    * CBK DCP Licensing (Form CBK DCP 1)
    * CBK PSP Licensing (Electronic Retail & E-Money)
    * ODPC Mandatory Data Controller/Processor Registration
-   * Annual DCP Licence Renewals (December 31)
+   * Annual DCP Regulatory Fees & Compliance Returns (December 31)
 2. **Information Scarcity on Practical Operational Execution:**
    Regulator websites publish the acts and PDF gazettes, but provide zero interactive gap analysis, automated policy drafting, or dynamic checklists.
 3. **Law Firm Dominance on Top-of-Funnel Blog Commentary:**

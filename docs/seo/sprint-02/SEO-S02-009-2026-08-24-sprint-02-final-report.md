@@ -19,16 +19,15 @@ Sprint 2 (Kenya Search Architecture & Keyword Intelligence) has been completed i
 * All 9 research documents created in `docs/seo/sprint-02/` following the SheriaBot File ID standard.
 
 ---
-
 ## 2. Kenya Search Opportunity Summary
 
-Kenyan fintech search behavior is heavily concentrated around **mandatory regulatory events, statutory licensing requirements, and compliance deadlines**.
+Kenyan fintech search behavior is heavily concentrated around **mandatory regulatory events, statutory licensing requirements, and compliance deadlines**:
 
 * **Core Regulators Driving Demand:**
-  1. **Central Bank of Kenya (CBK):** Digital Credit Providers Regulations 2022, National Payment System Act 2011, Banking Act, Prudential Guidelines.
-  2. **Office of the Data Protection Commissioner (ODPC):** Data Protection Act 2019, Data Controller/Processor Registration, 72-Hour Breach Reporting.
-  3. **Financial Reporting Centre (FRC):** POCAMLA Cap 59B, Suspicious Transaction Reporting (goAML), AML/CFT Audits.
-  4. **Capital Markets Authority (CMA):** Regulatory Sandbox Policy 2019, Crowdfunding Regulations 2022.
+  1. **Central Bank of Kenya (CBK):** Digital Credit Providers Regulations 2022 (Regulation 5(5) perpetual validity, mandatory annual returns certifying compliance under Regulation 5(7) & KES 20,000 annual fee under Regulation 5(6) + Second Schedule due Dec 31), National Payment System Act 2011, Banking Act, Prudential Guidelines.
+  2. **Office of the Data Protection Commissioner (ODPC):** Data Protection Act 2019, Data Controller/Processor Registration (24-month certificate validity under Regulation 9, renewal under Regulation 11, Third Schedule mandatory financial services registration scope), Notifiable Data Breach Reporting (Section 43 real risk of harm standard).
+  3. **Financial Reporting Centre (FRC):** POCAMLA Cap. 59A, POCAMLA Regulations 2023, FRC registration under Section 47A, Suspicious Transaction Reporting within two days after suspicion arose under Section 44(2), Cash Transaction Reporting (CTR) threshold (US$15,000 equivalent under Section 44(6) and 2023 Regs).
+  4. **Capital Markets Authority (CMA):** CMA Regulatory Sandbox Policy Guidance Note 2019 (initial period up to 12 months, with possible 12-month extension), Crowdfunding Regulations 2022.
 * **Competitor Weakness:** Law firms dominate informational search results with static advisory blog posts, but cannot provide software workflows. Government portals provide raw PDF gazettes. SheriaBot captures this demand by converting search traffic into interactive software action.
 
 ---
@@ -42,14 +41,14 @@ Every recommended search target maps directly to verified, live capabilities in 
 │ Product Feature / Capability         │ Codebase & API Status         │ Verified Search Alignment                │
 ├──────────────────────────────────────┼───────────────────────────────┼──────────────────────────────────────────┤
 │ Compliance Query & Stream            │ LIVE (tRPC compliance.query)  │ Multi-regulator statutory answers        │
-│ Line-item Legal Citations            │ LIVE (Citation chips & grounding) Primary source grounding (Kenya Law)    │
+│ Citation-Grounded Legal Answers      │ LIVE (Citation chips)         │ Verified regulatory source citations     │
 │ Regulatory Gap Analysis              │ LIVE (compliance.gapAnalysis) │ Interactive statutory readiness audits   │
 │ Interactive Compliance Checklists    │ LIVE (compliance.generateChecklist) Licensing application checklists   │
 │ AI Policy Drafting Generator         │ LIVE (Enterprise/Regulator)   │ AML, Privacy, and DPIA policy generation │
 │ Continuous Regulatory Alerts         │ LIVE (regulator.intelligence) │ Gazette notices & regulatory monitoring  │
-│ Statutory Compliance Calendar        │ LIVE (startup.calendar)       │ Annual DCP renewal & reporting deadlines │
+│ Statutory Compliance Calendar        │ LIVE (startup.calendar)       │ Annual DCP returns & reporting deadlines │
 │ Application & License Tracking       │ LIVE / IN-APP                 │ Form CBK DCP 1 & PSP tracking workflows  │
-│ Kenya Legal Corpus Codification      │ LIVE (50+ Acts/Circulars DB)  │ DPA 2019, DCP 2022, NPS 2011, POCAMLA    │
+│ Primary-Source Regulatory Corpus     │ LIVE (Codified Frameworks DB) │ DPA 2019, DCP 2022, NPS 2011, POCAMLA    │
 └──────────────────────────────────────┴───────────────────────────────┴──────────────────────────────────────────┘
 ```
 
@@ -65,8 +64,8 @@ Every recommended search target maps directly to verified, live capabilities in 
 6. `compliance software Kenya` (Opportunity Score: **89/100**)
 7. `CBK cybersecurity guidelines fintech` (Opportunity Score: **85/100**)
 8. `DPIA Kenya template fintech` (Opportunity Score: **85/100**)
-9. `digital credit provider annual renewal CBK` (Opportunity Score: **84/100**)
-10. `Kenya regulatory sandbox CMA CBK` (Opportunity Score: **83/100**)
+9. `digital credit provider annual compliance return CBK` (Opportunity Score: **84/100**)
+10. `Kenya regulatory sandbox CMA` (Opportunity Score: **83/100**)
 11. `Form CBK DCP 1 requirements Kenya` (Opportunity Score: **83/100**)
 12. `regtech Kenya software` (Opportunity Score: **83/100**)
 13. `FRC reporting requirements Kenya fintech` (Opportunity Score: **83/100**)
@@ -97,11 +96,11 @@ https://sheriabot.com
 │   ├── /kenya/odpc-data-protection-compliance   (Guide: "ODPC data controller registration Kenya", "DPA 2019")
 │   ├── /kenya/aml-cft-fintech-compliance        (Guide: "AML compliance Kenya", "POCAMLA requirements fintech")
 │   ├── /kenya/cbk-cybersecurity-compliance      (Guide: "CBK cybersecurity guidelines", "fintech cloud hosting")
-│   └── /kenya/regulatory-sandbox-guide          (Guide: "Kenya regulatory sandbox", "CMA fintech sandbox")
+│   └── /kenya/regulatory-sandbox-guide          (Guide: "Kenya CMA regulatory sandbox", "CMA fintech sandbox")
 │
 ├── /knowledge-base                                [EXISTING — To Expand with S03 Spokes]
 │   ├── /knowledge-base/dpia-data-protection-impact-assessment-kenya
-│   ├── /knowledge-base/cbk-dcp-annual-licence-renewal-guide
+│   ├── /knowledge-base/cbk-dcp-annual-compliance-return-fees-guide
 │   ├── /knowledge-base/form-cbk-dcp-1-application-guide
 │   └── /knowledge-base/[slug]                    (Dynamic statutory explainers)
 │
@@ -127,14 +126,14 @@ Every regulatory authority page created in Sprint 3 will be explicitly grounded 
    * Data Protection (General) Regulations, 2021
    * ODPC Guidance Notes on Financial Services and DPIA
 3. **Financial Reporting Centre (FRC):**
-   * Proceeds of Crime and Anti-Money Laundering Act (POCAMLA Cap 59B)
-   * Proceeds of Crime and Anti-Money Laundering Regulations, 2013
+   * Proceeds of Crime and Anti-Money Laundering Act (POCAMLA Cap. 59A)
+   * Proceeds of Crime and Anti-Money Laundering Regulations, 2023
    * Prevention of Terrorism Act (No. 30 of 2012)
    * FRC AML/CFT Guidelines for Designated Non-Financial Businesses & Financial Institutions
 4. **Capital Markets Authority (CMA):**
    * Capital Markets Act (Cap 485A)
    * Capital Markets (Regulatory Sandbox) Policy Guidance Notes, 2019
-   * Capital Markets (Coffee Exchange / Crowdfunding) Regulations, 2022
+   * Capital Markets (Investment-Based Crowdfunding) Regulations, 2022
 
 ---
 
@@ -164,6 +163,7 @@ To track organic performance in Kenya following Sprint 3 release, we require Goo
 | `SEO-S02-DOC-CONTENT-GAPS-007` | `docs/seo/sprint-02/SEO-S02-007-2026-08-24-content-gap-analysis.md` | Gap inventory between current site vs. keyword universe + cannibalization audit | `SEO-S02` |
 | `SEO-S02-DOC-COMMERCIAL-OPPORTUNITY-008` | `docs/seo/sprint-02/SEO-S02-008-2026-08-24-commercial-search-opportunity-map.md` | Opportunity scoring model, Top 20 clusters, and Top 10 target pages | `SEO-S02` |
 | `SEO-S02-DOC-FINAL-REPORT-009` | `docs/seo/sprint-02/SEO-S02-009-2026-08-24-sprint-02-final-report.md` | Comprehensive Sprint 2 final report and Sprint 3 implementation backlog | `SEO-S02` |
+| `SEO-S02-DOC-REGULATORY-EVIDENCE-010` | `docs/seo/sprint-02/SEO-S02-010-2026-08-24-regulatory-evidence-matrix.md` | Section-level primary regulatory evidence registry for SEO-S03 content creation | `SEO-S02` |
 
 ---
 
@@ -187,9 +187,9 @@ The following backlog defines the exact deliverables reserved for execution in *
 | `SEO-S03-KE-ODPC-004` | ODPC Data Protection Compliance Guide | `/kenya/odpc-data-protection-compliance` | Deep Guide | P0 | `SEO-S03-KE-HUB-001` | `SEO-S03` |
 | `SEO-S03-KE-AML-005` | AML/CFT & POCAMLA FinTech Compliance Guide | `/kenya/aml-cft-fintech-compliance` | Deep Guide | P0 | `SEO-S03-KE-HUB-001` | `SEO-S03` |
 | `SEO-S03-KE-CBK-CYBER-006` | CBK Cybersecurity & Cloud Guidelines Guide | `/kenya/cbk-cybersecurity-compliance` | Deep Guide | P1 | `SEO-S03-KE-HUB-001` | `SEO-S03` |
-| `SEO-S03-KE-CMA-SANDBOX-007`| CMA & CBK Regulatory Sandbox Guide | `/kenya/regulatory-sandbox-guide` | Deep Guide | P1 | `SEO-S03-KE-HUB-001` | `SEO-S03` |
+| `SEO-S03-KE-CMA-SANDBOX-007`| Kenya CMA Regulatory Sandbox Guide | `/kenya/regulatory-sandbox-guide` | Deep Guide | P1 | `SEO-S03-KE-HUB-001` | `SEO-S03` |
 | `SEO-S03-KE-KB-DPIA-008` | DPIA Methodology & Template Guide | `/knowledge-base/dpia-data-protection-impact-assessment-kenya` | KB Spoke | P1 | `SEO-S03-KE-ODPC-004` | `SEO-S03` |
-| `SEO-S03-KE-KB-DCP-RENEW-009`| CBK DCP Annual Licence Renewal Guide | `/knowledge-base/cbk-dcp-annual-licence-renewal-guide` | KB Spoke | P1 | `SEO-S03-KE-CBK-DCP-002` | `SEO-S03` |
+| `SEO-S03-KE-KB-DCP-ANNUAL-009`| CBK DCP Annual Compliance Return & Fees Guide | `/knowledge-base/cbk-dcp-annual-compliance-return-fees-guide` | KB Spoke | P1 | `SEO-S03-KE-CBK-DCP-002` | `SEO-S03` |
 | `SEO-S03-KE-KB-DCP-FORM1-010`| Form CBK DCP 1 Application Guide | `/knowledge-base/form-cbk-dcp-1-application-guide` | KB Spoke | P1 | `SEO-S03-KE-CBK-DCP-002` | `SEO-S03` |
 | `SEO-S03-CORE-SITEMAP-011` | Update Sitemap with 10 New Kenya Pages | `app/sitemap.ts` | Code | P0 | All S03 Pages | `SEO-S03` |
 | `SEO-S03-TEST-CONTRACTS-012` | Automated Contract Tests for Kenya Hubs | `app/__tests__/seo-canonical-contracts.test.ts` | Test | P0 | All S03 Pages | `SEO-S03` |
@@ -198,5 +198,5 @@ The following backlog defines the exact deliverables reserved for execution in *
 
 ## 11. Final Recommendation
 
-**SEO-S02 STATUS:**  
-`READY FOR SEO-S03`
+**SEO-S02 FINAL VERDICT: PASS**
+**SEO-S02 STATUS: READY FOR SEO-S03**

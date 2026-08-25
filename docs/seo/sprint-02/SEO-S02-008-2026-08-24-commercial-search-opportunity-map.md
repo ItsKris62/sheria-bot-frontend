@@ -34,8 +34,8 @@ Where all sub-factors are qualitative internal ratings scored on a scale of `1` 
 | **6** | `CL-06` | `compliance software Kenya` | Transactional | `/solutions/startups` & `/solutions/enterprise` | 5 | 5 | 5 | 4 | 4 | 2 | **89 / 100** | Tier 1 (Sprint 3 Core) |
 | **7** | `CL-07` | `CBK cybersecurity guidelines fintech` | Commercial Investigation | `/kenya/cbk-cybersecurity-compliance` | 4 | 4 | 5 | 5 | 4 | 2 | **85 / 100** | Tier 1 (Sprint 3 Core) |
 | **8** | `CL-09` | `DPIA Kenya template fintech` | Commercial Investigation | `/knowledge-base/dpia-data-protection-impact-assessment-kenya` | 5 | 4 | 5 | 4 | 4 | 2 | **85 / 100** | Tier 1 (Sprint 3 Core) |
-| **9** | `CL-10` | `digital credit provider annual renewal CBK`| Commercial Investigation | `/knowledge-base/cbk-dcp-annual-licence-renewal-guide` | 5 | 4 | 5 | 5 | 4 | 3 | **84 / 100** | Tier 1 (Sprint 3 Core) |
-| **10**| `CL-08` | `Kenya regulatory sandbox CMA CBK` | Commercial Investigation | `/kenya/regulatory-sandbox-guide` | 4 | 4 | 5 | 4 | 4 | 2 | **83 / 100** | Tier 1 (Sprint 3 Core) |
+| **9** | `CL-10` | `digital credit provider annual compliance return CBK`| Commercial Investigation | `/knowledge-base/cbk-dcp-annual-compliance-return-fees-guide` | 5 | 4 | 5 | 5 | 4 | 3 | **84 / 100** | Tier 1 (Sprint 3 Core) |
+| **10**| `CL-08` | `Kenya regulatory sandbox CMA` | Commercial Investigation | `/kenya/regulatory-sandbox-guide` | 4 | 4 | 5 | 4 | 4 | 2 | **83 / 100** | Tier 1 (Sprint 3 Core) |
 | **11**| `CL-11` | `Form CBK DCP 1 requirements Kenya` | Commercial Investigation | `/knowledge-base/form-cbk-dcp-1-application-guide` | 5 | 4 | 5 | 4 | 4 | 2 | **83 / 100** | Tier 2 (Sprint 3 Supporting) |
 | **12**| `CL-12` | `regtech Kenya software` | Transactional | `/solutions/enterprise` | 5 | 5 | 4 | 4 | 3 | 2 | **83 / 100** | Tier 2 (Sprint 3 Supporting) |
 | **13**| `CL-13` | `FRC reporting requirements Kenya fintech`| Commercial Investigation | `/knowledge-base/frc-goaml-reporting-guide-fintech` | 5 | 4 | 5 | 4 | 4 | 2 | **83 / 100** | Tier 2 (Sprint 3 Supporting) |
@@ -62,7 +62,7 @@ The Top 10 pages selected for implementation in Sprint 3 represent the foundatio
 * **User Persona:** FinTech Founders, Legal Counsel, Compliance Officers
 * **Purpose:** The definitive authority overview on Kenyan fintech regulations across CBK, ODPC, FRC, and CMA.
 * **Primary CTA:** "Run Instant Compliance Gap Analysis"
-* **Required Regulatory Sources:** CBK Act Cap 491, NPS Act 2011, DPA 2019, POCAMLA Cap 59B, CMA Act Cap 485A.
+* **Required Regulatory Sources:** CBK Act Cap 491, NPS Act 2011, DPA 2019, POCAMLA Cap. 59A, CMA Act Cap 485A.
 * **Parent Hub:** `/` (Homepage)
 * **Required Internal Links:** Links to DCP, PSP, ODPC, AML guides, and `/solutions/startups`.
 
@@ -86,7 +86,7 @@ The Top 10 pages selected for implementation in Sprint 3 represent the foundatio
 * **Secondary Query Cluster:** `PSP licence Kenya CBK`, `payment regulations Kenya`, `National Payment System Act Kenya compliance`
 * **Search Intent:** Commercial Investigation (MOFU)
 * **User Persona:** Payment Gateway Founders, E-Money Operators, Banking Partners
-* **Purpose:** Authoritative breakdown of the 4 PSP licensing tiers, minimum capital requirements (KES 1M–50M), and Trust Account structures.
+* **Purpose:** Breakdown of PSP licensing categories, capital adequacy governance (subject to primary schedule verification), and Trust Account structures.
 * **Primary CTA:** "Evaluate PSP Capital & Trust Compliance"
 * **Required Regulatory Sources:** National Payment System Act 2011, NPS Regulations 2014.
 * **Parent Hub:** `/kenya/fintech-compliance-requirements`
@@ -99,9 +99,9 @@ The Top 10 pages selected for implementation in Sprint 3 represent the foundatio
 * **Secondary Query Cluster:** `Data Protection Act Kenya compliance`, `data processor registration Kenya`, `ODPC registration requirements fintech`
 * **Search Intent:** Commercial Investigation (MOFU/BOFU)
 * **User Persona:** Data Protection Officers (DPOs), CTOs, Legal Counsel
-* **Purpose:** Step-by-step guidance on ODPC mandatory registration thresholds, 72-hour breach reporting, and DPIA obligations for financial services.
+* **Purpose:** Step-by-step guidance on ODPC mandatory registration thresholds (The small-entity exemption does not apply where processing falls within a Third Schedule mandatory-registration purpose, including financial services), 24-month validity under Regulation 9, renewal under Regulation 11, notifiable data breach workflows (Section 43 real risk of harm standard), and DPIA obligations (Section 31 & General Reg 49).
 * **Primary CTA:** "Start ODPC Compliance Assessment"
-* **Required Regulatory Sources:** Data Protection Act 2019, Data Protection (Registration) Regulations 2021.
+* **Required Regulatory Sources:** Data Protection Act 2019, Data Protection (Registration) Regulations 2021, Data Protection (General) Regulations 2021.
 * **Parent Hub:** `/kenya/fintech-compliance-requirements`
 * **Required Internal Links:** Links to `/knowledge-base/dpia-data-protection-impact-assessment-kenya` and `/solutions/startups`.
 
@@ -112,9 +112,9 @@ The Top 10 pages selected for implementation in Sprint 3 represent the foundatio
 * **Secondary Query Cluster:** `POCAMLA compliance Kenya`, `KYC requirements Kenya fintech`, `FRC reporting requirements Kenya`
 * **Search Intent:** Commercial Investigation (MOFU)
 * **User Persona:** Money Laundering Reporting Officers (MLROs), Compliance Directors
-* **Purpose:** Practical guide to AML/CFT compliance, CDD/EDD procedures, PEP screening, and FRC STR/CTR reporting under POCAMLA.
+* **Purpose:** Practical guide to AML/CFT compliance, FRC registration under Section 47A, CDD/EDD procedures, PEP screening, CTR reporting threshold (US$15,000 equivalent under Section 44(6) and 2023 Regs), and STR filing within two days after suspicion arose under Section 44(2).
 * **Primary CTA:** "Generate Statutory AML Policy"
-* **Required Regulatory Sources:** POCAMLA Cap 59B, POCAMLA Regulations 2013, FRC Guidance Notes.
+* **Required Regulatory Sources:** POCAMLA Cap. 59A, POCAMLA Regulations 2023, FRC Guidance Notes.
 * **Parent Hub:** `/kenya/fintech-compliance-requirements`
 * **Required Internal Links:** Links to `/solutions/enterprise` and `/pricing`.
 
@@ -134,13 +134,13 @@ The Top 10 pages selected for implementation in Sprint 3 represent the foundatio
 ### 7. Page ID: `SEO-S03-KE-CMA-SANDBOX-007`
 * **URL:** `/kenya/regulatory-sandbox-guide`
 * **Page Type:** Deep Regulatory Guide
-* **Primary Query:** `Kenya regulatory sandbox CMA CBK`
-* **Secondary Query Cluster:** `CMA fintech sandbox Kenya`, `regulatory sandbox fintech Kenya`
+* **Primary Query:** `Kenya CMA regulatory sandbox`
+* **Secondary Query Cluster:** `CMA fintech sandbox Kenya`, `CMA regulatory sandbox policy note`
 * **Search Intent:** Commercial Investigation (MOFU)
 * **User Persona:** Innovative FinTech Founders, Product Designers
-* **Purpose:** Complete handbook on entering and navigating CMA and CBK regulatory sandboxes for novel financial products.
+* **Purpose:** Complete handbook on entering and navigating the Capital Markets Authority Regulatory Sandbox (initial testing period agreed with CMA not exceeding 12 months, with possible extension up to a further 12 months).
 * **Primary CTA:** "Review Sandbox Eligibility Checklist"
-* **Required Regulatory Sources:** CMA Regulatory Sandbox Policy Guidance 2019, CBK Sandbox Guidelines.
+* **Required Regulatory Sources:** CMA Regulatory Sandbox Policy Guidance Note 2019.
 * **Parent Hub:** `/kenya/fintech-compliance-requirements`
 * **Required Internal Links:** Links to `/solutions/startups`.
 
@@ -151,22 +151,35 @@ The Top 10 pages selected for implementation in Sprint 3 represent the foundatio
 * **Secondary Query Cluster:** `data protection impact assessment Kenya fintech`, `ODPC DPIA requirements`
 * **Search Intent:** Commercial Investigation / Transactional (BOFU)
 * **User Persona:** Data Protection Officers, Compliance Analysts
-* **Purpose:** Practical methodology for conducting a DPIA on credit scoring algorithms and biometric data processing in Kenya.
+* **Purpose:** Practical methodology for conducting a DPIA under Section 31 DPA 2019 and Regulation 49 of the General Regulations 2021 (statutory high-risk processing test).
 * **Primary CTA:** "Generate DPIA Documentation"
-* **Required Regulatory Sources:** Section 31 Data Protection Act 2019, ODPC DPIA Guidelines.
+* **Required Regulatory Sources:** Section 31 Data Protection Act 2019, Regulation 49 Data Protection (General) Regulations 2021.
 * **Parent Hub:** `/kenya/odpc-data-protection-compliance`
 * **Required Internal Links:** Upward link to ODPC Guide.
 
-### 9. Page ID: `SEO-S03-KE-KB-DCP-RENEW-009`
-* **URL:** `/knowledge-base/cbk-dcp-annual-licence-renewal-guide`
+### 9. Page ID: `SEO-S03-KE-KB-DCP-ANNUAL-009`
+* **URL:** `/knowledge-base/cbk-dcp-annual-compliance-return-fees-guide`
 * **Page Type:** Knowledge Base Operational Guide
-* **Primary Query:** `digital credit provider annual renewal CBK`
-* **Secondary Query Cluster:** `DCP licence renewal requirements Kenya`, `CBK DCP annual returns`
+* **Primary Query:** `digital credit provider annual compliance return CBK`
+* **Secondary Query Cluster:** `DCP annual return requirements Kenya`, `CBK DCP annual fee payment`
 * **Search Intent:** Commercial Investigation (MOFU)
 * **User Persona:** Licensed DCP Compliance Officers, CEOs
-* **Purpose:** Step-by-step procedural manual for the annual December 31 licence renewal filings and annual return submissions to the CBK.
-* **Primary CTA:** "Track Renewal Deadlines with Compliance Calendar"
-* **Required Regulatory Sources:** Regulation 11, Central Bank of Kenya (DCP) Regulations 2022.
+* **Purpose:** Step-by-step procedural manual for the mandatory submission of annual returns certifying compliance under Regulation 5(7) and payment of the annual KES 20,000 fee under Regulation 5(6) + Second Schedule on or before 31 December every year.
+* **Primary CTA:** "Track Return Deadlines with Compliance Calendar"
+* **Required Regulatory Sources:** Regulation 5(5)–(7), Central Bank of Kenya (Digital Credit Providers) Regulations 2022.
+* **Parent Hub:** `/kenya/cbk-digital-credit-provider-compliance`
+* **Required Internal Links:** Upward link to CBK DCP Guide.
+
+### 10. Page ID: `SEO-S03-KE-KB-DCP-FORM1-010`
+* **URL:** `/knowledge-base/form-cbk-dcp-1-application-guide`
+* **Page Type:** Knowledge Base Operational Guide
+* **Primary Query:** `Form CBK DCP 1 requirements Kenya`
+* **Secondary Query Cluster:** `CBK DCP application form 1`, `DCP registration forms Kenya`
+* **Search Intent:** Commercial Investigation / Transactional (BOFU)
+* **User Persona:** Legal Counsel, Founders submitting CBK applications
+* **Purpose:** Field-by-field breakdown of Form CBK DCP 1, required corporate attachments, Commissioner for Oaths attestation, and fee payment.
+* **Primary CTA:** "Prepare Application Documents with AI Policy Drafter"
+* **Required Regulatory Sources:** First Schedule, CBK (DCP) Regulations 2022.
 * **Parent Hub:** `/kenya/cbk-digital-credit-provider-compliance`
 * **Required Internal Links:** Upward link to CBK DCP Guide.
 

@@ -11,7 +11,7 @@
 In Kenyan fintech and regulatory compliance search results, the competitive landscape is divided into three distinct classes:
 
 1. **Authoritative Statutory Regulators:** Primary sources (`centralbank.go.ke`, `odpc.go.ke`, `frc.go.ke`, `cma.or.ke`, `kenyalaw.org`). They have insurmountable domain authority for exact statute names, but their content is static PDFs, raw legal notices, and unindexed forms with zero workflow guidance.
-2. **Kenyan Commercial Law Firms:** Content producers (`CM Advocates`, `Bowmans`, `ALN / Anjarwalla & Khanna`, `MMAN Advocates`, `KO Associates`, `Githai & Co`). They rank for "how-to" and regulatory summary queries, capturing leads for high-fee legal advisory retainers ($3,000–$15,000).
+2. **Kenyan Commercial Law Firms:** Content producers (`CM Advocates`, `Bowmans`, `ALN / Anjarwalla & Khanna`, `MMAN Advocates`, `KO Associates`, `Githai & Co`). They rank for "how-to" and regulatory summary queries, capturing leads for bespoke legal advisory services and manual retainers.
 3. **RegTech Software Vendors:** Direct product alternatives (`Trigarc Compliance`, `Dimeri GRC`, `WizLegal`, `CompuLynx`, `Creodata`, `Ujuzi Compliance`). Most have weak organic content architectures, ranking only for branded terms or generic product listings.
 
 ---
@@ -23,8 +23,8 @@ In Kenyan fintech and regulatory compliance search results, the competitive land
 | `centralbank.go.ke` | Statutory Regulator | CBK Regulations, DCP Guidelines, NPS Licensing | Very High (Authority) | Low (Static PDFs & Circulars) | Government Authority | No plain-English summaries, no interactive gap analysis, no self-service checklists | Provide indexed, interactive checklists citing CBK circulars and automated form preparation |
 | `odpc.go.ke` | Statutory Regulator | Data Protection Act 2019, Data Controller Registration | High (Authority) | Medium (Portal & Guidance Notes) | Statutory Fee Processing | Registration portal is clunky; lack of automated DPIA tools or breach response planning | Offer automated ODPC gap analysis and AI-assisted DPIA documentation tools |
 | `kenyalaw.org` | Legal Repository | Full Acts of Parliament (POCAMLA, NPS Act, DPA) | Very High (Legal Grounding) | Low (Raw Statute Text) | Public Database | Raw legal gazettes with zero operational explanation, search UX is dated | Ground all platform intelligence directly in Kenya Law text with line-item citations |
-| `cmadvocates.com` | Law Firm | DCP Licensing, Fintech Regulations, ODPC Compliance | High (Editorial) | High (Long-form Legal Guides) | High-fee Legal Retainer ($$$$) | Manual service; not accessible for early-stage startups; no automated tooling | Provide instant, continuous AI regulatory intelligence at SaaS subscription pricing |
-| `bowmanslaw.com` | Pan-African Law Firm | Banking Regulations, FinTech GRC, Cross-Border Transfer | High (Corporate Authority) | High (Client Alerts & Briefings) | Enterprise Retainers ($$$$) | Content is periodic client alerts rather than structured evergreen reference hubs | Build living, dynamic compliance hubs with real-time statutory change tracking |
+| `cmadvocates.com` | Law Firm | DCP Licensing, Fintech Regulations, ODPC Compliance | High (Editorial) | High (Long-form Legal Guides) | Bespoke Legal Advisory Retainers | Manual advisory model; static PDF guides; lack of interactive compliance workflows | Provide instant, continuous AI regulatory intelligence at SaaS subscription pricing |
+| `bowmanslaw.com` | Pan-African Law Firm | Banking Regulations, FinTech GRC, Cross-Border Transfer | High (Corporate Authority) | High (Client Alerts & Briefings) | Enterprise Legal Retainers | Content is periodic client alerts rather than structured evergreen reference hubs | Build living, dynamic compliance hubs with real-time statutory change tracking |
 | `trigarc.com` | RegTech SaaS | Compliance Management Software Kenya, SASRA/CBK GRC | Low–Medium (Commercial) | Low (Product Feature Lists) | SaaS Subscription | Minimal organic search footprint; lacks comprehensive public legal knowledge base | Build dominant public SEO beachhead with free checklists that convert to SaaS |
 | `wizlegal.com` | LegalTech SaaS | Contract Management, Business Registration Kenya | Low–Medium (Commercial) | Medium (Blog Guides) | SaaS / Pay-per-document | Focused on general contracts rather than deep financial services regulation | Dominate deep fintech domains (CBK, NPS, POCAMLA, FRC) where general legal tech fails |
 | `compulynx.com` | Enterprise Software | AML Compliance, KYC Software, Identity Verification | Medium (B2B) | Low (Product Brochures) | Enterprise Licensing | Heavy enterprise legacy focus; lacks self-serve regulatory guidance | Position SheriaBot as modern, developer-friendly and AI-first regulatory intelligence |
@@ -62,7 +62,7 @@ In Kenyan fintech and regulatory compliance search results, the competitive land
   1. `odpc.go.ke/data-controller-registration/` — Official portal DPR1 registration instructions.
   2. `koassociates.co.ke/odpc-registration-guidance/` — Law firm advisory note on thresholds.
   3. `rsm.global/kenya/insights/data-protection-registration/` — Accounting/audit firm guide.
-* **Content Deficit:** Missing clarity on fintech-specific exemptions, 72-hour breach reporting automation, and DPIA workflows for automated credit scoring.
+* **Content Deficit:** Missing clarity on fintech-specific mandatory registration thresholds (Third Schedule), notifiable data breach workflows (Section 43 real risk of harm standard), and DPIA workflows for automated credit scoring.
 * **SheriaBot Win Condition:** Create `/kenya/odpc-data-protection-compliance` with step-by-step DPR1 guidance, fintech mandatory sector thresholds, and automated DPIA policy generator links.
 
 ---
@@ -72,7 +72,7 @@ In Kenyan fintech and regulatory compliance search results, the competitive land
 | Competitor Feature | Law Firms | Official Regulators | Generic RegTech SaaS | SheriaBot Moat |
 | :--- | :--- | :--- | :--- | :--- |
 | Primary Legal Source Grounding | Yes (Subjective) | Yes (Raw) | No | **Yes (Line-item Section Citations)** |
-| Interactive Compliance Tooling | No (PDF only) | No | Limited | **Yes (Interactive Gap Analysis & Checklists)** |
-| Transparent Pricing / Self-Serve | No ($3k+ retainer) | Public Free | Closed Enterprise Quote | **Yes (Free 14-day trial & transparent tiers)** |
+| Interactive Compliance Tooling | No (Static PDF only) | No | Limited | **Yes (Interactive Gap Analysis & Checklists)** |
+| Transparent Pricing / Self-Serve | No (Manual Retainers) | Public Free | Closed Enterprise Quote | **Yes (Free 14-day trial & transparent tiers)** |
 | Real-time Regulatory Change Alerts | Periodic Alerts | Gazette Notices | Rare | **Yes (Automated Intelligence Feed & Alerts)** |
 | Policy Document Generation | Manual Drafting | None | Template Library | **Yes (AI Policy Drafting grounded in statute)** |

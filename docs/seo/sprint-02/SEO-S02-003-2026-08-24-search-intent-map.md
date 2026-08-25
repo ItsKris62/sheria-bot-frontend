@@ -13,7 +13,7 @@ In Kenya's fintech and regulatory compliance ecosystem, 4 primary search persona
 1. **Fintech Founder / CEO (`Persona A`):** Wants rapid clarity on whether a product is legal, what licenses are required, cost of compliance, and how fast they can launch without regulatory enforcement.
 2. **Head of Compliance / AML Officer (`Persona B`):** Needs exact statutory references, reporting deadlines (FRC, CBK, ODPC), operational checklists, and audit-ready proof.
 3. **Legal Counsel / In-House Lawyer (`Persona C`):** Seeks precise section-by-section legal citations, statutory interpretation, cross-framework comparisons, and policy drafting support.
-4. **Product Manager / Engineering Lead (`Persona D`):** Looks for data protection thresholds, 72-hour breach reporting protocols, data residency rules, and technical security mandates.
+4. **Product Manager / Engineering Lead (`Persona D`):** Looks for data protection thresholds, notifiable data breach protocols (real risk of harm standard), data residency rules, and technical security mandates.
 
 ---
 
@@ -42,7 +42,7 @@ In Kenya's fintech and regulatory compliance ecosystem, 4 primary search persona
 | `ODPC data controller registration requirements`| Commercial Investigation| MOFU | Compliance / Legal | "Do I meet the KES 5M / 10 employee mandatory threshold?" | Free ODPC Registration Threshold Calculator |
 | `DPIA template Kenya fintech` | Commercial Investigation| MOFU | DPO / PM | "How do I perform a Data Protection Impact Assessment?" | Downloadable DPIA Structure + AI Policy Generator |
 | `AML policy Kenya fintech requirements` | Commercial Investigation| MOFU | Compliance Officer | "What mandatory clauses must exist in our AML/KYC policy?" | AI-Generated Statutory AML Policy Preview |
-| `CBK regulatory sandbox eligibility` | Commercial Investigation| MOFU | Founder / Product | "Can we test our new financial product in the CBK sandbox?" | Sandbox Checklist + Pre-Application Review |
+| `CMA regulatory sandbox eligibility Kenya` | Commercial Investigation| MOFU | Founder / Product | "Can we test our new financial product in the CMA sandbox?" | Sandbox Checklist + Pre-Application Review |
 | `compliance software Kenya` | Transactional | BOFU | Head of Compliance / CEO | "What software is available to automate Kenya compliance?" | 14-Day Free Trial (No Credit Card Required) |
 | `regtech Kenya software` | Transactional | BOFU | Compliance / CTO | "Which local RegTech platforms support CBK & ODPC tracking?" | Interactive Product Demo / Book Enterprise Call |
 | `compliance management software Kenya` | Transactional | BOFU | Compliance Officer | "How can our team manage multi-framework audits in one place?" | Start Free Startup / Business Plan Trial |
