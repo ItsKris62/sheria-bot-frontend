@@ -97,11 +97,20 @@ export default function ComplianceQueryPage() {
   const clickTrackingMutation = trpc.compliance.recordSuggestionClick.useMutation()
 
   const { data: planData } = trpc.billing.getPlanAndUsage.useQuery()
+  const restrictedJurisdictionPlan = planData?.plan === "REGULATOR" || planData?.plan === "FREE_TRIAL"
   const { data: jurisdictionCapabilitiesData } = trpc.compliance.jurisdictionCapabilities.useQuery(undefined, {
     staleTime: 60 * 60 * 1000,
   })
   const jurisdictionCapabilities: JurisdictionCapability[] = useMemo(
-    () => jurisdictionCapabilitiesData?.jurisdictions ?? [],
+    () => (jurisdictionCapabilitiesData?.jurisdictions ?? []).map((capability) => ({
+      ...capability,
+      comparisonEnabled: "comparisonEnabled" in capability
+        ? Boolean(capability.comparisonEnabled)
+        : capability.queryEnabled,
+      corpusReady: "corpusReady" in capability
+        ? Boolean(capability.corpusReady)
+        : capability.queryEnabled,
+    })),
     [jurisdictionCapabilitiesData?.jurisdictions],
   )
 
@@ -116,18 +125,26 @@ export default function ComplianceQueryPage() {
     (p) => p === streamState.phase,
   )
   const fallbackJurisdiction = jurisdictionCapabilities.find(
-    (item) => item.queryEnabled && isQueryableJurisdictionCode(item.code),
+    (item) => item.queryEnabled && item.corpusReady && isQueryableJurisdictionCode(item.code),
   )
   const effectiveSelectedJurisdictions = selectedJurisdictions.filter((code) => {
     const capability = jurisdictionCapabilities.find((item) => item.code === code)
-    return capability?.queryEnabled !== false
+    return capability?.queryEnabled !== false && capability?.corpusReady !== false
   })
   if (effectiveSelectedJurisdictions.length === 0) {
     effectiveSelectedJurisdictions.push(
       isQueryableJurisdictionCode(fallbackJurisdiction?.code) ? fallbackJurisdiction.code : DEFAULT_JURISDICTION
     )
   }
-  const effectiveSelectedJurisdiction = effectiveSelectedJurisdictions[0]
+  const homeJurisdiction = isQueryableJurisdictionCode(planData?.billing?.homeJurisdictionCode)
+    ? planData.billing.homeJurisdictionCode
+    : null
+  const singleModeJurisdiction = homeJurisdiction ?? effectiveSelectedJurisdictions[0]
+  const visibleSelectedJurisdictions = restrictedJurisdictionPlan
+    ? [singleModeJurisdiction]
+    : effectiveSelectedJurisdictions
+  const submitJurisdictions = [singleModeJurisdiction]
+  const effectiveSelectedJurisdiction = singleModeJurisdiction
   const complianceQueryUsage = planData?.usage?.complianceQueries
   const remainingComplianceCredits =
     complianceQueryUsage && complianceQueryUsage.limit >= 0
@@ -239,7 +256,7 @@ export default function ComplianceQueryPage() {
     const effectiveCapability = jurisdictionCapabilities.find((item) => effectiveSelectedJurisdictions.includes(item.code))
     if (effectiveCapability && !effectiveCapability.queryEnabled) return
 
-    const requestJurisdictions = effectiveSelectedJurisdictions
+    const requestJurisdictions = submitJurisdictions
     setActiveQueryJurisdictions(requestJurisdictions)
 
     trackEvent("compliance_query_started", {
@@ -338,9 +355,10 @@ export default function ComplianceQueryPage() {
 
       <JurisdictionContextBar
         capabilities={jurisdictionCapabilities}
-        selectedJurisdictions={effectiveSelectedJurisdictions}
-        disabled={isStreaming}
-        onJurisdictionChange={setSelectedJurisdictions}
+        selectedJurisdictions={visibleSelectedJurisdictions}
+        disabled={isStreaming || restrictedJurisdictionPlan}
+        comparisonAllowed={!restrictedJurisdictionPlan}
+        onJurisdictionChange={(values) => setSelectedJurisdictions(values.slice(0, restrictedJurisdictionPlan ? 1 : 4))}
       />
 
       {/* Structured Dark Workspace Grid (66% Main / 33% Sidebar) */}

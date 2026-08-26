@@ -59,11 +59,13 @@ export function JurisdictionContextBar({
   capabilities,
   selectedJurisdictions,
   disabled,
+  comparisonAllowed = true,
   onJurisdictionChange,
 }: {
   capabilities: JurisdictionCapability[]
   selectedJurisdictions: QueryableJurisdictionCode[]
   disabled?: boolean
+  comparisonAllowed?: boolean
   onJurisdictionChange: (values: QueryableJurisdictionCode[]) => void
 }) {
   const selectedLabels = selectedJurisdictions
@@ -71,7 +73,7 @@ export function JurisdictionContextBar({
     .join(", ");
 
   const options: Option[] = capabilities
-    .filter(c => c.queryEnabled)
+    .filter(c => c.queryEnabled && c.corpusReady)
     .map(c => ({ label: c.name, value: c.code }));
 
   return (
@@ -83,7 +85,9 @@ export function JurisdictionContextBar({
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground">Ask SheriaBot about {selectedLabels || "all"} law</p>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Select up to 4 jurisdictions to compare regulatory requirements.
+            {comparisonAllowed
+              ? "Select up to 4 jurisdictions to compare regulatory requirements."
+              : "Your current plan is limited to one jurisdiction."}
           </p>
         </div>
       </div>
@@ -97,7 +101,8 @@ export function JurisdictionContextBar({
           disabled={disabled}
           placeholder="Select jurisdictions..."
           onChange={(values) => {
-            if (values.length <= 4) {
+            const max = comparisonAllowed ? 4 : 1
+            if (values.length <= max) {
               onJurisdictionChange(values as QueryableJurisdictionCode[])
             }
           }}
@@ -105,7 +110,7 @@ export function JurisdictionContextBar({
         {disabled ? (
           <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Lock className="h-3 w-3" aria-hidden="true" />
-            Locked while SheriaBot is answering.
+            {comparisonAllowed ? "Locked while SheriaBot is answering." : "Jurisdiction access is plan-limited."}
           </p>
         ) : null}
       </div>

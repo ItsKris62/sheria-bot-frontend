@@ -33,10 +33,10 @@ const mocks = vi.hoisted(() => ({
   },
   jurisdictionCapabilitiesData: {
     jurisdictions: [
-      { code: "KE", name: "Kenya", queryEnabled: true, status: "ACTIVE" },
-      { code: "RW", name: "Rwanda", queryEnabled: true, status: "ACTIVE" },
-      { code: "MW", name: "Malawi", queryEnabled: true, status: "ACTIVE" },
-      { code: "NG", name: "Nigeria", queryEnabled: false, status: "COMING_SOON" },
+      { code: "KE", name: "Kenya", queryEnabled: true, comparisonEnabled: true, corpusReady: true, status: "ACTIVE" },
+      { code: "RW", name: "Rwanda", queryEnabled: true, comparisonEnabled: true, corpusReady: true, status: "ACTIVE" },
+      { code: "MW", name: "Malawi", queryEnabled: true, comparisonEnabled: true, corpusReady: true, status: "ACTIVE" },
+      { code: "NG", name: "Nigeria", queryEnabled: false, comparisonEnabled: false, corpusReady: false, status: "COMING_SOON" },
     ],
   },
   planData: {

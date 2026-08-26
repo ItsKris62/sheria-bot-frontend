@@ -8,6 +8,8 @@ export type JurisdictionCapability = {
   code: JurisdictionCode
   name: string
   queryEnabled: boolean
+  comparisonEnabled: boolean
+  corpusReady: boolean
   status: JurisdictionStatus
 }
 

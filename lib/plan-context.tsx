@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { trpc } from "./trpc";
 import { useAuthStore } from "./auth-store";
+import type { JurisdictionCode } from "./jurisdictions";
 
 // ============================================================================
 // Local type definitions (mirrors backend entitlements.config + billing router)
@@ -126,6 +127,7 @@ export interface PlanBilling {
   mpesaNextPaymentDueDate: string | null; // ISO-8601
   subscriptionCycleEnd:    string | null; // ISO-8601, mirrors mpesaNextPaymentDueDate
   mpesaPhoneNumber:        string | null;
+  homeJurisdictionCode:    JurisdictionCode | null;
   activePaymentProvider:   "INTASEND" | "STRIPE";
   stripeEnabled:           boolean;
   catalogPrice: Record<"STARTUP" | "BUSINESS", { monthly: number; yearly: number; currency: "KES" }>;

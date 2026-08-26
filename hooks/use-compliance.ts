@@ -39,7 +39,7 @@ export interface ComplianceQueryResponse {
   citations: CitationItem[];
   confidence: number | null;
   suggestedFollowUps: string[];
-  mode?: "SINGLE";
+  mode?: "SINGLE" | "COMPARE";
   jurisdictions?: JurisdictionCode[];
   primaryJurisdiction?: JurisdictionCode;
   /** null on legacy shadow path (ORCHESTRATOR_ENABLED=false) */
@@ -95,7 +95,7 @@ type SSEEvent =
   | { type: "connected"; queryId: string; ragSources: number }
   | { type: "chunk"; text: string }
   | { type: "synthesis_complete" }
-  | { type: "done"; queryId: string; route: string; grounded: boolean; abstained: boolean; runId: string | null; citations: CitationItem[]; confidence: number | null; fallbackReason?: ComplianceFallbackReason | null; mode?: "SINGLE"; jurisdictions?: JurisdictionCode[]; primaryJurisdiction?: JurisdictionCode }
+  | { type: "done"; queryId: string; route: string; grounded: boolean; abstained: boolean; runId: string | null; citations: CitationItem[]; confidence: number | null; fallbackReason?: ComplianceFallbackReason | null; mode?: "SINGLE" | "COMPARE"; jurisdictions?: JurisdictionCode[]; primaryJurisdiction?: JurisdictionCode }
   | { type: "error"; message: string };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
