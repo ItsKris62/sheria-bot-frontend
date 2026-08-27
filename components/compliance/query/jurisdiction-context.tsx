@@ -12,6 +12,7 @@ import { MapPin, Lock, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   DEFAULT_JURISDICTION,
+  isQueryableJurisdictionCode,
   jurisdictionLabel,
   type JurisdictionCapability,
   type JurisdictionCode,
@@ -73,7 +74,7 @@ export function JurisdictionContextBar({
     .join(", ");
 
   const options: Option[] = capabilities
-    .filter(c => c.queryEnabled && c.corpusReady)
+    .filter(c => c.queryEnabled && c.corpusReady && isQueryableJurisdictionCode(c.code))
     .map(c => ({ label: c.name, value: c.code }));
 
   return (
@@ -138,12 +139,6 @@ const REGIONAL_SUGGESTIONS: Record<QueryableJurisdictionCode, SuggestionItem[]> 
     { id: "regional-mw-data", text: "What data protection obligations apply to fintech companies in Malawi?", relatedArea: "Data Protection" },
     { id: "regional-mw-aml", text: "What AML and KYC obligations apply to financial service providers in Malawi?", relatedArea: "AML / KYC" },
     { id: "regional-mw-cyber", text: "What cybersecurity requirements apply to regulated financial institutions in Malawi?", relatedArea: "Cybersecurity" },
-  ],
-  NG: [
-    { id: "regional-ng-licensing", text: "What licensing requirements apply to payment service providers in Nigeria?", relatedArea: "Licensing" },
-    { id: "regional-ng-data", text: "What data protection obligations apply to fintech companies in Nigeria?", relatedArea: "Data Protection" },
-    { id: "regional-ng-aml", text: "What AML and KYC obligations apply to financial service providers in Nigeria?", relatedArea: "AML / KYC" },
-    { id: "regional-ng-cyber", text: "What cybersecurity requirements apply to regulated financial institutions in Nigeria?", relatedArea: "Cybersecurity" },
   ],
 }
 

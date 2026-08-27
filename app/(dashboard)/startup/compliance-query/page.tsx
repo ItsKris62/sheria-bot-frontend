@@ -104,12 +104,8 @@ export default function ComplianceQueryPage() {
   const jurisdictionCapabilities: JurisdictionCapability[] = useMemo(
     () => (jurisdictionCapabilitiesData?.jurisdictions ?? []).map((capability) => ({
       ...capability,
-      comparisonEnabled: "comparisonEnabled" in capability
-        ? Boolean(capability.comparisonEnabled)
-        : capability.queryEnabled,
-      corpusReady: "corpusReady" in capability
-        ? Boolean(capability.corpusReady)
-        : capability.queryEnabled,
+      comparisonEnabled: Boolean(capability.comparisonEnabled),
+      corpusReady: Boolean(capability.corpusReady),
     })),
     [jurisdictionCapabilitiesData?.jurisdictions],
   )
@@ -253,7 +249,9 @@ export default function ComplianceQueryPage() {
     e.preventDefault()
     const trimmed = query.trim()
     if (!trimmed || isStreaming) return
-    const effectiveCapability = jurisdictionCapabilities.find((item) => effectiveSelectedJurisdictions.includes(item.code))
+    const effectiveCapability = jurisdictionCapabilities.find(
+      (item) => isQueryableJurisdictionCode(item.code) && effectiveSelectedJurisdictions.includes(item.code),
+    )
     if (effectiveCapability && !effectiveCapability.queryEnabled) return
 
     const requestJurisdictions = submitJurisdictions

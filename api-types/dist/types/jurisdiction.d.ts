@@ -7,14 +7,16 @@ export interface JurisdictionCapability {
     label: string;
     queryEnabled: boolean;
     comparisonEnabled: boolean;
+    corpusReady: boolean;
     status: JurisdictionAvailabilityStatus;
 }
+export declare const COMPARE_MODE_ENABLED: boolean;
 export declare const JURISDICTION_CAPABILITIES: Record<JurisdictionCode, JurisdictionCapability>;
 export declare const JURISDICTION_LABEL_BY_CODE: Record<JurisdictionCode, string>;
 export declare function isJurisdictionCode(value: unknown): value is JurisdictionCode;
 export declare function jurisdictionLabel(code: JurisdictionCode): string;
 export declare function jurisdictionCodeFromLabel(value: string | null | undefined): JurisdictionCode | null;
-export type JurisdictionSource = 'REQUEST' | 'LEGACY_DEFAULT' | 'PERSISTED_QUERY';
+export type JurisdictionSource = 'REQUEST' | 'LEGACY_DEFAULT' | 'PERSISTED_QUERY' | 'ORGANIZATION_HOME';
 export interface SingleJurisdictionContext {
     mode: 'SINGLE';
     jurisdictions: readonly [JurisdictionCode];
@@ -32,8 +34,8 @@ export interface JurisdictionContractInput {
     jurisdictions?: readonly JurisdictionCode[];
 }
 export declare class JurisdictionContractError extends Error {
-    readonly code: 'JURISDICTION_REQUIRED' | 'JURISDICTION_UNSUPPORTED' | 'JURISDICTION_NOT_AVAILABLE' | 'COMPARISON_NOT_ENABLED' | 'COMPARISON_MIN_JURISDICTIONS' | 'COMPARISON_MAX_JURISDICTIONS' | 'COMPARISON_DUPLICATE_JURISDICTION';
-    constructor(code: 'JURISDICTION_REQUIRED' | 'JURISDICTION_UNSUPPORTED' | 'JURISDICTION_NOT_AVAILABLE' | 'COMPARISON_NOT_ENABLED' | 'COMPARISON_MIN_JURISDICTIONS' | 'COMPARISON_MAX_JURISDICTIONS' | 'COMPARISON_DUPLICATE_JURISDICTION', message: string);
+    readonly code: 'JURISDICTION_REQUIRED' | 'JURISDICTION_UNSUPPORTED' | 'JURISDICTION_NOT_AVAILABLE' | 'COMPARE_MODE_DISABLED' | 'COMPARISON_NOT_ENABLED' | 'COMPARISON_MIN_JURISDICTIONS' | 'COMPARISON_MAX_JURISDICTIONS' | 'COMPARISON_DUPLICATE_JURISDICTION';
+    constructor(code: 'JURISDICTION_REQUIRED' | 'JURISDICTION_UNSUPPORTED' | 'JURISDICTION_NOT_AVAILABLE' | 'COMPARE_MODE_DISABLED' | 'COMPARISON_NOT_ENABLED' | 'COMPARISON_MIN_JURISDICTIONS' | 'COMPARISON_MAX_JURISDICTIONS' | 'COMPARISON_DUPLICATE_JURISDICTION', message: string);
 }
 export declare function resolveJurisdictionContext(input: JurisdictionContractInput, options?: {
     allowLegacyDefault?: boolean;

@@ -62,6 +62,12 @@ export declare const updateOrganizationSchema: z.ZodObject<{
     address: z.ZodOptional<z.ZodString>;
     website: z.ZodOptional<z.ZodString>;
     description: z.ZodOptional<z.ZodString>;
+    homeJurisdictionCode: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+    }>>;
+    homeJurisdictionReason: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export type UpdateOrganizationInput = z.infer<typeof updateOrganizationSchema>;
 /**
@@ -141,6 +147,12 @@ export declare const updateOrganizationSettingsSchema: z.ZodObject<{
     contactPosition: z.ZodOptional<z.ZodString>;
     contactEmail: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodLiteral<"">]>>;
     contactPhone: z.ZodOptional<z.ZodUnion<readonly [z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodLiteral<"">]>>;
+    homeJurisdictionCode: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+    }>>;
+    homeJurisdictionReason: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export type UpdateOrganizationSettingsInput = z.infer<typeof updateOrganizationSettingsSchema>;
 /**

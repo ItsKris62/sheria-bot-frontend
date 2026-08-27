@@ -1844,6 +1844,31 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        getRestrictionStatus: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                userId?: string | undefined;
+            } | undefined;
+            output: import("../../modules/user/restriction.service").RestrictionRecord;
+            meta: object;
+        }>;
+        restrictProcessing: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                userId: string;
+                reason: "ACCURACY_CONTESTED" | "DATA_NO_LONGER_REQUIRED_LEGAL_CLAIM" | "UNLAWFUL_PROCESSING_ERASURE_OPPOSED" | "OBJECTION_PENDING_VERIFICATION";
+                requestId: string;
+                restrictedPurposes?: ("AI_QUERYING" | "DIRECT_MARKETING" | "PRODUCT_TELEMETRY" | "POLICY_GENERATION" | "GAP_ANALYSIS")[] | undefined;
+            };
+            output: import("../../modules/user/restriction.service").RestrictionRecord;
+            meta: object;
+        }>;
+        liftProcessingRestriction: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                userId: string;
+                liftReason: string;
+            };
+            output: import("../../modules/user/restriction.service").RestrictionRecord;
+            meta: object;
+        }>;
     }>>;
     organization: import("@trpc/server").TRPCBuiltRouter<{
         ctx: import("./context").Context;
@@ -1899,6 +1924,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     planStartDate: Date | null;
                     planEndDate: Date | null;
                     maxSeats: number;
+                    homeJurisdictionCode: string | null;
                     stripeCustomerId: string | null;
                     stripeSubId: string | null;
                     customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -1964,6 +1990,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 planStartDate: Date | null;
                 planEndDate: Date | null;
                 maxSeats: number;
+                homeJurisdictionCode: string | null;
                 stripeCustomerId: string | null;
                 stripeSubId: string | null;
                 customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -2023,6 +2050,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 planStartDate: Date | null;
                 planEndDate: Date | null;
                 maxSeats: number;
+                homeJurisdictionCode: string | null;
                 stripeCustomerId: string | null;
                 stripeSubId: string | null;
                 customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -2056,6 +2084,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 address?: string | undefined;
                 website?: string | undefined;
                 description?: string | undefined;
+                homeJurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+                homeJurisdictionReason?: string | undefined;
             };
             output: {
                 type: string;
@@ -2083,6 +2113,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 planStartDate: Date | null;
                 planEndDate: Date | null;
                 maxSeats: number;
+                homeJurisdictionCode: string | null;
                 stripeCustomerId: string | null;
                 stripeSubId: string | null;
                 customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -2230,11 +2261,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         getSettings: import("@trpc/server").TRPCQueryProcedure<{
             input: void;
             output: {
+                currentMemberRole: import(".prisma/client").$Enums.MemberRole | null;
+                canManageOrganizationSettings: boolean;
                 id: string;
                 name: string;
                 registrationNumber: string | null;
                 website: string | null;
                 industry: string | null;
+                homeJurisdictionCode: string | null;
                 address: string | null;
                 contactPerson: string | null;
                 contactPosition: string | null;
@@ -3875,6 +3909,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contactPosition?: string | undefined;
                 contactEmail?: string | undefined;
                 contactPhone?: string | undefined;
+                homeJurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+                homeJurisdictionReason?: string | undefined;
             };
             output: {
                 id: string;
@@ -3882,6 +3918,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 registrationNumber: string | null;
                 website: string | null;
                 industry: string | null;
+                homeJurisdictionCode: string | null;
                 address: string | null;
                 contactPerson: string | null;
                 contactPosition: string | null;
@@ -4087,6 +4124,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     code: "KE" | "MW" | "RW" | "NG";
                     name: string;
                     queryEnabled: boolean;
+                    comparisonEnabled: boolean;
+                    corpusReady: boolean;
                     status: import("../../types/jurisdiction").JurisdictionAvailabilityStatus;
                 }[];
             };
@@ -6554,6 +6593,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     mpesaNextPaymentDueDate: string | null;
                     subscriptionCycleEnd: string | null;
                     mpesaPhoneNumber: string | null;
+                    homeJurisdictionCode: string | null;
                     catalogPrice: Record<"STARTUP" | "BUSINESS", {
                         monthly: number;
                         yearly: number;

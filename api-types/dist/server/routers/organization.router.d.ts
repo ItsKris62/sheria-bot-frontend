@@ -63,6 +63,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 planStartDate: Date | null;
                 planEndDate: Date | null;
                 maxSeats: number;
+                homeJurisdictionCode: string | null;
                 stripeCustomerId: string | null;
                 stripeSubId: string | null;
                 customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -137,6 +138,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
+            homeJurisdictionCode: string | null;
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -201,6 +203,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
+            homeJurisdictionCode: string | null;
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -239,6 +242,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             address?: string | undefined;
             website?: string | undefined;
             description?: string | undefined;
+            homeJurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+            homeJurisdictionReason?: string | undefined;
         };
         output: {
             type: string;
@@ -266,6 +271,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
+            homeJurisdictionCode: string | null;
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -454,11 +460,14 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
     getSettings: import("@trpc/server").TRPCQueryProcedure<{
         input: void;
         output: {
+            currentMemberRole: import(".prisma/client").$Enums.MemberRole | null;
+            canManageOrganizationSettings: boolean;
             id: string;
             name: string;
             registrationNumber: string | null;
             website: string | null;
             industry: string | null;
+            homeJurisdictionCode: string | null;
             address: string | null;
             contactPerson: string | null;
             contactPosition: string | null;
@@ -2104,6 +2113,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             contactPosition?: string | undefined;
             contactEmail?: string | undefined;
             contactPhone?: string | undefined;
+            homeJurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+            homeJurisdictionReason?: string | undefined;
         };
         output: {
             id: string;
@@ -2111,6 +2122,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             registrationNumber: string | null;
             website: string | null;
             industry: string | null;
+            homeJurisdictionCode: string | null;
             address: string | null;
             contactPerson: string | null;
             contactPosition: string | null;

@@ -1,7 +1,7 @@
 export const JURISDICTION_CODES = ["KE", "RW", "MW", "NG"] as const
 
 export type JurisdictionCode = typeof JURISDICTION_CODES[number]
-export type QueryableJurisdictionCode = JurisdictionCode
+export type QueryableJurisdictionCode = Exclude<JurisdictionCode, "NG">
 export type JurisdictionStatus = "ACTIVE" | "COMING_SOON" | "DISABLED"
 
 export type JurisdictionCapability = {
@@ -44,5 +44,5 @@ export function isJurisdictionCode(value: unknown): value is JurisdictionCode {
 }
 
 export function isQueryableJurisdictionCode(value: unknown): value is QueryableJurisdictionCode {
-  return value === "KE" || value === "RW" || value === "MW" || value === "NG"
+  return value === "KE" || value === "RW" || value === "MW"
 }

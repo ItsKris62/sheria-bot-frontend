@@ -7,13 +7,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Building2, Loader2, Save, Info, Users } from "lucide-react"
+import { Building2, CheckCircle2, Loader2, Save, Info, Users } from "lucide-react"
 import { trpc } from "@/lib/trpc"
-import { useProfile } from "@/hooks/use-user"
 import { useAuthStore } from "@/lib/auth-store"
+import {
+  AUDITED_JURISDICTIONS,
+  jurisdictionLabel,
+  type AuditedJurisdictionCode,
+  type JurisdictionCode,
+} from "@/lib/jurisdictions"
 
 type OrgFormData = {
   name: string
@@ -69,8 +75,14 @@ function isDirty(form: OrgFormData, original: OrgFormData): boolean {
   )
 }
 
+type OrganizationSettingsMeta = {
+  id: string
+  homeJurisdictionCode?: JurisdictionCode | null
+  canManageOrganizationSettings?: boolean
+  currentMemberRole?: string | null
+}
+
 export default function OrganizationSettingsPage() {
-  const { data: profile } = useProfile()
   const authRole = useAuthStore((s) => s.user?.role)
   const isRegulator = authRole === "REGULATOR"
 
@@ -90,9 +102,11 @@ export default function OrganizationSettingsPage() {
     onSuccess: () => {
       toast.success("Organization settings updated")
       utils.organization.getSettings.invalidate()
+      utils.billing.getPlanAndUsage.invalidate()
       utils.user.getProfile.invalidate()
       setSavedDataOverride(formData)
       setFormDataOverride(formData)
+      setSelectedJurisdiction("")
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update organization settings")
@@ -105,8 +119,13 @@ export default function OrganizationSettingsPage() {
   )
   const [formDataOverride, setFormDataOverride] = useState<OrgFormData | null>(null)
   const [savedDataOverride, setSavedDataOverride] = useState<OrgFormData | null>(null)
+  const settingsMeta = orgData as (typeof orgData & OrganizationSettingsMeta) | undefined
+  const [selectedJurisdiction, setSelectedJurisdiction] = useState<AuditedJurisdictionCode | "">("")
   const savedData = savedDataOverride ?? remoteSavedData
   const formData = formDataOverride ?? savedData
+  const homeJurisdictionCode = settingsMeta?.homeJurisdictionCode ?? null
+  const canConfirmJurisdiction = Boolean(settingsMeta?.canManageOrganizationSettings) && !isRegulator
+  const needsJurisdictionConfirmation = !homeJurisdictionCode
 
   const handleSave = () => {
     // Only send fields that have changed, allow empty string to clear a field
@@ -117,6 +136,15 @@ export default function OrganizationSettingsPage() {
       }
     })
     updateMutation.mutate(patch)
+  }
+
+  const handleConfirmJurisdiction = () => {
+    if (!settingsMeta?.id || !selectedJurisdiction) return
+
+    updateMutation.mutate({
+      homeJurisdictionCode: selectedJurisdiction,
+      homeJurisdictionReason: "Owner/admin onboarding confirmation",
+    })
   }
 
   const field = (key: keyof OrgFormData) => ({
@@ -175,6 +203,95 @@ export default function OrganizationSettingsPage() {
       )}
 
       <div className="grid gap-6">
+        {!isRegulator && (
+          <Card className="border-border/50 bg-card/50 backdrop-blur">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    <CheckCircle2 className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <CardTitle>Primary Regulatory Jurisdiction</CardTitle>
+                  <CardDescription>
+                    {needsJurisdictionConfirmation
+                      ? "Confirm your organization's primary regulatory jurisdiction"
+                      : `${jurisdictionLabel(homeJurisdictionCode)} is confirmed for regulatory intelligence`}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {needsJurisdictionConfirmation ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    To use SheriaBot&apos;s regulatory intelligence, confirm your organization&apos;s primary regulatory jurisdiction.
+                  </p>
+                  <RadioGroup
+                    value={selectedJurisdiction}
+                    onValueChange={(value) => setSelectedJurisdiction(value as AuditedJurisdictionCode)}
+                    className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+                    disabled={!canConfirmJurisdiction || updateMutation.isPending}
+                  >
+                    {AUDITED_JURISDICTIONS.map((item) => (
+                      <Label
+                        key={item.code}
+                        htmlFor={`home-jurisdiction-${item.code}`}
+                        className="flex min-h-20 cursor-pointer items-center gap-3 rounded-md border border-border/50 bg-muted/20 p-3 text-sm hover:bg-muted/40"
+                      >
+                        <RadioGroupItem id={`home-jurisdiction-${item.code}`} value={item.code} />
+                        <span>
+                          <span className="block font-medium text-foreground">{item.label}</span>
+                          <span className="text-xs text-muted-foreground">Available now</span>
+                        </span>
+                      </Label>
+                    ))}
+                    <div className="flex min-h-20 items-center gap-3 rounded-md border border-dashed border-border/60 bg-muted/20 p-3 text-sm text-muted-foreground">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full border border-border" />
+                      <span>
+                        <span className="block font-medium text-foreground">Nigeria</span>
+                        <span className="text-xs">Coming soon</span>
+                      </span>
+                    </div>
+                  </RadioGroup>
+                  {!canConfirmJurisdiction && (
+                    <p className="text-sm text-muted-foreground">
+                      Ask an organization owner or admin to confirm the jurisdiction.
+                    </p>
+                  )}
+                  {canConfirmJurisdiction && (
+                    <Button
+                      onClick={handleConfirmJurisdiction}
+                      disabled={!selectedJurisdiction || updateMutation.isPending}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      {updateMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Confirming...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          Confirm Jurisdiction
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">{jurisdictionLabel(homeJurisdictionCode)}</Badge>
+                  <span className="text-sm text-muted-foreground">
+                    Compliance Query, Gap Analysis, Checklists, and Policy Generation use this jurisdiction for access control.
+                  </span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {seatUsage && (
           <Card className="border-border/50 bg-card/50 backdrop-blur">
             <CardHeader>
