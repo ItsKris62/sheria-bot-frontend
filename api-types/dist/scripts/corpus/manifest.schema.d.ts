@@ -65,8 +65,8 @@ export declare const DocumentTypeEnum: z.ZodEnum<{
     ACT: "ACT";
     DIRECTIVE: "DIRECTIVE";
     REPORT: "REPORT";
-    FRAMEWORK: "FRAMEWORK";
     CHECKLIST: "CHECKLIST";
+    FRAMEWORK: "FRAMEWORK";
 }>;
 export type DocumentType = z.infer<typeof DocumentTypeEnum>;
 export declare const AuthorityStatusEnum: z.ZodEnum<{
@@ -152,8 +152,8 @@ export declare const CorpusManifestEntrySchema: z.ZodObject<{
         ACT: "ACT";
         DIRECTIVE: "DIRECTIVE";
         REPORT: "REPORT";
-        FRAMEWORK: "FRAMEWORK";
         CHECKLIST: "CHECKLIST";
+        FRAMEWORK: "FRAMEWORK";
     }>;
     authorityStatus: z.ZodEnum<{
         DRAFT: "DRAFT";
@@ -268,8 +268,8 @@ export declare const CorpusManifestSchema: z.ZodObject<{
             ACT: "ACT";
             DIRECTIVE: "DIRECTIVE";
             REPORT: "REPORT";
-            FRAMEWORK: "FRAMEWORK";
             CHECKLIST: "CHECKLIST";
+            FRAMEWORK: "FRAMEWORK";
         }>;
         authorityStatus: z.ZodEnum<{
             DRAFT: "DRAFT";

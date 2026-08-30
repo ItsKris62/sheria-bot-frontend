@@ -242,7 +242,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             address?: string | undefined;
             website?: string | undefined;
             description?: string | undefined;
-            homeJurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+            homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
             homeJurisdictionReason?: string | undefined;
         };
         output: {
@@ -755,6 +755,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     deletedAt: Date | null;
                     summary: import("@prisma/client/runtime/client").JsonValue | null;
+                    citations: import("@prisma/client/runtime/client").JsonValue | null;
+                    jurisdictionCode: string | null;
                     progress: number;
                     dueDate: Date | null;
                     productType: string | null;
@@ -767,6 +769,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     itemProgress: import("@prisma/client/runtime/client").JsonValue | null;
                     completedItems: number;
                     totalItems: number;
+                    evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
                     generatedAt: Date | null;
                     completedAt: Date | null;
                 } | {
@@ -781,6 +784,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     deletedAt: Date | null;
                     summary: import("@prisma/client/runtime/client").JsonValue | null;
+                    citations: import("@prisma/client/runtime/client").JsonValue | null;
+                    jurisdictionCode: string | null;
                     progress: number;
                     dueDate: Date | null;
                     productType: string | null;
@@ -793,6 +798,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     itemProgress: import("@prisma/client/runtime/client").JsonValue | null;
                     completedItems: number;
                     totalItems: number;
+                    evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
                     generatedAt: Date | null;
                     completedAt: Date | null;
                 })[] | ({
@@ -1430,11 +1436,14 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     deletedAt: Date | null;
                     name: string;
+                    generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
                     version: number;
                     category: string | null;
                     publishedAt: Date | null;
                     slug: string;
+                    citations: import("@prisma/client/runtime/client").JsonValue | null;
                     regulator: string | null;
+                    evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
                     jurisdiction: string | null;
                     archivedAt: Date | null;
                     createdByUserId: string;
@@ -1448,11 +1457,14 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     deletedAt: Date | null;
                     name: string;
+                    generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
                     version: number;
                     category: string | null;
                     publishedAt: Date | null;
                     slug: string;
+                    citations: import("@prisma/client/runtime/client").JsonValue | null;
                     regulator: string | null;
+                    evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
                     jurisdiction: string | null;
                     archivedAt: Date | null;
                     createdByUserId: string;
@@ -1624,6 +1636,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     deletedAt: Date | null;
                     summary: import("@prisma/client/runtime/client").JsonValue | null;
+                    citations: import("@prisma/client/runtime/client").JsonValue | null;
+                    jurisdictionCode: string | null;
                     progress: number;
                     dueDate: Date | null;
                     productType: string | null;
@@ -1636,6 +1650,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     itemProgress: import("@prisma/client/runtime/client").JsonValue | null;
                     completedItems: number;
                     totalItems: number;
+                    evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
                     generatedAt: Date | null;
                     completedAt: Date | null;
                 }[] | {
@@ -1960,11 +1975,14 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     deletedAt: Date | null;
                     name: string;
+                    generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
                     version: number;
                     category: string | null;
                     publishedAt: Date | null;
                     slug: string;
+                    citations: import("@prisma/client/runtime/client").JsonValue | null;
                     regulator: string | null;
+                    evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
                     jurisdiction: string | null;
                     archivedAt: Date | null;
                     createdByUserId: string;
@@ -2113,7 +2131,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             contactPosition?: string | undefined;
             contactEmail?: string | undefined;
             contactPhone?: string | undefined;
-            homeJurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+            homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
             homeJurisdictionReason?: string | undefined;
         };
         output: {

@@ -91,7 +91,7 @@ const STATUS_LABELS: Record<string, { label: string; description: string }> = {
   UPLOADING:  { label: "Uploading document",              description: "Transferring your file to secure storage..." },
   QUEUED:     { label: "Queued for analysis",             description: "Your analysis is queued and will start shortly..." },
   EXTRACTING: { label: "Extracting text",                 description: "Reading and parsing your policy document..." },
-  ANALYZING:  { label: "Analysing against frameworks",    description: "Comparing your policies against Kenyan regulatory requirements..." },
+  ANALYZING:  { label: "Analysing against frameworks",    description: "Comparing your policies against applicable regulatory requirements..." },
   COMPLETING: { label: "Finalising results",              description: "Compiling your gap analysis report..." },
   COMPLETED:  { label: "Analysis complete",               description: "Your gap analysis is ready to view." },
   FAILED:     { label: "Analysis failed",                 description: "An error occurred during analysis." },
@@ -471,7 +471,7 @@ function AnalysisResultsView({
         <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm dark:border-yellow-800/50 dark:bg-yellow-900/20">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-600 dark:text-yellow-400" />
           <p className="text-yellow-800 dark:text-yellow-300">
-            <span className="font-semibold">Limited regulatory grounding.</span> This analysis was generated without access to the SheriaBot regulatory document database. Results are based on AI training knowledge only and may not reflect the latest Kenyan regulations or recent amendments. Consider re-running the analysis when the service is available.
+              <span className="font-semibold">Limited regulatory grounding.</span> This saved analysis does not contain verified SheriaBot regulatory evidence and may not reflect the latest applicable regulations or amendments. Consider re-running the analysis when the service is available.
           </p>
         </div>
       )}
@@ -520,7 +520,7 @@ function AnalysisResultsView({
             <ScoreGauge score={overallScore} />
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-semibold text-foreground text-lg">Overall Compliance Score</h3>
+                <h3 className="font-semibold text-foreground text-lg">Regulatory Readiness Score</h3>
                 <Badge variant="outline" className={scoreConfig.bg + " " + scoreConfig.text + " border-current"}>
                   {getScoreLabel(overallScore)}
                 </Badge>
@@ -778,7 +778,7 @@ function AnalysisResultsView({
                 <BarChart3 className="h-5 w-5 text-primary" />
                 Prioritised Action Plan
               </CardTitle>
-              <CardDescription>Address these items to improve your compliance score</CardDescription>
+              <CardDescription>Address these items to improve your regulatory readiness score</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {actionPlan.map((item) => {
@@ -1308,7 +1308,7 @@ export default function GapAnalysisPage() {
         <div className="min-w-0">
           <h1 className="text-2xl font-bold text-foreground">Policy Gap Analysis</h1>
           <p className="text-muted-foreground mt-1">
-            Upload your policy documents and compare them against Kenyan regulatory requirements using AI.
+              Upload your policy documents and compare them against applicable regulatory requirements using AI.
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => utils.gapAnalysis.getGapAnalyses.invalidate()} className="shrink-0">
@@ -1618,8 +1618,8 @@ export default function GapAnalysisPage() {
                 className="mt-0.5 h-4 w-4 shrink-0 rounded border-input accent-primary cursor-pointer"
               />
               <span className="text-sm text-slate-400 leading-relaxed">
-                I understand that my document will be processed using AI services hosted outside Kenya,
-                in accordance with SheriaBot&apos;s Privacy Policy and the Data Protection Act 2019.
+                I understand that my document may be processed using AI services hosted outside my home jurisdiction,
+                in accordance with SheriaBot&apos;s Privacy Policy and applicable data-protection law.
               </span>
             </label>
 
@@ -1729,7 +1729,7 @@ export default function GapAnalysisPage() {
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">Disclaimer:</strong> This gap analysis is AI-generated guidance grounded in Kenyan regulations.
+              <strong className="text-foreground">Disclaimer:</strong> This gap analysis is AI-generated guidance grounded in the selected jurisdiction&apos;s regulations.
               It is intended as a starting point and should be reviewed by a qualified compliance officer or legal counsel before taking action.
               SheriaBot does not provide legal advice.
             </p>

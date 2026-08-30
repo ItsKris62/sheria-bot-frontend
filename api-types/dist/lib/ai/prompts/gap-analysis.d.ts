@@ -1,9 +1,11 @@
 /**
  * Gap Analysis Generation Prompts
  * AI prompts for comparing uploaded policy documents against
- * Kenyan regulatory requirements using RAG-retrieved context.
+ * jurisdiction-scoped regulatory requirements using RAG-retrieved context.
  */
 import { z } from 'zod';
+import { type JurisdictionContext } from '@/types/jurisdiction';
+export type { JurisdictionContext };
 export interface GapAnalysisParams {
     policyText: string;
     documentName: string;
@@ -13,6 +15,7 @@ export interface GapAnalysisParams {
     analysisDepth: 'quick' | 'standard' | 'deep';
     focusAreas?: string[];
     ragContext?: string;
+    jurisdictionContext?: JurisdictionContext;
 }
 export interface BenchmarkDocumentSummary {
     id: string;
@@ -106,7 +109,7 @@ export declare const ActionPlanItemSchema: z.ZodObject<{
         HIGH: "HIGH";
     }>;
     resources: z.ZodArray<z.ZodString>;
-    dependsOn: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    dependsOn: z.ZodDefault<z.ZodArray<z.ZodUnion<readonly [z.ZodString, z.ZodPipe<z.ZodNumber, z.ZodTransform<string, number>>]>>>;
     responsibleRole: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export declare const GapAnalysisResultSchema: z.ZodObject<{
@@ -165,7 +168,7 @@ export declare const GapAnalysisResultSchema: z.ZodObject<{
             HIGH: "HIGH";
         }>;
         resources: z.ZodArray<z.ZodString>;
-        dependsOn: z.ZodDefault<z.ZodArray<z.ZodString>>;
+        dependsOn: z.ZodDefault<z.ZodArray<z.ZodUnion<readonly [z.ZodString, z.ZodPipe<z.ZodNumber, z.ZodTransform<string, number>>]>>>;
         responsibleRole: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>>;
     metadata: z.ZodObject<{
@@ -178,18 +181,39 @@ export declare const GapAnalysisResultSchema: z.ZodObject<{
         mediumGaps: z.ZodOptional<z.ZodNumber>;
         lowGaps: z.ZodOptional<z.ZodNumber>;
         analysisDate: z.ZodString;
-        selectedBenchmarkDocuments: z.ZodDefault<z.ZodArray<z.ZodObject<{
-            id: z.ZodString;
+        calculatedScore: z.ZodOptional<z.ZodNumber>;
+        scoringVersion: z.ZodOptional<z.ZodString>;
+        modelSuggestedScore: z.ZodOptional<z.ZodNumber>;
+        selectedBenchmarkDocuments: z.ZodDefault<z.ZodArray<z.ZodUnion<readonly [z.ZodPipe<z.ZodString, z.ZodTransform<{
+            id: string;
+            title: string;
+            documentType: null;
+            regulatoryBody: null;
+        }, string>>, z.ZodObject<{
+            id: z.ZodDefault<z.ZodOptional<z.ZodString>>;
             title: z.ZodString;
             documentType: z.ZodOptional<z.ZodNullable<z.ZodString>>;
             regulatoryBody: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-        }, z.core.$strip>>>;
+        }, z.core.$strip>]>>>;
         chunksProcessed: z.ZodOptional<z.ZodNumber>;
         tokenCost: z.ZodOptional<z.ZodObject<{
             inputTokens: z.ZodNumber;
             outputTokens: z.ZodNumber;
             estimatedCostUsd: z.ZodNumber;
         }, z.core.$strip>>;
+        jurisdictionCode: z.ZodOptional<z.ZodNullable<z.ZodEnum<{
+            KE: "KE";
+            MW: "MW";
+            RW: "RW";
+            NG: "NG";
+        }>>>;
+        verifierStatus: z.ZodOptional<z.ZodEnum<{
+            PARTIAL: "PARTIAL";
+            PASS: "PASS";
+            FAIL: "FAIL";
+        }>>;
+        unsupportedClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        retrievalVersion: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>;
 }, z.core.$strip>;
 /**
@@ -309,7 +333,7 @@ export declare function sanitizePolicyText(text: string): {
 /**
  * System prompt for gap analysis (T4: expanded regulation list).
  */
-export declare function generateGapAnalysisSystemPrompt(): string;
+export declare function generateGapAnalysisSystemPrompt(jurisdictionContext?: JurisdictionContext): string;
 /**
  * User prompt for the first-pass per-chunk phase.
  * Only identifies gaps in the given chunk  -  no scoring or consolidation.
@@ -328,6 +352,33 @@ export declare function generateMergeUserPrompt(rawGaps: unknown[], params: Omit
  * User prompt for gap analysis  -  used for single-pass (document <= CHUNK_SIZE).
  */
 export declare function generateGapAnalysisUserPrompt(params: GapAnalysisParams): string;
+export declare const GAP_SCORING_VERSION = "v1.0-deterministic";
+export interface DeterministicScoreBreakdown {
+    calculatedScore: number;
+    modelSuggestedScore?: number;
+    scoringVersion: string;
+    penalties: {
+        critical: number;
+        high: number;
+        medium: number;
+        low: number;
+        totalPenalty: number;
+    };
+    gapCounts: {
+        critical: number;
+        high: number;
+        medium: number;
+        low: number;
+        total: number;
+    };
+}
+/**
+ * Authoritative deterministic score calculation for policy gap analysis.
+ * Formula: 100 - (25 * CRITICAL) - (15 * HIGH) - (8 * MEDIUM) - (3 * LOW), clamped to [0, 100].
+ */
+export declare function calculateDeterministicGapScore(gaps: Array<{
+    severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+}>, modelSuggestedScore?: number): DeterministicScoreBreakdown;
 /**
  * Parse and validate AI gap analysis output using Zod (T3).
  * Falls back to regex JSON extraction if the response contains surrounding text.

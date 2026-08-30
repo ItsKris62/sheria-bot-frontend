@@ -72,14 +72,13 @@ describe("OrganizationSettingsPage jurisdiction onboarding", () => {
     }
   })
 
-  it("lets an owner confirm a missing primary jurisdiction without offering Nigeria", () => {
+  it("lets an owner confirm a missing primary jurisdiction including Nigeria", () => {
     render(<OrganizationSettingsPage />)
 
     expect(
       screen.getByText("Confirm your organization's primary regulatory jurisdiction"),
     ).toBeInTheDocument()
-    expect(screen.getByText("Nigeria")).toBeInTheDocument()
-    expect(screen.queryByRole("radio", { name: /Nigeria/i })).not.toBeInTheDocument()
+    expect(screen.getByRole("radio", { name: /Nigeria/i })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole("radio", { name: /Rwanda/i }))
     fireEvent.click(screen.getByRole("button", { name: /Confirm Jurisdiction/i }))

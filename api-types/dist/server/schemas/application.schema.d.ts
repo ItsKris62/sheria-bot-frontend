@@ -3,6 +3,7 @@ export declare const jurisdictionCodeSchema: z.ZodEnum<{
     KE: "KE";
     MW: "MW";
     RW: "RW";
+    NG: "NG";
 }>;
 export declare const applicationCurrencySchema: z.ZodEnum<{
     [x: string]: string;
@@ -34,6 +35,7 @@ export declare const listApplicationsSchema: z.ZodObject<{
         KE: "KE";
         MW: "MW";
         RW: "RW";
+        NG: "NG";
     }>>;
     status: z.ZodOptional<z.ZodEnum<{
         DRAFT: "DRAFT";
@@ -55,6 +57,7 @@ export declare const createApplicationSchema: z.ZodObject<{
         KE: "KE";
         MW: "MW";
         RW: "RW";
+        NG: "NG";
     }>>;
     regulator: z.ZodString;
     licenseType: z.ZodString;
@@ -78,6 +81,7 @@ export declare const updateApplicationSchema: z.ZodObject<{
         KE: "KE";
         MW: "MW";
         RW: "RW";
+        NG: "NG";
     }>>>;
     regulator: z.ZodOptional<z.ZodString>;
     licenseType: z.ZodOptional<z.ZodString>;

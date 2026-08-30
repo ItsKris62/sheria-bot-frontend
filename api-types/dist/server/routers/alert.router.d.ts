@@ -30,7 +30,7 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
             regulatoryBody: "GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA" | "BNR" | "RURA" | "RISA" | "RWANDA_GAZETTE" | "RBM" | "MACRA" | "MALAWI_GAZETTE";
             category: "DATA_PROTECTION" | "AML_CFT" | "PRUDENTIAL" | "LICENSING" | "CAPITAL_MARKETS" | "GENERAL";
             sourceUrl?: string | undefined;
-            jurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+            jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
             severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
             effectiveDate?: string | undefined;
             expiresAt?: string | undefined;
@@ -66,7 +66,7 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             page?: number | undefined;
             limit?: number | undefined;
-            jurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+            jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
             regulatoryBody?: "GAZETTE" | "CBK" | "CMA" | "ODPC" | "CA" | "BNR" | "RURA" | "RISA" | "RWANDA_GAZETTE" | "RBM" | "MACRA" | "MALAWI_GAZETTE" | undefined;
             severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
             unreadOnly?: boolean | undefined;
@@ -108,7 +108,7 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
             emailEnabled: boolean;
             inAppEnabled: boolean;
             emailFrequency: "REALTIME" | "DAILY" | "WEEKLY";
-            jurisdictions?: ("KE" | "MW" | "RW")[] | undefined;
+            jurisdictions?: ("KE" | "MW" | "RW" | "NG")[] | undefined;
         };
         output: {
             emailFrequency: string;

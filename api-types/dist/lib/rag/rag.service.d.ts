@@ -17,6 +17,8 @@ export interface DocumentToIndex {
     jurisdiction?: string;
     country?: string;
     authorityStatus?: string;
+    approvalStatus?: 'APPROVED';
+    provenanceConfidence?: string;
     isBinding?: boolean;
     source?: string;
     version?: string;
@@ -100,6 +102,7 @@ export interface RegulatoryEvidenceSearchOptions {
     jurisdictionContext: JurisdictionContext;
     topK?: number;
     minScore?: number;
+    filter?: Record<string, any>;
     namespace?: string;
     preferActiveSources?: boolean;
     sourceIndexMode?: SearchOptions['sourceIndexMode'];

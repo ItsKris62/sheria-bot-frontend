@@ -1,6 +1,7 @@
+import { type JurisdictionContext } from '@/types/jurisdiction';
 /**
  * Policy Generation Prompt Templates
- * Generates comprehensive policy frameworks based on Kenyan regulations
+ * Generates comprehensive policy frameworks based on retrieved regulatory evidence.
  */
 /**
  * Policy generation request parameters
@@ -13,11 +14,12 @@ export interface PolicyGenerationParams {
     targetAudience?: string;
     existingPolicies?: string;
     ragContext?: string;
+    jurisdictionContext?: JurisdictionContext;
 }
 /**
  * Generate system prompt for policy generation
  */
-export declare function generatePolicySystemPrompt(): string;
+export declare function generatePolicySystemPrompt(jurisdictionContext?: JurisdictionContext): string;
 /**
  * Generate user prompt for policy generation
  */

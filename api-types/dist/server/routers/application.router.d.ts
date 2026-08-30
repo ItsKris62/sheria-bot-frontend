@@ -18,7 +18,7 @@ export declare const applicationRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             page?: number | undefined;
             limit?: number | undefined;
-            jurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+            jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
             status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "REJECTED" | "AWAITING_FEEDBACK" | "WITHDRAWN" | undefined;
             search?: string | undefined;
         };
@@ -145,7 +145,7 @@ export declare const applicationRouter: import("@trpc/server").TRPCBuiltRouter<{
             title: string;
             regulator: string;
             licenseType: string;
-            jurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+            jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
             status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "REJECTED" | "AWAITING_FEEDBACK" | "WITHDRAWN" | undefined;
             progress?: number | undefined;
             referenceNumber?: string | undefined;
@@ -177,7 +177,7 @@ export declare const applicationRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             id: string;
             title?: string | undefined;
-            jurisdictionCode?: "KE" | "MW" | "RW" | undefined;
+            jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
             regulator?: string | undefined;
             licenseType?: string | undefined;
             status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "REJECTED" | "AWAITING_FEEDBACK" | "WITHDRAWN" | undefined;

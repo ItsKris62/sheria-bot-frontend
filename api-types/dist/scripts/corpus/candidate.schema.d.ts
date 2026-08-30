@@ -81,8 +81,8 @@ export declare const CandidateEntrySchema: z.ZodObject<{
         ACT: "ACT";
         DIRECTIVE: "DIRECTIVE";
         REPORT: "REPORT";
-        FRAMEWORK: "FRAMEWORK";
         CHECKLIST: "CHECKLIST";
+        FRAMEWORK: "FRAMEWORK";
     }>;
     suggestedAuthorityStatus: z.ZodEnum<{
         DRAFT: "DRAFT";
@@ -179,8 +179,8 @@ export declare const CandidateManifestSchema: z.ZodObject<{
             ACT: "ACT";
             DIRECTIVE: "DIRECTIVE";
             REPORT: "REPORT";
-            FRAMEWORK: "FRAMEWORK";
             CHECKLIST: "CHECKLIST";
+            FRAMEWORK: "FRAMEWORK";
         }>;
         suggestedAuthorityStatus: z.ZodEnum<{
             DRAFT: "DRAFT";

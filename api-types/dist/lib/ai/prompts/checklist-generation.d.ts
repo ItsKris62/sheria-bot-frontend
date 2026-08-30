@@ -1,9 +1,10 @@
 /**
  * Compliance Checklist Generation Prompts
  * AI prompts for generating RAG-grounded compliance checklists
- * for Kenyan fintech regulatory requirements.
+ * for jurisdiction-scoped fintech regulatory requirements.
  */
 import { z } from 'zod';
+import { type JurisdictionContext } from '@/types/jurisdiction';
 export interface ChecklistGenerationParams {
     productType: string;
     businessStage: string;
@@ -12,6 +13,7 @@ export interface ChecklistGenerationParams {
     additionalConcerns?: string;
     ragContext?: string;
     ragSourcesUsed?: number;
+    jurisdictionContext?: JurisdictionContext;
 }
 export declare const ChecklistItemSchema: z.ZodObject<{
     id: z.ZodOptional<z.ZodString>;
@@ -81,6 +83,15 @@ export declare const GeneratedChecklistSchema: z.ZodObject<{
         estimatedCompletionDays: z.ZodNumber;
         generatedAt: z.ZodString;
         ragSourcesUsed: z.ZodNumber;
+        generationStatus: z.ZodDefault<z.ZodEnum<{
+            FAILED: "FAILED";
+            COMPLETE: "COMPLETE";
+            PARTIAL: "PARTIAL";
+        }>>;
+        generationComplete: z.ZodDefault<z.ZodBoolean>;
+        expectedCategories: z.ZodOptional<z.ZodNumber>;
+        completedCategories: z.ZodOptional<z.ZodNumber>;
+        truncated: z.ZodDefault<z.ZodBoolean>;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export type ChecklistItem = z.infer<typeof ChecklistItemSchema>;
@@ -89,7 +100,7 @@ export type GeneratedChecklist = z.infer<typeof GeneratedChecklistSchema>;
 /**
  * System prompt establishing the AI persona and output contract.
  */
-export declare function generateChecklistSystemPrompt(): string;
+export declare function generateChecklistSystemPrompt(jurisdictionContext?: JurisdictionContext): string;
 /**
  * User prompt with full context for checklist generation.
  */
@@ -156,6 +167,15 @@ export declare const Tier1ResponseSchema: z.ZodObject<{
         estimatedCompletionDays: z.ZodNumber;
         generatedAt: z.ZodString;
         ragSourcesUsed: z.ZodNumber;
+        generationStatus: z.ZodDefault<z.ZodEnum<{
+            FAILED: "FAILED";
+            COMPLETE: "COMPLETE";
+            PARTIAL: "PARTIAL";
+        }>>;
+        generationComplete: z.ZodDefault<z.ZodBoolean>;
+        expectedCategories: z.ZodOptional<z.ZodNumber>;
+        completedCategories: z.ZodOptional<z.ZodNumber>;
+        truncated: z.ZodDefault<z.ZodBoolean>;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const Tier2ResponseSchema: z.ZodObject<{
@@ -189,6 +209,15 @@ export declare const Tier2ResponseSchema: z.ZodObject<{
         estimatedCompletionDays: z.ZodNumber;
         generatedAt: z.ZodString;
         ragSourcesUsed: z.ZodNumber;
+        generationStatus: z.ZodDefault<z.ZodEnum<{
+            FAILED: "FAILED";
+            COMPLETE: "COMPLETE";
+            PARTIAL: "PARTIAL";
+        }>>;
+        generationComplete: z.ZodDefault<z.ZodBoolean>;
+        expectedCategories: z.ZodOptional<z.ZodNumber>;
+        completedCategories: z.ZodOptional<z.ZodNumber>;
+        truncated: z.ZodDefault<z.ZodBoolean>;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const Tier3ResponseSchema: z.ZodObject<{
@@ -224,17 +253,30 @@ export declare const Tier3ResponseSchema: z.ZodObject<{
         ragSourcesUsed: z.ZodOptional<z.ZodNumber>;
     }, z.core.$strip>>;
 }, z.core.$strip>;
-export declare function buildTier1Prompt(input: Pick<ChecklistGenerationParams, 'productType' | 'businessStage' | 'targetSegments' | 'servicesOffered' | 'additionalConcerns'>, passages: RagPassage[]): {
+export declare function buildTier1Prompt(input: Pick<ChecklistGenerationParams, 'productType' | 'businessStage' | 'targetSegments' | 'servicesOffered' | 'additionalConcerns' | 'jurisdictionContext'>, passages: RagPassage[]): {
     system: string;
     user: string;
 };
-export declare function buildTier2Prompt(input: Pick<ChecklistGenerationParams, 'productType' | 'businessStage' | 'targetSegments' | 'servicesOffered' | 'additionalConcerns'>, passages: RagPassage[]): {
+export declare function buildTier2Prompt(input: Pick<ChecklistGenerationParams, 'productType' | 'businessStage' | 'targetSegments' | 'servicesOffered' | 'additionalConcerns' | 'jurisdictionContext'>, passages: RagPassage[]): {
     system: string;
     user: string;
 };
-export declare function buildTier3Prompt(input: Pick<ChecklistGenerationParams, 'productType' | 'businessStage' | 'targetSegments' | 'servicesOffered' | 'additionalConcerns'>): {
+export declare function buildTier3Prompt(input: Pick<ChecklistGenerationParams, 'productType' | 'businessStage' | 'targetSegments' | 'servicesOffered' | 'additionalConcerns' | 'jurisdictionContext'>): {
     system: string;
     user: string;
+};
+/**
+ * Deterministically deduplicate checklist items across/within categories.
+ * Identifies duplicate obligations based on normalized title & legalBasis.
+ */
+export declare function deduplicateChecklistCategories(categories: ChecklistCategory[]): {
+    categories: ChecklistCategory[];
+    duplicatesRemoved: number;
+    duplicateLog: Array<{
+        originalTitle: string;
+        duplicateTitle: string;
+        category: string;
+    }>;
 };
 /**
  * Parse and validate raw AI output for a given generation tier.

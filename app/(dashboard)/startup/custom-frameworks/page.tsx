@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { AlertCircle, ArrowRight, Layers3, Plus, RefreshCw } from "lucide-react"
+import { AlertCircle, ArrowRight, Layers3, Plus, RefreshCw, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { FeatureGate, LockedFeatureCard } from "@/components/plan/feature-gate"
 import { getErrorMessage, trpc } from "@/lib/trpc"
-import { AUDITED_JURISDICTIONS, jurisdictionLabel, type AuditedJurisdictionCode } from "@/lib/jurisdictions"
+import { jurisdictionLabel } from "@/lib/jurisdictions"
 
 type FrameworkStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED"
 
@@ -24,7 +24,7 @@ function formatDate(value: Date | string) {
 export default function CustomFrameworksPage() {
   const [status, setStatus] = useState<FrameworkStatus | "ALL">("ALL")
   const [name, setName] = useState("")
-  const [jurisdiction, setJurisdiction] = useState<AuditedJurisdictionCode>("KE")
+  const [intent, setIntent] = useState("")
   const [regulator, setRegulator] = useState("")
   const [category, setCategory] = useState("")
   const [description, setDescription] = useState("")
@@ -34,13 +34,20 @@ export default function CustomFrameworksPage() {
     onSuccess: async () => {
       toast.success("Custom framework created")
       setName("")
-      setJurisdiction("KE")
       setRegulator("")
       setCategory("")
       setDescription("")
       await query.refetch()
     },
     onError: (error) => toast.error("Create failed", { description: getErrorMessage(error) }),
+  })
+  const generate = trpc.customFramework.generate.useMutation({
+    onSuccess: async () => {
+      toast.success("Source-grounded framework generated")
+      setIntent("")
+      await query.refetch()
+    },
+    onError: (error) => toast.error("Generation failed", { description: getErrorMessage(error) }),
   })
 
   const frameworks = query.data ?? []
@@ -131,24 +138,34 @@ export default function CustomFrameworksPage() {
 
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-base">Create Draft</CardTitle>
+              <CardTitle className="text-base">Generate from regulatory evidence</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="framework-intent">Framework intent</Label>
+                <Textarea
+                  id="framework-intent"
+                  placeholder="Create a regulatory compliance framework covering payment service provider obligations."
+                  value={intent}
+                  onChange={(event) => setIntent(event.target.value)}
+                />
+              </div>
+              <Button
+                className="w-full"
+                disabled={generate.isPending || intent.trim().length < 20}
+                onClick={() => generate.mutate({ intent })}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate Home-Country Framework
+              </Button>
+              <div className="border-t border-border/50 pt-4 text-xs text-muted-foreground">
+                Or create an empty home-country draft for manual authoring.
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="framework-name">Name</Label>
                 <Input id="framework-name" value={name} onChange={(event) => setName(event.target.value)} />
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                <Select value={jurisdiction} onValueChange={(value) => setJurisdiction(value as AuditedJurisdictionCode)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Jurisdiction" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AUDITED_JURISDICTIONS.map((item) => (
-                      <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 <Input placeholder="Regulator" value={regulator} onChange={(event) => setRegulator(event.target.value)} />
                 <Input placeholder="Category" value={category} onChange={(event) => setCategory(event.target.value)} />
               </div>
@@ -158,7 +175,6 @@ export default function CustomFrameworksPage() {
                 disabled={create.isPending || name.trim().length < 2}
                 onClick={() => create.mutate({
                   name,
-                  jurisdiction,
                   regulator: regulator || null,
                   category: category || null,
                   description: description || null,

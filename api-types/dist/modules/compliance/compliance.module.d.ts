@@ -13,10 +13,12 @@
 import { Prisma } from '@prisma/client';
 import type { GeneratedChecklist } from '@/lib/ai/prompts/checklist-generation';
 import type { BenchmarkDocumentSummary, GapAnalysisResult } from '@/lib/ai/prompts/gap-analysis';
+import { type JurisdictionContext } from '@/types/jurisdiction';
 import { type ComplianceQueryParams, type ComplianceQueryResult, type QuickCheckResult, type QueryFilters, type PaginatedQueries, type ComplianceScore, type ScoreHistory, type ComplianceGap, type ComplianceRoadmap, type Requirement, type RequirementParams, type RequirementStatus, type RequirementFilters, type Evidence, type UpcomingDeadline, type RiskScenario, type RiskAssessment, type RiskReport, type RegulatoryUpdate, type UpdateSubscription, type RegulatoryArea } from './compliance.types';
 interface GapAnalysisPipelineParams {
     analysisId: string;
     userId: string;
+    organizationId?: string;
     trialUserId?: string;
     fileName: string;
     fileContent: string;
@@ -25,6 +27,7 @@ interface GapAnalysisPipelineParams {
     regulatoryFrameworkSlugs?: string[];
     benchmarkDocumentIds?: string[];
     benchmarkDocuments?: BenchmarkDocumentSummary[];
+    jurisdictionContext: JurisdictionContext;
     analysisDepth: 'quick' | 'standard' | 'deep';
     focusAreas?: string[];
     ipAddress?: string;
@@ -231,6 +234,7 @@ declare class ComplianceModule {
         servicesOffered: string[];
         additionalConcerns?: string;
         organizationId: string;
+        jurisdictionContext: JurisdictionContext;
     }): Promise<{
         id: string;
         title: string;
@@ -314,6 +318,7 @@ declare class ComplianceModule {
         ipAddress?: string;
         userAgent?: string;
         trialUserId?: string;
+        jurisdictionContext: JurisdictionContext;
     }): Promise<{
         id: string;
         status: string;

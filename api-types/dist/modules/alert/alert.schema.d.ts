@@ -1,5 +1,5 @@
 import { z } from 'zod';
-export declare const ALERT_JURISDICTIONS: readonly ["KE", "RW", "MW"];
+export declare const ALERT_JURISDICTIONS: readonly ["KE", "RW", "MW", "NG"];
 export declare const REGULATORY_BODIES: readonly ["CBK", "CMA", "ODPC", "CA", "GAZETTE", "BNR", "RURA", "RISA", "RWANDA_GAZETTE", "RBM", "MACRA", "MALAWI_GAZETTE"];
 export declare const ALERT_CATEGORIES: readonly ["PRUDENTIAL", "DATA_PROTECTION", "AML_CFT", "LICENSING", "CAPITAL_MARKETS", "GENERAL"];
 export declare const ALERT_SEVERITIES: readonly ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
@@ -13,6 +13,7 @@ export declare const createAlertSchema: z.ZodObject<{
         KE: "KE";
         MW: "MW";
         RW: "RW";
+        NG: "NG";
     }>>;
     regulatoryBody: z.ZodEnum<{
         GAZETTE: "GAZETTE";
@@ -52,6 +53,7 @@ export declare const getAlertsSchema: z.ZodObject<{
         KE: "KE";
         MW: "MW";
         RW: "RW";
+        NG: "NG";
     }>>;
     regulatoryBody: z.ZodOptional<z.ZodEnum<{
         GAZETTE: "GAZETTE";
@@ -80,6 +82,7 @@ export declare const upsertSubscriptionSchema: z.ZodObject<{
         KE: "KE";
         MW: "MW";
         RW: "RW";
+        NG: "NG";
     }>>>;
     regulatoryBodies: z.ZodArray<z.ZodEnum<{
         GAZETTE: "GAZETTE";

@@ -1,5 +1,5 @@
 import { BillingMetric, MemberRole } from '@prisma/client';
-import type { OrgMembershipEntry } from './context';
+import type { Context, OrgMembershipEntry, User } from './context';
 import type { FeatureKey } from '@/config/entitlements.config';
 /**
  * Logging Middleware (Fixed Error Handling)
@@ -7,12 +7,12 @@ import type { FeatureKey } from '@/config/entitlements.config';
  * instead of relying on a try/catch block.
  */
 export declare const loggedMiddlewareHandler: ({ ctx, path, type, next }: any) => Promise<any>;
-export declare const logged: import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, unknown, unknown>;
+export declare const logged: import("@trpc/server").TRPCMiddlewareBuilder<Context, object, unknown, unknown>;
 /**
  * Authentication Middleware
  */
-export declare const isAuthenticated: import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
-    user: import("./context").User;
+export declare const isAuthenticated: import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
+    user: User;
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
@@ -65,10 +65,10 @@ export declare const isAuthenticated: import("@trpc/server").TRPCMiddlewareBuild
 /**
  * Role-based Middlewares
  */
-export declare const isAdmin: import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+export declare const isAdmin: import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    user: import("./context").User | null;
+    user: User | null;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
@@ -116,10 +116,10 @@ export declare const isAdmin: import("@trpc/server").TRPCMiddlewareBuilder<impor
     } | undefined;
     orgMembership: OrgMembershipEntry | undefined;
 }, unknown>;
-export declare const isRegulator: import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+export declare const isRegulator: import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    user: import("./context").User | null;
+    user: User | null;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
@@ -167,10 +167,10 @@ export declare const isRegulator: import("@trpc/server").TRPCMiddlewareBuilder<i
     } | undefined;
     orgMembership: OrgMembershipEntry | undefined;
 }, unknown>;
-export declare const isStartup: import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+export declare const isStartup: import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    user: import("./context").User | null;
+    user: User | null;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
@@ -218,10 +218,10 @@ export declare const isStartup: import("@trpc/server").TRPCMiddlewareBuilder<imp
     } | undefined;
     orgMembership: OrgMembershipEntry | undefined;
 }, unknown>;
-export declare const isEnterprise: import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+export declare const isEnterprise: import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    user: import("./context").User | null;
+    user: User | null;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
@@ -279,10 +279,10 @@ export declare const rateLimited: (action: string, maxRequests?: number, opts?: 
             ip: string;
         };
     }) => string;
-}) => import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+}) => import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    user: import("./context").User | null;
+    user: User | null;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
@@ -338,7 +338,7 @@ export declare const rateLimited: (action: string, maxRequests?: number, opts?: 
  * Use as: protectedProcedure.use(requireOrgMember)
  * Must run AFTER isAuthenticated.
  */
-export declare const requireOrgMember: import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+export declare const requireOrgMember: import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     orgMember: {
         id: string;
         userId: string;
@@ -353,7 +353,7 @@ export declare const requireOrgMember: import("@trpc/server").TRPCMiddlewareBuil
     };
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    user: import("./context").User | null;
+    user: User | null;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
@@ -389,10 +389,10 @@ export declare const requireOrgMember: import("@trpc/server").TRPCMiddlewareBuil
     incrementUsage: (() => Promise<void>) | undefined;
     orgMembership: OrgMembershipEntry | undefined;
 }, unknown>;
-export declare const requireMemberRole: (allowedRoles: MemberRole[]) => import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+export declare const requireMemberRole: (allowedRoles: MemberRole[]) => import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    user: import("./context").User | null;
+    user: User | null;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
@@ -457,11 +457,11 @@ export declare const requireMemberRole: (allowedRoles: MemberRole[]) => import("
  *
  * Must run AFTER isAuthenticated.
  */
-export declare const requireOrgMembership: import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+export declare const requireOrgMembership: import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     orgMembership: OrgMembershipEntry;
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    user: import("./context").User | null;
+    user: User | null;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
@@ -516,10 +516,10 @@ export declare const requireOrgMembership: import("@trpc/server").TRPCMiddleware
  *
  * Usage: orgMemberProcedure.use(requireOrgMembershipRole([MemberRole.ADMIN, MemberRole.OWNER]))
  */
-export declare const requireOrgMembershipRole: (allowedRoles: MemberRole[]) => import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+export declare const requireOrgMembershipRole: (allowedRoles: MemberRole[]) => import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    user: import("./context").User | null;
+    user: User | null;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
@@ -587,8 +587,8 @@ export declare const requireOrgMembershipRole: (allowedRoles: MemberRole[]) => i
  *
  * Must run AFTER isAuthenticated.
  */
-export declare const withPlanContext: import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
-    user: import("./context").User;
+export declare const withPlanContext: import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
+    user: User;
     plan: import("@/types/plan.types").EffectivePlan;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null;
@@ -650,8 +650,8 @@ export declare const withPlanContext: import("@trpc/server").TRPCMiddlewareBuild
  * Throws FORBIDDEN with the minimum required plan name.
  * Must run after withPlanContext.
  */
-export declare const requirePlanFeature: (feature: FeatureKey) => import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
-    user: import("./context").User;
+export declare const requirePlanFeature: (feature: FeatureKey) => import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
+    user: User;
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
@@ -727,16 +727,32 @@ export declare const requirePlanFeature: (feature: FeatureKey) => import("@trpc/
  *
  * Must run after withPlanContext.
  */
-export declare const checkUsageLimit: (metric: BillingMetric, opts?: {
+export interface UsageLimitOptions {
     deferIncrement?: boolean;
-}) => import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
-    user: import("./context").User;
+}
+export interface UsageLimitPatch {
+    user: User;
     usageInfo: {
-        metric: import(".prisma/client").$Enums.BillingMetric;
+        metric: BillingMetric;
         current: number;
         limit: number;
     };
-    incrementUsage: () => Promise<void>;
+    incrementUsage?: () => Promise<void>;
+}
+/**
+ * Enforce and optionally consume a feature quota for an already-authenticated
+ * request. Routers that must authorize domain scope before quota consumption
+ * can call this helper after their feature-specific authorization succeeds.
+ */
+export declare function resolveUsageLimit(ctx: Context, metric: BillingMetric, opts?: UsageLimitOptions): Promise<UsageLimitPatch>;
+export declare const checkUsageLimit: (metric: BillingMetric, opts?: UsageLimitOptions) => import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
+    user: User;
+    usageInfo: {
+        metric: BillingMetric;
+        current: number;
+        limit: number;
+    };
+    incrementUsage: (() => Promise<void>) | undefined;
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
@@ -780,11 +796,11 @@ export declare const checkUsageLimit: (metric: BillingMetric, opts?: {
     } | undefined;
     orgMembership: OrgMembershipEntry | undefined;
 }, unknown>;
-export declare const requireAgentCapability: (capability: string) => import("@trpc/server").TRPCMiddlewareBuilder<import("./context").Context, object, {
+export declare const requireAgentCapability: (capability: string) => import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     agent: import("@/modules/agents/agent-credential.service").AgentIdentity;
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
-    user: import("./context").User | null;
+    user: User | null;
     plan: import("@/types/plan.types").EffectivePlan | undefined;
     customLimits: Record<string, unknown> | null | undefined;
     entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;

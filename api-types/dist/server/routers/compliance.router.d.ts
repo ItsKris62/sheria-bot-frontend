@@ -28,6 +28,11 @@ export declare const complianceRouter: import("@trpc/server").TRPCBuiltRouter<{
                 code: "KE" | "MW" | "RW" | "NG";
                 name: string;
                 queryEnabled: boolean;
+                comparisonEnabled: boolean;
+                corpusReady: boolean;
+                gapAnalysisEnabled: boolean;
+                checklistEnabled: boolean;
+                customFrameworkEnabled: boolean;
                 status: import("@/types/jurisdiction").JurisdictionAvailabilityStatus;
             }[];
         };

@@ -66,6 +66,7 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
                 mpesaNextPaymentDueDate: string | null;
                 subscriptionCycleEnd: string | null;
                 mpesaPhoneNumber: string | null;
+                homeJurisdictionCode: string | null;
                 catalogPrice: Record<"STARTUP" | "BUSINESS", {
                     monthly: number;
                     yearly: number;

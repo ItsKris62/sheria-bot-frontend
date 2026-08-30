@@ -17,6 +17,7 @@
  * work via compliance.module.ts.  Use isNormalizedChecklist() to distinguish.
  */
 import { type ChecklistGenerateResult, type ChecklistStatusResult, type ChecklistSummary, type ChecklistDetail, type UpdateItemResult, type UpdateChecklistItemInput, type GenerateChecklistAsyncInput } from './checklist.types';
+import { type JurisdictionContext } from '@/types/jurisdiction';
 declare class ChecklistService {
     /**
      * Create a GENERATING checklist record and immediately return its ID.
@@ -25,7 +26,7 @@ declare class ChecklistService {
      * The caller (tRPC router) returns { checklistId, status: 'GENERATING' }
      * to the frontend, which then polls getChecklistStatus().
      */
-    generateChecklist(userId: string, orgId: string, input: GenerateChecklistAsyncInput, trialUserId?: string): Promise<ChecklistGenerateResult>;
+    generateChecklist(userId: string, orgId: string, input: GenerateChecklistAsyncInput, jurisdictionContext: JurisdictionContext, trialUserId?: string): Promise<ChecklistGenerateResult>;
     /**
      * Entry point for the background generation pipeline.
      * Fetches RAG passages (topK 12, minScore 0.65) then delegates to
@@ -65,7 +66,7 @@ declare class ChecklistService {
      * Retries do NOT consume a usage credit (the original generation already did).
      * Retries are capped at 3 per checklist  -  if metadata.retryCount >= 3 this throws.
      */
-    retryChecklist(checklistId: string, userId: string, orgId: string): Promise<{
+    retryChecklist(checklistId: string, userId: string, orgId: string, jurisdictionContext: JurisdictionContext): Promise<{
         checklistId: string;
         status: 'GENERATING';
         retryCount: number;

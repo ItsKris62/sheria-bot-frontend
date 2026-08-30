@@ -1,7 +1,7 @@
 export const JURISDICTION_CODES = ["KE", "RW", "MW", "NG"] as const
 
 export type JurisdictionCode = typeof JURISDICTION_CODES[number]
-export type QueryableJurisdictionCode = Exclude<JurisdictionCode, "NG">
+export type QueryableJurisdictionCode = JurisdictionCode
 export type JurisdictionStatus = "ACTIVE" | "COMING_SOON" | "DISABLED"
 
 export type JurisdictionCapability = {
@@ -10,6 +10,9 @@ export type JurisdictionCapability = {
   queryEnabled: boolean
   comparisonEnabled: boolean
   corpusReady: boolean
+  gapAnalysisEnabled: boolean
+  checklistEnabled: boolean
+  customFrameworkEnabled: boolean
   status: JurisdictionStatus
 }
 
@@ -17,6 +20,7 @@ export const AUDITED_JURISDICTIONS = [
   { code: "KE", label: "Kenya", currency: "KES" },
   { code: "RW", label: "Rwanda", currency: "RWF" },
   { code: "MW", label: "Malawi", currency: "MWK" },
+  { code: "NG", label: "Nigeria", currency: "NGN" },
 ] as const
 
 export const DEFAULT_JURISDICTION: QueryableJurisdictionCode = "KE"
@@ -31,12 +35,11 @@ export const COUNTRY_FLAGS: Record<JurisdictionCode, string> = {
 export type AuditedJurisdictionCode = typeof AUDITED_JURISDICTIONS[number]["code"]
 
 export function jurisdictionLabel(code: string | null | undefined): string {
-  if (code === "NG") return "Nigeria"
-  return AUDITED_JURISDICTIONS.find((item) => item.code === code)?.label ?? "Kenya"
+  return AUDITED_JURISDICTIONS.find((item) => item.code === code)?.label ?? "Unknown jurisdiction"
 }
 
 export function currencyForJurisdiction(code: string | null | undefined): string {
-  return AUDITED_JURISDICTIONS.find((item) => item.code === code)?.currency ?? "KES"
+  return AUDITED_JURISDICTIONS.find((item) => item.code === code)?.currency ?? ""
 }
 
 export function isJurisdictionCode(value: unknown): value is JurisdictionCode {
@@ -44,5 +47,5 @@ export function isJurisdictionCode(value: unknown): value is JurisdictionCode {
 }
 
 export function isQueryableJurisdictionCode(value: unknown): value is QueryableJurisdictionCode {
-  return value === "KE" || value === "RW" || value === "MW"
+  return isJurisdictionCode(value)
 }

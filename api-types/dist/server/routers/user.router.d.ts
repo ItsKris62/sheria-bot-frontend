@@ -286,5 +286,39 @@ export declare const userRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         meta: object;
     }>;
+    /**
+     * Get Section 34 restriction status for the current or specified user
+     */
+    getRestrictionStatus: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            userId?: string | undefined;
+        } | undefined;
+        output: import("@/modules/user/restriction.service").RestrictionRecord;
+        meta: object;
+    }>;
+    /**
+     * Apply Section 34 restriction (DPO / Admin / DSAR Workflow)
+     */
+    restrictProcessing: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            userId: string;
+            reason: "ACCURACY_CONTESTED" | "DATA_NO_LONGER_REQUIRED_LEGAL_CLAIM" | "UNLAWFUL_PROCESSING_ERASURE_OPPOSED" | "OBJECTION_PENDING_VERIFICATION";
+            requestId: string;
+            restrictedPurposes?: ("AI_QUERYING" | "DIRECT_MARKETING" | "PRODUCT_TELEMETRY" | "POLICY_GENERATION" | "GAP_ANALYSIS")[] | undefined;
+        };
+        output: import("@/modules/user/restriction.service").RestrictionRecord;
+        meta: object;
+    }>;
+    /**
+     * Lift Section 34 restriction after accuracy verification or statutory resolution
+     */
+    liftProcessingRestriction: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            userId: string;
+            liftReason: string;
+        };
+        output: import("@/modules/user/restriction.service").RestrictionRecord;
+        meta: object;
+    }>;
 }>>;
 //# sourceMappingURL=user.router.d.ts.map

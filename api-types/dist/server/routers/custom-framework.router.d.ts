@@ -32,7 +32,7 @@ export declare const customFrameworkRouter: import("@trpc/server").TRPCBuiltRout
         input: {
             name: string;
             description?: string | null | undefined;
-            jurisdiction?: "KE" | "MW" | "RW" | null | undefined;
+            jurisdiction?: "KE" | "MW" | "RW" | "NG" | null | undefined;
             regulator?: string | null | undefined;
             category?: string | null | undefined;
         };
@@ -44,9 +44,16 @@ export declare const customFrameworkRouter: import("@trpc/server").TRPCBuiltRout
             id: string;
             name?: string | undefined;
             description?: string | null | undefined;
-            jurisdiction?: "KE" | "MW" | "RW" | null | undefined;
+            jurisdiction?: "KE" | "MW" | "RW" | "NG" | null | undefined;
             regulator?: string | null | undefined;
             category?: string | null | undefined;
+        };
+        output: any;
+        meta: object;
+    }>;
+    generate: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            intent: string;
         };
         output: any;
         meta: object;

@@ -17,12 +17,12 @@ export declare const aiConfig: {
      */
     readonly models: {
         readonly default: string;
-        readonly policyGeneration: "claude-sonnet-4-6";
-        readonly checklistGeneration: "claude-sonnet-4-6";
-        readonly complianceQuery: "claude-haiku-4-5-20251001";
-        readonly citationVerification: "claude-haiku-4-5-20251001";
-        readonly complexAnalysis: "claude-opus-4-6";
-        readonly embedding: "claude-haiku-4-5-20251001";
+        readonly policyGeneration: string;
+        readonly checklistGeneration: string;
+        readonly complianceQuery: string;
+        readonly citationVerification: string;
+        readonly complexAnalysis: string;
+        readonly embedding: string;
     };
     /**
      * Generation parameters

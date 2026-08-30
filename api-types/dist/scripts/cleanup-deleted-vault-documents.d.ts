@@ -10,5 +10,16 @@
  *   pnpm vault:cleanup-deleted
  *   VAULT_DELETED_RETENTION_DAYS=30 pnpm vault:cleanup-deleted
  */
-export {};
+import 'dotenv/config';
+export interface VaultCleanupOptions {
+    retentionDays?: number;
+    now?: Date;
+}
+export interface VaultCleanupResult {
+    scanned: number;
+    purged: number;
+    failed: number;
+    retentionDays: number;
+}
+export declare function cleanupDeletedVaultDocuments(options?: VaultCleanupOptions): Promise<VaultCleanupResult>;
 //# sourceMappingURL=cleanup-deleted-vault-documents.d.ts.map

@@ -8,6 +8,9 @@ export interface JurisdictionCapability {
     queryEnabled: boolean;
     comparisonEnabled: boolean;
     corpusReady: boolean;
+    gapAnalysisEnabled: boolean;
+    checklistEnabled: boolean;
+    customFrameworkEnabled: boolean;
     status: JurisdictionAvailabilityStatus;
 }
 export declare const COMPARE_MODE_ENABLED: boolean;

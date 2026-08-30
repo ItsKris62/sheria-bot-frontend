@@ -2,7 +2,7 @@ import { AICompletionResult } from './client';
 import { PolicyGenerationParams } from './prompts/policy-generation';
 import { ComplianceQueryParams } from './prompts/compliance-query';
 import { ChecklistGenerationParams, GeneratedChecklist } from './prompts/checklist-generation';
-import { GapAnalysisParams, GapAnalysisResult, PolicyChunk } from './prompts/gap-analysis';
+import { GapAnalysisParams, GapAnalysisResult, PolicyChunk, JurisdictionContext } from './prompts/gap-analysis';
 /**
  * Policy generation result
  */
@@ -142,6 +142,7 @@ export declare class AIService {
         analysisDepth: 'quick' | 'standard' | 'deep';
         focusAreas?: string[];
         ragContext?: string;
+        jurisdictionContext?: JurisdictionContext;
     }): Promise<{
         result: GapAnalysisResult;
         chunksProcessed: number;

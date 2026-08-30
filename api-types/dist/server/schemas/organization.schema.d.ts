@@ -66,6 +66,7 @@ export declare const updateOrganizationSchema: z.ZodObject<{
         KE: "KE";
         MW: "MW";
         RW: "RW";
+        NG: "NG";
     }>>;
     homeJurisdictionReason: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
@@ -151,6 +152,7 @@ export declare const updateOrganizationSettingsSchema: z.ZodObject<{
         KE: "KE";
         MW: "MW";
         RW: "RW";
+        NG: "NG";
     }>>;
     homeJurisdictionReason: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
