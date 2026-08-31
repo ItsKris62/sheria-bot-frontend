@@ -836,6 +836,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
             subscriptionTier?: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE" | undefined;
             organizationId?: unknown;
             organizationName?: unknown;
+            homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
             orgRole?: "ADMIN" | "OWNER" | "MEMBER" | "VIEWER" | undefined;
             isPilot?: boolean | undefined;
             sendWelcomeEmail?: boolean | undefined;

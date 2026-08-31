@@ -30,6 +30,7 @@ export declare const pilotRouter: import("@trpc/server").TRPCBuiltRouter<{
             email: string;
             organizationId?: unknown;
             organizationName?: unknown;
+            homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
             role?: "STARTUP" | "ENTERPRISE" | undefined;
             phone?: string | undefined;
             temporaryPassword?: string | undefined;

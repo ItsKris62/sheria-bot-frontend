@@ -41,6 +41,7 @@ import {
 } from "lucide-react"
 import { getErrorMessage, trpc } from "@/lib/trpc"
 import { toast } from "sonner"
+import { AUDITED_JURISDICTIONS, type AuditedJurisdictionCode } from "@/lib/jurisdictions"
 
 // ─── Local types ──────────────────────────────────────────────────────────────
 
@@ -183,6 +184,7 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
     role: "STARTUP" as "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN",
     organizationId: "",
     organizationName: "",
+    homeJurisdictionCode: "" as "" | AuditedJurisdictionCode,
   })
   const { data: organizationOptions, isLoading: organizationsLoading } = trpc.admin.listOrganizations.useQuery(
     undefined,
@@ -201,6 +203,7 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
         role: "STARTUP",
         organizationId: "",
         organizationName: "",
+        homeJurisdictionCode: "",
       })
       void utils.admin.listOrganizations.invalidate()
       void utils.pilot.getStats.invalidate()
@@ -222,12 +225,17 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
       toast.error("Organization name must be at least 2 characters")
       return
     }
+    if (creatingNewOrganization && !form.homeJurisdictionCode) {
+      toast.error("Select the organization's home jurisdiction")
+      return
+    }
     createUserMutation.mutate({
       email: form.email,
       fullName: form.fullName,
       role: form.role === "ENTERPRISE" ? "ENTERPRISE" : "STARTUP",
       organizationId: form.organizationId || undefined,
       organizationName: creatingNewOrganization ? form.organizationName.trim() || undefined : undefined,
+      homeJurisdictionCode: creatingNewOrganization ? form.homeJurisdictionCode || undefined : undefined,
     })
   }
 
@@ -332,6 +340,18 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
                     No organizations exist yet. Enter a name to auto-create one for this pilot tester.
                   </p>
                 )}
+                <Label htmlFor="homeJurisdiction">Home Jurisdiction <span className="text-destructive">*</span></Label>
+                <Select
+                  value={form.homeJurisdictionCode}
+                  onValueChange={(value) => setForm((f) => ({ ...f, homeJurisdictionCode: value as AuditedJurisdictionCode }))}
+                >
+                  <SelectTrigger id="homeJurisdiction"><SelectValue placeholder="Select jurisdiction" /></SelectTrigger>
+                  <SelectContent>
+                    {AUDITED_JURISDICTIONS.map((jurisdiction) => (
+                      <SelectItem key={jurisdiction.code} value={jurisdiction.code}>{jurisdiction.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </div>
@@ -342,7 +362,7 @@ function CreateUserProfileDialog({ onSuccess }: { onSuccess: () => void }) {
             </Button>
             <Button
               type="submit"
-              disabled={createUserMutation.isPending || (creatingNewOrganization && form.organizationName.trim().length < 2)}
+              disabled={createUserMutation.isPending || (creatingNewOrganization && (form.organizationName.trim().length < 2 || !form.homeJurisdictionCode))}
               className="gap-2"
             >
               {createUserMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}

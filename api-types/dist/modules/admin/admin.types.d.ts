@@ -499,6 +499,7 @@ export interface CreateUserInput {
     subscriptionTier?: 'REGULATOR' | 'STARTUP' | 'BUSINESS' | 'ENTERPRISE';
     organizationId?: string;
     organizationName?: string;
+    homeJurisdictionCode?: 'KE' | 'RW' | 'MW' | 'NG';
     isPilot?: boolean;
     sendWelcomeEmail?: boolean;
 }

@@ -72,6 +72,7 @@ export function useAuth() {
       name: string;
       role: "REGULATOR" | "STARTUP" | "ENTERPRISE";
       companyName?: string;
+      homeJurisdictionCode?: "KE" | "RW" | "MW" | "NG";
       invitationToken?: string;
       phone?: string;
     }) => {

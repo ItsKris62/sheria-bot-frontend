@@ -5,6 +5,7 @@ import React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
+import { AUDITED_JURISDICTIONS, jurisdictionLabel, type AuditedJurisdictionCode } from "@/lib/jurisdictions"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Input } from "@/components/ui/input"
@@ -62,6 +63,7 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     cbkLicenseNumber: "",
+    homeJurisdictionCode: "" as "" | AuditedJurisdictionCode,
     agreeTerms: false,
   })
 
@@ -115,6 +117,7 @@ export default function RegisterPage() {
         name: `${formData.firstName} ${formData.lastName}`,
         role: ROLE_MAP[formData.organizationType],
         companyName: hasInvitation ? undefined : formData.companyName || undefined,
+        homeJurisdictionCode: hasInvitation ? undefined : formData.homeJurisdictionCode || undefined,
         invitationToken: invitationToken || undefined,
       })
       setSuccess(true)
@@ -242,17 +245,34 @@ export default function RegisterPage() {
           ) : (
             <>
               {!hasInvitation && (
-                <div className="space-y-2">
-                  <Label htmlFor="companyName" className="text-foreground">Organization Name</Label>
-                  <Input
-                    id="companyName"
-                    placeholder="Enter your company name"
-                    value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                    required
-                    className="bg-background"
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName" className="text-foreground">Organization Name</Label>
+                    <Input
+                      id="companyName"
+                      placeholder="Enter your company name"
+                      value={formData.companyName}
+                      onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                      required
+                      className="bg-background"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="homeJurisdictionCode" className="text-foreground">Home Jurisdiction</Label>
+                    <select
+                      id="homeJurisdictionCode"
+                      value={formData.homeJurisdictionCode}
+                      onChange={(event) => setFormData({ ...formData, homeJurisdictionCode: event.target.value as AuditedJurisdictionCode })}
+                      required
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="">Select jurisdiction</option>
+                      {AUDITED_JURISDICTIONS.map((jurisdiction) => (
+                        <option key={jurisdiction.code} value={jurisdiction.code}>{jurisdiction.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
               )}
 
               <div className="grid grid-cols-2 gap-3">

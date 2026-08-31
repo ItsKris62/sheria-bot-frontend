@@ -27,6 +27,12 @@ export declare const registerSchema: z.ZodObject<{
         ENTERPRISE: "ENTERPRISE";
     }>;
     companyName: z.ZodOptional<z.ZodString>;
+    homeJurisdictionCode: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>;
     invitationToken: z.ZodOptional<z.ZodString>;
     phone: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>>;
 }, z.core.$strict>;

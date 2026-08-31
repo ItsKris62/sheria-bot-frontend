@@ -1,4 +1,10 @@
 import { z } from 'zod';
+export declare const homeJurisdictionCodeSchema: z.ZodEnum<{
+    KE: "KE";
+    MW: "MW";
+    RW: "RW";
+    NG: "NG";
+}>;
 /**
  * Organization Schemas
  *
@@ -36,6 +42,12 @@ export declare const createOrganizationSchema: z.ZodObject<{
     address: z.ZodOptional<z.ZodString>;
     website: z.ZodOptional<z.ZodString>;
     description: z.ZodOptional<z.ZodString>;
+    homeJurisdictionCode: z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>;
 }, z.core.$strip>;
 export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;
 /**

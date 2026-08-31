@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
+import { type AuditedJurisdiction } from '@/config/jurisdictions.config';
 export declare function isValidOrganizationId(value: string): boolean;
 export declare const optionalOrganizationIdSchema: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
 export declare const createUserWithOrganizationInputSchema: z.ZodObject<{
@@ -20,6 +21,12 @@ export declare const createUserWithOrganizationInputSchema: z.ZodObject<{
     isPilot: z.ZodDefault<z.ZodBoolean>;
     organizationId: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
     organizationName: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    homeJurisdictionCode: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>;
     orgRole: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
         OWNER: "OWNER";
         ADMIN: "ADMIN";
@@ -43,6 +50,7 @@ export interface CreateUserWithOrganizationInput {
     isPilot?: boolean;
     organizationId?: string;
     organizationName?: string;
+    homeJurisdictionCode?: AuditedJurisdiction;
     orgRole?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
     supabaseAuthId: string;
     adminId: string;

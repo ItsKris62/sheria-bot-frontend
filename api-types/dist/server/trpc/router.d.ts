@@ -68,6 +68,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 name: string;
                 role: "REGULATOR" | "STARTUP" | "ENTERPRISE";
                 companyName?: string | undefined;
+                homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
                 invitationToken?: string | undefined;
                 phone?: string | undefined;
             };
@@ -2035,6 +2036,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 name: string;
                 type: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE";
                 contactEmail: string;
+                homeJurisdictionCode: "KE" | "MW" | "RW" | "NG";
                 registrationNumber?: string | undefined;
                 industry?: string | undefined;
                 contactPhone?: string | undefined;
@@ -5680,6 +5682,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 subscriptionTier?: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE" | undefined;
                 organizationId?: unknown;
                 organizationName?: unknown;
+                homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
                 orgRole?: "ADMIN" | "OWNER" | "MEMBER" | "VIEWER" | undefined;
                 isPilot?: boolean | undefined;
                 sendWelcomeEmail?: boolean | undefined;
@@ -7239,6 +7242,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 email: string;
                 organizationId?: unknown;
                 organizationName?: unknown;
+                homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
                 role?: "STARTUP" | "ENTERPRISE" | undefined;
                 phone?: string | undefined;
                 temporaryPassword?: string | undefined;

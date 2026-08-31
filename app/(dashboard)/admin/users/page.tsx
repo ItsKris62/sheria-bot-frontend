@@ -37,6 +37,7 @@ import {
   Loader2,
   X,
 } from "lucide-react"
+import { AUDITED_JURISDICTIONS, type AuditedJurisdictionCode } from "@/lib/jurisdictions"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -113,6 +114,7 @@ const initialCreateForm = {
   role: "STARTUP" as CreateUserRole,
   organizationId: "",
   organizationName: "",
+  homeJurisdictionCode: "" as "" | AuditedJurisdictionCode,
   isPilot: false,
 }
 
@@ -206,7 +208,7 @@ export default function UsersPage() {
     !createForm.email ||
     !createForm.fullName ||
     createForm.password.length < 8 ||
-    (createForm.isPilot && createForm.organizationName.trim().length < 2) ||
+    (createForm.isPilot && (createForm.organizationName.trim().length < 2 || !createForm.homeJurisdictionCode)) ||
     createUserMutation.isPending
 
   function submitCreateUser() {
@@ -217,6 +219,7 @@ export default function UsersPage() {
       role: createForm.role,
       organizationId: createForm.isPilot ? undefined : createForm.organizationId || undefined,
       organizationName: createForm.isPilot ? createForm.organizationName.trim() || undefined : undefined,
+      homeJurisdictionCode: createForm.isPilot ? createForm.homeJurisdictionCode || undefined : undefined,
       isPilot: createForm.isPilot,
       sendWelcomeEmail: false,
     })
@@ -596,14 +599,30 @@ export default function UsersPage() {
               />
             </div>
             {createForm.isPilot ? (
-              <div className="space-y-1">
-                <Label>Organization Name</Label>
-                <Input
-                  placeholder="Acme Pilot Org"
-                  value={createForm.organizationName}
-                  onChange={(e) => setCreateForm((f) => ({ ...f, organizationName: e.target.value }))}
-                />
-              </div>
+              <>
+                <div className="space-y-1">
+                  <Label>Organization Name</Label>
+                  <Input
+                    placeholder="Acme Pilot Org"
+                    value={createForm.organizationName}
+                    onChange={(e) => setCreateForm((f) => ({ ...f, organizationName: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Home Jurisdiction</Label>
+                  <Select
+                    value={createForm.homeJurisdictionCode}
+                    onValueChange={(value) => setCreateForm((f) => ({ ...f, homeJurisdictionCode: value as AuditedJurisdictionCode }))}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select jurisdiction" /></SelectTrigger>
+                    <SelectContent>
+                      {AUDITED_JURISDICTIONS.map((jurisdiction) => (
+                        <SelectItem key={jurisdiction.code} value={jurisdiction.code}>{jurisdiction.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
             ) : (
               <div className="space-y-1">
                 <Label>Organization</Label>

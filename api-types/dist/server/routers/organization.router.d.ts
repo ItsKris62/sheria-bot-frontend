@@ -170,6 +170,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             name: string;
             type: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE";
             contactEmail: string;
+            homeJurisdictionCode: "KE" | "MW" | "RW" | "NG";
             registrationNumber?: string | undefined;
             industry?: string | undefined;
             contactPhone?: string | undefined;
