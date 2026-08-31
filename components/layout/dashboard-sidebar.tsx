@@ -182,7 +182,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                   key={itemKey}
                   type="button"
                   className={cn(
-                    "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                    "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-foreground hover:text-background hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                     opts.showCollapsed && "justify-center px-2"
                   )}
                   title={opts.showCollapsed ? item.title : undefined}
@@ -207,7 +207,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                     ? "opacity-50 cursor-pointer"
                     : isActive
                     ? "bg-primary/15 text-primary shadow-sm"
-                    : "text-muted-foreground hover:bg-primary/10 hover:text-foreground",
+                    : "text-muted-foreground hover:bg-foreground hover:text-background hover:shadow-sm",
                   opts.showCollapsed && "justify-center px-2"
                 )}
                 title={opts.showCollapsed ? item.title : undefined}
@@ -299,7 +299,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
             <Link
               href="/settings"
               className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-foreground hover:text-background hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                 collapsed && "justify-center px-2",
                 pathname.startsWith("/settings") && "bg-primary/15 text-primary"
               )}
@@ -313,7 +313,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
             <Link
               href="/support"
               className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-foreground hover:text-background hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                 collapsed && "justify-center px-2",
                 pathname.startsWith("/support") && "bg-primary/15 text-primary"
               )}
@@ -383,7 +383,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
               <Link
                 href="/settings"
                 className={cn(
-                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-foreground hover:text-background hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                   pathname.startsWith("/settings") && "bg-primary/15 text-primary"
                 )}
               >
@@ -396,7 +396,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
               <Link
                 href="/support"
                 className={cn(
-                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-foreground hover:text-background hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                   pathname.startsWith("/support") && "bg-primary/15 text-primary"
                 )}
               >
