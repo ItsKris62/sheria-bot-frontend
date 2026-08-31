@@ -88,7 +88,7 @@ export default function StartupDashboard() {
     : null
 
   return (
-    <div className="flex flex-col gap-6 max-w-7xl mx-auto pb-8">
+    <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 pb-10">
       {/* Welcome Header */}
       <UserDashboardHeader displayName={displayName} />
 

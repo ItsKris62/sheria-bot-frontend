@@ -352,10 +352,10 @@ html {
 
 .portal-shell,
 [data-portal-shell="true"] {
-  --portal-background: #000000;
-  --portal-background-elevated: #050505;
+  --portal-background: #070b0d;
+  --portal-background-elevated: #0b1112;
 
-  --portal-surface: rgba(17, 24, 39, 0.65);
+  --portal-surface: rgba(15, 25, 25, 0.72);
   --portal-surface-raised: rgba(31, 41, 55, 0.6);
   --portal-surface-solid: #111827;
   --portal-surface-hover: rgba(31, 41, 55, 0.8);

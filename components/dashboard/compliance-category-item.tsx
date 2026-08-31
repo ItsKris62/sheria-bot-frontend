@@ -32,7 +32,7 @@ export function ComplianceCategoryItem({ category }: ComplianceCategoryItemProps
   const theme = getComplianceScoreTheme(category.score)
 
   return (
-    <PortalSurface variant="solid" className="p-4 transition-all hover:border-[var(--portal-border-strong)]">
+    <PortalSurface variant="solid" className="group p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--portal-accent-border)] hover:bg-[var(--portal-surface-hover)]">
       <div className="flex items-center justify-between">
         <p className="text-2xl font-bold tracking-tight" style={{ color: theme.color }}>
           {category.score}%
