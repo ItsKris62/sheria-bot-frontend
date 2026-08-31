@@ -2,7 +2,8 @@ import * as React from "react"
 import Link from "next/link"
 import { PortalSurface, PortalSectionHeader } from "@/components/portal"
 import { Button } from "@/components/ui/button"
-import { Search, ClipboardCheck, AlertTriangle, FileText, Zap } from "lucide-react"
+import { ClipboardCheck, AlertTriangle, FileText, Zap } from "lucide-react"
+import { ComplianceQueryMascotIcon } from "@/components/compliance/compliance-query-mascot-icon"
 
 export function DashboardQuickActions() {
   return (
@@ -20,7 +21,7 @@ export function DashboardQuickActions() {
           className="h-11 justify-start border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-[var(--portal-text-primary)] hover:border-[var(--portal-accent-border)] hover:bg-[var(--portal-accent-muted)] hover:text-white transition-colors"
         >
           <Link href="/startup/compliance-query">
-            <Search className="mr-2.5 h-4 w-4 text-[var(--portal-accent)]" aria-hidden="true" />
+            <ComplianceQueryMascotIcon className="mr-2.5 h-4 w-4" />
             Ask Compliance Question
           </Link>
         </Button>

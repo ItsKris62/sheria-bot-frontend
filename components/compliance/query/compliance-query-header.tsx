@@ -1,5 +1,6 @@
 import React from "react"
-import { ShieldCheck, Scale } from "lucide-react"
+import { ShieldCheck } from "lucide-react"
+import { ComplianceQueryMascotIcon } from "@/components/compliance/compliance-query-mascot-icon"
 
 export interface ComplianceQueryHeaderProps {
   title?: string
@@ -14,8 +15,8 @@ export function ComplianceQueryHeader({
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-border/40 pb-5 motion-safe:animate-fade-slide-up">
       <div>
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shadow-xs transition-colors duration-200">
-            <Scale className="h-4 w-4" aria-hidden="true" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 shadow-xs transition-colors duration-200 overflow-hidden">
+            <ComplianceQueryMascotIcon className="h-5 w-5" alt="SheriaBot Mascot" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
         </div>

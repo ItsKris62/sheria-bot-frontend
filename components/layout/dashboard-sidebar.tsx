@@ -36,6 +36,7 @@ import type { FeatureKey } from "@/lib/plan-context"
 import { useSidebar } from "@/lib/sidebar-context"
 import { useAlertNotifications } from "@/hooks/use-alert-notifications"
 import { ReportMissingDocumentDialog } from "@/components/corpus-gap-report/report-missing-document-dialog"
+import { ComplianceQueryMascotIcon } from "@/components/compliance/compliance-query-mascot-icon"
 
 type NavAction = "reportMissingDocument"
 
@@ -104,7 +105,7 @@ export const startupNav: NavGroup[] = [
   {
     title: "Compliance",
     items: [
-      { title: "Compliance Query", href: "/startup/compliance-query", icon: Search, badge: "AI" },
+      { title: "Compliance Query", href: "/startup/compliance-query", icon: ComplianceQueryMascotIcon, badge: "AI" },
       { title: "Checklists", href: "/startup/checklists", icon: ClipboardCheck },
       { title: "Gap Analysis", href: "/startup/gap-analysis", icon: AlertTriangle, lockedFeature: "gapAnalysis" },
       { title: "Custom Frameworks", href: "/startup/custom-frameworks", icon: FileText, lockedFeature: "customFrameworks" },
