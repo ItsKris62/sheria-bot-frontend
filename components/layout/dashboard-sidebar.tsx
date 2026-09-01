@@ -46,7 +46,7 @@ function createSidebarIcon(src: string, alt: string) {
         alt={alt}
         aria-hidden="true"
         className={cn(
-          "h-5 w-5 shrink-0 object-contain transition-all duration-300 group-hover:scale-110",
+          "h-6 w-6 shrink-0 object-contain transition-all duration-300 group-hover:scale-110",
           className
         )}
       />
@@ -221,7 +221,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                     setMobileOpen(false)
                   }}
                 >
-                  <item.icon className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
+                  <item.icon className="h-6 w-6 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                   {!opts.showCollapsed && <span className="flex-1">{item.title}</span>}
                 </button>
               )
@@ -246,7 +246,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
                 )}
                 <item.icon className={cn(
-                  "h-5 w-5 shrink-0 transition-all duration-300",
+                  "h-6 w-6 shrink-0 transition-all duration-300",
                   isLocked
                     ? "text-muted-foreground opacity-40 grayscale"
                     : isActive
@@ -260,7 +260,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                       <Lock className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
                     ) : item.badge ? (
                       <span className={cn(
-                        "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold transition-all duration-300",
+                        "flex h-5.5 min-w-[24px] items-center justify-center rounded-full px-2 text-[11px] font-bold tracking-wide transition-all duration-300",
                         typeof item.badge === "number"
                           ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                           : "bg-primary/20 text-primary"
@@ -339,7 +339,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
               )}
             >
               <Settings className={cn(
-                "h-5 w-5 shrink-0 transition-all duration-300",
+                "h-6 w-6 shrink-0 transition-all duration-300",
                 pathname.startsWith("/settings") ? "text-primary" : "group-hover:text-primary"
               )} />
               {!collapsed && <span>Settings</span>}
@@ -353,7 +353,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
               )}
             >
               <HelpCircle className={cn(
-                "h-5 w-5 shrink-0 transition-all duration-300",
+                "h-6 w-6 shrink-0 transition-all duration-300",
                 pathname.startsWith("/support") ? "text-primary" : "group-hover:text-primary"
               )} />
               {!collapsed && <span>Support</span>}
@@ -422,7 +422,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 )}
               >
                 <Settings className={cn(
-                  "h-5 w-5 shrink-0 transition-all duration-300",
+                  "h-6 w-6 shrink-0 transition-all duration-300",
                   pathname.startsWith("/settings") ? "text-primary" : "group-hover:text-primary"
                 )} />
                 <span>Settings</span>
@@ -435,7 +435,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 )}
               >
                 <HelpCircle className={cn(
-                  "h-5 w-5 shrink-0 transition-all duration-300",
+                  "h-6 w-6 shrink-0 transition-all duration-300",
                   pathname.startsWith("/support") ? "text-primary" : "group-hover:text-primary"
                 )} />
                 <span>Support</span>
