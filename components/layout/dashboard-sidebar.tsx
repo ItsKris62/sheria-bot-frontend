@@ -36,7 +36,31 @@ import type { FeatureKey } from "@/lib/plan-context"
 import { useSidebar } from "@/lib/sidebar-context"
 import { useAlertNotifications } from "@/hooks/use-alert-notifications"
 import { ReportMissingDocumentDialog } from "@/components/corpus-gap-report/report-missing-document-dialog"
-import { ComplianceQueryMascotIcon } from "@/components/compliance/compliance-query-mascot-icon"
+
+function createSidebarIcon(src: string, alt: string) {
+  return function SidebarIcon({ className }: { className?: string }) {
+    return (
+      /* eslint-disable-next-line @next/next/no-img-element */
+      <img
+        src={src}
+        alt={alt}
+        aria-hidden="true"
+        className={cn(
+          "h-5 w-5 shrink-0 object-contain transition-all duration-300 group-hover:scale-110",
+          className
+        )}
+      />
+    )
+  }
+}
+
+const DashboardGridIcon = createSidebarIcon("/icons/sidebar/dashboard-grid-icon.png", "Dashboard")
+const ComplianceQueryIcon = createSidebarIcon("/icons/sidebar/compliance-query-icon.png", "Compliance Query")
+const ComplianceChecklistIcon = createSidebarIcon("/icons/sidebar/compliance-checklist-icon.png", "Checklists")
+const GapAnalysisIcon = createSidebarIcon("/icons/sidebar/gap-analysis-icon.png", "Gap Analysis")
+const CustomFrameworkIcon = createSidebarIcon("/icons/sidebar/custom-framework-icon.png", "Custom Frameworks")
+const RegulatoryApplicationsIcon = createSidebarIcon("/icons/sidebar/regulatory-applications-icon.png", "Applications")
+const RegulatoryLicensesIcon = createSidebarIcon("/icons/sidebar/regulatory-licenses-icon.png", "Licenses")
 
 type NavAction = "reportMissingDocument"
 
@@ -99,23 +123,23 @@ export const startupNav: NavGroup[] = [
   {
     title: "Overview",
     items: [
-      { title: "Dashboard", href: "/startup", icon: LayoutDashboard },
+      { title: "Dashboard", href: "/startup", icon: DashboardGridIcon },
     ],
   },
   {
     title: "Compliance",
     items: [
-      { title: "Compliance Query", href: "/startup/compliance-query", icon: ComplianceQueryMascotIcon, badge: "AI" },
-      { title: "Checklists", href: "/startup/checklists", icon: ClipboardCheck },
-      { title: "Gap Analysis", href: "/startup/gap-analysis", icon: AlertTriangle, lockedFeature: "gapAnalysis" },
-      { title: "Custom Frameworks", href: "/startup/custom-frameworks", icon: FileText, lockedFeature: "customFrameworks" },
+      { title: "Compliance Query", href: "/startup/compliance-query", icon: ComplianceQueryIcon, badge: "AI" },
+      { title: "Checklists", href: "/startup/checklists", icon: ComplianceChecklistIcon },
+      { title: "Gap Analysis", href: "/startup/gap-analysis", icon: GapAnalysisIcon, lockedFeature: "gapAnalysis" },
+      { title: "Custom Frameworks", href: "/startup/custom-frameworks", icon: CustomFrameworkIcon, lockedFeature: "customFrameworks" },
     ],
   },
   {
     title: "Management",
     items: [
-      { title: "Applications", href: "/startup/applications", icon: FileText },
-      { title: "Licenses", href: "/startup/licenses", icon: BadgeCheck, lockedFeature: "licenseManagement" },
+      { title: "Applications", href: "/startup/applications", icon: RegulatoryApplicationsIcon },
+      { title: "Licenses", href: "/startup/licenses", icon: RegulatoryLicensesIcon, lockedFeature: "licenseManagement" },
       { title: "Calendar", href: "/startup/calendar", icon: Calendar },
       { title: "Documents", href: "/startup/documents", icon: Folder, lockedFeature: "documentRepository" },
       { title: "Regulatory Alerts", href: "/dashboard/alerts", icon: Megaphone },
@@ -174,7 +198,12 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
           {group.items.map((item) => {
             const isAction = item.action === "reportMissingDocument"
             const itemKey = item.href ?? item.action
-            const isActive = item.href ? pathname === item.href || pathname.startsWith(item.href + "/") : false
+            const isRootPath = item.href === "/startup" || item.href === "/regulator"
+            const isActive = item.href
+              ? isRootPath
+                ? pathname === item.href
+                : pathname === item.href || pathname.startsWith(item.href + "/")
+              : false
             const isLocked = item.lockedFeature ? !hasFeature(item.lockedFeature) : false
 
             if (isAction) {
@@ -192,7 +221,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                     setMobileOpen(false)
                   }}
                 >
-                  <item.icon className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:text-primary" />
+                  <item.icon className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
                   {!opts.showCollapsed && <span className="flex-1">{item.title}</span>}
                 </button>
               )
@@ -207,7 +236,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                   isLocked
                     ? "opacity-50 cursor-pointer"
                     : isActive
-                    ? "bg-primary/15 text-primary shadow-sm"
+                    ? "bg-primary/15 text-primary shadow-sm font-semibold"
                     : "text-muted-foreground hover:bg-foreground hover:text-background hover:shadow-sm",
                   opts.showCollapsed && "justify-center px-2"
                 )}
@@ -218,7 +247,11 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 )}
                 <item.icon className={cn(
                   "h-5 w-5 shrink-0 transition-all duration-300",
-                  isLocked ? "text-muted-foreground" : isActive ? "text-primary" : "group-hover:text-primary"
+                  isLocked
+                    ? "text-muted-foreground opacity-40 grayscale"
+                    : isActive
+                    ? "text-primary opacity-100 drop-shadow-[0_0_8px_rgba(34,197,94,0.35)]"
+                    : "text-muted-foreground opacity-80 group-hover:opacity-100 group-hover:text-primary"
                 )} />
                 {!opts.showCollapsed && (
                   <>

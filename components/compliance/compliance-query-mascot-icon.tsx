@@ -4,12 +4,10 @@ import React, { useState } from "react"
 import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export const COMPLIANCE_QUERY_MASCOT_PATH =
-  "/mascots/sheriabot-droid/compliance-query/v1/sheriabot-droid-thinking-02-searching.png"
+export const COMPLIANCE_QUERY_MASCOT_PATH = "/icons/compliance-query-search-icon.png"
 
 export function getComplianceQueryMascotUrl(): string {
-  const baseUrl = process.env.NEXT_PUBLIC_R2_ASSETS_URL || ""
-  return `${baseUrl}${COMPLIANCE_QUERY_MASCOT_PATH}`
+  return COMPLIANCE_QUERY_MASCOT_PATH
 }
 
 export interface ComplianceQueryMascotIconProps {
