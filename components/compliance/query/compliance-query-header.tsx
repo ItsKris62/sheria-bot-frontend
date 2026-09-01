@@ -1,5 +1,4 @@
 import React from "react"
-import { ShieldCheck } from "lucide-react"
 
 export interface ComplianceQueryHeaderProps {
   title?: string
@@ -13,17 +12,7 @@ export function ComplianceQueryHeader({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/40 pb-5 motion-safe:animate-fade-slide-up">
       <div>
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/25 shadow-xs transition-colors duration-200 overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/icons/compliance-query-search-icon.png"
-              alt="Compliance Query Icon"
-              className="h-7 w-7 object-contain [image-rendering:pixelated]"
-            />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground max-w-2xl">{description}</p>
       </div>
 
