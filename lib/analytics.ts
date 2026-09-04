@@ -116,6 +116,10 @@ export type SafeEventProperties = {
   result_count?: number;
   page?: number;
 
+  page_location?: string;
+  page_path?: string;
+  page_title?: string;
+
   // Blog Automation
   blog_automation_action?: string;
   blog_automation_type?: string;
@@ -126,6 +130,7 @@ export type SafeEventProperties = {
 
 // GA4 & PostHog Lifecycle Events
 export type LifecycleEvent =
+  | "page_view"
   | "sign_up"
   | "email_verified"
   | "login"
@@ -218,6 +223,9 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "jurisdictionCode",
   "placement",
   "source",
+  "page_location",
+  "page_path",
+  "page_title",
   "target_plan",
   "feature_name",
   "status",
@@ -327,20 +335,74 @@ const SENSITIVE_PATH_PREFIXES = [
   "/change-password",
 ];
 
-// In-memory deduplication trackers for critical one-time events
+// In-memory deduplication trackers for critical one-time events (backed by localStorage in browser)
 const trackedPurchases = new Set<string>();
 const trackedActivations = new Set<string>();
 const trackedEmailVerifications = new Set<string>();
 const trackedTrials = new Set<string>();
 
+const DEDUP_STORAGE_KEYS = {
+  purchases: "sheriabot:analytics:purchases",
+  activations: "sheriabot:analytics:activations",
+  trials: "sheriabot:analytics:trials",
+  emailVerifications: "sheriabot:analytics:email_verifications",
+} as const;
+
+function isDurableKeyPresent(storageKey: string, inMemorySet: Set<string>, key: string): boolean {
+  if (inMemorySet.has(key)) return true;
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return false;
+    const list = JSON.parse(raw);
+    if (Array.isArray(list) && list.includes(key)) {
+      inMemorySet.add(key);
+      return true;
+    }
+  } catch {
+    // Ignore storage parse errors
+  }
+  return false;
+}
+
+function markDurableKey(storageKey: string, inMemorySet: Set<string>, key: string): void {
+  inMemorySet.add(key);
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem(storageKey);
+    const list: string[] = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(list)) {
+      if (!list.includes(key)) {
+        list.push(key);
+        // Retain last 100 entries to prevent unbounded storage
+        localStorage.setItem(storageKey, JSON.stringify(list.slice(-100)));
+      }
+    } else {
+      localStorage.setItem(storageKey, JSON.stringify([key]));
+    }
+  } catch {
+    // Ignore storage write errors (e.g. private mode quota)
+  }
+}
+
 /**
- * Resets in-memory deduplication sets for testing.
+ * Resets in-memory and durable deduplication sets for testing.
  */
 export function resetAnalyticsDedupForTests(): void {
   trackedPurchases.clear();
   trackedActivations.clear();
   trackedEmailVerifications.clear();
   trackedTrials.clear();
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem(DEDUP_STORAGE_KEYS.purchases);
+      localStorage.removeItem(DEDUP_STORAGE_KEYS.activations);
+      localStorage.removeItem(DEDUP_STORAGE_KEYS.trials);
+      localStorage.removeItem(DEDUP_STORAGE_KEYS.emailVerifications);
+    } catch {
+      // Ignore
+    }
+  }
 }
 
 /**
@@ -499,18 +561,45 @@ export function trackFeatureUsage(params: {
 }
 
 /**
- * Authoritative, deduplicated purchase tracker.
+ * Authoritative, backend-deduplicated purchase tracker.
+ * Only emits once per opaque transaction_id across all sessions, devices, and tabs
+ * governed by the authoritative backend claim boundary.
  */
-export function trackPurchase(params: {
+export async function trackPurchase(params: {
   transaction_id: string;
   plan_type: "STARTUP" | "BUSINESS" | "ENTERPRISE" | string;
   payment_provider: "INTASEND" | "STRIPE";
   value?: number;
   currency?: "KES" | "USD" | string;
-}): void {
-  if (!params.transaction_id || trackedPurchases.has(params.transaction_id)) return;
-  trackedPurchases.add(params.transaction_id);
+  claimChecker?: () => Promise<{ firstPurchaseTelemetry?: boolean }>;
+}): Promise<boolean> {
+  if (
+    !params.transaction_id ||
+    isDurableKeyPresent(DEDUP_STORAGE_KEYS.purchases, trackedPurchases, params.transaction_id)
+  ) {
+    return false;
+  }
 
+  // 1. Authoritative backend claim check if claimChecker is supplied
+  if (params.claimChecker) {
+    try {
+      const claimResult = await params.claimChecker();
+      if (!claimResult?.firstPurchaseTelemetry) {
+        markDurableKey(DEDUP_STORAGE_KEYS.purchases, trackedPurchases, params.transaction_id);
+        return false;
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[Analytics] Purchase telemetry claim check failed", error);
+      }
+      return false;
+    }
+  }
+
+  // 2. Mark in durable local storage as secondary fast safeguard
+  markDurableKey(DEDUP_STORAGE_KEYS.purchases, trackedPurchases, params.transaction_id);
+
+  // 3. Emit GA4 and PostHog purchase event
   trackEvent("purchase", {
     transaction_id: params.transaction_id,
     plan_type: params.plan_type,
@@ -518,6 +607,8 @@ export function trackPurchase(params: {
     value: params.value,
     currency: params.currency ?? (params.payment_provider === "INTASEND" ? "KES" : "USD"),
   });
+
+  return true;
 }
 
 /**
@@ -540,15 +631,20 @@ export function trackBeginCheckout(params: {
 }
 
 /**
- * Authoritative, deduplicated trial start tracker.
+ * Authoritative, durable deduplicated trial start tracker.
  */
 export function trackTrialStart(params: {
   userId: string;
   plan_type?: string;
   jurisdiction_code?: string;
 }): void {
-  if (!params.userId || trackedTrials.has(params.userId)) return;
-  trackedTrials.add(params.userId);
+  if (
+    !params.userId ||
+    isDurableKeyPresent(DEDUP_STORAGE_KEYS.trials, trackedTrials, params.userId)
+  ) {
+    return;
+  }
+  markDurableKey(DEDUP_STORAGE_KEYS.trials, trackedTrials, params.userId);
 
   trackEvent("trial_start", {
     plan_type: params.plan_type ?? "FREE_TRIAL",
@@ -557,15 +653,27 @@ export function trackTrialStart(params: {
 }
 
 /**
- * Authoritative, deduplicated email verification tracker.
+ * Authoritative, durable deduplicated email verification tracker.
  */
 export function trackEmailVerified(params: {
   userIdOrEmailHash?: string;
   requires_approval?: boolean;
 }): void {
   const dedupKey = params.userIdOrEmailHash || "verified";
-  if (trackedEmailVerifications.has(dedupKey)) return;
-  trackedEmailVerifications.add(dedupKey);
+  if (
+    isDurableKeyPresent(
+      DEDUP_STORAGE_KEYS.emailVerifications,
+      trackedEmailVerifications,
+      dedupKey,
+    )
+  ) {
+    return;
+  }
+  markDurableKey(
+    DEDUP_STORAGE_KEYS.emailVerifications,
+    trackedEmailVerifications,
+    dedupKey,
+  );
 
   trackEvent("email_verified", {
     requires_approval: params.requires_approval,
@@ -575,6 +683,7 @@ export function trackEmailVerified(params: {
 /**
  * Authoritative account activation tracker.
  * Checks if user is authenticated and records activation once durably.
+ * Invariant: Exactly one activation event emitted per user across workflows and tabs.
  */
 export function recordAccountActivation(params: {
   first_feature: SupportedFeatureName;
@@ -585,12 +694,15 @@ export function recordAccountActivation(params: {
     const { user, updateUser } = useAuthStore.getState();
     if (!user) return;
 
-    // Check if account was already activated
-    if (user.preferences?.accountActivatedAt || trackedActivations.has(user.id)) {
+    // Check if account was already activated via backend user profile or durable dedup
+    if (
+      user.preferences?.accountActivatedAt ||
+      isDurableKeyPresent(DEDUP_STORAGE_KEYS.activations, trackedActivations, user.id)
+    ) {
       return;
     }
 
-    trackedActivations.add(user.id);
+    markDurableKey(DEDUP_STORAGE_KEYS.activations, trackedActivations, user.id);
     const activatedAt = new Date().toISOString();
 
     // Update local user state so it won't fire again in this session

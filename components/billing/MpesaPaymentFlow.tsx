@@ -134,6 +134,9 @@ export function MpesaPaymentFlow({ plan, planPriceKes, paymentPurpose = "INITIAL
     },
   })
 
+  // Mutation to claim purchase telemetry atomically on backend
+  const claimTelemetryMutation = (trpc.billing as any).claimPurchaseTelemetry?.useMutation?.()
+
   // Poll payment status
   const statusQuery = trpc.billing.getMpesaPaymentStatus.useQuery(
     { paymentId: paymentId ?? "" },
@@ -154,12 +157,18 @@ export function MpesaPaymentFlow({ plan, planPriceKes, paymentPurpose = "INITIAL
       queueMicrotask(() => setFlowState("success"))
 
       if (paymentId) {
-        trackPurchase({
+        void trackPurchase({
           transaction_id: paymentId,
           plan_type: plan,
           payment_provider: "INTASEND",
           value: planPriceKes ?? undefined,
           currency: "KES",
+          claimChecker: async () => {
+            if (claimTelemetryMutation?.mutateAsync) {
+              return claimTelemetryMutation.mutateAsync({ paymentId })
+            }
+            return { firstPurchaseTelemetry: true }
+          },
         })
       }
 
@@ -179,7 +188,7 @@ export function MpesaPaymentFlow({ plan, planPriceKes, paymentPurpose = "INITIAL
         setFailReason("The M-Pesa payment was declined or cancelled.")
       })
     }
-  }, [statusQuery.data, queryClient, onSuccess, paymentId, plan, planPriceKes])
+  }, [statusQuery.data, queryClient, onSuccess, paymentId, plan, planPriceKes, claimTelemetryMutation])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
