@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { LegalDocumentModal, type LegalDocumentType } from "@/components/legal/legal-document-modal"
 import { PasswordStrengthIndicator, checkPasswordStrength } from "@/components/auth/password-strength-indicator"
 import { getAuthErrorMessage } from "@/lib/auth-error-messages"
+import { trackEvent } from "@/lib/analytics"
 
 const ROLE_MAP = {
   startup: "STARTUP",
@@ -119,6 +120,10 @@ export default function RegisterPage() {
         companyName: hasInvitation ? undefined : formData.companyName || undefined,
         homeJurisdictionCode: hasInvitation ? undefined : formData.homeJurisdictionCode || undefined,
         invitationToken: invitationToken || undefined,
+      })
+      trackEvent("sign_up", {
+        role: ROLE_MAP[formData.organizationType],
+        jurisdiction_code: formData.homeJurisdictionCode || "KE",
       })
       setSuccess(true)
     } catch (err: unknown) {

@@ -10,7 +10,7 @@ import {
 import { isRegulatoryArea, REGULATORY_AREA_NAMES } from "@/lib/compliance/compliance.types"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
-import { trackEvent } from "@/lib/analytics"
+import { trackEvent, trackFeatureUsage, recordAccountActivation } from "@/lib/analytics"
 import {
   DEFAULT_JURISDICTION,
   isQueryableJurisdictionCode,
@@ -233,6 +233,19 @@ export default function ComplianceQueryPage() {
         response_word_count: result.answer.split(/\s+/).length,
       })
 
+      trackFeatureUsage({
+        feature_name: "compliance_query",
+        status: "completed",
+        jurisdiction_code: messageJurisdictions[0],
+        plan_type: planData?.plan,
+      })
+
+      recordAccountActivation({
+        first_feature: "compliance_query",
+        jurisdiction_code: messageJurisdictions[0],
+        plan_type: planData?.plan,
+      })
+
       if (result.grounded === false || hasInvalidCitations || (result.abstained && result.route === "corpus-gap")) {
         trackEvent("compliance_query_source_insufficient", {
           jurisdictionCode: messageJurisdictions.join(","),
@@ -240,8 +253,15 @@ export default function ComplianceQueryPage() {
       }
 
       setActiveQueryJurisdictions(null)
+    } else if (streamState.phase === "error") {
+      trackFeatureUsage({
+        feature_name: "compliance_query",
+        status: "failed",
+        jurisdiction_code: activeQueryJurisdictions?.[0] ?? effectiveSelectedJurisdictions[0],
+        plan_type: planData?.plan,
+      })
     }
-  }, [activeQueryJurisdictions, answerDetail, effectiveSelectedJurisdictions, streamState])
+  }, [activeQueryJurisdictions, answerDetail, effectiveSelectedJurisdictions, planData?.plan, streamState])
 
   // Handlers
 
@@ -260,6 +280,13 @@ export default function ComplianceQueryPage() {
     trackEvent("compliance_query_started", {
       source: "manual_input",
       jurisdictionCode: requestJurisdictions.join(","),
+    })
+
+    trackFeatureUsage({
+      feature_name: "compliance_query",
+      status: "started",
+      jurisdiction_code: requestJurisdictions[0],
+      plan_type: planData?.plan,
     })
 
     pendingQuestionRef.current = trimmed

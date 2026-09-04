@@ -9,6 +9,7 @@ import {
   type PlanConfig,
 } from "@/lib/config/plans"
 import { Eyebrow, Reveal, Stagger, StaggerItem, LiquidGlassCard } from "@/components/landing/redesign/kit"
+import { trackEvent, type AnalyticsPlacement } from "@/lib/analytics"
 
 type BillingCycle = "monthly" | "yearly"
 type PlanTone = "startup" | "business" | "enterprise"
@@ -215,9 +216,11 @@ function getCardClasses(tone: PlanTone) {
 function PricingCard({
   plan,
   cycle,
+  placement = "homepage_pricing_section",
 }: {
   plan: PlanConfig
   cycle: BillingCycle
+  placement?: AnalyticsPlacement
 }) {
   const tone = getTone(plan)
   const isBusiness = tone === "business"
@@ -306,6 +309,12 @@ function PricingCard({
 
       <Link
         href={getPlanHref(plan)}
+        onClick={() => {
+          trackEvent("upgrade_clicked", {
+            target_plan: plan.id,
+            placement,
+          })
+        }}
         className={`relative z-10 mt-9 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-2xl px-5 py-4 text-center text-sm font-bold transition duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050706] ${
           isBusiness
             ? "bg-[#1ED760] text-[#06110A] shadow-[0_16px_44px_rgba(30,215,96,0.22)] hover:-translate-y-0.5 hover:bg-[#33E875] focus-visible:ring-[#1ED760]"
@@ -321,7 +330,13 @@ function PricingCard({
   )
 }
 
-export function PricingSection({ showEnterpriseReassurance = true }: { showEnterpriseReassurance?: boolean }) {
+export function PricingSection({
+  showEnterpriseReassurance = true,
+  placement = "homepage_pricing_section",
+}: {
+  showEnterpriseReassurance?: boolean
+  placement?: AnalyticsPlacement
+}) {
   const [cycle, setCycle] = useState<BillingCycle>("monthly")
   const annualSavings = getAnnualSavings(PUBLIC_PRICING_PLANS[0])
   const activePriceNarrative = useMemo(
@@ -331,6 +346,12 @@ export function PricingSection({ showEnterpriseReassurance = true }: { showEnter
         : "Monthly pricing selected. Startup and Business now show monthly totals.",
     [cycle],
   )
+
+  useEffect(() => {
+    trackEvent("pricing_viewed", {
+      placement,
+    })
+  }, [placement])
 
   return (
     <section
@@ -384,7 +405,7 @@ export function PricingSection({ showEnterpriseReassurance = true }: { showEnter
           <div className="mt-20 grid justify-items-center gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-7">
             {PUBLIC_PRICING_PLANS.map((plan) => (
               <StaggerItem key={plan.id} className="w-full flex">
-                <PricingCard plan={plan} cycle={cycle} />
+                <PricingCard plan={plan} cycle={cycle} placement={placement} />
               </StaggerItem>
             ))}
           </div>

@@ -41,6 +41,7 @@ import { toast } from "sonner"
 import { trpc } from "@/lib/trpc"
 import { UsageIndicator, UpgradeBanner } from "@/components/plan/feature-gate"
 import { usePlan } from "@/lib/plan-context"
+import { trackFeatureUsage, recordAccountActivation } from "@/lib/analytics"
 import {
   ClipboardCheck,
   Plus,
@@ -333,7 +334,14 @@ function GenerateChecklistDialog({
   const generateMutation = trpc.checklist.generateChecklistAsync.useMutation<any>({
     onSuccess: (data: { checklistId: string; status: string }) => {
       toast.success("Checklist generation started", {
-        description: "Your checklist is being built in the background   this typically takes 1-3 minutes.",
+        description: "Your checklist is being built in the background — this typically takes 1-3 minutes.",
+      })
+      trackFeatureUsage({
+        feature_name: "compliance_checklist",
+        status: "completed",
+      })
+      recordAccountActivation({
+        first_feature: "compliance_checklist",
       })
       setOpen(false)
       resetForm()
@@ -341,6 +349,10 @@ function GenerateChecklistDialog({
     },
 
     onError: (err: any) => {
+      trackFeatureUsage({
+        feature_name: "compliance_checklist",
+        status: "failed",
+      })
       const code = (err?.data?.code ?? err?.shape?.data?.code) as string | undefined
       if (code === "FORBIDDEN") {
         toast.error("Feature not available on your plan", {
@@ -355,7 +367,7 @@ function GenerateChecklistDialog({
           description: err.message ?? "Please try again.",
         })
       }
-      // Do NOT reset the form or close the dialog on error   keep fields populated for retry
+      // Do NOT reset the form or close the dialog on error — keep fields populated for retry
     },
   })
 
@@ -372,6 +384,10 @@ function GenerateChecklistDialog({
 
   const handleGenerate = () => {
     if (!canGenerate || generateMutation.isPending) return
+    trackFeatureUsage({
+      feature_name: "compliance_checklist",
+      status: "started",
+    })
     generateMutation.mutate({
       productType,
       businessStage,

@@ -51,7 +51,7 @@ const faqs = [
 export default function PricingPage() {
   return (
     <div className="flex flex-col bg-[#050706]">
-      <PricingSection />
+      <PricingSection placement="pricing_page" />
 
       <section className="relative overflow-hidden border-b border-[#1D2925] bg-[#050706] py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

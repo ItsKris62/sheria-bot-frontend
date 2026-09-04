@@ -1,15 +1,61 @@
 import posthog from "posthog-js";
 import { useAuthStore } from "./auth-store";
 
-// Safe properties we are allowed to send
+export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
+
+export type SupportedFeatureName =
+  | "compliance_query"
+  | "compliance_checklist"
+  | "gap_analysis"
+  | "compliance_dashboard"
+  | "policy_generator"
+  | "compliance_calendar"
+  | "compliance_roadmap"
+  | "custom_framework"
+  | "document_analysis"
+  | "regulatory_alerts";
+
+export type FeatureUsageStatus = "viewed" | "started" | "completed" | "failed";
+
+export type AnalyticsPlacement =
+  | "pricing_page"
+  | "homepage_pricing_section"
+  | "feature_gate"
+  | "billing_settings"
+  | "dashboard_sidebar"
+  | "header";
+
 export type SafeEventProperties = {
-  // Common
+  // Common Dimensions
   plan?: string | null;
+  plan_type?: string | null;
   role?: string | null;
+  user_role?: string | null;
   pilot_status?: "active" | "none" | null;
   country?: string;
+  jurisdiction?: string;
+  jurisdiction_code?: string;
+  jurisdictionCode?: string;
+  placement?: AnalyticsPlacement | string;
+  source?: string;
+  target_plan?: string;
 
-  // Domain specific metadata (never send raw content)
+  // Normalized Feature Usage
+  feature_name?: SupportedFeatureName | string;
+  status?: FeatureUsageStatus | string;
+
+  // Commercial & Funnel
+  payment_provider?: "INTASEND" | "STRIPE";
+  currency?: "KES" | "USD" | string;
+  value?: number;
+  transaction_id?: string;
+  cycle?: "monthly" | "yearly";
+  lead_type?: "contact_form" | "enterprise_quote" | "pilot_application" | string;
+  first_feature?: SupportedFeatureName | string;
+  requires_approval?: boolean;
+  method?: string;
+
+  // Domain specific metadata (never send raw content or PII)
   framework_slug?: string;
   file_type?: string;
   analysis_type?: string;
@@ -21,28 +67,19 @@ export type SafeEventProperties = {
   fallback_triggered?: boolean;
   fallback_reason?: string;
   response_word_count?: number;
-
-  // Specific flags for UI interactions
-  status?: string;
-  source?: string;
   is_pilot_feature?: boolean;
-
-  // Additional safe metadata
   type?: string;
   reason?: string;
   depth?: string;
   framework_count?: number;
   new_status?: string;
-  target_plan?: string;
   feature?: string;
   limit_type?: string;
   current_plan?: string;
   required_plan?: string;
   document_type?: string;
-  jurisdiction?: string;
-  jurisdictionCode?: string;
-  
-  // Blog specific
+
+  // Blog & KB specific
   blog_category?: string;
   blog_slug?: string;
   read_time_seconds?: number;
@@ -53,7 +90,6 @@ export type SafeEventProperties = {
   tags?: string[];
   authorId?: string;
   publishedAt?: string;
-  placement?: "featured" | "recent" | "related" | "search" | "category";
   referrerType?: "internal" | "search" | "social" | "newsletter" | "direct" | "other";
   readingSessionId?: string;
   resultCount?: number;
@@ -71,19 +107,16 @@ export type SafeEventProperties = {
   relatedCardPosition?: number;
   relationshipBasis?: string;
   ctaId?: "request_demo" | "start_compliance_query" | "explore_regulatory_library" | "view_pricing" | "start_free_trial";
-  sharePlatform?: string;
   feedbackValue?: "HELPFUL" | "NOT_HELPFUL";
   topicCategory?: string;
-
-  // Knowledge Base specific
   kb_category?: string;
   kb_tag?: string;
   kb_slug?: string;
   has_search?: boolean;
   result_count?: number;
   page?: number;
-  
-  // Blog Automation Admin
+
+  // Blog Automation
   blog_automation_action?: string;
   blog_automation_type?: string;
   blog_automation_priority?: string;
@@ -91,8 +124,22 @@ export type SafeEventProperties = {
   blog_source_region?: string;
 };
 
-// Strongly typed event names based on requirements
+// GA4 & PostHog Lifecycle Events
+export type LifecycleEvent =
+  | "sign_up"
+  | "email_verified"
+  | "login"
+  | "account_activated"
+  | "trial_start"
+  | "pricing_viewed"
+  | "upgrade_clicked"
+  | "begin_checkout"
+  | "purchase"
+  | "generate_lead"
+  | "feature_usage";
+
 export type AnalyticsEvent =
+  | LifecycleEvent
   // Compliance Query
   | "compliance_query_opened"
   | "compliance_query_started"
@@ -113,7 +160,6 @@ export type AnalyticsEvent =
   | "admin_corpus_gap_report_status_updated"
   // Billing and Entitlements
   | "plan_limit_reached"
-  | "upgrade_clicked"
   | "billing_page_opened"
   // Feature Gates
   | "feature_gate_viewed"
@@ -159,13 +205,31 @@ export type AnalyticsEvent =
   | "blog_automation_draft_published"
   | "blog_automation_digest_generated";
 
-// A strict allowlist of keys that are permitted in the payload.
-// Any key not in this list will be silently dropped before sending to PostHog.
+// Strict allowlist of keys permitted in payloads
 const ALLOWED_PROPERTY_KEYS = new Set([
   "plan",
+  "plan_type",
   "role",
+  "user_role",
   "pilot_status",
   "country",
+  "jurisdiction",
+  "jurisdiction_code",
+  "jurisdictionCode",
+  "placement",
+  "source",
+  "target_plan",
+  "feature_name",
+  "status",
+  "payment_provider",
+  "currency",
+  "value",
+  "transaction_id",
+  "cycle",
+  "lead_type",
+  "first_feature",
+  "requires_approval",
+  "method",
   "framework_slug",
   "file_type",
   "analysis_type",
@@ -177,22 +241,17 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "fallback_triggered",
   "fallback_reason",
   "response_word_count",
-  "status",
-  "source",
   "is_pilot_feature",
   "type",
   "reason",
   "depth",
   "framework_count",
   "new_status",
-  "target_plan",
   "feature",
   "limit_type",
   "current_plan",
   "required_plan",
   "document_type",
-  "jurisdiction",
-  "jurisdictionCode",
   "blog_category",
   "blog_slug",
   "read_time_seconds",
@@ -203,7 +262,6 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "tags",
   "authorId",
   "publishedAt",
-  "placement",
   "referrerType",
   "readingSessionId",
   "resultCount",
@@ -221,44 +279,6 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "relatedCardPosition",
   "relationshipBasis",
   "ctaId",
-  "sharePlatform",
-  "feedbackValue",
-  "topicCategory",
-  "kb_category",
-  "kb_tag",
-  "kb_slug",
-  "has_search",
-  "result_count",
-  "page",
-  "blog_category",
-  "blog_slug",
-  "read_time_seconds",
-  "share_platform",
-  "postId",
-  "slug",
-  "category",
-  "tags",
-  "authorId",
-  "publishedAt",
-  "placement",
-  "referrerType",
-  "readingSessionId",
-  "resultCount",
-  "queryLength",
-  "queryFingerprint",
-  "hasResults",
-  "activeReadSeconds",
-  "maxScrollDepthBucket",
-  "estimatedReadMinutes",
-  "sourcePosition",
-  "sourcePublisher",
-  "sourceType",
-  "sourceDomain",
-  "destinationPostId",
-  "relatedCardPosition",
-  "relationshipBasis",
-  "ctaId",
-  "sharePlatform",
   "feedbackValue",
   "topicCategory",
   "kb_category",
@@ -274,40 +294,396 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "blog_source_region",
 ]);
 
+// Sensitive URL parameters that must NEVER be recorded in page_location
+const SENSITIVE_URL_PARAMS = new Set([
+  "token",
+  "invitationtoken",
+  "token_hash",
+  "email",
+  "code",
+  "access_token",
+  "refresh_token",
+  "secret",
+  "key",
+  "password",
+  "signature",
+  "payer_id",
+  "checkout_id",
+  "state",
+  "session_id",
+  "otp",
+  "auth_token",
+  "q",
+  "query",
+  "search",
+]);
+
+// Sensitive path prefixes where query parameters must always be stripped entirely
+const SENSITIVE_PATH_PREFIXES = [
+  "/verify-email",
+  "/reset-password",
+  "/auth/callback",
+  "/unsubscribe",
+  "/change-password",
+];
+
+// In-memory deduplication trackers for critical one-time events
+const trackedPurchases = new Set<string>();
+const trackedActivations = new Set<string>();
+const trackedEmailVerifications = new Set<string>();
+const trackedTrials = new Set<string>();
+
 /**
- * Safely track an event in PostHog.
- * Will fail silently if PostHog is blocked, uninitialized, or errors out.
- * Silently drops any property keys not explicitly allowlisted.
+ * Resets in-memory deduplication sets for testing.
  */
-export function trackEvent(eventName: AnalyticsEvent, properties?: SafeEventProperties) {
+export function resetAnalyticsDedupForTests(): void {
+  trackedPurchases.clear();
+  trackedActivations.clear();
+  trackedEmailVerifications.clear();
+  trackedTrials.clear();
+}
+
+/**
+ * Checks whether analytics processing is legally and contractually permitted.
+ * Returns false if user has Section 34 restriction or denied analytics consent.
+ */
+export function isAnalyticsAllowed(): boolean {
+  if (typeof window === "undefined") return false;
+
+  // Check Section 34 Statutory Processing Restriction
   try {
-    // Only capture if running in browser and PostHog is initialized
-    if (typeof window !== "undefined" && posthog.__loaded) {
-      // Check Section 34 Statutory Processing Restriction
-      const user = useAuthStore.getState().user;
-      if (user?.preferences?.section34Restriction?.status === "RESTRICTED") {
-        return;
-      }
+    const user = useAuthStore.getState().user;
+    if (user?.preferences?.section34Restriction?.status === "RESTRICTED") {
+      syncGaDisable(true);
+      return false;
+    }
+  } catch {
+    // Ignore store access errors in SSR/test
+  }
 
-      if (typeof posthog.has_opted_out_capturing === "function" && posthog.has_opted_out_capturing()) {
-        return;
-      }
+  // Check Cookie Consent
+  try {
+    const consent = localStorage.getItem("sheriabot:cookie_consent:analytics");
+    if (consent === "denied") {
+      syncGaDisable(true);
+      return false;
+    }
+  } catch {
+    // Ignore localStorage errors
+  }
 
-      let safeProperties: Record<string, unknown> | undefined = undefined;
-      
-      if (properties) {
-        safeProperties = {};
-        for (const key of Object.keys(properties)) {
-          if (ALLOWED_PROPERTY_KEYS.has(key)) {
-            safeProperties[key] = properties[key as keyof SafeEventProperties];
-          }
-        }
+  syncGaDisable(false);
+  return true;
+}
+
+function syncGaDisable(disabled: boolean): void {
+  if (typeof window === "undefined" || !GA_MEASUREMENT_ID) return;
+  const disableKey = `ga-disable-${GA_MEASUREMENT_ID}` as const;
+  window[disableKey] = disabled;
+}
+
+/**
+ * Sanitizes URLs to remove sensitive tokens and user-generated text query parameters.
+ */
+export function sanitizeUrlForAnalytics(rawUrlOrPath: string): string {
+  try {
+    if (!rawUrlOrPath) return "";
+    const isAbsolute = rawUrlOrPath.startsWith("http://") || rawUrlOrPath.startsWith("https://");
+    const parsed = new URL(isAbsolute ? rawUrlOrPath : `https://sheriabot.com${rawUrlOrPath.startsWith("/") ? "" : "/"}${rawUrlOrPath}`);
+    
+    // Check sensitive path prefix
+    const isSensitivePath = SENSITIVE_PATH_PREFIXES.some(prefix => 
+      parsed.pathname === prefix || parsed.pathname.startsWith(`${prefix}/`)
+    );
+
+    if (isSensitivePath) {
+      // Return origin + pathname only, strip entire search
+      return isAbsolute ? `${parsed.origin}${parsed.pathname}` : parsed.pathname;
+    }
+
+    // Strip specific sensitive parameters
+    const searchParams = new URLSearchParams(parsed.search);
+    const keysToDelete: string[] = [];
+    searchParams.forEach((_, key) => {
+      if (SENSITIVE_URL_PARAMS.has(key.toLowerCase())) {
+        keysToDelete.push(key);
       }
-      
-      posthog.capture(eventName, safeProperties);
+    });
+    keysToDelete.forEach(key => searchParams.delete(key));
+
+    const queryString = searchParams.toString();
+    const cleanPathWithSearch = `${parsed.pathname}${queryString ? `?${queryString}` : ""}`;
+    return isAbsolute ? `${parsed.origin}${cleanPathWithSearch}` : cleanPathWithSearch;
+  } catch {
+    return rawUrlOrPath.split("?")[0] || "";
+  }
+}
+
+/**
+ * Normalizes and filters event payload to strictly allowlisted keys.
+ */
+export function filterSafeProperties(properties?: SafeEventProperties): Record<string, unknown> | undefined {
+  if (!properties) return undefined;
+  const safe: Record<string, unknown> = {};
+  for (const key of Object.keys(properties)) {
+    if (ALLOWED_PROPERTY_KEYS.has(key)) {
+      const val = properties[key as keyof SafeEventProperties];
+      if (val !== undefined && val !== null) {
+        safe[key] = val;
+      }
+    }
+  }
+  return Object.keys(safe).length > 0 ? safe : undefined;
+}
+
+/**
+ * Dispatches an event to Google Analytics 4 via gtag.js.
+ */
+export function trackGA4Event(eventName: string, properties?: SafeEventProperties): void {
+  try {
+    if (typeof window === "undefined" || !GA_MEASUREMENT_ID || !window.gtag) return;
+    if (!isAnalyticsAllowed()) return;
+
+    const safeProps = filterSafeProperties(properties) ?? {};
+    window.gtag("event", eventName, safeProps);
+  } catch (error) {
+    // Fail silently in production
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[GA4] Failed to track event", error);
+    }
+  }
+}
+
+/**
+ * Main analytics event tracker. Dispatches to PostHog and GA4 with allowlist filtering.
+ */
+export function trackEvent(eventName: AnalyticsEvent, properties?: SafeEventProperties): void {
+  try {
+    if (typeof window === "undefined") return;
+    if (!isAnalyticsAllowed()) return;
+
+    const safeProps = filterSafeProperties(properties);
+
+    // 1. PostHog capture
+    if (posthog && posthog.__loaded) {
+      if (typeof posthog.has_opted_out_capturing !== "function" || !posthog.has_opted_out_capturing()) {
+        posthog.capture(eventName, safeProps);
+      }
+    }
+
+    // 2. GA4 capture
+    trackGA4Event(eventName, properties);
+  } catch (error) {
+    // Fail silently so we don't break user workflows
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[Analytics] Failed to track event", error);
+    }
+  }
+}
+
+/**
+ * Normalized product feature usage tracking.
+ */
+export function trackFeatureUsage(params: {
+  feature_name: SupportedFeatureName;
+  status: FeatureUsageStatus;
+  jurisdiction_code?: string;
+  plan_type?: string;
+}): void {
+  trackEvent("feature_usage", {
+    feature_name: params.feature_name,
+    status: params.status,
+    jurisdiction_code: params.jurisdiction_code,
+    plan_type: params.plan_type,
+  });
+}
+
+/**
+ * Authoritative, deduplicated purchase tracker.
+ */
+export function trackPurchase(params: {
+  transaction_id: string;
+  plan_type: "STARTUP" | "BUSINESS" | "ENTERPRISE" | string;
+  payment_provider: "INTASEND" | "STRIPE";
+  value?: number;
+  currency?: "KES" | "USD" | string;
+}): void {
+  if (!params.transaction_id || trackedPurchases.has(params.transaction_id)) return;
+  trackedPurchases.add(params.transaction_id);
+
+  trackEvent("purchase", {
+    transaction_id: params.transaction_id,
+    plan_type: params.plan_type,
+    payment_provider: params.payment_provider,
+    value: params.value,
+    currency: params.currency ?? (params.payment_provider === "INTASEND" ? "KES" : "USD"),
+  });
+}
+
+/**
+ * Checkout initiation tracker. Fires only on confirmed checkout intent.
+ */
+export function trackBeginCheckout(params: {
+  plan_type: "STARTUP" | "BUSINESS" | "ENTERPRISE" | string;
+  payment_provider: "INTASEND" | "STRIPE";
+  cycle?: "monthly" | "yearly";
+  value?: number;
+  currency?: "KES" | "USD" | string;
+}): void {
+  trackEvent("begin_checkout", {
+    plan_type: params.plan_type,
+    payment_provider: params.payment_provider,
+    cycle: params.cycle,
+    value: params.value,
+    currency: params.currency ?? (params.payment_provider === "INTASEND" ? "KES" : "USD"),
+  });
+}
+
+/**
+ * Authoritative, deduplicated trial start tracker.
+ */
+export function trackTrialStart(params: {
+  userId: string;
+  plan_type?: string;
+  jurisdiction_code?: string;
+}): void {
+  if (!params.userId || trackedTrials.has(params.userId)) return;
+  trackedTrials.add(params.userId);
+
+  trackEvent("trial_start", {
+    plan_type: params.plan_type ?? "FREE_TRIAL",
+    jurisdiction_code: params.jurisdiction_code,
+  });
+}
+
+/**
+ * Authoritative, deduplicated email verification tracker.
+ */
+export function trackEmailVerified(params: {
+  userIdOrEmailHash?: string;
+  requires_approval?: boolean;
+}): void {
+  const dedupKey = params.userIdOrEmailHash || "verified";
+  if (trackedEmailVerifications.has(dedupKey)) return;
+  trackedEmailVerifications.add(dedupKey);
+
+  trackEvent("email_verified", {
+    requires_approval: params.requires_approval,
+  });
+}
+
+/**
+ * Authoritative account activation tracker.
+ * Checks if user is authenticated and records activation once durably.
+ */
+export function recordAccountActivation(params: {
+  first_feature: SupportedFeatureName;
+  jurisdiction_code?: string;
+  plan_type?: string;
+}): void {
+  try {
+    const { user, updateUser } = useAuthStore.getState();
+    if (!user) return;
+
+    // Check if account was already activated
+    if (user.preferences?.accountActivatedAt || trackedActivations.has(user.id)) {
+      return;
+    }
+
+    trackedActivations.add(user.id);
+    const activatedAt = new Date().toISOString();
+
+    // Update local user state so it won't fire again in this session
+    updateUser({
+      preferences: {
+        ...(user.preferences ?? {}),
+        accountActivatedAt: activatedAt,
+      },
+    });
+
+    trackEvent("account_activated", {
+      first_feature: params.first_feature,
+      jurisdiction_code: params.jurisdiction_code,
+      plan_type: params.plan_type,
+    });
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[Analytics] Activation check error", error);
+    }
+  }
+}
+
+/**
+ * Sets authenticated user identity in PostHog and GA4.
+ * Uses ONLY the internal opaque user UUID.
+ */
+export function setAnalyticsUser(
+  userId: string,
+  properties?: {
+    role?: string | null;
+    plan?: string | null;
+    pilot_status?: "active" | "none" | null;
+    organization_id?: string | null;
+  }
+): void {
+  try {
+    if (typeof window === "undefined" || !userId) return;
+    if (!isAnalyticsAllowed()) return;
+
+    // 1. PostHog identity
+    if (posthog && posthog.__loaded) {
+      if (typeof posthog.opt_in_capturing === "function") {
+        posthog.opt_in_capturing();
+      }
+      posthog.identify(userId, {
+        role: properties?.role,
+        plan: properties?.plan,
+        pilot_status: properties?.pilot_status,
+        organization_id: properties?.organization_id,
+      });
+
+      if (properties?.organization_id) {
+        posthog.group("organization", properties.organization_id, {
+          plan: properties?.plan,
+          pilot_status: properties?.pilot_status,
+        });
+      }
+    }
+
+    // 2. GA4 User-ID and user properties
+    if (GA_MEASUREMENT_ID && window.gtag) {
+      window.gtag("set", { user_id: userId });
+      window.gtag("set", "user_properties", {
+        plan_type: properties?.plan,
+        user_role: properties?.role,
+      });
     }
   } catch (error) {
-    // Fail silently so we don't break the user workflow
-    console.warn("[Analytics] Failed to track event", error);
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[Analytics] Failed to set user", error);
+    }
+  }
+}
+
+/**
+ * Clears user identity from PostHog and GA4 on logout.
+ */
+export function clearAnalyticsUser(): void {
+  try {
+    if (typeof window === "undefined") return;
+
+    // 1. PostHog reset
+    if (posthog && posthog.__loaded) {
+      posthog.reset();
+    }
+
+    // 2. GA4 User-ID clear
+    if (GA_MEASUREMENT_ID && window.gtag) {
+      window.gtag("set", { user_id: null });
+    }
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[Analytics] Failed to clear user", error);
+    }
   }
 }

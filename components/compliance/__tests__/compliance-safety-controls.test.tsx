@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/analytics", () => ({
   trackEvent: (...args: unknown[]) => mocks.trackEvent(...args),
+  trackFeatureUsage: vi.fn(),
+  recordAccountActivation: vi.fn(),
 }))
 
 vi.mock("@/lib/trpc", () => ({

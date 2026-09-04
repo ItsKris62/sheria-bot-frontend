@@ -30,6 +30,7 @@ import {
   useEnterprisePolicies,
   useEnterprisePolicyActions,
 } from "@/hooks/use-enterprise-policies"
+import { trackFeatureUsage, recordAccountActivation } from "@/lib/analytics"
 
 const policyTypes: Array<{ value: EnterprisePolicyType; label: string; frameworks: string[] }> = [
   { value: "DATA_PROTECTION", label: "Data Protection", frameworks: ["Data Protection Act 2019"] },
@@ -64,6 +65,10 @@ function PolicyGeneratorContent() {
 
   const handleGenerate = async () => {
     setGenerateError(null)
+    trackFeatureUsage({
+      feature_name: "policy_generator",
+      status: "started",
+    })
     try {
       const result = await createDraft({
         title: title.trim() || `${selectedType.label} Policy`,
@@ -74,9 +79,20 @@ function PolicyGeneratorContent() {
         regulatoryFrameworks: selectedType.frameworks,
         jurisdiction: "Kenya",
       })
+      trackFeatureUsage({
+        feature_name: "policy_generator",
+        status: "completed",
+      })
+      recordAccountActivation({
+        first_feature: "policy_generator",
+      })
       setGeneratedPolicyId(result.policyId)
       setShowResult(true)
     } catch {
+      trackFeatureUsage({
+        feature_name: "policy_generator",
+        status: "failed",
+      })
       setGenerateError(createError || "Failed to start policy generation. Please try again.")
     }
   }

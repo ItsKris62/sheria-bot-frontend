@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Bell, ArrowRight, AlertCircle } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import type { AlertItem } from "./dashboard-types"
+import { trackFeatureUsage } from "@/lib/analytics"
 
 export interface RegulatoryAlertsCardProps {
   alerts?: AlertItem[]
@@ -13,6 +14,12 @@ export interface RegulatoryAlertsCardProps {
 }
 
 export function RegulatoryAlertsCard({ alerts = [], isLoading, isError }: RegulatoryAlertsCardProps) {
+  React.useEffect(() => {
+    trackFeatureUsage({
+      feature_name: "regulatory_alerts",
+      status: "viewed",
+    })
+  }, [])
   return (
     <PortalSurface variant="raised" className="p-6">
       <PortalSectionHeader

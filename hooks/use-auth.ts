@@ -8,6 +8,7 @@ import { getAuthErrorMessage } from "@/lib/auth-error-messages";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AuthUser, UserRole } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase-client";
+import { trackEvent, clearAnalyticsUser } from "@/lib/analytics";
 
 /** Map backend role to dashboard path */
 function getDashboardPath(role: UserRole): string {
@@ -55,6 +56,11 @@ export function useAuth() {
       });
 
       setAuth(authUser, result.accessToken);
+      trackEvent("login", {
+        method: "credentials",
+        role: authUser.role,
+      });
+
       if (result.user.mustChangePassword) {
         router.push("/change-password");
         return result;
@@ -90,6 +96,7 @@ export function useAuth() {
     } catch {
       // Even if server calls fail, clear local state
     }
+    clearAnalyticsUser();
     queryClient.clear();
     clearAuth();
     setAccessToken(null);

@@ -44,7 +44,7 @@ import {
 } from "lucide-react"
 import { LoadingScreen } from "@/components/loading-screen"
 import { useAuthStore } from "@/lib/auth-store"
-import { trackEvent } from "@/lib/analytics"
+import { trackEvent, trackFeatureUsage, recordAccountActivation } from "@/lib/analytics"
 
 // Local Types
 
@@ -1138,10 +1138,21 @@ export default function GapAnalysisPage() {
       trackEvent("gap_analysis_completed", {
         framework_count: pollingFrameworkCount,
       })
+      trackFeatureUsage({
+        feature_name: "gap_analysis",
+        status: "completed",
+      })
+      recordAccountActivation({
+        first_feature: "gap_analysis",
+      })
       toast.success("Analysis complete", { description: `Overall score: ${pollingOverallScore ?? "N/A"}/100` })
     }
     if (pollingStatus === "FAILED") {
       trackEvent("gap_analysis_failed", { reason: pollingErrorMessage || "unknown_polling_error" })
+      trackFeatureUsage({
+        feature_name: "gap_analysis",
+        status: "failed",
+      })
     }
   }, [
     invalidateGapAnalyses,
@@ -1155,7 +1166,7 @@ export default function GapAnalysisPage() {
     resetForm,
   ])
 
-  // Page-refresh resumption   detect in-progress analyses on first load
+  // Page-refresh resumption — detect in-progress analyses on first load
   useEffect(() => {
     if (hasCheckedResumption.current || isAwaitingResult || activeView || !analyses) return
     hasCheckedResumption.current = true
@@ -1182,6 +1193,10 @@ export default function GapAnalysisPage() {
     },
     onError: (err) => {
       trackEvent("gap_analysis_failed", { reason: err.message || "mutation_error" })
+      trackFeatureUsage({
+        feature_name: "gap_analysis",
+        status: "failed",
+      })
       toast.error("Analysis failed", {
         description: err.message || "Failed to run gap analysis. Please try again.",
       })
@@ -1211,6 +1226,10 @@ export default function GapAnalysisPage() {
         depth: analysisDepth,
         framework_count: selectedFrameworks.length,
         file_type: ext
+      })
+      trackFeatureUsage({
+        feature_name: "gap_analysis",
+        status: "started",
       })
 
       runMutation.mutate({

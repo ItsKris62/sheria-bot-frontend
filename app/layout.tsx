@@ -171,20 +171,26 @@ export default function RootLayout({
           <Providers>{children}</Providers>
         </PostHogProvider>
 
-        {/* Google Analytics (gtag.js) — G-E23V39YL9V */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-E23V39YL9V"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
+        {/* Google Analytics (gtag.js) — loaded only when NEXT_PUBLIC_GA_MEASUREMENT_ID is configured */}
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
 
-            gtag('config', 'G-E23V39YL9V');
-          `}
-        </Script>
+                gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+                  send_page_view: false
+                });
+              `}
+            </Script>
+          </>
+        ) : null}
 
         {/* Vercel Analytics — tracks page views and custom events */}
         <Analytics />

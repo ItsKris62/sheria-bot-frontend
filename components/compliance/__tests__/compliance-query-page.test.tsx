@@ -61,6 +61,8 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/analytics", () => ({
   trackEvent: (...args: unknown[]) => mocks.trackEvent(...args),
+  trackFeatureUsage: vi.fn(),
+  recordAccountActivation: vi.fn(),
 }))
 
 vi.mock("@/hooks/use-compliance", () => ({

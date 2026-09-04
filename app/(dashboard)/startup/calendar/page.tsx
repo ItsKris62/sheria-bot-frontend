@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,7 @@ import { usePlan } from "@/lib/plan-context"
 import { FeatureGate, LockedFeatureCard } from "@/components/plan/feature-gate"
 import { AddEventModal } from "@/components/calendar/AddEventModal"
 import { CATEGORY_CONFIG, PRIORITY_CONFIG } from "@/lib/calendar-config"
+import { trackFeatureUsage } from "@/lib/analytics"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -63,6 +64,13 @@ export default function CalendarPage() {
   const today = new Date()
   const [currentDate, setCurrentDate]   = useState(new Date(today.getFullYear(), today.getMonth(), 1))
   const [addEventOpen, setAddEventOpen] = useState(false)
+
+  useEffect(() => {
+    trackFeatureUsage({
+      feature_name: "compliance_calendar",
+      status: "viewed",
+    })
+  }, [])
 
   const { firstDay, daysInMonth } = getDaysInMonth(currentDate)
 

@@ -1,8 +1,10 @@
 "use client"
 
+import { useEffect } from "react"
 import { useAuthenticatedQueryEnabled, useAuthStore } from "@/lib/auth-store"
 import { trpc } from "@/lib/trpc"
 import { usePlan } from "@/lib/plan-context"
+import { trackFeatureUsage } from "@/lib/analytics"
 import {
   UserDashboardHeader,
   ComplianceOverview,
@@ -18,6 +20,13 @@ export default function StartupDashboard() {
   const user = useAuthStore((state) => state.user)
   const authQueryEnabled = useAuthenticatedQueryEnabled()
   const displayName = user?.name?.split(" ")[0] ?? "there"
+
+  useEffect(() => {
+    trackFeatureUsage({
+      feature_name: "compliance_dashboard",
+      status: "viewed",
+    })
+  }, [])
 
   // Derive calendar feature entitlement from plan context
   const { hasFeature } = usePlan()

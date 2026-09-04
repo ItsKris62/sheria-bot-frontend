@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePlan } from "@/lib/plan-context";
 import { trpc } from "@/lib/trpc";
+import { useAuthStore } from "@/lib/auth-store";
+import { trackTrialStart } from "@/lib/analytics";
 
 /**
  * TrialCtaBanner
@@ -24,6 +26,13 @@ export function TrialCtaBanner() {
 
   const activate = trpc.trial.activate.useMutation({
     onSuccess: () => {
+      const user = useAuthStore.getState().user;
+      if (user) {
+        trackTrialStart({
+          userId: user.id,
+          plan_type: "FREE_TRIAL",
+        });
+      }
       // Refetch plan data so PlanProvider picks up FREE_TRIAL immediately
       void utils.billing.getPlanAndUsage.invalidate();
     },

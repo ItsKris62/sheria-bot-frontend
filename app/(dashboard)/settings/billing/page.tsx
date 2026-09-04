@@ -54,7 +54,7 @@ import {
   PLAN_COMPARISON_ROWS,
   type PlanId,
 } from "@/lib/config/plans"
-import { trackEvent } from "@/lib/analytics"
+import { trackEvent, trackBeginCheckout } from "@/lib/analytics"
 
 // -- Local type helpers -----------------------------------------------------
 
@@ -322,6 +322,7 @@ export default function BillingSettingsPage() {
   const [enterpriseForm, setEnterpriseForm] = useState<EnterpriseFormState>({ name: "", email: "", message: "" })
   const [enterpriseSuccess, setEnterpriseSuccess] = useState(false)
   const trackOpenedRef = useRef(false)
+  const pendingStripePlanRef = useRef<"STARTUP" | "BUSINESS">("STARTUP")
 
   useEffect(() => {
     if (trackOpenedRef.current) return
@@ -354,12 +355,21 @@ export default function BillingSettingsPage() {
   const enterpriseMutation = trpc.billing.requestEnterprise.useMutation({
     onSuccess: () => {
       setEnterpriseSuccess(true)
+      trackEvent("generate_lead", {
+        lead_type: "enterprise_quote",
+      })
     },
   })
 
   const checkoutMutation = trpc.billing.createCheckoutSession.useMutation({
     onSuccess: (data) => {
       const result = data as SessionResult
+      trackBeginCheckout({
+        plan_type: pendingStripePlanRef.current,
+        payment_provider: "STRIPE",
+        cycle: billingCycle,
+        currency: "USD",
+      })
       if (result?.url) router.push(result.url)
     },
   })
@@ -377,7 +387,8 @@ export default function BillingSettingsPage() {
   )
 
   function startCheckout(selectedPlan: "STARTUP" | "BUSINESS", paymentPurpose: MpesaPaymentPurpose = "INITIAL_PURCHASE") {
-    trackEvent("upgrade_clicked", { target_plan: selectedPlan })
+    pendingStripePlanRef.current = selectedPlan
+    trackEvent("upgrade_clicked", { target_plan: selectedPlan, placement: "billing_settings" })
     const activeProvider = billing?.activePaymentProvider ?? "INTASEND"
     const stripeEnabled = billing?.stripeEnabled ?? false
     if (activeProvider === "INTASEND" || !stripeEnabled) {

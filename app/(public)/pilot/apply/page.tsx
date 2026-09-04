@@ -12,6 +12,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, CheckCircle2, Shield, Zap, BookOpen, Scale } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 const BENEFITS = [
   {
@@ -43,7 +44,12 @@ export default function PilotApplyPage() {
   const [submitted,    setSubmitted]    = useState(false);
 
   const applyMutation = trpc.publicMarketing.applyForPilot.useMutation({
-    onSuccess: () => setSubmitted(true),
+    onSuccess: () => {
+      setSubmitted(true);
+      trackEvent("generate_lead", {
+        lead_type: "pilot_application",
+      });
+    },
     onError:   (err) => toast.error(err.message),
   });
 

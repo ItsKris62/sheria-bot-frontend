@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Scale, Mail, CheckCircle2, Clock, ArrowRight } from "lucide-react"
 import { trpc, getErrorMessage } from "@/lib/trpc"
 import { LoadingScreen } from "@/components/loading-screen"
+import { trackEmailVerified } from "@/lib/analytics"
 
 function VerifyEmailContent() {
   const router = useRouter()
@@ -20,7 +21,16 @@ function VerifyEmailContent() {
   // Auto-verify when token is present in URL
   useEffect(() => {
     if (token && !verifyMutation.isSuccess && !verifyMutation.isError && !verifyMutation.isPending) {
-      verifyMutation.mutate({ token })
+      verifyMutation.mutate(
+        { token },
+        {
+          onSuccess: (data) => {
+            trackEmailVerified({
+              requires_approval: data.requiresApproval,
+            })
+          },
+        }
+      )
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])

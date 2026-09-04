@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { keepPreviousData } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -37,6 +37,7 @@ import { useAuthStore } from "@/lib/auth-store"
 import { UploadDocumentModal } from "@/components/vault/upload-document-modal"
 import { EditDocumentModal } from "@/components/vault/edit-document-modal"
 import { DocumentDetailPanel } from "@/components/vault/document-detail-panel"
+import { trackFeatureUsage } from "@/lib/analytics"
 import {
   Upload,
   Search,
@@ -184,6 +185,13 @@ function StatCardSkeleton() {
 
 export default function DocumentsPage() {
   const user = useAuthStore((s) => s.user)
+
+  useEffect(() => {
+    trackFeatureUsage({
+      feature_name: "document_analysis",
+      status: "viewed",
+    })
+  }, [])
 
   // ── Filter / sort state ──────────────────────────────────────────────────
   const [searchInput, setSearchInput] = useState("")

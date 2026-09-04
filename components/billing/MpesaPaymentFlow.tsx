@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { X, Smartphone, CheckCircle2, XCircle, Clock, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { trackBeginCheckout, trackPurchase } from "@/lib/analytics"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -119,6 +120,13 @@ export function MpesaPaymentFlow({ plan, planPriceKes, paymentPurpose = "INITIAL
       setPaymentId(data.paymentId)
       timedOutRef.current = false
       setFlowState("waiting")
+      trackBeginCheckout({
+        plan_type: plan,
+        payment_provider: "INTASEND",
+        value: planPriceKes ?? undefined,
+        currency: "KES",
+        cycle: "monthly",
+      })
     },
     onError: (err) => {
       toast.error(err.message ?? "Failed to initiate M-Pesa payment.")
@@ -145,6 +153,16 @@ export function MpesaPaymentFlow({ plan, planPriceKes, paymentPurpose = "INITIAL
     if (status === "COMPLETED") {
       queueMicrotask(() => setFlowState("success"))
 
+      if (paymentId) {
+        trackPurchase({
+          transaction_id: paymentId,
+          plan_type: plan,
+          payment_provider: "INTASEND",
+          value: planPriceKes ?? undefined,
+          currency: "KES",
+        })
+      }
+
       // Invalidate billing + payment history caches
       void queryClient.invalidateQueries({
         queryKey: getQueryKey(trpc.billing.getPlanAndUsage),
@@ -161,7 +179,7 @@ export function MpesaPaymentFlow({ plan, planPriceKes, paymentPurpose = "INITIAL
         setFailReason("The M-Pesa payment was declined or cancelled.")
       })
     }
-  }, [statusQuery.data, queryClient, onSuccess])
+  }, [statusQuery.data, queryClient, onSuccess, paymentId, plan, planPriceKes])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 

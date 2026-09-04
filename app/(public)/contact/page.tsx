@@ -29,6 +29,7 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react"
+import { trackEvent } from "@/lib/analytics"
 
 const contactInfo = [
   {
@@ -156,6 +157,10 @@ export default function ContactPage() {
     setTimeout(() => {
       setLoading(false)
       setSubmitted(true)
+      trackEvent("generate_lead", {
+        lead_type: "contact_form",
+        role: fields.role || undefined,
+      })
       toast.success("Message sent!", {
         description: "We'll get back to you within 24 hours.",
       })
