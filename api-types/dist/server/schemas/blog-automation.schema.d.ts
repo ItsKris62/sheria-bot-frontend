@@ -361,7 +361,7 @@ export declare const adminScoreEligibleSourceItemsSchema: z.ZodObject<{
     }>>;
     monitorId: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
-export declare const adminListSuggestionsSchema: z.ZodObject<{
+export declare const adminListSuggestionsSchema: z.ZodEffects<z.ZodObject<{
     status: z.ZodOptional<z.ZodEnum<{
         PENDING_REVIEW: "PENDING_REVIEW";
         APPROVED_FOR_DRAFT: "APPROVED_FOR_DRAFT";
@@ -384,6 +384,22 @@ export declare const adminListSuggestionsSchema: z.ZodObject<{
         REGIONAL: "REGIONAL";
         GLOBAL: "GLOBAL";
     }>>;
+    authorityType: z.ZodOptional<z.ZodEnum<{
+        CENTRAL_BANK: "CENTRAL_BANK";
+        DATA_PROTECTION: "DATA_PROTECTION";
+        AML_CFT: "AML_CFT";
+        COMMUNICATIONS: "COMMUNICATIONS";
+        SECURITIES: "SECURITIES";
+        CONSUMER_PROTECTION: "CONSUMER_PROTECTION";
+        COMPETITION: "COMPETITION";
+        GAZETTE: "GAZETTE";
+        LEGAL_DATABASE: "LEGAL_DATABASE";
+        INTERNATIONAL_STANDARD: "INTERNATIONAL_STANDARD";
+        DEVELOPMENT_FINANCE: "DEVELOPMENT_FINANCE";
+        INDUSTRY_BODY: "INDUSTRY_BODY";
+        INTERNAL: "INTERNAL";
+        OTHER: "OTHER";
+    }>>;
     category: z.ZodOptional<z.ZodString>;
     articleType: z.ZodOptional<z.ZodEnum<{
         SINGLE_JURISDICTION_UPDATE: "SINGLE_JURISDICTION_UPDATE";
@@ -394,9 +410,48 @@ export declare const adminListSuggestionsSchema: z.ZodObject<{
         PRODUCT_EDUCATION: "PRODUCT_EDUCATION";
     }>>;
     search: z.ZodOptional<z.ZodString>;
+    sortBy: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
+        relevanceScore: "relevanceScore";
+        score: "score";
+        createdAt: "createdAt";
+    }>>>;
+    sortOrder: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
+        asc: "asc";
+        desc: "desc";
+    }>>>;
+    minScore: z.ZodOptional<z.ZodNumber>;
+    maxScore: z.ZodOptional<z.ZodNumber>;
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
-}, z.core.$strip>;
+}, z.core.$strip>, {
+    status?: "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "DISMISSED" | "DUPLICATE" | "NEEDS_MORE_SOURCES" | undefined;
+    priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined;
+    jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
+    authorityType?: "CENTRAL_BANK" | "DATA_PROTECTION" | "AML_CFT" | "COMMUNICATIONS" | "SECURITIES" | "CONSUMER_PROTECTION" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "INTERNATIONAL_STANDARD" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | "INTERNAL" | "OTHER" | undefined;
+    category?: string | undefined;
+    articleType?: "SINGLE_JURISDICTION_UPDATE" | "COUNTRY_SPECIFIC_GUIDE" | "CROSS_COUNTRY_COMPARISON" | "REGIONAL_TREND_ANALYSIS" | "EVERGREEN_EXPLAINER" | "PRODUCT_EDUCATION" | undefined;
+    search?: string | undefined;
+    sortBy?: "relevanceScore" | "score" | "createdAt" | undefined;
+    sortOrder?: "asc" | "desc" | undefined;
+    minScore?: number | undefined;
+    maxScore?: number | undefined;
+    page: number;
+    limit: number;
+}, {
+    status?: "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "DISMISSED" | "DUPLICATE" | "NEEDS_MORE_SOURCES" | undefined;
+    priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined;
+    jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
+    authorityType?: "CENTRAL_BANK" | "DATA_PROTECTION" | "AML_CFT" | "COMMUNICATIONS" | "SECURITIES" | "CONSUMER_PROTECTION" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "INTERNATIONAL_STANDARD" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | "INTERNAL" | "OTHER" | undefined;
+    category?: string | undefined;
+    articleType?: "SINGLE_JURISDICTION_UPDATE" | "COUNTRY_SPECIFIC_GUIDE" | "CROSS_COUNTRY_COMPARISON" | "REGIONAL_TREND_ANALYSIS" | "EVERGREEN_EXPLAINER" | "PRODUCT_EDUCATION" | undefined;
+    search?: string | undefined;
+    sortBy?: "relevanceScore" | "score" | "createdAt" | undefined;
+    sortOrder?: "asc" | "desc" | undefined;
+    minScore?: number | undefined;
+    maxScore?: number | undefined;
+    page?: number | undefined;
+    limit?: number | undefined;
+}>;
 export declare const adminGetSuggestionSchema: z.ZodObject<{
     id: z.ZodString;
 }, z.core.$strip>;

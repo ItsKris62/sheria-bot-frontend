@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc"
 import { ChevronLeft, ExternalLink, CheckCircle2, FileSearch, XCircle, FileText } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
+import { safeExternalUrl } from "@/lib/safe-url"
 
 const PRIORITY_STYLES: Record<string, string> = {
   LOW: "bg-gray-100 text-gray-700",
@@ -36,7 +37,7 @@ export default function SuggestionDetailPage() {
 
   const createDraftMutation = trpc.blogAutomation.adminCreateDraftFromSuggestion.useMutation({
     onSuccess: (res) => {
-      window.location.href = `/admin/content/blog/${res.blogPostId}`
+      router.push(`/admin/content/blog/${res.blogPostId}`)
     },
     onError: (err) => toast.error(err.message)
   })
@@ -151,7 +152,13 @@ export default function SuggestionDetailPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="font-medium text-blue-600 hover:underline">
-                        <a href={s.sourceItem.url} target="_blank" rel="noreferrer">{s.sourceItem.title}</a>
+                        {safeExternalUrl(s.sourceItem.url) ? (
+                          <a href={safeExternalUrl(s.sourceItem.url)!} target="_blank" rel="noopener noreferrer">
+                            {s.sourceItem.title}
+                          </a>
+                        ) : (
+                          <span>{s.sourceItem.title}</span>
+                        )}
                       </h4>
                       <p className="text-sm text-muted-foreground mt-1">
                         Source: {s.sourceItem.monitor.name} • Discovered: {format(new Date(s.sourceItem.discoveredAt), 'PP')}

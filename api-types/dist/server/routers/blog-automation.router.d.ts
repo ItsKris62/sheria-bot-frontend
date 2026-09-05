@@ -174,9 +174,14 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             status?: "DUPLICATE" | "DISMISSED" | "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
             priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined;
             jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
+            authorityType?: "CENTRAL_BANK" | "DATA_PROTECTION" | "AML_CFT" | "COMMUNICATIONS" | "SECURITIES" | "CONSUMER_PROTECTION" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "INTERNATIONAL_STANDARD" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | "INTERNAL" | "OTHER" | undefined;
             category?: string | undefined;
             articleType?: "SINGLE_JURISDICTION_UPDATE" | "COUNTRY_SPECIFIC_GUIDE" | "CROSS_COUNTRY_COMPARISON" | "REGIONAL_TREND_ANALYSIS" | "EVERGREEN_EXPLAINER" | "PRODUCT_EDUCATION" | undefined;
             search?: string | undefined;
+            sortBy?: "relevanceScore" | "score" | "createdAt" | undefined;
+            sortOrder?: "asc" | "desc" | undefined;
+            minScore?: number | undefined;
+            maxScore?: number | undefined;
             page?: number | undefined;
             limit?: number | undefined;
         };

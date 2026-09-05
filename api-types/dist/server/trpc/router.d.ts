@@ -12422,8 +12422,13 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 status?: "DUPLICATE" | "DISMISSED" | "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
                 priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined;
                 jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
+                authorityType?: "CENTRAL_BANK" | "DATA_PROTECTION" | "FINANCIAL_INTELLIGENCE" | "CAPITAL_MARKETS" | "COMMUNICATIONS_AUTHORITY" | "COMPETITION_AUTHORITY" | "REVENUE_AUTHORITY" | "OTHER" | undefined;
                 category?: string | undefined;
                 articleType?: "SINGLE_JURISDICTION_UPDATE" | "COUNTRY_SPECIFIC_GUIDE" | "CROSS_COUNTRY_COMPARISON" | "REGIONAL_TREND_ANALYSIS" | "EVERGREEN_EXPLAINER" | "PRODUCT_EDUCATION" | undefined;
+                minScore?: number | undefined;
+                maxScore?: number | undefined;
+                sortBy?: "relevanceScore" | "score" | "createdAt" | "priority" | "status" | undefined;
+                sortOrder?: "asc" | "desc" | undefined;
                 search?: string | undefined;
                 page?: number | undefined;
                 limit?: number | undefined;
