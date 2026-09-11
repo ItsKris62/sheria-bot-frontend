@@ -120,10 +120,39 @@ export declare const upsertSubscriptionSchema: z.ZodObject<{
         WEEKLY: "WEEKLY";
     }>;
 }, z.core.$strip>;
+export declare const updateAlertSchema: z.ZodObject<{
+    alertId: z.ZodString;
+    title: z.ZodOptional<z.ZodString>;
+    summary: z.ZodOptional<z.ZodString>;
+    body: z.ZodOptional<z.ZodString>;
+    sourceUrl: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
+    category: z.ZodOptional<z.ZodEnum<{
+        DATA_PROTECTION: "DATA_PROTECTION";
+        AML_CFT: "AML_CFT";
+        PRUDENTIAL: "PRUDENTIAL";
+        LICENSING: "LICENSING";
+        CAPITAL_MARKETS: "CAPITAL_MARKETS";
+        GENERAL: "GENERAL";
+    }>>;
+    severity: z.ZodOptional<z.ZodEnum<{
+        LOW: "LOW";
+        MEDIUM: "MEDIUM";
+        HIGH: "HIGH";
+        CRITICAL: "CRITICAL";
+    }>>;
+    effectiveDate: z.ZodOptional<z.ZodString>;
+    expiresAt: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>;
+export declare const rejectAlertSchema: z.ZodObject<{
+    alertId: z.ZodString;
+    reason: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>;
 export declare const markAsReadSchema: z.ZodObject<{
     notificationId: z.ZodString;
 }, z.core.$strip>;
 export type CreateAlertInput = z.infer<typeof createAlertSchema>;
+export type UpdateAlertInput = z.infer<typeof updateAlertSchema>;
+export type RejectAlertInput = z.infer<typeof rejectAlertSchema>;
 export type GetAlertsInput = z.infer<typeof getAlertsSchema>;
 export type UpsertSubscriptionInput = z.infer<typeof upsertSubscriptionSchema>;
 export type MarkAsReadInput = z.infer<typeof markAsReadSchema>;

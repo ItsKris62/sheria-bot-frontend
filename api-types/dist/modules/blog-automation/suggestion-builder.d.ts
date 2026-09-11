@@ -33,11 +33,11 @@ export declare function createSuggestionFromSourceItem(params: {
         jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
         reason: string | null;
         approvedAt: Date | null;
+        relevanceScore: number;
         blogPostId: string | null;
         dismissedReason: string | null;
         suggestedSlug: string | null;
         articleType: import(".prisma/client").$Enums.BlogArticleType;
-        relevanceScore: number;
         sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
         recommendedTags: string[];
         suggestedNextAction: string | null;

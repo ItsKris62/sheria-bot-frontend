@@ -91,6 +91,24 @@ export declare const userRouter: import("@trpc/server").TRPCBuiltRouter<{
         meta: object;
     }>;
     /**
+     * Record atomic account activation for core product workflows
+     *
+     * Database-enforced atomic conditional UPDATE compare-and-set:
+     * Only updates if preferences->>'accountActivatedAt' is NULL.
+     * Exactly one caller succeeds and receives firstActivation = true.
+     */
+    recordActivation: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            featureName: "compliance_query" | "compliance_checklist" | "gap_analysis" | "policy_generator";
+            jurisdictionCode?: string | undefined;
+        };
+        output: {
+            firstActivation: boolean;
+            activatedAt: string | undefined;
+        };
+        meta: object;
+    }>;
+    /**
      * Get all active sessions for the current user
      */
     getSessions: import("@trpc/server").TRPCQueryProcedure<{

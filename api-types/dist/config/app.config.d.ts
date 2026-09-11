@@ -104,6 +104,7 @@ export declare const appConfig: {
     readonly ai: {
         readonly apiKey: string;
         readonly model: string;
+        readonly monthlyBudgetUsd: number;
     };
     readonly openai: {
         readonly apiKey: string | undefined;

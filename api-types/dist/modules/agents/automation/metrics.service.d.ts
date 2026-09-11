@@ -2,7 +2,7 @@ import { prisma as defaultPrisma } from '@/lib/prisma/client';
 import { type SalesEngagementLookupService } from '@/modules/agents/sales/engagement-lookup.service';
 import { type SentryQueryService } from '@/lib/sentry-query.service';
 import { type GetMetricsInput, type GetMetricsResult } from './metrics-types';
-type MetricsPrisma = Pick<typeof defaultPrisma, 'complianceQuery' | 'agentRun' | 'organization'>;
+type MetricsPrisma = Pick<typeof defaultPrisma, 'complianceQuery' | 'agentRun' | 'organization' | 'blogSourceMonitor' | 'blogSourceItem' | 'blogArticleSuggestion' | 'blogPost' | 'blogVerificationRun' | 'regulatorySource' | 'regulatorySourceSnapshot' | 'regulatorySourceItem' | 'regulatoryAlert'>;
 export interface AutomationMetricsServiceDependencies {
     prisma?: MetricsPrisma;
     salesEngagementLookupService?: SalesEngagementLookupService;
@@ -16,6 +16,8 @@ export declare class AutomationMetricsService {
     private readonly now;
     constructor(dependencies?: AutomationMetricsServiceDependencies);
     getMetrics(input: GetMetricsInput): Promise<GetMetricsResult>;
+    private getBlogMetrics;
+    private getRegulatoryMetrics;
     private getProductMetrics;
     private getSalesMetrics;
     private getSecurityMetrics;

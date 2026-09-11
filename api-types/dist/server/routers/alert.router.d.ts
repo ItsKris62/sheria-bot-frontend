@@ -52,6 +52,8 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
             body: string;
             sourceUrl: string | null;
             publishedById: string;
+            primaryRegulatorySourceItemId: string | null;
+            automationDraftKey: string | null;
         };
         meta: object;
     }>;
@@ -142,6 +144,51 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
         } | null;
         meta: object;
     }>;
+    updateDraft: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            alertId: string;
+            title?: string | undefined;
+            summary?: string | undefined;
+            body?: string | undefined;
+            sourceUrl?: string | undefined;
+            category?: "DATA_PROTECTION" | "AML_CFT" | "PRUDENTIAL" | "LICENSING" | "CAPITAL_MARKETS" | "GENERAL" | undefined;
+            severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
+            effectiveDate?: string | undefined;
+            expiresAt?: string | undefined;
+        };
+        output: {
+            id: string;
+            title: string;
+            severity: string;
+            createdAt: Date;
+            updatedAt: Date;
+            expiresAt: Date | null;
+            effectiveDate: Date | null;
+            regulatoryBody: string;
+            summary: string;
+            category: string;
+            publishedAt: Date;
+            jurisdictionCode: string;
+            isActive: boolean;
+            body: string;
+            sourceUrl: string | null;
+            publishedById: string;
+            primaryRegulatorySourceItemId: string | null;
+            automationDraftKey: string | null;
+        };
+        meta: object;
+    }>;
+    rejectDraft: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            alertId: string;
+            reason?: string | undefined;
+        };
+        output: {
+            success: boolean;
+            alertId: string;
+        };
+        meta: object;
+    }>;
     getAdminAlerts: import("@trpc/server").TRPCQueryProcedure<{
         input: {
             page?: number | undefined;
@@ -151,6 +198,11 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
             alerts: import(".prisma/client").RegulatoryAlert[];
             total: number;
         };
+        meta: object;
+    }>;
+    getAIBudgetStatus: import("@trpc/server").TRPCQueryProcedure<{
+        input: void;
+        output: import("@/lib/ai/gateway/llm-gateway").MonthlyBudgetStatus;
         meta: object;
     }>;
 }>>;

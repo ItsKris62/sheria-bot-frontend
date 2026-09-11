@@ -11,6 +11,12 @@ export interface OrchestratorInput {
     retrievalVersion?: string;
     agenticComplexityLevel: 'simple' | 'complex';
     shadow: boolean;
+    synthesisTokens?: {
+        input: number;
+        output: number;
+        model?: string;
+        provider?: string;
+    };
 }
 export declare function runOrchestrator(input: OrchestratorInput): Promise<void>;
 //# sourceMappingURL=orchestrator.d.ts.map

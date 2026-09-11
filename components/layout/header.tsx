@@ -254,17 +254,17 @@ export function Header() {
               <Button
                 variant="ghost"
                 asChild
-                className="text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-all duration-300 rounded-xl h-9"
+                className="text-sm font-medium text-muted-foreground hover:text-white hover:bg-white/[0.08] hover:border-white/10 border border-transparent transition-all duration-200 rounded-xl h-9 px-4"
               >
                 <Link href="/login">Sign In</Link>
               </Button>
               <Button
                 asChild
                 className={cn(
-                  "relative overflow-hidden bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 text-sm font-semibold transition-all duration-500",
+                  "relative overflow-hidden bg-primary text-primary-foreground hover:bg-brand-green-hover rounded-xl h-9 text-sm font-semibold transition-all duration-300",
                   scrolled
-                    ? "shadow-[0_0_20px_rgba(34,197,94,0.25)]"
-                    : "shadow-[0_0_12px_rgba(34,197,94,0.15)]"
+                    ? "shadow-[0_0_20px_rgba(34,197,94,0.25)] hover:shadow-[0_0_25px_rgba(34,197,94,0.4)]"
+                    : "shadow-[0_0_12px_rgba(34,197,94,0.15)] hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]"
                 )}
               >
                 <Link href="/register" className="flex items-center gap-1.5">
@@ -281,7 +281,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-xl hover:bg-foreground/5 transition-all duration-300 h-9 w-9"
+              className="rounded-xl text-muted-foreground hover:text-white hover:bg-white/[0.08] transition-all duration-200 h-9 w-9"
             >
               <Menu className="h-5 w-5" />
               <span className="sr-only">Open menu</span>
@@ -366,13 +366,13 @@ export function Header() {
                     <Button
                       variant="outline"
                       asChild
-                      className="w-full rounded-xl bg-transparent border-border/30 hover:bg-foreground/5 hover:border-primary/20 h-11"
+                      className="w-full rounded-xl bg-surface/40 border-border/40 text-foreground hover:text-white hover:bg-white/[0.08] hover:border-white/20 transition-all duration-200 h-11 font-medium"
                     >
                       <Link href="/login" onClick={() => setMobileOpen(false)}>Sign In</Link>
                     </Button>
                     <Button
                       asChild
-                      className="w-full rounded-xl bg-primary text-primary-foreground shadow-[0_0_20px_rgba(34,197,94,0.25)] h-11"
+                      className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-brand-green-hover shadow-[0_0_20px_rgba(34,197,94,0.25)] hover:shadow-[0_0_25px_rgba(34,197,94,0.4)] transition-all duration-200 h-11 font-semibold"
                     >
                       <Link href="/register" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5">
                         <Sparkles className="h-3.5 w-3.5" />

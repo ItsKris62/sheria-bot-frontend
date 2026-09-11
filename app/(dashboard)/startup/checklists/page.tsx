@@ -1332,11 +1332,11 @@ function NormalizedChecklistDetailView({
     <div className="space-y-6">
       {/* Completion celebration banner */}
       {isAllDone && (
-        <div className="rounded-lg border border-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700 p-4 flex items-center gap-3">
-          <ShieldCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
+        <div className="rounded-lg border border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-700 p-4 flex items-center gap-3">
+          <ShieldCheck className="h-6 w-6 text-green-600 dark:text-green-400 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-emerald-800 dark:text-emerald-300">All compliance items have been addressed</p>
-            <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-0.5">
+            <p className="font-semibold text-green-800 dark:text-green-300">All compliance items have been addressed</p>
+            <p className="text-sm text-green-700 dark:text-green-400 mt-0.5">
               Your compliance checklist is complete. Export a PDF to share with your compliance team or auditors.
             </p>
           </div>
@@ -1344,7 +1344,7 @@ function NormalizedChecklistDetailView({
             <Button
               size="sm"
               variant="outline"
-              className="border-emerald-400 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:border-emerald-600 dark:hover:bg-emerald-900/30 bg-transparent"
+              className="border-green-400 text-green-700 hover:bg-green-100 dark:text-green-300 dark:border-green-600 dark:hover:bg-green-900/30 bg-transparent"
               onClick={handleExportPdfClick}
               disabled={isExporting}
             >
@@ -1354,7 +1354,7 @@ function NormalizedChecklistDetailView({
             <Button
               size="sm"
               variant="outline"
-              className="border-emerald-400 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:border-emerald-600 dark:hover:bg-emerald-900/30 bg-transparent"
+              className="border-green-400 text-green-700 hover:bg-green-100 dark:text-green-300 dark:border-green-600 dark:hover:bg-green-900/30 bg-transparent"
               onClick={handleExportDocxClick}
               disabled={isExportingDocx}
             >
@@ -1420,7 +1420,7 @@ function NormalizedChecklistDetailView({
             {isExportingDocx ? "Generating..." : "Export DOCX"}
           </Button>
           {isAllDone && (
-            <Badge className="bg-emerald-600 text-white border-transparent text-sm px-3 py-1">
+            <Badge className="bg-primary text-primary-foreground font-semibold border-transparent text-sm px-3 py-1">
               <CheckCircle2 className="h-4 w-4 mr-1.5" />
               Fully Compliant
             </Badge>

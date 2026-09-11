@@ -139,7 +139,7 @@ export default function LoginPage() {
 
           <LoadingButton
             type="submit"
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-full bg-primary text-primary-foreground hover:bg-brand-green-hover font-semibold shadow-[0_0_15px_rgba(34,197,94,0.2)] hover:shadow-[0_0_25px_rgba(34,197,94,0.35)] transition-all duration-200 h-10 rounded-xl"
             loading={isLoginLoading}
             loadingText="Signing in..."
           >

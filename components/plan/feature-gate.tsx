@@ -261,7 +261,7 @@ export function UsageIndicator({ label, current, limit, period = "month", classN
     return (
       <div className={`flex items-center justify-between text-sm ${className ?? ""}`}>
         <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium text-emerald-500">Unlimited</span>
+        <span className="font-medium text-green-500">Unlimited</span>
       </div>
     );
   }

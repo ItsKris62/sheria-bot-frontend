@@ -26,10 +26,10 @@ export declare function generateAiDraftForBlogPost(blogPostId: string, adminUser
         tags: string[];
         jurisdiction: string;
         archivedAt: Date | null;
+        canonicalUrl: string | null;
         coverImageUrl: string | null;
         featured: boolean;
         relatedRegulations: string[];
-        canonicalUrl: string | null;
         ogImageUrl: string | null;
         reviewerId: string | null;
         updatedById: string | null;

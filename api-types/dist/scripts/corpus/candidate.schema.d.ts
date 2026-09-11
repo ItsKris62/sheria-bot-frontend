@@ -73,13 +73,13 @@ export declare const CandidateEntrySchema: z.ZodObject<{
     suggestedDocumentType: z.ZodEnum<{
         DRAFT: "DRAFT";
         OTHER: "OTHER";
-        REGULATION: "REGULATION";
         CIRCULAR: "CIRCULAR";
+        DIRECTIVE: "DIRECTIVE";
+        REGULATION: "REGULATION";
         GUIDELINE: "GUIDELINE";
         POLICY: "POLICY";
         STANDARD: "STANDARD";
         ACT: "ACT";
-        DIRECTIVE: "DIRECTIVE";
         REPORT: "REPORT";
         CHECKLIST: "CHECKLIST";
         FRAMEWORK: "FRAMEWORK";
@@ -89,9 +89,9 @@ export declare const CandidateEntrySchema: z.ZodObject<{
         IN_FORCE: "IN_FORCE";
         SUPERSEDED: "SUPERSEDED";
         CONSULTATION: "CONSULTATION";
+        GUIDANCE: "GUIDANCE";
         UNKNOWN: "UNKNOWN";
         REPORT: "REPORT";
-        GUIDANCE: "GUIDANCE";
     }>;
     suggestedIsBinding: z.ZodNullable<z.ZodBoolean>;
     priority: z.ZodEnum<{
@@ -171,13 +171,13 @@ export declare const CandidateManifestSchema: z.ZodObject<{
         suggestedDocumentType: z.ZodEnum<{
             DRAFT: "DRAFT";
             OTHER: "OTHER";
-            REGULATION: "REGULATION";
             CIRCULAR: "CIRCULAR";
+            DIRECTIVE: "DIRECTIVE";
+            REGULATION: "REGULATION";
             GUIDELINE: "GUIDELINE";
             POLICY: "POLICY";
             STANDARD: "STANDARD";
             ACT: "ACT";
-            DIRECTIVE: "DIRECTIVE";
             REPORT: "REPORT";
             CHECKLIST: "CHECKLIST";
             FRAMEWORK: "FRAMEWORK";
@@ -187,9 +187,9 @@ export declare const CandidateManifestSchema: z.ZodObject<{
             IN_FORCE: "IN_FORCE";
             SUPERSEDED: "SUPERSEDED";
             CONSULTATION: "CONSULTATION";
+            GUIDANCE: "GUIDANCE";
             UNKNOWN: "UNKNOWN";
             REPORT: "REPORT";
-            GUIDANCE: "GUIDANCE";
         }>;
         suggestedIsBinding: z.ZodNullable<z.ZodBoolean>;
         priority: z.ZodEnum<{

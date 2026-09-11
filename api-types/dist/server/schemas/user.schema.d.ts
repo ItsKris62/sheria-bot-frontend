@@ -74,12 +74,6 @@ export declare const disableTotpSchema: z.ZodObject<{
 }, z.core.$strip>;
 export type DisableTotpInput = z.infer<typeof disableTotpSchema>;
 /**
- * Update all notification preferences (covers all 11 fields across all sections)
- *
- * All fields optional  -  supports partial updates (only send changed fields).
- * Backward-compatible with the existing 4-field "Specific Email Alerts" section.
- */
-/**
  * Request a presigned upload URL for the user's avatar
  */
 export declare const getAvatarUploadUrlSchema: z.ZodObject<{
@@ -123,4 +117,17 @@ export declare const updateAllNotificationPreferencesSchema: z.ZodObject<{
     }>>;
 }, z.core.$strip>;
 export type UpdateAllNotificationPreferencesInput = z.infer<typeof updateAllNotificationPreferencesSchema>;
+/**
+ * Record atomic user account activation for core product features
+ */
+export declare const recordActivationSchema: z.ZodObject<{
+    featureName: z.ZodEnum<{
+        compliance_query: "compliance_query";
+        compliance_checklist: "compliance_checklist";
+        gap_analysis: "gap_analysis";
+        policy_generator: "policy_generator";
+    }>;
+    jurisdictionCode: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>;
+export type RecordActivationInput = z.infer<typeof recordActivationSchema>;
 //# sourceMappingURL=user.schema.d.ts.map

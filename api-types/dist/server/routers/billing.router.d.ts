@@ -216,5 +216,21 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         meta: object;
     }>;
+    /**
+     * Authoritatively claims purchase telemetry for a COMPLETED payment.
+     * Atomic backend boundary ensures exactly one caller emits GA4/PostHog purchase.
+     */
+    claimPurchaseTelemetry: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            paymentId: string;
+        };
+        output: {
+            success: boolean;
+            firstPurchaseTelemetry: boolean;
+            recordedAt?: string;
+            reason?: "ALREADY_CLAIMED" | "PAYMENT_NOT_COMPLETED" | "PAYMENT_NOT_FOUND";
+        };
+        meta: object;
+    }>;
 }>>;
 //# sourceMappingURL=billing.router.d.ts.map

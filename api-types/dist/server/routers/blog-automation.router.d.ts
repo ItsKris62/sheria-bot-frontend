@@ -19,7 +19,7 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
             authorityType?: "OTHER" | "DATA_PROTECTION" | "AML_CFT" | "INTERNATIONAL_STANDARD" | "CONSUMER_PROTECTION" | "INTERNAL" | "CENTRAL_BANK" | "COMMUNICATIONS" | "SECURITIES" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | undefined;
             sourceType?: "INTERNATIONAL_STANDARD" | "OFFICIAL" | "THIRD_PARTY" | "INTERNAL" | "MEDIA" | undefined;
-            monitoringMethod?: "MANUAL" | "RSS" | "HTML_LISTING" | "API" | undefined;
+            monitoringMethod?: "API" | "MANUAL" | "RSS" | "HTML_LISTING" | undefined;
             status?: "ACTIVE" | "INACTIVE" | "NEEDS_VERIFICATION" | "FAILING" | undefined;
             isActive?: boolean | undefined;
             search?: string | undefined;
@@ -45,7 +45,7 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             baseUrl: string;
             description?: string | null | undefined;
             countryLabel?: string | null | undefined;
-            monitoringMethod?: "MANUAL" | "RSS" | "HTML_LISTING" | "API" | undefined;
+            monitoringMethod?: "API" | "MANUAL" | "RSS" | "HTML_LISTING" | undefined;
             feedUrl?: string | null | undefined;
             topics?: string[] | undefined;
             keywords?: string[] | undefined;
@@ -68,7 +68,7 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             countryLabel?: string | null | undefined;
             authorityType?: "OTHER" | "DATA_PROTECTION" | "AML_CFT" | "INTERNATIONAL_STANDARD" | "CONSUMER_PROTECTION" | "INTERNAL" | "CENTRAL_BANK" | "COMMUNICATIONS" | "SECURITIES" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | undefined;
             sourceType?: "INTERNATIONAL_STANDARD" | "OFFICIAL" | "THIRD_PARTY" | "INTERNAL" | "MEDIA" | undefined;
-            monitoringMethod?: "MANUAL" | "RSS" | "HTML_LISTING" | "API" | undefined;
+            monitoringMethod?: "API" | "MANUAL" | "RSS" | "HTML_LISTING" | undefined;
             baseUrl?: string | undefined;
             feedUrl?: string | null | undefined;
             topics?: string[] | undefined;
@@ -174,11 +174,11 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             status?: "DUPLICATE" | "DISMISSED" | "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
             priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined;
             jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
-            authorityType?: "CENTRAL_BANK" | "DATA_PROTECTION" | "AML_CFT" | "COMMUNICATIONS" | "SECURITIES" | "CONSUMER_PROTECTION" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "INTERNATIONAL_STANDARD" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | "INTERNAL" | "OTHER" | undefined;
+            authorityType?: "OTHER" | "DATA_PROTECTION" | "AML_CFT" | "INTERNATIONAL_STANDARD" | "CONSUMER_PROTECTION" | "INTERNAL" | "CENTRAL_BANK" | "COMMUNICATIONS" | "SECURITIES" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | undefined;
             category?: string | undefined;
             articleType?: "SINGLE_JURISDICTION_UPDATE" | "COUNTRY_SPECIFIC_GUIDE" | "CROSS_COUNTRY_COMPARISON" | "REGIONAL_TREND_ANALYSIS" | "EVERGREEN_EXPLAINER" | "PRODUCT_EDUCATION" | undefined;
             search?: string | undefined;
-            sortBy?: "relevanceScore" | "score" | "createdAt" | undefined;
+            sortBy?: "createdAt" | "relevanceScore" | "score" | undefined;
             sortOrder?: "asc" | "desc" | undefined;
             minScore?: number | undefined;
             maxScore?: number | undefined;
@@ -279,36 +279,6 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
         };
         output: {
             runs: ({
-                suggestion: {
-                    id: string;
-                    title: string;
-                    status: import(".prisma/client").$Enums.BlogSuggestionStatus;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    deletedAt: Date | null;
-                    targetAudience: string[];
-                    summary: string | null;
-                    category: string;
-                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
-                    priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
-                    jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
-                    reason: string | null;
-                    approvedAt: Date | null;
-                    blogPostId: string | null;
-                    dismissedReason: string | null;
-                    suggestedSlug: string | null;
-                    articleType: import(".prisma/client").$Enums.BlogArticleType;
-                    relevanceScore: number;
-                    sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
-                    recommendedTags: string[];
-                    suggestedNextAction: string | null;
-                    requiresOfficialSource: boolean;
-                    requiresHumanReview: boolean;
-                    needsMoreSources: boolean;
-                    dismissedAt: Date | null;
-                    dismissedById: string | null;
-                    approvedById: string | null;
-                } | null;
                 sourceItem: {
                     id: string;
                     title: string;
@@ -331,6 +301,36 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                     rawContentHash: string | null;
                     dismissedReason: string | null;
                 } | null;
+                suggestion: {
+                    id: string;
+                    title: string;
+                    status: import(".prisma/client").$Enums.BlogSuggestionStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    targetAudience: string[];
+                    summary: string | null;
+                    category: string;
+                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
+                    priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
+                    jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                    reason: string | null;
+                    approvedAt: Date | null;
+                    relevanceScore: number;
+                    blogPostId: string | null;
+                    dismissedReason: string | null;
+                    suggestedSlug: string | null;
+                    articleType: import(".prisma/client").$Enums.BlogArticleType;
+                    sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
+                    recommendedTags: string[];
+                    suggestedNextAction: string | null;
+                    requiresOfficialSource: boolean;
+                    requiresHumanReview: boolean;
+                    needsMoreSources: boolean;
+                    dismissedAt: Date | null;
+                    dismissedById: string | null;
+                    approvedById: string | null;
+                } | null;
             } & {
                 id: string;
                 status: import(".prisma/client").$Enums.BlogEditorialTriageStatus;
@@ -339,11 +339,11 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 version: number;
                 errorMessage: string | null;
                 completedAt: Date | null;
+                sourceItemId: string | null;
                 promptVersion: string;
                 recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
                 requiresHumanReview: boolean;
                 suggestionId: string | null;
-                sourceItemId: string | null;
                 agentRunId: string | null;
                 deterministicScore: number;
                 aiRelevanceScore: number | null;
@@ -371,36 +371,6 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             id: string;
         };
         output: {
-            suggestion: {
-                id: string;
-                title: string;
-                status: import(".prisma/client").$Enums.BlogSuggestionStatus;
-                createdAt: Date;
-                updatedAt: Date;
-                deletedAt: Date | null;
-                targetAudience: string[];
-                summary: string | null;
-                category: string;
-                jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
-                priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
-                jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
-                reason: string | null;
-                approvedAt: Date | null;
-                blogPostId: string | null;
-                dismissedReason: string | null;
-                suggestedSlug: string | null;
-                articleType: import(".prisma/client").$Enums.BlogArticleType;
-                relevanceScore: number;
-                sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
-                recommendedTags: string[];
-                suggestedNextAction: string | null;
-                requiresOfficialSource: boolean;
-                requiresHumanReview: boolean;
-                needsMoreSources: boolean;
-                dismissedAt: Date | null;
-                dismissedById: string | null;
-                approvedById: string | null;
-            } | null;
             sourceItem: {
                 id: string;
                 title: string;
@@ -423,6 +393,36 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 rawContentHash: string | null;
                 dismissedReason: string | null;
             } | null;
+            suggestion: {
+                id: string;
+                title: string;
+                status: import(".prisma/client").$Enums.BlogSuggestionStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                deletedAt: Date | null;
+                targetAudience: string[];
+                summary: string | null;
+                category: string;
+                jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
+                priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
+                jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                reason: string | null;
+                approvedAt: Date | null;
+                relevanceScore: number;
+                blogPostId: string | null;
+                dismissedReason: string | null;
+                suggestedSlug: string | null;
+                articleType: import(".prisma/client").$Enums.BlogArticleType;
+                sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
+                recommendedTags: string[];
+                suggestedNextAction: string | null;
+                requiresOfficialSource: boolean;
+                requiresHumanReview: boolean;
+                needsMoreSources: boolean;
+                dismissedAt: Date | null;
+                dismissedById: string | null;
+                approvedById: string | null;
+            } | null;
         } & {
             id: string;
             status: import(".prisma/client").$Enums.BlogEditorialTriageStatus;
@@ -431,11 +431,11 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             version: number;
             errorMessage: string | null;
             completedAt: Date | null;
+            sourceItemId: string | null;
             promptVersion: string;
             recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
             requiresHumanReview: boolean;
             suggestionId: string | null;
-            sourceItemId: string | null;
             agentRunId: string | null;
             deterministicScore: number;
             aiRelevanceScore: number | null;
@@ -521,8 +521,8 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 jurisdiction: string | null;
                 publicationDate: Date | null;
                 contentHash: string | null;
-                publisher: string | null;
                 sourceItemId: string | null;
+                publisher: string | null;
                 researchPackId: string;
                 postSourceId: string | null;
                 externalUrl: string | null;

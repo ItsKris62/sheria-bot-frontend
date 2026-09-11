@@ -21,7 +21,7 @@ export function UserDashboardHeader({ displayName }: UserDashboardHeaderProps) {
       </div>
       <Button
         asChild
-        className="shrink-0 bg-[var(--portal-accent)] font-medium text-[var(--fg-on-green)] shadow-glow-green-sm transition-transform hover:-translate-y-0.5 hover:bg-[var(--portal-accent)]/90"
+        className="shrink-0 bg-primary font-semibold text-primary-foreground shadow-glow-green-sm hover:bg-brand-green-hover hover:text-primary-foreground hover:shadow-glow-green transition-all duration-200 active:scale-[0.98]"
       >
         <Link href="/startup/compliance-query">
           <Search className="mr-2 h-4 w-4" aria-hidden="true" />

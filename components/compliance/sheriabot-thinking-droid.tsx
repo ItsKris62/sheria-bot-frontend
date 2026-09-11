@@ -148,7 +148,7 @@ export function SheriaBotThinkingDroid({ state, query, jurisdictions }: SheriaBo
           <div className="relative shrink-0 w-[88px] h-[88px] md:w-[112px] md:h-[112px] lg:w-[130px] lg:h-[130px]">
             {/* Optional subtle glow based on state */}
             <div className={cn(
-              "absolute inset-0 bg-emerald-500/20 blur-xl rounded-full transition-opacity duration-1000",
+              "absolute inset-0 bg-green-500/20 blur-xl rounded-full transition-opacity duration-1000",
               (state.phase === "verifying" || state.phase === "complete") ? "opacity-100" : "opacity-0"
             )} />
             

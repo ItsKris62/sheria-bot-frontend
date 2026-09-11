@@ -74,8 +74,9 @@ export declare const aiConfig: {
      */
     readonly costs: {
         readonly enabled: true;
-        readonly warningThreshold: 100;
-        readonly dailyLimit: 500;
+        readonly warningThreshold: 15;
+        readonly monthlyBudgetUsd: number;
+        readonly dailyLimit: 20;
     };
     /**
      * Caching configuration

@@ -1,8 +1,13 @@
+import { prisma as defaultPrisma } from '@/lib/prisma/client';
 import type { EffectivePlan } from '@/types/plan.types';
 import type { RegulatoryAlert, AlertSubscription } from '@prisma/client';
 import type { AlertWithReadStatus, GetAlertsResult } from './alert.types';
-import type { CreateAlertInput, GetAlertsInput, UpsertSubscriptionInput } from './alert.schema';
+import type { CreateAlertInput, UpdateAlertInput, RejectAlertInput, GetAlertsInput, UpsertSubscriptionInput } from './alert.schema';
 declare class AlertService {
+    private readonly prisma;
+    constructor(deps?: {
+        prisma?: typeof defaultPrisma;
+    });
     createAlert(input: CreateAlertInput, publishedById: string): Promise<RegulatoryAlert>;
     publishAlert(alertId: string, publishedById: string): Promise<void>;
     getAlerts(userId: string, _organizationId: string | undefined, plan: EffectivePlan, params: GetAlertsInput): Promise<GetAlertsResult>;
@@ -20,6 +25,11 @@ declare class AlertService {
         total: number;
     }>;
     private dispatchAlertEmail;
+    updateDraft(input: UpdateAlertInput, userId: string): Promise<RegulatoryAlert>;
+    rejectDraft(input: RejectAlertInput, reviewerId: string): Promise<{
+        success: boolean;
+        alertId: string;
+    }>;
 }
 export declare const alertService: AlertService;
 export { AlertService };

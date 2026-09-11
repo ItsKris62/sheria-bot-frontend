@@ -1712,6 +1712,17 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        recordActivation: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                featureName: "compliance_query" | "compliance_checklist" | "gap_analysis" | "policy_generator";
+                jurisdictionCode?: string | undefined;
+            };
+            output: {
+                firstActivation: boolean;
+                activatedAt: string | undefined;
+            };
+            meta: object;
+        }>;
         getSessions: import("@trpc/server").TRPCQueryProcedure<{
             input: void;
             output: {
@@ -6735,6 +6746,18 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        claimPurchaseTelemetry: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                paymentId: string;
+            };
+            output: {
+                success: boolean;
+                firstPurchaseTelemetry: boolean;
+                recordedAt?: string;
+                reason?: "ALREADY_CLAIMED" | "PAYMENT_NOT_COMPLETED" | "PAYMENT_NOT_FOUND";
+            };
+            meta: object;
+        }>;
     }>>;
     payment: import("@trpc/server").TRPCBuiltRouter<{
         ctx: import("./context").Context;
@@ -7758,6 +7781,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 body: string;
                 sourceUrl: string | null;
                 publishedById: string;
+                primaryRegulatorySourceItemId: string | null;
+                automationDraftKey: string | null;
             };
             meta: object;
         }>;
@@ -7848,6 +7873,51 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             } | null;
             meta: object;
         }>;
+        updateDraft: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                alertId: string;
+                title?: string | undefined;
+                summary?: string | undefined;
+                body?: string | undefined;
+                sourceUrl?: string | undefined;
+                category?: "DATA_PROTECTION" | "AML_CFT" | "PRUDENTIAL" | "LICENSING" | "CAPITAL_MARKETS" | "GENERAL" | undefined;
+                severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
+                effectiveDate?: string | undefined;
+                expiresAt?: string | undefined;
+            };
+            output: {
+                id: string;
+                title: string;
+                severity: string;
+                createdAt: Date;
+                updatedAt: Date;
+                expiresAt: Date | null;
+                effectiveDate: Date | null;
+                regulatoryBody: string;
+                summary: string;
+                category: string;
+                publishedAt: Date;
+                jurisdictionCode: string;
+                isActive: boolean;
+                body: string;
+                sourceUrl: string | null;
+                publishedById: string;
+                primaryRegulatorySourceItemId: string | null;
+                automationDraftKey: string | null;
+            };
+            meta: object;
+        }>;
+        rejectDraft: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                alertId: string;
+                reason?: string | undefined;
+            };
+            output: {
+                success: boolean;
+                alertId: string;
+            };
+            meta: object;
+        }>;
         getAdminAlerts: import("@trpc/server").TRPCQueryProcedure<{
             input: {
                 page?: number | undefined;
@@ -7857,6 +7927,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 alerts: import(".prisma/client").RegulatoryAlert[];
                 total: number;
             };
+            meta: object;
+        }>;
+        getAIBudgetStatus: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: import("../../lib/ai/gateway/llm-gateway").MonthlyBudgetStatus;
             meta: object;
         }>;
     }>>;
@@ -8973,7 +9048,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 page?: number | undefined;
                 limit?: number | undefined;
                 jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
-                status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "REJECTED" | "AWAITING_FEEDBACK" | "WITHDRAWN" | undefined;
+                status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "WITHDRAWN" | "REJECTED" | "AWAITING_FEEDBACK" | undefined;
                 search?: string | undefined;
             };
             output: {
@@ -9100,7 +9175,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 regulator: string;
                 licenseType: string;
                 jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
-                status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "REJECTED" | "AWAITING_FEEDBACK" | "WITHDRAWN" | undefined;
+                status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "WITHDRAWN" | "REJECTED" | "AWAITING_FEEDBACK" | undefined;
                 progress?: number | undefined;
                 referenceNumber?: string | undefined;
                 nextAction?: string | undefined;
@@ -9134,7 +9209,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
                 regulator?: string | undefined;
                 licenseType?: string | undefined;
-                status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "REJECTED" | "AWAITING_FEEDBACK" | "WITHDRAWN" | undefined;
+                status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "WITHDRAWN" | "REJECTED" | "AWAITING_FEEDBACK" | undefined;
                 progress?: number | undefined;
                 referenceNumber?: string | undefined;
                 nextAction?: string | undefined;
@@ -11496,7 +11571,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 documentName: string;
                 issuingAuthority: string;
-                documentType: "OTHER" | "LEGISLATION" | "REGULATION" | "CIRCULAR" | "GUIDELINE" | "POLICY" | "STANDARD";
+                documentType: "OTHER" | "CIRCULAR" | "LEGISLATION" | "REGULATION" | "GUIDELINE" | "POLICY" | "STANDARD";
                 jurisdiction: "OTHER" | "KENYA" | "MALAWI" | "NIGERIA" | "RWANDA";
                 description?: string | undefined;
                 sourceUrl?: string | undefined;
@@ -11551,7 +11626,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 limit?: number | undefined;
                 status?: "UNDER_REVIEW" | "PENDING" | "REJECTED" | "INGESTED" | "DUPLICATE" | undefined;
                 jurisdiction?: "OTHER" | "KENYA" | "MALAWI" | "NIGERIA" | "RWANDA" | undefined;
-                documentType?: "OTHER" | "LEGISLATION" | "REGULATION" | "CIRCULAR" | "GUIDELINE" | "POLICY" | "STANDARD" | undefined;
+                documentType?: "OTHER" | "CIRCULAR" | "LEGISLATION" | "REGULATION" | "GUIDELINE" | "POLICY" | "STANDARD" | undefined;
             };
             output: {
                 reports: {
@@ -11774,10 +11849,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 tags: string[];
                 jurisdiction: string;
                 archivedAt: Date | null;
+                canonicalUrl: string | null;
                 coverImageUrl: string | null;
                 featured: boolean;
                 relatedRegulations: string[];
-                canonicalUrl: string | null;
                 ogImageUrl: string | null;
                 reviewerId: string | null;
                 updatedById: string | null;
@@ -11920,10 +11995,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     tags: string[];
                     jurisdiction: string;
                     archivedAt: Date | null;
+                    canonicalUrl: string | null;
                     coverImageUrl: string | null;
                     featured: boolean;
                     relatedRegulations: string[];
-                    canonicalUrl: string | null;
                     ogImageUrl: string | null;
                     reviewerId: string | null;
                     updatedById: string | null;
@@ -11977,18 +12052,18 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                                 baseUrl: string;
                                 createdById: string | null;
                                 sourceType: import(".prisma/client").$Enums.BlogSourceType;
+                                lastCheckedAt: Date | null;
+                                lastFailureAt: Date | null;
+                                failureCount: number;
+                                lastFailureReason: string | null;
+                                topics: string[];
                                 updatedById: string | null;
                                 countryLabel: string | null;
                                 monitoringMethod: import(".prisma/client").$Enums.BlogMonitoringMethod;
                                 feedUrl: string | null;
-                                topics: string[];
                                 lastRunStatus: import(".prisma/client").$Enums.BlogMonitorLastRunStatus;
                                 isOfficial: boolean;
-                                lastCheckedAt: Date | null;
                                 lastSuccessfulRunAt: Date | null;
-                                lastFailureAt: Date | null;
-                                failureCount: number;
-                                lastFailureReason: string | null;
                                 maxItemsPerRun: number;
                                 fetchTimeoutMs: number;
                                 respectRobots: boolean;
@@ -12018,8 +12093,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         };
                     } & {
                         createdAt: Date;
-                        suggestionId: string;
                         sourceItemId: string;
+                        suggestionId: string;
                     })[];
                 } & {
                     id: string;
@@ -12036,11 +12111,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
                     reason: string | null;
                     approvedAt: Date | null;
+                    relevanceScore: number;
                     blogPostId: string | null;
                     dismissedReason: string | null;
                     suggestedSlug: string | null;
                     articleType: import(".prisma/client").$Enums.BlogArticleType;
-                    relevanceScore: number;
                     sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
                     recommendedTags: string[];
                     suggestedNextAction: string | null;
@@ -12070,10 +12145,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 tags: string[];
                 jurisdiction: string;
                 archivedAt: Date | null;
+                canonicalUrl: string | null;
                 coverImageUrl: string | null;
                 featured: boolean;
                 relatedRegulations: string[];
-                canonicalUrl: string | null;
                 ogImageUrl: string | null;
                 reviewerId: string | null;
                 updatedById: string | null;
@@ -12107,10 +12182,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 tags: string[];
                 jurisdiction: string;
                 archivedAt: Date | null;
+                canonicalUrl: string | null;
                 coverImageUrl: string | null;
                 featured: boolean;
                 relatedRegulations: string[];
-                canonicalUrl: string | null;
                 ogImageUrl: string | null;
                 reviewerId: string | null;
                 updatedById: string | null;
@@ -12165,10 +12240,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 tags: string[];
                 jurisdiction: string;
                 archivedAt: Date | null;
+                canonicalUrl: string | null;
                 coverImageUrl: string | null;
                 featured: boolean;
                 relatedRegulations: string[];
-                canonicalUrl: string | null;
                 ogImageUrl: string | null;
                 reviewerId: string | null;
                 updatedById: string | null;
@@ -12200,10 +12275,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 tags: string[];
                 jurisdiction: string;
                 archivedAt: Date | null;
+                canonicalUrl: string | null;
                 coverImageUrl: string | null;
                 featured: boolean;
                 relatedRegulations: string[];
-                canonicalUrl: string | null;
                 ogImageUrl: string | null;
                 reviewerId: string | null;
                 updatedById: string | null;
@@ -12234,10 +12309,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 tags: string[];
                 jurisdiction: string;
                 archivedAt: Date | null;
+                canonicalUrl: string | null;
                 coverImageUrl: string | null;
                 featured: boolean;
                 relatedRegulations: string[];
-                canonicalUrl: string | null;
                 ogImageUrl: string | null;
                 reviewerId: string | null;
                 updatedById: string | null;
@@ -12267,7 +12342,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
                 authorityType?: "OTHER" | "DATA_PROTECTION" | "AML_CFT" | "INTERNATIONAL_STANDARD" | "CONSUMER_PROTECTION" | "INTERNAL" | "CENTRAL_BANK" | "COMMUNICATIONS" | "SECURITIES" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | undefined;
                 sourceType?: "INTERNATIONAL_STANDARD" | "OFFICIAL" | "THIRD_PARTY" | "INTERNAL" | "MEDIA" | undefined;
-                monitoringMethod?: "MANUAL" | "RSS" | "HTML_LISTING" | "API" | undefined;
+                monitoringMethod?: "API" | "MANUAL" | "RSS" | "HTML_LISTING" | undefined;
                 status?: "ACTIVE" | "INACTIVE" | "NEEDS_VERIFICATION" | "FAILING" | undefined;
                 isActive?: boolean | undefined;
                 search?: string | undefined;
@@ -12293,7 +12368,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 baseUrl: string;
                 description?: string | null | undefined;
                 countryLabel?: string | null | undefined;
-                monitoringMethod?: "MANUAL" | "RSS" | "HTML_LISTING" | "API" | undefined;
+                monitoringMethod?: "API" | "MANUAL" | "RSS" | "HTML_LISTING" | undefined;
                 feedUrl?: string | null | undefined;
                 topics?: string[] | undefined;
                 keywords?: string[] | undefined;
@@ -12316,7 +12391,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 countryLabel?: string | null | undefined;
                 authorityType?: "OTHER" | "DATA_PROTECTION" | "AML_CFT" | "INTERNATIONAL_STANDARD" | "CONSUMER_PROTECTION" | "INTERNAL" | "CENTRAL_BANK" | "COMMUNICATIONS" | "SECURITIES" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | undefined;
                 sourceType?: "INTERNATIONAL_STANDARD" | "OFFICIAL" | "THIRD_PARTY" | "INTERNAL" | "MEDIA" | undefined;
-                monitoringMethod?: "MANUAL" | "RSS" | "HTML_LISTING" | "API" | undefined;
+                monitoringMethod?: "API" | "MANUAL" | "RSS" | "HTML_LISTING" | undefined;
                 baseUrl?: string | undefined;
                 feedUrl?: string | null | undefined;
                 topics?: string[] | undefined;
@@ -12422,14 +12497,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 status?: "DUPLICATE" | "DISMISSED" | "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
                 priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined;
                 jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
-                authorityType?: "CENTRAL_BANK" | "DATA_PROTECTION" | "FINANCIAL_INTELLIGENCE" | "CAPITAL_MARKETS" | "COMMUNICATIONS_AUTHORITY" | "COMPETITION_AUTHORITY" | "REVENUE_AUTHORITY" | "OTHER" | undefined;
+                authorityType?: "OTHER" | "DATA_PROTECTION" | "AML_CFT" | "INTERNATIONAL_STANDARD" | "CONSUMER_PROTECTION" | "INTERNAL" | "CENTRAL_BANK" | "COMMUNICATIONS" | "SECURITIES" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | undefined;
                 category?: string | undefined;
                 articleType?: "SINGLE_JURISDICTION_UPDATE" | "COUNTRY_SPECIFIC_GUIDE" | "CROSS_COUNTRY_COMPARISON" | "REGIONAL_TREND_ANALYSIS" | "EVERGREEN_EXPLAINER" | "PRODUCT_EDUCATION" | undefined;
+                search?: string | undefined;
+                sortBy?: "createdAt" | "relevanceScore" | "score" | undefined;
+                sortOrder?: "asc" | "desc" | undefined;
                 minScore?: number | undefined;
                 maxScore?: number | undefined;
-                sortBy?: "relevanceScore" | "score" | "createdAt" | "priority" | "status" | undefined;
-                sortOrder?: "asc" | "desc" | undefined;
-                search?: string | undefined;
                 page?: number | undefined;
                 limit?: number | undefined;
             };
@@ -12527,36 +12602,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             output: {
                 runs: ({
-                    suggestion: {
-                        id: string;
-                        title: string;
-                        status: import(".prisma/client").$Enums.BlogSuggestionStatus;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        deletedAt: Date | null;
-                        targetAudience: string[];
-                        summary: string | null;
-                        category: string;
-                        jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
-                        priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
-                        jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
-                        reason: string | null;
-                        approvedAt: Date | null;
-                        blogPostId: string | null;
-                        dismissedReason: string | null;
-                        suggestedSlug: string | null;
-                        articleType: import(".prisma/client").$Enums.BlogArticleType;
-                        relevanceScore: number;
-                        sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
-                        recommendedTags: string[];
-                        suggestedNextAction: string | null;
-                        requiresOfficialSource: boolean;
-                        requiresHumanReview: boolean;
-                        needsMoreSources: boolean;
-                        dismissedAt: Date | null;
-                        dismissedById: string | null;
-                        approvedById: string | null;
-                    } | null;
                     sourceItem: {
                         id: string;
                         title: string;
@@ -12579,6 +12624,36 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         rawContentHash: string | null;
                         dismissedReason: string | null;
                     } | null;
+                    suggestion: {
+                        id: string;
+                        title: string;
+                        status: import(".prisma/client").$Enums.BlogSuggestionStatus;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        targetAudience: string[];
+                        summary: string | null;
+                        category: string;
+                        jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
+                        priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
+                        jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                        reason: string | null;
+                        approvedAt: Date | null;
+                        relevanceScore: number;
+                        blogPostId: string | null;
+                        dismissedReason: string | null;
+                        suggestedSlug: string | null;
+                        articleType: import(".prisma/client").$Enums.BlogArticleType;
+                        sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
+                        recommendedTags: string[];
+                        suggestedNextAction: string | null;
+                        requiresOfficialSource: boolean;
+                        requiresHumanReview: boolean;
+                        needsMoreSources: boolean;
+                        dismissedAt: Date | null;
+                        dismissedById: string | null;
+                        approvedById: string | null;
+                    } | null;
                 } & {
                     id: string;
                     status: import(".prisma/client").$Enums.BlogEditorialTriageStatus;
@@ -12587,11 +12662,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     version: number;
                     errorMessage: string | null;
                     completedAt: Date | null;
+                    sourceItemId: string | null;
                     promptVersion: string;
                     recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
                     requiresHumanReview: boolean;
                     suggestionId: string | null;
-                    sourceItemId: string | null;
                     agentRunId: string | null;
                     deterministicScore: number;
                     aiRelevanceScore: number | null;
@@ -12619,36 +12694,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 id: string;
             };
             output: {
-                suggestion: {
-                    id: string;
-                    title: string;
-                    status: import(".prisma/client").$Enums.BlogSuggestionStatus;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    deletedAt: Date | null;
-                    targetAudience: string[];
-                    summary: string | null;
-                    category: string;
-                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
-                    priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
-                    jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
-                    reason: string | null;
-                    approvedAt: Date | null;
-                    blogPostId: string | null;
-                    dismissedReason: string | null;
-                    suggestedSlug: string | null;
-                    articleType: import(".prisma/client").$Enums.BlogArticleType;
-                    relevanceScore: number;
-                    sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
-                    recommendedTags: string[];
-                    suggestedNextAction: string | null;
-                    requiresOfficialSource: boolean;
-                    requiresHumanReview: boolean;
-                    needsMoreSources: boolean;
-                    dismissedAt: Date | null;
-                    dismissedById: string | null;
-                    approvedById: string | null;
-                } | null;
                 sourceItem: {
                     id: string;
                     title: string;
@@ -12671,6 +12716,36 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     rawContentHash: string | null;
                     dismissedReason: string | null;
                 } | null;
+                suggestion: {
+                    id: string;
+                    title: string;
+                    status: import(".prisma/client").$Enums.BlogSuggestionStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    targetAudience: string[];
+                    summary: string | null;
+                    category: string;
+                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
+                    priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
+                    jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                    reason: string | null;
+                    approvedAt: Date | null;
+                    relevanceScore: number;
+                    blogPostId: string | null;
+                    dismissedReason: string | null;
+                    suggestedSlug: string | null;
+                    articleType: import(".prisma/client").$Enums.BlogArticleType;
+                    sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
+                    recommendedTags: string[];
+                    suggestedNextAction: string | null;
+                    requiresOfficialSource: boolean;
+                    requiresHumanReview: boolean;
+                    needsMoreSources: boolean;
+                    dismissedAt: Date | null;
+                    dismissedById: string | null;
+                    approvedById: string | null;
+                } | null;
             } & {
                 id: string;
                 status: import(".prisma/client").$Enums.BlogEditorialTriageStatus;
@@ -12679,11 +12754,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 version: number;
                 errorMessage: string | null;
                 completedAt: Date | null;
+                sourceItemId: string | null;
                 promptVersion: string;
                 recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
                 requiresHumanReview: boolean;
                 suggestionId: string | null;
-                sourceItemId: string | null;
                 agentRunId: string | null;
                 deterministicScore: number;
                 aiRelevanceScore: number | null;
@@ -12769,8 +12844,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     jurisdiction: string | null;
                     publicationDate: Date | null;
                     contentHash: string | null;
-                    publisher: string | null;
                     sourceItemId: string | null;
+                    publisher: string | null;
                     researchPackId: string;
                     postSourceId: string | null;
                     externalUrl: string | null;
@@ -13735,6 +13810,16 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 output: import("../../modules/agents/automation/approval.service").ListApprovalsResult;
                 meta: object;
             }>;
+            listApprovalsForAutomation: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    department?: string | undefined;
+                    workflow?: string | undefined;
+                    status?: "rejected" | "pending" | "approved" | undefined;
+                    limit?: number | undefined;
+                };
+                output: import("../../modules/agents/automation/approval.service").ListApprovalsResult;
+                meta: object;
+            }>;
             publishContent: import("@trpc/server").TRPCMutationProcedure<{
                 input: {
                     approvalId: string;
@@ -13895,11 +13980,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     version: number;
                     errorMessage: string | null;
                     completedAt: Date | null;
+                    sourceItemId: string | null;
                     promptVersion: string;
                     recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
                     requiresHumanReview: boolean;
                     suggestionId: string | null;
-                    sourceItemId: string | null;
                     agentRunId: string | null;
                     deterministicScore: number;
                     aiRelevanceScore: number | null;
@@ -14049,6 +14134,341 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 output: import("../../modules/blog-automation/revision-request.service").CreateRevisionRequestResult;
                 meta: object;
             }>;
+            listEditorialMonitors: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    jurisdictions?: string | undefined;
+                    limit?: number | undefined;
+                } | undefined;
+                output: {
+                    monitors: {
+                        id: string;
+                        name: string;
+                        jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                        authorityType: import(".prisma/client").$Enums.BlogAuthorityType;
+                        baseUrl: string;
+                        sourceType: import(".prisma/client").$Enums.BlogSourceType;
+                        lastCheckedAt: Date | null;
+                        monitoringMethod: import(".prisma/client").$Enums.BlogMonitoringMethod;
+                        feedUrl: string | null;
+                    }[];
+                };
+                meta: object;
+            }>;
+            runEditorialDiscovery: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    monitorId: string;
+                };
+                output: {
+                    status: string;
+                    message: string;
+                    itemsFound?: undefined;
+                    itemsCreated?: undefined;
+                    duplicateCount?: undefined;
+                    failureCount?: undefined;
+                    errorMessage?: undefined;
+                } | {
+                    status: "FAILED" | "SUCCESS" | "PARTIAL_SUCCESS";
+                    itemsFound: number;
+                    itemsCreated: number;
+                    duplicateCount: number;
+                    failureCount: number;
+                    errorMessage: string | null;
+                    message?: undefined;
+                };
+                meta: object;
+            }>;
+            createBlogSuggestion: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    sourceItemId: string;
+                    minScore?: number | undefined;
+                };
+                output: {
+                    createdSuggestion: boolean;
+                    scoringResult: import("../../modules/blog-automation/relevance-scoring.service").ScoringResult;
+                    suggestion: null;
+                    reason?: undefined;
+                } | {
+                    createdSuggestion: boolean;
+                    scoringResult: import("../../modules/blog-automation/relevance-scoring.service").ScoringResult;
+                    suggestion: null;
+                    reason: string;
+                } | {
+                    createdSuggestion: boolean;
+                    scoringResult: import("../../modules/blog-automation/relevance-scoring.service").ScoringResult;
+                    suggestion: {
+                        id: string;
+                        title: string;
+                        status: import(".prisma/client").$Enums.BlogSuggestionStatus;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        targetAudience: string[];
+                        summary: string | null;
+                        category: string;
+                        jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
+                        priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
+                        jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                        reason: string | null;
+                        approvedAt: Date | null;
+                        relevanceScore: number;
+                        blogPostId: string | null;
+                        dismissedReason: string | null;
+                        suggestedSlug: string | null;
+                        articleType: import(".prisma/client").$Enums.BlogArticleType;
+                        sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
+                        recommendedTags: string[];
+                        suggestedNextAction: string | null;
+                        requiresOfficialSource: boolean;
+                        requiresHumanReview: boolean;
+                        needsMoreSources: boolean;
+                        dismissedAt: Date | null;
+                        dismissedById: string | null;
+                        approvedById: string | null;
+                    };
+                    reason?: undefined;
+                };
+                meta: object;
+            }>;
+            listBlogSuggestions: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    status?: "DUPLICATE" | "DISMISSED" | "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
+                    jurisdictions?: string | undefined;
+                    limit?: number | undefined;
+                } | undefined;
+                output: {
+                    suggestions: {
+                        id: string;
+                        title: string;
+                        status: import(".prisma/client").$Enums.BlogSuggestionStatus;
+                        createdAt: Date;
+                        category: string;
+                        priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
+                        jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                        relevanceScore: number;
+                        blogPostId: string | null;
+                        suggestedSlug: string | null;
+                        articleType: import(".prisma/client").$Enums.BlogArticleType;
+                        sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
+                        requiresHumanReview: boolean;
+                    }[];
+                };
+                meta: object;
+            }>;
+            generateEditorialDraft: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    suggestionId: string;
+                    idempotencyKey: string;
+                };
+                output: import("../../modules/agents/automation/blog-draft.service").GenerateDraftFromSuggestionResult;
+                meta: object;
+            }>;
+            listRegulatorySources: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    jurisdictions?: string | undefined;
+                    limit?: number | undefined;
+                } | undefined;
+                output: {
+                    sources: import("../../modules/agents/automation/regulatory-automation.service").RegulatorySourceOperationalItem[];
+                };
+                meta: object;
+            }>;
+            fetchRegulatorySource: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    sourceId?: string | undefined;
+                    sourceKey?: string | undefined;
+                    executionMetadata?: Record<string, unknown> | undefined;
+                };
+                output: import("../../modules/regulatory-intelligence/domain").RegulatoryFetchResult;
+                meta: object;
+            }>;
+            ingestRegulatorySnapshot: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    sourceId: string;
+                    sourceUrl: string;
+                    rawPayload?: string | undefined;
+                    rawText?: string | undefined;
+                    rawStorageKey?: string | undefined;
+                    title?: string | undefined;
+                    httpStatus?: number | undefined;
+                    contentType?: string | undefined;
+                    etag?: string | undefined;
+                    lastModified?: string | undefined;
+                    metadata?: Record<string, unknown> | undefined;
+                };
+                output: import("../../modules/regulatory-intelligence/domain").SnapshotIngestResult;
+                meta: object;
+            }>;
+            createRegulatorySourceItem: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    dedupeKey: string;
+                    sourceId: string;
+                    regulator: string;
+                    title: string;
+                    summary: string;
+                    primarySnapshotId?: string | undefined;
+                    jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
+                    officialTitle?: string | undefined;
+                    informationType?: "OTHER" | "CONSULTATION" | "DRAFT_REGULATION" | "CIRCULAR" | "NOTICE" | "GAZETTE_NOTICE" | "GUIDANCE" | "DIRECTIVE" | "LEGISLATIVE_UPDATE" | "POLICY_UPDATE" | "ENFORCEMENT" | "LICENSING_UPDATE" | "OFFICIAL_ANNOUNCEMENT" | "MARKET_DEVELOPMENT" | undefined;
+                    regulatoryStage?: "DRAFT" | "SUPERSEDED" | "CONSULTATION" | "PROPOSED" | "ANNOUNCED" | "ISSUED" | "GAZETTED" | "EFFECTIVE" | "DEVELOPING" | "WITHDRAWN" | undefined;
+                    verificationState?: "UNVERIFIED" | "SOURCE_VERIFIED" | "FACT_VERIFIED" | "REQUIRES_REVIEW" | "DISPUTED" | undefined;
+                    materiality?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
+                    relevanceScore?: number | undefined;
+                    publicationDate?: string | undefined;
+                    effectiveDate?: string | undefined;
+                    consultationDeadline?: string | undefined;
+                    complianceDeadline?: string | undefined;
+                    affectedSectors?: string[] | undefined;
+                    affectedEntityTypes?: string[] | undefined;
+                    topics?: string[] | undefined;
+                    metadata?: Record<string, unknown> | undefined;
+                };
+                output: {
+                    id: string;
+                    dedupeKey: string;
+                    jurisdictionCode: string;
+                    regulator: string;
+                    title: string;
+                    informationType: import(".prisma/client").$Enums.RegulatoryInformationType;
+                    regulatoryStage: import(".prisma/client").$Enums.RegulatoryStage;
+                    materiality: import(".prisma/client").$Enums.RegulatoryMateriality;
+                    createdAt: string;
+                };
+                meta: object;
+            }>;
+            getRegulatorySourceItem: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    itemId: string;
+                };
+                output: {
+                    metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                    id: string;
+                    title: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    effectiveDate: Date | null;
+                    summary: string;
+                    jurisdictionCode: string;
+                    regulator: string;
+                    publicationDate: Date | null;
+                    supersededById: string | null;
+                    sourceId: string;
+                    dedupeKey: string;
+                    primarySnapshotId: string | null;
+                    officialTitle: string | null;
+                    informationType: import(".prisma/client").$Enums.RegulatoryInformationType;
+                    regulatoryStage: import(".prisma/client").$Enums.RegulatoryStage;
+                    verificationState: import(".prisma/client").$Enums.RegulatoryVerificationState;
+                    materiality: import(".prisma/client").$Enums.RegulatoryMateriality;
+                    relevanceScore: number | null;
+                    consultationDeadline: Date | null;
+                    complianceDeadline: Date | null;
+                    affectedSectors: import("@prisma/client/runtime/client").JsonValue;
+                    affectedEntityTypes: import("@prisma/client/runtime/client").JsonValue;
+                    topics: import("@prisma/client/runtime/client").JsonValue;
+                    firstDetectedAt: Date;
+                    lastObservedAt: Date;
+                };
+                meta: object;
+            }>;
+            listRegulatorySourceItems: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    sourceId?: string | undefined;
+                    jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
+                    regulator?: string | undefined;
+                    informationType?: "OTHER" | "CONSULTATION" | "DRAFT_REGULATION" | "CIRCULAR" | "NOTICE" | "GAZETTE_NOTICE" | "GUIDANCE" | "DIRECTIVE" | "LEGISLATIVE_UPDATE" | "POLICY_UPDATE" | "ENFORCEMENT" | "LICENSING_UPDATE" | "OFFICIAL_ANNOUNCEMENT" | "MARKET_DEVELOPMENT" | undefined;
+                    regulatoryStage?: "DRAFT" | "SUPERSEDED" | "CONSULTATION" | "PROPOSED" | "ANNOUNCED" | "ISSUED" | "GAZETTED" | "EFFECTIVE" | "DEVELOPING" | "WITHDRAWN" | undefined;
+                    verificationState?: "UNVERIFIED" | "SOURCE_VERIFIED" | "FACT_VERIFIED" | "REQUIRES_REVIEW" | "DISPUTED" | undefined;
+                    materiality?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
+                    limit?: number | undefined;
+                    offset?: number | undefined;
+                };
+                output: {
+                    items: import(".prisma/client").RegulatorySourceItem[];
+                    total: number;
+                };
+                meta: object;
+            }>;
+            createRegulatoryAlertDraft: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    sourceItemId: string;
+                    automationDraftKey: string;
+                    title?: string | undefined;
+                    summary?: string | undefined;
+                    body?: string | undefined;
+                    category?: string | undefined;
+                    severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
+                    effectiveDate?: string | undefined;
+                    expiresAt?: string | undefined;
+                    sourceUrl?: string | undefined;
+                };
+                output: {
+                    alertId: string;
+                    title: string;
+                    summary: string;
+                    jurisdictionCode: string;
+                    regulatoryBody: string;
+                    category: string;
+                    severity: string;
+                    isActive: boolean;
+                    automationDraftKey: string | null;
+                    primaryRegulatorySourceItemId: string | null;
+                    isNew: boolean;
+                };
+                meta: object;
+            }>;
+            getRegulatorySnapshot: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    snapshotId: string;
+                };
+                output: {
+                    metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                    id: string;
+                    title: string | null;
+                    createdAt: Date;
+                    contentType: string | null;
+                    retrievedAt: Date;
+                    contentHash: string;
+                    sourceId: string;
+                    sourceUrl: string;
+                    canonicalUrl: string;
+                    hashVersion: number;
+                    normalizationVersion: number;
+                    contentLength: number;
+                    httpStatus: number | null;
+                    etag: string | null;
+                    lastModified: string | null;
+                    rawText: string | null;
+                    rawPayload: string | null;
+                    rawStorageKey: string | null;
+                };
+                meta: object;
+            }>;
+            processRegulatorySnapshot: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    snapshotId: string;
+                    correlationId?: string | undefined;
+                };
+                output: import("../../modules/regulatory-intelligence/domain").ProcessRegulatorySnapshotResult;
+                meta: object;
+            }>;
+            listPendingRegulatorySnapshots: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    limit?: number | undefined;
+                } | undefined;
+                output: {
+                    snapshots: Array<{
+                        id: string;
+                        sourceId: string;
+                        sourceKey: string;
+                        jurisdictionCode: string;
+                        regulatoryBody: string;
+                        canonicalUrl: string;
+                        retrievedAt: Date;
+                    }>;
+                    total: number;
+                };
+                meta: object;
+            }>;
         }>>;
         productBi: import("@trpc/server").TRPCBuiltRouter<{
             ctx: import("./context").Context;
@@ -14187,6 +14607,175 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 meta: object;
             }>;
         }>>;
+    }>>;
+    regulatorySource: import("@trpc/server").TRPCBuiltRouter<{
+        ctx: import("./context").Context;
+        meta: object;
+        errorShape: {
+            message: string;
+            data: {
+                stack: string | undefined;
+                fieldErrors: Record<string, string> | null;
+                code: import("@trpc/server").TRPC_ERROR_CODE_KEY;
+                httpStatus: number;
+                path?: string;
+            };
+            code: import("@trpc/server").TRPC_ERROR_CODE_NUMBER;
+        };
+        transformer: false;
+    }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
+        createSource: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                sourceKey: string;
+                name: string;
+                regulatoryBody: string;
+                baseUrl: string;
+                jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
+                authorityType?: "PRIMARY_OFFICIAL" | "AUTHORITATIVE" | "SECONDARY_VERIFIED" | undefined;
+                sourceType?: "WEBSITE" | "FEED_RSS" | "GAZETTE_FEED" | "API" | "PORTAL" | undefined;
+                fetchUrl?: string | undefined;
+                isActive?: boolean | undefined;
+                metadata?: Record<string, unknown> | undefined;
+            };
+            output: {
+                metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                regulatoryBody: string;
+                jurisdictionCode: string;
+                isActive: boolean;
+                authorityType: import(".prisma/client").$Enums.RegulatoryAuthorityType;
+                baseUrl: string;
+                sourceType: import(".prisma/client").$Enums.RegulatorySourceType;
+                sourceKey: string;
+                fetchUrl: string | null;
+                lastCheckedAt: Date | null;
+                lastSuccessfulFetchAt: Date | null;
+                lastFailureAt: Date | null;
+                failureCount: number;
+                lastFailureReason: string | null;
+            };
+            meta: object;
+        }>;
+        updateSource: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                id: string;
+            } & {
+                name?: string | undefined;
+                jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
+                regulatoryBody?: string | undefined;
+                authorityType?: "PRIMARY_OFFICIAL" | "AUTHORITATIVE" | "SECONDARY_VERIFIED" | undefined;
+                sourceType?: "WEBSITE" | "FEED_RSS" | "GAZETTE_FEED" | "API" | "PORTAL" | undefined;
+                baseUrl?: string | undefined;
+                fetchUrl?: string | null | undefined;
+                isActive?: boolean | undefined;
+                metadata?: Record<string, unknown> | undefined;
+            };
+            output: {
+                metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                regulatoryBody: string;
+                jurisdictionCode: string;
+                isActive: boolean;
+                authorityType: import(".prisma/client").$Enums.RegulatoryAuthorityType;
+                baseUrl: string;
+                sourceType: import(".prisma/client").$Enums.RegulatorySourceType;
+                sourceKey: string;
+                fetchUrl: string | null;
+                lastCheckedAt: Date | null;
+                lastSuccessfulFetchAt: Date | null;
+                lastFailureAt: Date | null;
+                failureCount: number;
+                lastFailureReason: string | null;
+            };
+            meta: object;
+        }>;
+        deactivateSource: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                id: string;
+            };
+            output: {
+                metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                regulatoryBody: string;
+                jurisdictionCode: string;
+                isActive: boolean;
+                authorityType: import(".prisma/client").$Enums.RegulatoryAuthorityType;
+                baseUrl: string;
+                sourceType: import(".prisma/client").$Enums.RegulatorySourceType;
+                sourceKey: string;
+                fetchUrl: string | null;
+                lastCheckedAt: Date | null;
+                lastSuccessfulFetchAt: Date | null;
+                lastFailureAt: Date | null;
+                failureCount: number;
+                lastFailureReason: string | null;
+            };
+            meta: object;
+        }>;
+        getSource: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                id: string;
+            };
+            output: {
+                metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                regulatoryBody: string;
+                jurisdictionCode: string;
+                isActive: boolean;
+                authorityType: import(".prisma/client").$Enums.RegulatoryAuthorityType;
+                baseUrl: string;
+                sourceType: import(".prisma/client").$Enums.RegulatorySourceType;
+                sourceKey: string;
+                fetchUrl: string | null;
+                lastCheckedAt: Date | null;
+                lastSuccessfulFetchAt: Date | null;
+                lastFailureAt: Date | null;
+                failureCount: number;
+                lastFailureReason: string | null;
+            };
+            meta: object;
+        }>;
+        listSources: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
+                regulatoryBody?: string | undefined;
+                authorityType?: "PRIMARY_OFFICIAL" | "AUTHORITATIVE" | "SECONDARY_VERIFIED" | undefined;
+                isActive?: boolean | undefined;
+                limit?: number | undefined;
+                offset?: number | undefined;
+            };
+            output: {
+                sources: import(".prisma/client").RegulatorySource[];
+                total: number;
+            };
+            meta: object;
+        }>;
+        testConnection: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                id: string;
+            };
+            output: {
+                ok: boolean;
+                httpStatus: number;
+                latencyMs: number;
+                contentType?: string;
+                previewText?: string;
+                error?: string;
+            };
+            meta: object;
+        }>;
     }>>;
 }>>;
 /**

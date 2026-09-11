@@ -30,6 +30,17 @@ export interface GenerateDraftContentResult {
     reviewerNotes: string;
     uncertaintyFlags: string[];
 }
+export interface GenerateDraftFromSuggestionInput {
+    suggestionId: string;
+    idempotencyKey: string;
+}
+export interface GenerateDraftFromSuggestionResult {
+    blogPostId: string;
+    generationRunId: string;
+    reviewerNotes: string;
+    uncertaintyFlags: string[];
+    status: 'created' | 'already_drafted';
+}
 export interface AutomationBlogDraftServiceDependencies {
     prisma?: FullPrisma;
     createSuggestion?: typeof createSuggestionFromSourceItem;
@@ -90,6 +101,17 @@ export declare class AutomationBlogDraftService {
      */
     generateDraftContent(input: GenerateDraftContentInput, agentUserId: string): Promise<GenerateDraftContentResult>;
     /**
+     * Phase 5 Canonical Drafting entry point: generates a bounded blog draft from
+     * an APPROVED_FOR_DRAFT BlogArticleSuggestion.
+     *
+     * Authoritatively verifies persisted approval state on the suggestion before
+     * proceeding. Idempotently replays duplicate runs, blocks gracefully when the
+     * global AI monthly budget ($20) is reached without stranding or breaking the
+     * suggestion, and completes in a single bounded execution without long-lived
+     * wait nodes or polling.
+     */
+    generateDraftFromSuggestion(input: GenerateDraftFromSuggestionInput, agentUserId: string): Promise<GenerateDraftFromSuggestionResult>;
+    /**
      * A duplicate beginRun() result means an identical (blogPostId,
      * idempotencyKey) request already exists. Mirrors
      * AutomationService.resolveDuplicate's shape exactly: replay a completed
@@ -97,6 +119,7 @@ export declare class AutomationBlogDraftService {
      * never triggered for the same idempotency key.
      */
     private resolveDuplicateDraftGeneration;
+    private resolveDuplicateDraftGenerationForSuggestion;
 }
 export declare const automationBlogDraftService: AutomationBlogDraftService;
 export {};

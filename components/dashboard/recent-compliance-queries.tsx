@@ -40,7 +40,7 @@ export function RecentComplianceQueries({ queries = [], isLoading, isError }: Re
                 variant="ghost"
                 size="sm"
                 asChild
-                className="text-xs text-[var(--portal-accent)] hover:text-[var(--portal-accent)]/80"
+                className="text-xs text-[var(--portal-accent)] hover:text-white hover:bg-white/[0.08] transition-all duration-200"
               >
                 <Link href="/startup/compliance-query">
                   <Plus className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
@@ -66,7 +66,7 @@ export function RecentComplianceQueries({ queries = [], isLoading, isError }: Re
           ) : queries.length === 0 ? (
             <div className="py-8 text-center space-y-3">
               <p className="text-sm text-[var(--portal-text-muted)]">No queries yet. Ask your first question!</p>
-              <Button asChild size="sm" variant="outline" className="text-xs">
+              <Button asChild size="sm" variant="outline" className="text-xs hover:border-[var(--portal-accent-border)] hover:bg-white/[0.06] hover:text-white transition-all duration-200">
                 <Link href="/startup/compliance-query">Ask Compliance Question</Link>
               </Button>
             </div>

@@ -6,6 +6,7 @@ export interface AgentTokens {
 export interface ControlTokens {
     router?: AgentTokens;
     grader?: AgentTokens;
+    synthesis?: AgentTokens;
     verifier?: AgentTokens;
 }
 export interface TokenBudget {

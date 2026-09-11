@@ -1,5 +1,5 @@
 export { AlertService, alertService } from './alert.service';
-export { createAlertSchema, getAlertsSchema, upsertSubscriptionSchema, markAsReadSchema, REGULATORY_BODIES, ALERT_CATEGORIES, ALERT_SEVERITIES, EMAIL_FREQUENCIES, } from './alert.schema';
+export { createAlertSchema, updateAlertSchema, rejectAlertSchema, getAlertsSchema, upsertSubscriptionSchema, markAsReadSchema, REGULATORY_BODIES, ALERT_CATEGORIES, ALERT_SEVERITIES, EMAIL_FREQUENCIES, } from './alert.schema';
 export type { AlertWithReadStatus, GetAlertsResult, RegulatoryAlert, AlertSubscription, AlertNotification, } from './alert.types';
-export type { CreateAlertInput, GetAlertsInput, UpsertSubscriptionInput, MarkAsReadInput, } from './alert.schema';
+export type { CreateAlertInput, UpdateAlertInput, RejectAlertInput, GetAlertsInput, UpsertSubscriptionInput, MarkAsReadInput, } from './alert.schema';
 //# sourceMappingURL=index.d.ts.map

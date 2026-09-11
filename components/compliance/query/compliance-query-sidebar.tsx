@@ -1,6 +1,6 @@
 import React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Sparkles } from "lucide-react"
+import { BookOpen, Compass } from "lucide-react"
 import { ComplianceQueryHistory, type HistoryItem } from "./compliance-query-history"
 import type { SuggestionSource } from "./compliance-query-types"
 import { RegionalQuerySuggestions } from "./jurisdiction-context"
@@ -40,7 +40,7 @@ export function ComplianceQuerySidebar({
       <Card className="border-border/60 bg-card/90 shadow-xs transition-all duration-200 hover:border-border/80">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+            <Compass className="h-4 w-4 text-green-400" aria-hidden="true" />
             <CardTitle className="text-base font-semibold text-foreground">Suggested for {country}</CardTitle>
           </div>
           <CardDescription className="text-xs">Curated compliance questions</CardDescription>
@@ -57,7 +57,7 @@ export function ComplianceQuerySidebar({
       <Card className="border-border/60 bg-card/90 shadow-xs transition-all duration-200 hover:border-border/80">
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-green-500/30 bg-green-500/10 text-green-400">
               <BookOpen className="h-4 w-4" />
             </div>
             <div>

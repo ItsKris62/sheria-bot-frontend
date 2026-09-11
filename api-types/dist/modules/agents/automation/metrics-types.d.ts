@@ -1,4 +1,4 @@
-export declare const SUPPORTED_METRICS_DEPARTMENTS: readonly ["product", "sales", "security"];
+export declare const SUPPORTED_METRICS_DEPARTMENTS: readonly ["product", "sales", "security", "blog", "regulatory"];
 export type SupportedMetricsDepartment = (typeof SUPPORTED_METRICS_DEPARTMENTS)[number];
 export declare function isSupportedMetricsDepartment(value: string): value is SupportedMetricsDepartment;
 export interface GetMetricsInput {
@@ -10,6 +10,22 @@ export interface GetMetricsInput {
 export interface ProductMetrics {
     queries: number;
     baselineQueries: number;
+}
+export interface BlogMetrics {
+    sourcesChecked: number;
+    itemsDiscovered: number;
+    suggestionsCreated: number;
+    suggestionsApproved: number;
+    draftsGenerated: number;
+    postsPublished: number;
+    verificationFailures: number;
+}
+export interface RegulatoryMetrics {
+    sourcesChecked: number;
+    snapshotsIngested: number;
+    itemsEnriched: number;
+    alertsCreated: number;
+    alertsPublished: number;
 }
 /**
  * usageIntensity is a provisional 0-1 heuristic (PostHog eventCount7d linearly
@@ -53,5 +69,5 @@ export interface SecurityMetrics {
     dataAvailable: boolean;
     aiSpendVsCeiling: number;
 }
-export type GetMetricsResult = ProductMetrics | SalesMetrics | SecurityMetrics;
+export type GetMetricsResult = ProductMetrics | SalesMetrics | SecurityMetrics | BlogMetrics | RegulatoryMetrics;
 //# sourceMappingURL=metrics-types.d.ts.map

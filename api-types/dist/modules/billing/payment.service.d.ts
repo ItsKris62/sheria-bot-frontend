@@ -149,6 +149,25 @@ declare class PaymentService {
         billingPeriodStart: Date | null;
         billingPeriodEnd: Date | null;
     }>;
+    /**
+     * Authoritative backend purchase deduplication claim.
+     *
+     * Invariant:
+     * Uses a single PostgreSQL-level atomic conditional UPDATE with RETURNING.
+     * Under PostgreSQL READ COMMITTED / any isolation level, the row-level exclusive
+     * lock guarantees that among N concurrent callers for the same COMPLETED payment,
+     * exactly 1 caller updates the row and receives `firstPurchaseTelemetry: true`.
+     * All other callers update 0 rows and receive `firstPurchaseTelemetry: false`.
+     */
+    claimPurchaseTelemetry(inputOrOrgId: {
+        paymentId: string;
+        orgId: string;
+    } | string, maybePaymentId?: string): Promise<{
+        success: boolean;
+        firstPurchaseTelemetry: boolean;
+        recordedAt?: string;
+        reason?: 'ALREADY_CLAIMED' | 'PAYMENT_NOT_COMPLETED' | 'PAYMENT_NOT_FOUND';
+    }>;
 }
 export declare const paymentService: PaymentService;
 export { PaymentService };

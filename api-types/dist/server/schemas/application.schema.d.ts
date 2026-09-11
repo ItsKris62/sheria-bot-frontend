@@ -13,9 +13,9 @@ export declare const applicationStatusSchema: z.ZodEnum<{
     IN_PROGRESS: "IN_PROGRESS";
     SUBMITTED: "SUBMITTED";
     APPROVED: "APPROVED";
+    WITHDRAWN: "WITHDRAWN";
     REJECTED: "REJECTED";
     AWAITING_FEEDBACK: "AWAITING_FEEDBACK";
-    WITHDRAWN: "WITHDRAWN";
 }>;
 export declare const documentStatusSchema: z.ZodEnum<{
     APPROVED: "APPROVED";
@@ -42,9 +42,9 @@ export declare const listApplicationsSchema: z.ZodObject<{
         IN_PROGRESS: "IN_PROGRESS";
         SUBMITTED: "SUBMITTED";
         APPROVED: "APPROVED";
+        WITHDRAWN: "WITHDRAWN";
         REJECTED: "REJECTED";
         AWAITING_FEEDBACK: "AWAITING_FEEDBACK";
-        WITHDRAWN: "WITHDRAWN";
     }>>;
     search: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
@@ -66,9 +66,9 @@ export declare const createApplicationSchema: z.ZodObject<{
         IN_PROGRESS: "IN_PROGRESS";
         SUBMITTED: "SUBMITTED";
         APPROVED: "APPROVED";
+        WITHDRAWN: "WITHDRAWN";
         REJECTED: "REJECTED";
         AWAITING_FEEDBACK: "AWAITING_FEEDBACK";
-        WITHDRAWN: "WITHDRAWN";
     }>>;
     progress: z.ZodDefault<z.ZodNumber>;
     referenceNumber: z.ZodOptional<z.ZodString>;
@@ -90,9 +90,9 @@ export declare const updateApplicationSchema: z.ZodObject<{
         IN_PROGRESS: "IN_PROGRESS";
         SUBMITTED: "SUBMITTED";
         APPROVED: "APPROVED";
+        WITHDRAWN: "WITHDRAWN";
         REJECTED: "REJECTED";
         AWAITING_FEEDBACK: "AWAITING_FEEDBACK";
-        WITHDRAWN: "WITHDRAWN";
     }>>>;
     progress: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
     referenceNumber: z.ZodOptional<z.ZodOptional<z.ZodString>>;

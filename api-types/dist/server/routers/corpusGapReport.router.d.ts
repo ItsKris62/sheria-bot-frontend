@@ -18,7 +18,7 @@ export declare const corpusGapReportRouter: import("@trpc/server").TRPCBuiltRout
         input: {
             documentName: string;
             issuingAuthority: string;
-            documentType: "OTHER" | "LEGISLATION" | "REGULATION" | "CIRCULAR" | "GUIDELINE" | "POLICY" | "STANDARD";
+            documentType: "OTHER" | "CIRCULAR" | "LEGISLATION" | "REGULATION" | "GUIDELINE" | "POLICY" | "STANDARD";
             jurisdiction: "OTHER" | "KENYA" | "MALAWI" | "NIGERIA" | "RWANDA";
             description?: string | undefined;
             sourceUrl?: string | undefined;
@@ -73,7 +73,7 @@ export declare const corpusGapReportRouter: import("@trpc/server").TRPCBuiltRout
             limit?: number | undefined;
             status?: "UNDER_REVIEW" | "PENDING" | "REJECTED" | "INGESTED" | "DUPLICATE" | undefined;
             jurisdiction?: "OTHER" | "KENYA" | "MALAWI" | "NIGERIA" | "RWANDA" | undefined;
-            documentType?: "OTHER" | "LEGISLATION" | "REGULATION" | "CIRCULAR" | "GUIDELINE" | "POLICY" | "STANDARD" | undefined;
+            documentType?: "OTHER" | "CIRCULAR" | "LEGISLATION" | "REGULATION" | "GUIDELINE" | "POLICY" | "STANDARD" | undefined;
         };
         output: {
             reports: {

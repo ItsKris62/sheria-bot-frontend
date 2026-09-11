@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { MapPin, Lock, Sparkles } from "lucide-react"
+import { MapPin, Lock, Compass } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   DEFAULT_JURISDICTION,
@@ -43,7 +43,7 @@ export function JurisdictionBadge({
       variant="outline"
       aria-label={legacy ? `${label}, legacy default jurisdiction` : `${label} jurisdiction`}
       className={cn(
-        "gap-1.5 border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] text-emerald-300",
+        "gap-1.5 border-green-500/30 bg-green-500/10 font-mono text-[10px] text-green-400",
         className,
       )}
     >
@@ -80,7 +80,7 @@ export function JurisdictionContextBar({
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-card/80 p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-start gap-3">
-        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/10 text-emerald-300">
+        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-green-500/25 bg-green-500/10 text-green-400">
           <MapPin className="h-4 w-4" aria-hidden="true" />
         </div>
         <div className="min-w-0">
@@ -118,8 +118,6 @@ export function JurisdictionContextBar({
     </div>
   )
 }
-
-
 
 const REGIONAL_SUGGESTIONS: Record<QueryableJurisdictionCode, SuggestionItem[]> = {
   KE: [
@@ -172,7 +170,7 @@ export function RegionalQuerySuggestions({
           centered && "justify-center",
         )}
       >
-        <Sparkles className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+        <Compass className="h-3.5 w-3.5 text-green-400" aria-hidden="true" />
         Suggested for {label}
       </p>
       <div className={cn("flex flex-wrap gap-2", centered && "justify-center")}>
@@ -181,7 +179,7 @@ export function RegionalQuerySuggestions({
             key={suggestion.id}
             type="button"
             onClick={() => onSelect(suggestion.text, suggestion.id)}
-            className="min-h-[40px] max-w-full rounded-full border border-border/70 bg-card/90 px-4 py-2 text-left text-xs font-medium text-foreground transition-all duration-150 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-300 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="min-h-[40px] max-w-full rounded-full border border-border/70 bg-card/90 px-4 py-2 text-left text-xs font-medium text-foreground transition-all duration-150 hover:border-green-500/50 hover:bg-green-500/10 hover:text-green-300 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-green-500/40"
           >
             <span className="block truncate">{suggestion.relatedArea ?? suggestion.text}</span>
             <span className="sr-only">: {suggestion.text}</span>

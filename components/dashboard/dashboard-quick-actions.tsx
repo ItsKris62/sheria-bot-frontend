@@ -18,7 +18,7 @@ export function DashboardQuickActions() {
         <Button
           asChild
           variant="outline"
-          className="h-11 justify-start border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-[var(--portal-text-primary)] hover:border-[var(--portal-accent-border)] hover:bg-[var(--portal-accent-muted)] hover:text-white transition-colors"
+          className="h-11 justify-start border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-[var(--portal-text-primary)] hover:border-[var(--portal-accent-border)] hover:bg-white/[0.06] hover:text-white transition-all duration-200 active:scale-[0.98]"
         >
           <Link href="/startup/compliance-query">
             <ComplianceQueryMascotIcon className="mr-2.5 h-4 w-4" />
@@ -29,7 +29,7 @@ export function DashboardQuickActions() {
         <Button
           asChild
           variant="outline"
-          className="h-11 justify-start border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-[var(--portal-text-primary)] hover:border-blue-500/30 hover:bg-blue-500/10 hover:text-white transition-colors"
+          className="h-11 justify-start border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-[var(--portal-text-primary)] hover:border-blue-500/30 hover:bg-white/[0.06] hover:text-white transition-all duration-200 active:scale-[0.98]"
         >
           <Link href="/startup/checklists">
             <ClipboardCheck className="mr-2.5 h-4 w-4 text-blue-400" aria-hidden="true" />
@@ -40,7 +40,7 @@ export function DashboardQuickActions() {
         <Button
           asChild
           variant="outline"
-          className="h-11 justify-start border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-[var(--portal-text-primary)] hover:border-amber-500/30 hover:bg-amber-500/10 hover:text-white transition-colors"
+          className="h-11 justify-start border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-[var(--portal-text-primary)] hover:border-amber-500/30 hover:bg-white/[0.06] hover:text-white transition-all duration-200 active:scale-[0.98]"
         >
           <Link href="/startup/gap-analysis">
             <AlertTriangle className="mr-2.5 h-4 w-4 text-amber-400" aria-hidden="true" />
@@ -51,7 +51,7 @@ export function DashboardQuickActions() {
         <Button
           asChild
           variant="outline"
-          className="h-11 justify-start border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-[var(--portal-text-primary)] hover:border-gray-500/30 hover:bg-gray-500/10 hover:text-white transition-colors"
+          className="h-11 justify-start border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-[var(--portal-text-primary)] hover:border-gray-500/30 hover:bg-white/[0.06] hover:text-white transition-all duration-200 active:scale-[0.98]"
         >
           <Link href="/startup/documents">
             <FileText className="mr-2.5 h-4 w-4 text-gray-400" aria-hidden="true" />

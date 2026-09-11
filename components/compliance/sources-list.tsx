@@ -65,7 +65,7 @@ function verificationLabel(source: SourceEntry): "Verified" | "Unverified" | "No
 }
 
 function verificationClass(label: "Verified" | "Unverified" | "Not checked"): string {
-  if (label === "Verified") return "border-emerald-500/40 bg-emerald-500/10 text-emerald-700"
+  if (label === "Verified") return "border-green-500/40 bg-green-500/10 text-green-400 dark:text-green-400"
   if (label === "Unverified") return "border-amber-500/40 bg-amber-500/10 text-amber-700"
   return "border-muted-foreground/25 bg-muted text-muted-foreground"
 }
@@ -175,4 +175,3 @@ export function SourcesList({ citations }: SourcesListProps) {
     </div>
   )
 }
-

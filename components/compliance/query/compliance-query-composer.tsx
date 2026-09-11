@@ -1,7 +1,7 @@
 import React, { useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
-import { AlertCircle, Send, Sparkles, Command } from "lucide-react"
+import { AlertCircle, Send, SlidersHorizontal, Command } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { DetailLevel } from "./compliance-query-types"
 import { jurisdictionLabel, type QueryableJurisdictionCode } from "@/lib/jurisdictions"
@@ -39,7 +39,7 @@ export function ComplianceQueryComposer({
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <span className="font-medium text-foreground/80 flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+            <SlidersHorizontal className="h-3.5 w-3.5 text-green-400" aria-hidden="true" />
             Detail Level:
           </span>
           <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-1">
@@ -47,7 +47,7 @@ export function ComplianceQueryComposer({
               className={cn(
                 "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium cursor-pointer transition-all duration-150 min-h-[36px] sm:min-h-[28px] active:scale-98",
                 answerDetail === "standard"
-                  ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-xs"
+                  ? "bg-green-500/15 text-green-400 border border-green-500/30 shadow-xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
               )}
             >
@@ -65,7 +65,7 @@ export function ComplianceQueryComposer({
               className={cn(
                 "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium cursor-pointer transition-all duration-150 min-h-[36px] sm:min-h-[28px] active:scale-98",
                 answerDetail === "detailed"
-                  ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-xs"
+                  ? "bg-green-500/15 text-green-400 border border-green-500/30 shadow-xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
               )}
             >
@@ -99,7 +99,7 @@ export function ComplianceQueryComposer({
 
       {/* Prominent Composer Input Container with Ambient Glow & Focus Transition */}
       <form ref={formRef} onSubmit={onSubmit} className="relative">
-        <div className="group relative flex items-center rounded-xl border border-border/70 bg-background/90 shadow-[0_0_15px_rgba(16,185,129,0.05)] transition-all duration-200 focus-within:border-emerald-500/60 focus-within:shadow-[0_0_22px_rgba(16,185,129,0.15)] focus-within:ring-1 focus-within:ring-emerald-500/30">
+        <div className="group relative flex items-center rounded-xl border border-border/70 bg-background/90 shadow-[0_0_15px_rgba(34,197,94,0.05)] transition-all duration-200 focus-within:border-brand-green/60 focus-within:shadow-[0_0_22px_rgba(34,197,94,0.15)] focus-within:ring-1 focus-within:ring-brand-green/30">
           <Input
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
@@ -119,7 +119,7 @@ export function ComplianceQueryComposer({
               disabled={!query.trim() || isDetailedCreditWarning}
               loading={isStreaming}
               size="sm"
-              className="h-9 min-h-[36px] w-9 min-w-[36px] rounded-lg bg-emerald-600 p-0 text-white shadow-xs hover:bg-emerald-500 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 transition-all duration-150 disabled:opacity-40 disabled:hover:translate-y-0"
+              className="h-9 min-h-[36px] w-9 min-w-[36px] rounded-lg bg-primary text-primary-foreground font-semibold shadow-xs hover:bg-brand-green-hover motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 transition-all duration-150 disabled:opacity-40 disabled:hover:translate-y-0"
               aria-label="Submit query"
             >
               <Send className="h-4 w-4" />

@@ -57,13 +57,13 @@ export type Category = z.infer<typeof CategoryEnum>;
 export declare const DocumentTypeEnum: z.ZodEnum<{
     DRAFT: "DRAFT";
     OTHER: "OTHER";
-    REGULATION: "REGULATION";
     CIRCULAR: "CIRCULAR";
+    DIRECTIVE: "DIRECTIVE";
+    REGULATION: "REGULATION";
     GUIDELINE: "GUIDELINE";
     POLICY: "POLICY";
     STANDARD: "STANDARD";
     ACT: "ACT";
-    DIRECTIVE: "DIRECTIVE";
     REPORT: "REPORT";
     CHECKLIST: "CHECKLIST";
     FRAMEWORK: "FRAMEWORK";
@@ -74,9 +74,9 @@ export declare const AuthorityStatusEnum: z.ZodEnum<{
     IN_FORCE: "IN_FORCE";
     SUPERSEDED: "SUPERSEDED";
     CONSULTATION: "CONSULTATION";
+    GUIDANCE: "GUIDANCE";
     UNKNOWN: "UNKNOWN";
     REPORT: "REPORT";
-    GUIDANCE: "GUIDANCE";
 }>;
 export type AuthorityStatus = z.infer<typeof AuthorityStatusEnum>;
 export declare const ReviewStatusEnum: z.ZodEnum<{
@@ -144,13 +144,13 @@ export declare const CorpusManifestEntrySchema: z.ZodObject<{
     documentType: z.ZodEnum<{
         DRAFT: "DRAFT";
         OTHER: "OTHER";
-        REGULATION: "REGULATION";
         CIRCULAR: "CIRCULAR";
+        DIRECTIVE: "DIRECTIVE";
+        REGULATION: "REGULATION";
         GUIDELINE: "GUIDELINE";
         POLICY: "POLICY";
         STANDARD: "STANDARD";
         ACT: "ACT";
-        DIRECTIVE: "DIRECTIVE";
         REPORT: "REPORT";
         CHECKLIST: "CHECKLIST";
         FRAMEWORK: "FRAMEWORK";
@@ -160,9 +160,9 @@ export declare const CorpusManifestEntrySchema: z.ZodObject<{
         IN_FORCE: "IN_FORCE";
         SUPERSEDED: "SUPERSEDED";
         CONSULTATION: "CONSULTATION";
+        GUIDANCE: "GUIDANCE";
         UNKNOWN: "UNKNOWN";
         REPORT: "REPORT";
-        GUIDANCE: "GUIDANCE";
     }>;
     isBinding: z.ZodBoolean;
     localPath: z.ZodString;
@@ -260,13 +260,13 @@ export declare const CorpusManifestSchema: z.ZodObject<{
         documentType: z.ZodEnum<{
             DRAFT: "DRAFT";
             OTHER: "OTHER";
-            REGULATION: "REGULATION";
             CIRCULAR: "CIRCULAR";
+            DIRECTIVE: "DIRECTIVE";
+            REGULATION: "REGULATION";
             GUIDELINE: "GUIDELINE";
             POLICY: "POLICY";
             STANDARD: "STANDARD";
             ACT: "ACT";
-            DIRECTIVE: "DIRECTIVE";
             REPORT: "REPORT";
             CHECKLIST: "CHECKLIST";
             FRAMEWORK: "FRAMEWORK";
@@ -276,9 +276,9 @@ export declare const CorpusManifestSchema: z.ZodObject<{
             IN_FORCE: "IN_FORCE";
             SUPERSEDED: "SUPERSEDED";
             CONSULTATION: "CONSULTATION";
+            GUIDANCE: "GUIDANCE";
             UNKNOWN: "UNKNOWN";
             REPORT: "REPORT";
-            GUIDANCE: "GUIDANCE";
         }>;
         isBinding: z.ZodBoolean;
         localPath: z.ZodString;

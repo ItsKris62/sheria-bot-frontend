@@ -414,6 +414,16 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
             output: import("@/modules/agents/automation/approval.service").ListApprovalsResult;
             meta: object;
         }>;
+        listApprovalsForAutomation: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                department?: string | undefined;
+                workflow?: string | undefined;
+                status?: "rejected" | "pending" | "approved" | undefined;
+                limit?: number | undefined;
+            };
+            output: import("@/modules/agents/automation/approval.service").ListApprovalsResult;
+            meta: object;
+        }>;
         publishContent: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 approvalId: string;
@@ -574,11 +584,11 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
                 version: number;
                 errorMessage: string | null;
                 completedAt: Date | null;
+                sourceItemId: string | null;
                 promptVersion: string;
                 recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
                 requiresHumanReview: boolean;
                 suggestionId: string | null;
-                sourceItemId: string | null;
                 agentRunId: string | null;
                 deterministicScore: number;
                 aiRelevanceScore: number | null;
@@ -726,6 +736,341 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidence?: Record<string, unknown> | undefined;
             };
             output: import("@/modules/blog-automation/revision-request.service").CreateRevisionRequestResult;
+            meta: object;
+        }>;
+        listEditorialMonitors: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                jurisdictions?: string | undefined;
+                limit?: number | undefined;
+            } | undefined;
+            output: {
+                monitors: {
+                    id: string;
+                    name: string;
+                    jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                    authorityType: import(".prisma/client").$Enums.BlogAuthorityType;
+                    baseUrl: string;
+                    sourceType: import(".prisma/client").$Enums.BlogSourceType;
+                    lastCheckedAt: Date | null;
+                    monitoringMethod: import(".prisma/client").$Enums.BlogMonitoringMethod;
+                    feedUrl: string | null;
+                }[];
+            };
+            meta: object;
+        }>;
+        runEditorialDiscovery: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                monitorId: string;
+            };
+            output: {
+                status: string;
+                message: string;
+                itemsFound?: undefined;
+                itemsCreated?: undefined;
+                duplicateCount?: undefined;
+                failureCount?: undefined;
+                errorMessage?: undefined;
+            } | {
+                status: "FAILED" | "SUCCESS" | "PARTIAL_SUCCESS";
+                itemsFound: number;
+                itemsCreated: number;
+                duplicateCount: number;
+                failureCount: number;
+                errorMessage: string | null;
+                message?: undefined;
+            };
+            meta: object;
+        }>;
+        createBlogSuggestion: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                sourceItemId: string;
+                minScore?: number | undefined;
+            };
+            output: {
+                createdSuggestion: boolean;
+                scoringResult: import("../../modules/blog-automation/relevance-scoring.service").ScoringResult;
+                suggestion: null;
+                reason?: undefined;
+            } | {
+                createdSuggestion: boolean;
+                scoringResult: import("../../modules/blog-automation/relevance-scoring.service").ScoringResult;
+                suggestion: null;
+                reason: string;
+            } | {
+                createdSuggestion: boolean;
+                scoringResult: import("../../modules/blog-automation/relevance-scoring.service").ScoringResult;
+                suggestion: {
+                    id: string;
+                    title: string;
+                    status: import(".prisma/client").$Enums.BlogSuggestionStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    targetAudience: string[];
+                    summary: string | null;
+                    category: string;
+                    jurisdictions: import(".prisma/client").$Enums.BlogJurisdiction[];
+                    priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
+                    jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                    reason: string | null;
+                    approvedAt: Date | null;
+                    relevanceScore: number;
+                    blogPostId: string | null;
+                    dismissedReason: string | null;
+                    suggestedSlug: string | null;
+                    articleType: import(".prisma/client").$Enums.BlogArticleType;
+                    sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
+                    recommendedTags: string[];
+                    suggestedNextAction: string | null;
+                    requiresOfficialSource: boolean;
+                    requiresHumanReview: boolean;
+                    needsMoreSources: boolean;
+                    dismissedAt: Date | null;
+                    dismissedById: string | null;
+                    approvedById: string | null;
+                };
+                reason?: undefined;
+            };
+            meta: object;
+        }>;
+        listBlogSuggestions: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                status?: "DUPLICATE" | "DISMISSED" | "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
+                jurisdictions?: string | undefined;
+                limit?: number | undefined;
+            } | undefined;
+            output: {
+                suggestions: {
+                    id: string;
+                    title: string;
+                    status: import(".prisma/client").$Enums.BlogSuggestionStatus;
+                    createdAt: Date;
+                    category: string;
+                    priority: import(".prisma/client").$Enums.BlogSuggestionPriority;
+                    jurisdiction: import(".prisma/client").$Enums.BlogJurisdiction;
+                    relevanceScore: number;
+                    blogPostId: string | null;
+                    suggestedSlug: string | null;
+                    articleType: import(".prisma/client").$Enums.BlogArticleType;
+                    sourceQuality: import(".prisma/client").$Enums.BlogSourceQuality;
+                    requiresHumanReview: boolean;
+                }[];
+            };
+            meta: object;
+        }>;
+        generateEditorialDraft: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                suggestionId: string;
+                idempotencyKey: string;
+            };
+            output: import("@/modules/agents/automation/blog-draft.service").GenerateDraftFromSuggestionResult;
+            meta: object;
+        }>;
+        listRegulatorySources: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                jurisdictions?: string | undefined;
+                limit?: number | undefined;
+            } | undefined;
+            output: {
+                sources: import("@/modules/agents/automation/regulatory-automation.service").RegulatorySourceOperationalItem[];
+            };
+            meta: object;
+        }>;
+        fetchRegulatorySource: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                sourceId?: string | undefined;
+                sourceKey?: string | undefined;
+                executionMetadata?: Record<string, unknown> | undefined;
+            };
+            output: import("@/modules/regulatory-intelligence/domain/types").RegulatoryFetchResult;
+            meta: object;
+        }>;
+        ingestRegulatorySnapshot: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                sourceId: string;
+                sourceUrl: string;
+                rawPayload?: string | undefined;
+                rawText?: string | undefined;
+                rawStorageKey?: string | undefined;
+                title?: string | undefined;
+                httpStatus?: number | undefined;
+                contentType?: string | undefined;
+                etag?: string | undefined;
+                lastModified?: string | undefined;
+                metadata?: Record<string, unknown> | undefined;
+            };
+            output: import("@/modules/regulatory-intelligence/domain/types").SnapshotIngestResult;
+            meta: object;
+        }>;
+        createRegulatorySourceItem: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                dedupeKey: string;
+                sourceId: string;
+                regulator: string;
+                title: string;
+                summary: string;
+                primarySnapshotId?: string | undefined;
+                jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
+                officialTitle?: string | undefined;
+                informationType?: "OTHER" | "CONSULTATION" | "DRAFT_REGULATION" | "CIRCULAR" | "NOTICE" | "GAZETTE_NOTICE" | "GUIDANCE" | "DIRECTIVE" | "LEGISLATIVE_UPDATE" | "POLICY_UPDATE" | "ENFORCEMENT" | "LICENSING_UPDATE" | "OFFICIAL_ANNOUNCEMENT" | "MARKET_DEVELOPMENT" | undefined;
+                regulatoryStage?: "DRAFT" | "SUPERSEDED" | "CONSULTATION" | "PROPOSED" | "ANNOUNCED" | "ISSUED" | "GAZETTED" | "EFFECTIVE" | "DEVELOPING" | "WITHDRAWN" | undefined;
+                verificationState?: "UNVERIFIED" | "SOURCE_VERIFIED" | "FACT_VERIFIED" | "REQUIRES_REVIEW" | "DISPUTED" | undefined;
+                materiality?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
+                relevanceScore?: number | undefined;
+                publicationDate?: string | undefined;
+                effectiveDate?: string | undefined;
+                consultationDeadline?: string | undefined;
+                complianceDeadline?: string | undefined;
+                affectedSectors?: string[] | undefined;
+                affectedEntityTypes?: string[] | undefined;
+                topics?: string[] | undefined;
+                metadata?: Record<string, unknown> | undefined;
+            };
+            output: {
+                id: string;
+                dedupeKey: string;
+                jurisdictionCode: string;
+                regulator: string;
+                title: string;
+                informationType: import(".prisma/client").$Enums.RegulatoryInformationType;
+                regulatoryStage: import(".prisma/client").$Enums.RegulatoryStage;
+                materiality: import(".prisma/client").$Enums.RegulatoryMateriality;
+                createdAt: string;
+            };
+            meta: object;
+        }>;
+        getRegulatorySourceItem: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                itemId: string;
+            };
+            output: {
+                metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                id: string;
+                title: string;
+                createdAt: Date;
+                updatedAt: Date;
+                effectiveDate: Date | null;
+                summary: string;
+                jurisdictionCode: string;
+                regulator: string;
+                publicationDate: Date | null;
+                supersededById: string | null;
+                sourceId: string;
+                dedupeKey: string;
+                primarySnapshotId: string | null;
+                officialTitle: string | null;
+                informationType: import(".prisma/client").$Enums.RegulatoryInformationType;
+                regulatoryStage: import(".prisma/client").$Enums.RegulatoryStage;
+                verificationState: import(".prisma/client").$Enums.RegulatoryVerificationState;
+                materiality: import(".prisma/client").$Enums.RegulatoryMateriality;
+                relevanceScore: number | null;
+                consultationDeadline: Date | null;
+                complianceDeadline: Date | null;
+                affectedSectors: import("@prisma/client/runtime/client").JsonValue;
+                affectedEntityTypes: import("@prisma/client/runtime/client").JsonValue;
+                topics: import("@prisma/client/runtime/client").JsonValue;
+                firstDetectedAt: Date;
+                lastObservedAt: Date;
+            };
+            meta: object;
+        }>;
+        listRegulatorySourceItems: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                sourceId?: string | undefined;
+                jurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
+                regulator?: string | undefined;
+                informationType?: "OTHER" | "CONSULTATION" | "DRAFT_REGULATION" | "CIRCULAR" | "NOTICE" | "GAZETTE_NOTICE" | "GUIDANCE" | "DIRECTIVE" | "LEGISLATIVE_UPDATE" | "POLICY_UPDATE" | "ENFORCEMENT" | "LICENSING_UPDATE" | "OFFICIAL_ANNOUNCEMENT" | "MARKET_DEVELOPMENT" | undefined;
+                regulatoryStage?: "DRAFT" | "SUPERSEDED" | "CONSULTATION" | "PROPOSED" | "ANNOUNCED" | "ISSUED" | "GAZETTED" | "EFFECTIVE" | "DEVELOPING" | "WITHDRAWN" | undefined;
+                verificationState?: "UNVERIFIED" | "SOURCE_VERIFIED" | "FACT_VERIFIED" | "REQUIRES_REVIEW" | "DISPUTED" | undefined;
+                materiality?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
+                limit?: number | undefined;
+                offset?: number | undefined;
+            };
+            output: {
+                items: import(".prisma/client").RegulatorySourceItem[];
+                total: number;
+            };
+            meta: object;
+        }>;
+        createRegulatoryAlertDraft: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                sourceItemId: string;
+                automationDraftKey: string;
+                title?: string | undefined;
+                summary?: string | undefined;
+                body?: string | undefined;
+                category?: string | undefined;
+                severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined;
+                effectiveDate?: string | undefined;
+                expiresAt?: string | undefined;
+                sourceUrl?: string | undefined;
+            };
+            output: {
+                alertId: string;
+                title: string;
+                summary: string;
+                jurisdictionCode: string;
+                regulatoryBody: string;
+                category: string;
+                severity: string;
+                isActive: boolean;
+                automationDraftKey: string | null;
+                primaryRegulatorySourceItemId: string | null;
+                isNew: boolean;
+            };
+            meta: object;
+        }>;
+        getRegulatorySnapshot: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                snapshotId: string;
+            };
+            output: {
+                metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                id: string;
+                title: string | null;
+                createdAt: Date;
+                contentType: string | null;
+                retrievedAt: Date;
+                contentHash: string;
+                sourceId: string;
+                sourceUrl: string;
+                canonicalUrl: string;
+                hashVersion: number;
+                normalizationVersion: number;
+                contentLength: number;
+                httpStatus: number | null;
+                etag: string | null;
+                lastModified: string | null;
+                rawText: string | null;
+                rawPayload: string | null;
+                rawStorageKey: string | null;
+            };
+            meta: object;
+        }>;
+        processRegulatorySnapshot: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                snapshotId: string;
+                correlationId?: string | undefined;
+            };
+            output: import("@/modules/regulatory-intelligence/domain/types").ProcessRegulatorySnapshotResult;
+            meta: object;
+        }>;
+        listPendingRegulatorySnapshots: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                limit?: number | undefined;
+            } | undefined;
+            output: {
+                snapshots: Array<{
+                    id: string;
+                    sourceId: string;
+                    sourceKey: string;
+                    jurisdictionCode: string;
+                    regulatoryBody: string;
+                    canonicalUrl: string;
+                    retrievedAt: Date;
+                }>;
+                total: number;
+            };
             meta: object;
         }>;
     }>>;
