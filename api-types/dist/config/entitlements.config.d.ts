@@ -39,7 +39,7 @@ export interface PlanEntitlementConfig {
     teamCollaboration: boolean;
     regulatoryDashboard: boolean;
     regulatoryAlerts: boolean;
-    /** Rich alert entitlements  history window, email frequency, filters */
+    /** Rich alert entitlements -- history window, email frequency, filters */
     alerts?: AlertEntitlement;
     /** Compliance Calendar -- create/manage org-scoped deadline events */
     complianceCalendar: boolean;
@@ -53,6 +53,7 @@ export interface PlanEntitlementConfig {
     /** Plan-specific MIME types permitted for vault uploads */
     vaultAllowedMimeTypes: readonly string[];
     maxSeats: number;
+    maxEnabledCountries: number;
     supportTier: SupportTier;
     analytics: AnalyticsTier;
     knowledgeBaseAccess: KnowledgeBaseAccess;
@@ -71,5 +72,6 @@ export type PilotEntitlementProfiles = Record<PilotEntitlementProfile, PlanEntit
 export declare const PLAN_ENTITLEMENTS: PlanEntitlements;
 export declare const PILOT_ENTITLEMENT_PROFILES: PilotEntitlementProfiles;
 export declare function resolvePilotEntitlementProfile(value: string | null | undefined): PilotEntitlementProfile;
+export declare function getPlanEntitlements(plan: EffectivePlan): PlanEntitlementConfig;
 export { SubscriptionPlan };
 //# sourceMappingURL=entitlements.config.d.ts.map

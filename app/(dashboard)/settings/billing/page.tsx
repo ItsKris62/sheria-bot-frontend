@@ -710,7 +710,12 @@ export default function BillingSettingsPage() {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="pb-3 text-left font-medium text-muted-foreground">Feature</th>
-                    <th className="pb-3 text-center font-medium text-muted-foreground">Startup</th>
+                    <th className={`pb-3 text-center font-medium ${currentPlanId === "STARTER" || currentPlanId === "STARTUP" ? "text-primary" : "text-muted-foreground"}`}>
+                      Starter
+                    </th>
+                    <th className={`pb-3 text-center font-medium ${currentPlanId === "GROWTH" ? "text-primary" : "text-muted-foreground"}`}>
+                      Growth
+                    </th>
                     <th className={`pb-3 text-center font-medium ${currentPlanId === "BUSINESS" ? "text-primary" : "text-muted-foreground"}`}>
                       Business
                     </th>
@@ -721,8 +726,11 @@ export default function BillingSettingsPage() {
                   {PLAN_COMPARISON_ROWS.map((row) => (
                     <tr key={row.feature} className="border-b border-border/40">
                       <td className="py-3 text-muted-foreground">{row.feature}</td>
-                      <td className={`py-3 text-center ${currentPlanId === "STARTUP" ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
-                        {row.startup}
+                      <td className={`py-3 text-center ${currentPlanId === "STARTER" || currentPlanId === "STARTUP" ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                        {row.starter}
+                      </td>
+                      <td className={`py-3 text-center ${currentPlanId === "GROWTH" ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                        {row.growth}
                       </td>
                       <td className={`py-3 text-center ${currentPlanId === "BUSINESS" ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
                         {row.business}

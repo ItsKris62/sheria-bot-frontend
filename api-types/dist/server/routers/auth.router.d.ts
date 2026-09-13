@@ -24,7 +24,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
             email: string;
             password: string;
             name: string;
-            role: "REGULATOR" | "STARTUP" | "ENTERPRISE";
+            role: "ENTERPRISE" | "REGULATOR" | "STARTUP";
             companyName?: string | undefined;
             homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
             invitationToken?: string | undefined;

@@ -75,7 +75,10 @@ export default function PricingPage() {
                     Feature
                   </th>
                   <th className="px-6 py-5 text-center text-sm font-semibold text-[#F5F7F6]">
-                    Startup
+                    Starter
+                  </th>
+                  <th className="px-6 py-5 text-center text-sm font-semibold text-[#A8B5AF]">
+                    Growth
                   </th>
                   <th className="px-6 py-5 text-center text-sm font-semibold text-[#1ED760]">
                     Business
@@ -90,7 +93,10 @@ export default function PricingPage() {
                   <tr key={row.feature} className="border-b border-[#1D2925]/70 last:border-b-0">
                     <td className="px-6 py-4 text-sm text-[#B8C0BC]">{row.feature}</td>
                     <td className="px-6 py-4 text-center text-sm text-[#7F8A85]">
-                      {row.startup}
+                      {row.starter}
+                    </td>
+                    <td className="px-6 py-4 text-center text-sm text-[#7F8A85]">
+                      {row.growth}
                     </td>
                     <td className="px-6 py-4 text-center text-sm font-semibold text-[#F5F7F6]">
                       {row.business}

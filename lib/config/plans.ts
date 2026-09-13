@@ -8,10 +8,20 @@
  * This file is the source of truth for UI display on the frontend.
  * Both the pricing page AND billing settings page import from here.
  *
+ * Catalog Version: 2026-09-01
  * Convention: -1 = unlimited, 0 = disabled/unavailable, null = not applicable.
  */
 
-export type PlanId = 'REGULATOR' | 'STARTUP' | 'BUSINESS' | 'ENTERPRISE';
+export const CATALOG_VERSION = '2026-09-01';
+
+export type PlanId =
+  | 'FREE'
+  | 'STARTER'
+  | 'GROWTH'
+  | 'BUSINESS'
+  | 'ENTERPRISE'
+  | 'STARTUP'
+  | 'REGULATOR';
 
 export interface PlanFeatureRow {
   text: string;
@@ -27,12 +37,14 @@ export interface PlanConfig {
   id: PlanId;
   name: string;
   tagline: string;
+  seats: number;
+  maxEnabledCountries: number;
   price: {
     monthly: number | null;
     yearly: number | null;
     currency: 'KES';
   };
-  badge: 'Free' | 'Most Popular' | null;
+  badge: 'Free' | 'Most Popular' | 'Custom' | null;
   cta: PlanCta;
   popular: boolean;
   trialDays: number;
@@ -41,109 +53,174 @@ export interface PlanConfig {
 
 export interface ComparisonRow {
   feature: string;
-  regulator: string;
-  startup: string;
+  free: string;
+  starter: string;
+  growth: string;
   business: string;
   enterprise: string;
 }
 
-// ── Plan configurations ─────────────────────────────────────────────────────
+// ── Canonical 5-tier plan configurations ────────────────────────────────────
 
 export const PLANS: Record<PlanId, PlanConfig> = {
-  REGULATOR: {
-    id: 'REGULATOR',
-    name: 'Regulator',
-    tagline: 'For government regulatory bodies',
+  FREE: {
+    id: 'FREE',
+    name: 'Free',
+    tagline: 'Basic evaluation access for solo users in their home country',
+    seats: 1,
+    maxEnabledCountries: 1,
     price: { monthly: 0, yearly: 0, currency: 'KES' },
     badge: 'Free',
     cta: { type: 'none' },
     popular: false,
     trialDays: 0,
     features: [
-      { text: '50 compliance queries/month', included: true },
+      { text: 'Bounded evaluation queries in home country', included: true },
       { text: 'Read-only regulatory knowledge base', included: true },
-      { text: 'Regulatory dashboard', included: true },
-      { text: 'Checklist generations', included: false },
+      { text: '1 user seat', included: true },
+      { text: 'Single home jurisdiction', included: true },
+      { text: 'Automated compliance checklists', included: false },
       { text: 'Gap analysis tool', included: false },
-      { text: 'API access', included: false },
+      { text: 'Multi-country comparison', included: false },
     ],
   },
 
-  STARTUP: {
-    id: 'STARTUP',
-    name: 'Startup',
-    tagline: 'Perfect for growing fintech startups navigating compliance',
-    price: { monthly: 4999, yearly: 49790, currency: 'KES' },
+  STARTER: {
+    id: 'STARTER',
+    name: 'Starter',
+    tagline: 'For solo compliance professionals and early startups',
+    seats: 1,
+    maxEnabledCountries: 1,
+    price: { monthly: 7500, yearly: 76500, currency: 'KES' },
     badge: null,
-    cta: { type: 'subscribe', label: 'Start Free Trial' },
+    cta: { type: 'subscribe', label: 'Get Started' },
     popular: false,
     trialDays: 14,
     features: [
-      { text: 'Unlimited compliance queries', included: true },
-      { text: '5 checklist generations/month', included: true },
-      { text: 'Regulatory alerts & notifications', included: true },
-      { text: 'Basic analytics dashboard', included: true },
-      { text: 'Email support (48hr response)', included: true },
-      { text: '1 GB document storage', included: true },
-      { text: 'Gap analysis tool', included: false },
-      { text: 'API access', included: false },
+      { text: 'Cited compliance queries in home country', included: true },
+      { text: 'Quick gap analysis', included: true },
+      { text: 'Regulatory alerts & calendar', included: true },
+      { text: 'Compliance checklists & license tracking', included: true },
+      { text: '1 seat & 1 home jurisdiction', included: true },
+      { text: 'Standard/Deep analysis', included: false },
+      { text: 'Multi-country comparison', included: false },
+    ],
+  },
+
+  GROWTH: {
+    id: 'GROWTH',
+    name: 'Growth',
+    tagline: 'For growing teams requiring collaboration and standard analysis',
+    seats: 2,
+    maxEnabledCountries: 1,
+    price: { monthly: 15000, yearly: 153000, currency: 'KES' },
+    badge: null,
+    cta: { type: 'subscribe', label: 'Get Started' },
+    popular: false,
+    trialDays: 14,
+    features: [
+      { text: 'Everything in Starter', included: true },
+      { text: 'Quick & Standard gap analysis', included: true },
+      { text: '2-person team collaboration', included: true },
+      { text: 'Audit trail & activity tracking', included: true },
+      { text: '1 home jurisdiction', included: true },
+      { text: 'Multi-country comparison', included: false },
     ],
   },
 
   BUSINESS: {
     id: 'BUSINESS',
     name: 'Business',
-    tagline: 'For established fintech companies with complex compliance needs',
-    price: { monthly: 44999, yearly: 453590, currency: 'KES' },
-    badge: null,
+    tagline: 'Multi-country compliance and full analysis for scaling fintechs',
+    seats: 6,
+    maxEnabledCountries: 2,
+    price: { monthly: 35000, yearly: 357000, currency: 'KES' },
+    badge: 'Most Popular',
     cta: { type: 'subscribe', label: 'Start Free Trial' },
-    popular: false,
+    popular: true,
     trialDays: 14,
     features: [
-      { text: 'Everything in Startup', included: true },
-      { text: 'Unlimited checklist generations', included: true },
-      { text: 'Gap analysis tool', included: true },
-      { text: 'API access (10,000 calls/month)', included: true },
-      { text: 'Advanced analytics & reporting', included: true },
-      { text: 'Priority support (24hr response)', included: true },
-      { text: 'Team workspace (6 total seats)', included: true },
-      { text: 'Organization audit history', included: true },
-      { text: 'Team MFA posture', included: true },
-      { text: 'Compliance calendar and licenses', included: true },
-      { text: 'Document repository (10 GB)', included: true },
+      { text: 'Everything in Growth', included: true },
+      { text: 'All analysis depths (Quick, Standard, Comprehensive, Deep)', included: true },
+      { text: 'Multi-country access & comparison (up to 2 countries)', included: true },
+      { text: '6 pooled team seats with RBAC', included: true },
+      { text: 'Team MFA security posture', included: true },
+      { text: 'Priority support', included: true },
     ],
   },
 
   ENTERPRISE: {
     id: 'ENTERPRISE',
     name: 'Enterprise',
-    tagline: 'For regulators, banks, and large institutions',
-    price: { monthly: null, yearly: null, currency: 'KES' },
-    badge: null,
+    tagline: 'Custom frameworks, policy generation, and regional pan-African compliance',
+    seats: 12,
+    maxEnabledCountries: 4,
+    price: { monthly: 75000, yearly: 765000, currency: 'KES' },
+    badge: 'Custom',
     cta: { type: 'contact-sales', label: 'Contact Sales' },
     popular: false,
     trialDays: 0,
     features: [
       { text: 'Everything in Business', included: true },
-      { text: 'AI Policy Generator', included: true },
-      { text: 'Legal corpus management', included: true },
-      { text: 'Unlimited API access', included: true },
-      { text: 'Custom integrations & SSO', included: true },
-      { text: 'Dedicated account manager', included: true },
-      { text: 'On-premise deployment option', included: true },
-      { text: '99.9% uptime SLA guarantee', included: true },
+      { text: 'AI Policy Generator & Refinement', included: true },
+      { text: 'Custom regulatory frameworks & legal corpus management', included: true },
+      { text: 'Up to 4 enabled jurisdictions (KE, RW, MW, NG)', included: true },
+      { text: '12+ team seats (customizable)', included: true },
+      { text: 'Dedicated account manager & SLA guarantee', included: true },
+    ],
+  },
+
+  // Compatibility aliases for legacy accounts
+  STARTUP: {
+    id: 'STARTUP',
+    name: 'Startup (Legacy)',
+    tagline: 'Legacy startup plan',
+    seats: 1,
+    maxEnabledCountries: 1,
+    price: { monthly: 4999, yearly: 49790, currency: 'KES' },
+    badge: null,
+    cta: { type: 'subscribe', label: 'Manage Plan' },
+    popular: false,
+    trialDays: 14,
+    features: [
+      { text: 'Legacy single-country compliance queries', included: true },
+      { text: 'Basic checklists & alerts', included: true },
+    ],
+  },
+
+  REGULATOR: {
+    id: 'REGULATOR',
+    name: 'Regulator (Legacy)',
+    tagline: 'For government regulatory bodies',
+    seats: 1,
+    maxEnabledCountries: 1,
+    price: { monthly: 0, yearly: 0, currency: 'KES' },
+    badge: 'Free',
+    cta: { type: 'none' },
+    popular: false,
+    trialDays: 0,
+    features: [
+      { text: 'Read-only regulatory knowledge base', included: true },
+      { text: 'Regulatory dashboard', included: true },
     ],
   },
 };
 
-// ── Plan ordered list (least to most permissive) ────────────────────────────
+// ── Plan ordered list (canonical 5 tiers) ───────────────────────────────────
 
-export const PLAN_ORDER: PlanId[] = ['REGULATOR', 'STARTUP', 'BUSINESS', 'ENTERPRISE'];
+export const PLAN_ORDER: PlanId[] = [
+  'FREE',
+  'STARTER',
+  'GROWTH',
+  'BUSINESS',
+  'ENTERPRISE',
+];
 
-// ── Plans shown on the public pricing page (excludes REGULATOR) ─────────────
+// ── Plans shown on the public pricing page ──────────────────────────────────
 
 export const PUBLIC_PRICING_PLANS: PlanConfig[] = [
-  PLANS.STARTUP,
+  PLANS.STARTER,
+  PLANS.GROWTH,
   PLANS.BUSINESS,
   PLANS.ENTERPRISE,
 ];
@@ -152,109 +229,60 @@ export const PUBLIC_PRICING_PLANS: PlanConfig[] = [
 
 export const PLAN_COMPARISON_ROWS: ComparisonRow[] = [
   {
-    feature: 'Compliance Queries',
-    regulator: '50/month',
-    startup: 'Unlimited',
-    business: 'Unlimited',
-    enterprise: 'Unlimited',
+    feature: 'Team Seats',
+    free: '1',
+    starter: '1',
+    growth: '2',
+    business: '6 total',
+    enterprise: '12 (Customizable)',
   },
   {
-    feature: 'Checklist Generations',
-    regulator: '-',
-    startup: '5/month',
-    business: 'Unlimited',
-    enterprise: 'Unlimited',
+    feature: 'Enabled Jurisdictions',
+    free: '1 (Home)',
+    starter: '1 (Home)',
+    growth: '1 (Home)',
+    business: 'Up to 2',
+    enterprise: 'Up to 4',
+  },
+  {
+    feature: 'Multi-Country Comparison',
+    free: '-',
+    starter: '-',
+    growth: '-',
+    business: 'Yes (within 2)',
+    enterprise: 'Yes (within 4)',
   },
   {
     feature: 'Gap Analysis',
-    regulator: '-',
-    startup: '-',
-    business: 'Yes',
-    enterprise: 'Yes',
+    free: '-',
+    starter: 'Quick',
+    growth: 'Quick & Standard',
+    business: 'All Depths',
+    enterprise: 'All Depths',
   },
   {
-    feature: 'API Access',
-    regulator: '-',
-    startup: '-',
-    business: '10K calls/mo',
-    enterprise: 'Unlimited',
-  },
-  {
-    feature: 'Team Seats',
-    regulator: '1',
-    startup: '1',
-    business: '6 total',
-    enterprise: 'Unlimited',
-  },
-  {
-    feature: 'Team Management',
-    regulator: '-',
-    startup: '-',
-    business: 'Owner/Admin RBAC',
-    enterprise: 'Owner/Admin RBAC',
-  },
-  {
-    feature: 'Compliance Calendar',
-    regulator: '-',
-    startup: '-',
-    business: 'Yes',
-    enterprise: 'Yes',
-  },
-  {
-    feature: 'License Management',
-    regulator: '-',
-    startup: '-',
-    business: 'Yes',
-    enterprise: 'Yes',
-  },
-  {
-    feature: 'Audit History',
-    regulator: '-',
-    startup: '-',
-    business: 'Organization activity',
-    enterprise: 'Organization activity',
-  },
-  {
-    feature: 'Team Security Posture',
-    regulator: '-',
-    startup: '-',
-    business: 'MFA status + policy',
-    enterprise: 'MFA status + policy',
-  },
-  {
-    feature: 'Document Storage',
-    regulator: '-',
-    startup: '1 GB',
-    business: '10 GB',
-    enterprise: 'Unlimited',
-  },
-  {
-    feature: 'Support Response',
-    regulator: 'Community',
-    startup: '48 hours',
-    business: '24 hours',
-    enterprise: '4 hours',
-  },
-  {
-    feature: 'Policy Generator',
-    regulator: '-',
-    startup: '-',
+    feature: 'AI Policy Generator',
+    free: '-',
+    starter: '-',
+    growth: '-',
     business: '-',
     enterprise: 'Yes',
   },
   {
-    feature: 'Legal Corpus Management',
-    regulator: '-',
-    startup: '-',
+    feature: 'Custom Frameworks',
+    free: '-',
+    starter: '-',
+    growth: '-',
     business: '-',
     enterprise: 'Yes',
   },
   {
-    feature: 'SSO & Custom Integrations',
-    regulator: '-',
-    startup: '-',
-    business: '-',
-    enterprise: 'Yes',
+    feature: 'Support SLA',
+    free: 'Community',
+    starter: 'Standard',
+    growth: 'Standard',
+    business: 'Priority (24h)',
+    enterprise: 'Dedicated (4h)',
   },
 ];
 

@@ -22,9 +22,9 @@ export declare const registerSchema: z.ZodObject<{
     password: z.ZodString;
     name: z.ZodString;
     role: z.ZodEnum<{
+        ENTERPRISE: "ENTERPRISE";
         REGULATOR: "REGULATOR";
         STARTUP: "STARTUP";
-        ENTERPRISE: "ENTERPRISE";
     }>;
     companyName: z.ZodOptional<z.ZodString>;
     homeJurisdictionCode: z.ZodOptional<z.ZodEnum<{

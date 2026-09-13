@@ -12,7 +12,7 @@ import { Eyebrow, Reveal, Stagger, StaggerItem, LiquidGlassCard } from "@/compon
 import { trackEvent, type AnalyticsPlacement } from "@/lib/analytics"
 
 type BillingCycle = "monthly" | "yearly"
-type PlanTone = "startup" | "business" | "enterprise"
+type PlanTone = "free" | "starter" | "growth" | "startup" | "business" | "enterprise"
 type PriceValue = number | "Custom"
 
 function getTone(plan: PlanConfig): PlanTone {

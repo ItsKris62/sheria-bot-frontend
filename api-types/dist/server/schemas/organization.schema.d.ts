@@ -12,24 +12,13 @@ export declare const homeJurisdictionCodeSchema: z.ZodEnum<{
  */
 /**
  * Create organization
- *
- * @example
- * {
- *   name: "FinTech Solutions Ltd",
- *   type: "STARTUP",
- *   registrationNumber: "PVT-123456",
- *   industry: "Financial Technology",
- *   contactEmail: "info@fintech.co.ke",
- *   contactPhone: "+254700123456",
- *   address: "Nairobi, Kenya"
- * }
  */
 export declare const createOrganizationSchema: z.ZodObject<{
     name: z.ZodString;
     type: z.ZodEnum<{
+        ENTERPRISE: "ENTERPRISE";
         REGULATOR: "REGULATOR";
         STARTUP: "STARTUP";
-        ENTERPRISE: "ENTERPRISE";
         OTHER: "OTHER";
         BANK: "BANK";
         TELECOM: "TELECOM";
@@ -48,6 +37,12 @@ export declare const createOrganizationSchema: z.ZodObject<{
         RW: "RW";
         NG: "NG";
     }>;
+    enabledJurisdictions: z.ZodOptional<z.ZodArray<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>>;
 }, z.core.$strip>;
 export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;
 /**
@@ -59,9 +54,9 @@ export declare const updateOrganizationSchema: z.ZodObject<{
     id: z.ZodString;
     name: z.ZodOptional<z.ZodString>;
     type: z.ZodOptional<z.ZodEnum<{
+        ENTERPRISE: "ENTERPRISE";
         REGULATOR: "REGULATOR";
         STARTUP: "STARTUP";
-        ENTERPRISE: "ENTERPRISE";
         OTHER: "OTHER";
         BANK: "BANK";
         TELECOM: "TELECOM";
@@ -81,6 +76,13 @@ export declare const updateOrganizationSchema: z.ZodObject<{
         NG: "NG";
     }>>;
     homeJurisdictionReason: z.ZodOptional<z.ZodString>;
+    enabledJurisdictions: z.ZodOptional<z.ZodArray<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>>;
+    needsCountryConfirmation: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 export type UpdateOrganizationInput = z.infer<typeof updateOrganizationSchema>;
 /**
@@ -97,9 +99,9 @@ export declare const listOrganizationsSchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
     type: z.ZodOptional<z.ZodEnum<{
+        ENTERPRISE: "ENTERPRISE";
         REGULATOR: "REGULATOR";
         STARTUP: "STARTUP";
-        ENTERPRISE: "ENTERPRISE";
         OTHER: "OTHER";
         BANK: "BANK";
         TELECOM: "TELECOM";
@@ -167,8 +169,40 @@ export declare const updateOrganizationSettingsSchema: z.ZodObject<{
         NG: "NG";
     }>>;
     homeJurisdictionReason: z.ZodOptional<z.ZodString>;
+    enabledJurisdictions: z.ZodOptional<z.ZodArray<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>>;
 }, z.core.$strip>;
 export type UpdateOrganizationSettingsInput = z.infer<typeof updateOrganizationSettingsSchema>;
+export declare const confirmCountrySchema: z.ZodObject<{
+    organizationId: z.ZodOptional<z.ZodString>;
+    homeJurisdictionCode: z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>;
+    enabledJurisdictions: z.ZodOptional<z.ZodArray<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>>;
+}, z.core.$strip>;
+export type ConfirmCountryInput = z.infer<typeof confirmCountrySchema>;
+export declare const updateEnabledJurisdictionsSchema: z.ZodObject<{
+    organizationId: z.ZodOptional<z.ZodString>;
+    enabledJurisdictions: z.ZodArray<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>;
+}, z.core.$strip>;
+export type UpdateEnabledJurisdictionsInput = z.infer<typeof updateEnabledJurisdictionsSchema>;
 /**
  * Shared DTO for Organization Members
  */

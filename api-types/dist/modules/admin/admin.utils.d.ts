@@ -5,9 +5,9 @@ import { z } from 'zod';
 import type { AdminUserDetail, AdminOrgDetail, AuditLogEntry } from './admin.types';
 export declare const adminUserFiltersSchema: z.ZodObject<{
     role: z.ZodOptional<z.ZodEnum<{
+        ENTERPRISE: "ENTERPRISE";
         REGULATOR: "REGULATOR";
         STARTUP: "STARTUP";
-        ENTERPRISE: "ENTERPRISE";
         ADMIN: "ADMIN";
     }>>;
     status: z.ZodOptional<z.ZodEnum<{

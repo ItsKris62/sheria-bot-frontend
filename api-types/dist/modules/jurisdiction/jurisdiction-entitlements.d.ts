@@ -35,10 +35,14 @@ interface JurisdictionPrismaReader {
             select: {
                 id: true;
                 homeJurisdictionCode: true;
+                enabledJurisdictions?: boolean;
+                needsCountryConfirmation?: boolean;
             };
         }): Promise<{
             id: string;
             homeJurisdictionCode: string | null;
+            enabledJurisdictions?: string[] | null;
+            needsCountryConfirmation?: boolean | null;
         } | null>;
     };
 }

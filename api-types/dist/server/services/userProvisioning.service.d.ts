@@ -7,16 +7,16 @@ export declare const createUserWithOrganizationInputSchema: z.ZodObject<{
     email: z.ZodString;
     fullName: z.ZodString;
     role: z.ZodDefault<z.ZodEnum<{
+        ENTERPRISE: "ENTERPRISE";
         REGULATOR: "REGULATOR";
         STARTUP: "STARTUP";
-        ENTERPRISE: "ENTERPRISE";
         ADMIN: "ADMIN";
     }>>;
     subscriptionTier: z.ZodOptional<z.ZodEnum<{
-        REGULATOR: "REGULATOR";
-        STARTUP: "STARTUP";
         BUSINESS: "BUSINESS";
         ENTERPRISE: "ENTERPRISE";
+        REGULATOR: "REGULATOR";
+        STARTUP: "STARTUP";
     }>>;
     isPilot: z.ZodDefault<z.ZodBoolean>;
     organizationId: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;

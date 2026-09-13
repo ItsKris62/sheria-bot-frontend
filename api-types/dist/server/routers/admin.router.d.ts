@@ -81,7 +81,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             page?: number | undefined;
             limit?: number | undefined;
-            role?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined;
+            role?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "ADMIN" | undefined;
             status?: "active" | "inactive" | undefined;
             recentlyActive?: boolean | undefined;
             search?: string | undefined;
@@ -118,7 +118,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
     updateUser: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             userId: string;
-            role?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined;
+            role?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "ADMIN" | undefined;
             emailVerified?: boolean | undefined;
         };
         output: {
@@ -644,7 +644,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
     createInvitation: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             email: string;
-            role: "REGULATOR" | "STARTUP" | "ENTERPRISE";
+            role: "ENTERPRISE" | "REGULATOR" | "STARTUP";
             organizationId?: string | undefined;
             expiresInDays?: number | undefined;
         };
@@ -665,7 +665,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
     listInvitations: import("@trpc/server").TRPCQueryProcedure<{
         input: {
             used?: boolean | undefined;
-            role?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | undefined;
+            role?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | undefined;
             page?: number | undefined;
             limit?: number | undefined;
         };
@@ -832,8 +832,8 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
             email: string;
             fullName: string;
             password: string;
-            role?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined;
-            subscriptionTier?: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE" | undefined;
+            role?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "ADMIN" | undefined;
+            subscriptionTier?: "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP" | undefined;
             organizationId?: unknown;
             organizationName?: unknown;
             homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
@@ -874,7 +874,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
     updateUserRole: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             userId: string;
-            role: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN";
+            role: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "ADMIN";
         };
         output: import("@/modules/admin").AdminUserDetail;
         meta: object;
@@ -905,7 +905,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
     updateOrganizationPlan: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             orgId: string;
-            plan: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
+            plan: "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
         };
         output: import("@/modules/admin").AdminOrgDetail;
         meta: object;
@@ -1009,7 +1009,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
     updateBillingPlanCatalog: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             plans: {
-                id: "STARTUP" | "BUSINESS";
+                id: "BUSINESS" | "STARTUP";
                 price: {
                     monthly: number;
                     yearly: number | null;
@@ -1229,7 +1229,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
     bulkUpdateUserTier: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             userIds: string[];
-            tier: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
+            tier: "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
         };
         output: {
             success: boolean;

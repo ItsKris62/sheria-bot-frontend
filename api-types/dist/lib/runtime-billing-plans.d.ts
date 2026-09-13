@@ -1,5 +1,5 @@
 import type { BillingPlanCatalog, BillingPlanCatalogEntry, BillingPlanCatalogUpdateInput, BillingPlanOverrides, SelfServeBillingPlan, SubscriptionPlan } from '@/modules/admin/admin.types';
-export declare const SELF_SERVE_BILLING_PLAN_IDS: readonly ["STARTUP", "BUSINESS"];
+export declare const SELF_SERVE_BILLING_PLAN_IDS: readonly ["STARTER", "GROWTH", "BUSINESS", "STARTUP"];
 export declare function sanitizeBillingPlanOverrides(raw: unknown): BillingPlanOverrides;
 export declare function buildBillingPlanCatalog(overrides?: BillingPlanOverrides): BillingPlanCatalog;
 export declare function getBillingPlanCatalog(): Promise<BillingPlanCatalog>;

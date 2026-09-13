@@ -551,6 +551,57 @@ export interface ContentItem {
     authorId: string | null;
 }
 export interface PaginatedContent {
+    isPilot?: boolean;
+    sendWelcomeEmail?: boolean;
+}
+export interface LoginHistoryFilters {
+    userId?: string;
+    email?: string;
+    success?: boolean;
+    dateFrom?: Date;
+    dateTo?: Date;
+    page?: number;
+    limit?: number;
+}
+export interface LoginHistoryEntry {
+    id: string;
+    userId: string | null;
+    email: string;
+    success: boolean;
+    ipAddress: string | null;
+    userAgent: string | null;
+    failureReason: string | null;
+    location: string | null;
+    createdAt: Date;
+}
+export interface PaginatedLoginHistory {
+    items: LoginHistoryEntry[];
+    total: number;
+    page: number;
+    limit: number;
+}
+export interface ContentFilters {
+    contentType: 'BLOG_POST' | 'KNOWLEDGE_BASE_ARTICLE';
+    contentStatus?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'UNDER_REVIEW';
+    search?: string;
+    page?: number;
+    limit?: number;
+}
+export interface ContentItem {
+    id: string;
+    title: string | null;
+    slug: string | null;
+    excerpt: string | null;
+    contentType: string;
+    contentStatus: string;
+    category: string | null;
+    viewCount: number;
+    publishedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    authorId: string | null;
+}
+export interface PaginatedContent {
     items: ContentItem[];
     total: number;
     page: number;
@@ -567,8 +618,8 @@ export interface UpdateOrganizationInput {
     contactPhone?: string;
     contactPosition?: string;
 }
-export type SubscriptionPlan = 'REGULATOR' | 'STARTUP' | 'BUSINESS' | 'ENTERPRISE';
-export type SelfServeBillingPlan = 'STARTUP' | 'BUSINESS';
+export type SubscriptionPlan = 'FREE' | 'STARTER' | 'GROWTH' | 'BUSINESS' | 'ENTERPRISE' | 'REGULATOR' | 'STARTUP';
+export type SelfServeBillingPlan = 'STARTER' | 'GROWTH' | 'BUSINESS' | 'STARTUP';
 export interface BillingPlanCatalogEntry {
     id: SubscriptionPlan;
     name: string;

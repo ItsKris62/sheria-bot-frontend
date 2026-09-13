@@ -66,7 +66,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 email: string;
                 password: string;
                 name: string;
-                role: "REGULATOR" | "STARTUP" | "ENTERPRISE";
+                role: "ENTERPRISE" | "REGULATOR" | "STARTUP";
                 companyName?: string | undefined;
                 homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
                 invitationToken?: string | undefined;
@@ -1920,7 +1920,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 page?: number | undefined;
                 limit?: number | undefined;
-                type?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE" | undefined;
+                type?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE" | undefined;
                 search?: string | undefined;
             };
             output: {
@@ -1955,6 +1955,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     planEndDate: Date | null;
                     maxSeats: number;
                     homeJurisdictionCode: string | null;
+                    enabledJurisdictions: string[];
+                    needsCountryConfirmation: boolean;
                     stripeCustomerId: string | null;
                     stripeSubId: string | null;
                     customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -2021,6 +2023,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 planEndDate: Date | null;
                 maxSeats: number;
                 homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
                 stripeCustomerId: string | null;
                 stripeSubId: string | null;
                 customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -2045,7 +2049,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         create: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 name: string;
-                type: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE";
+                type: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE";
                 contactEmail: string;
                 homeJurisdictionCode: "KE" | "MW" | "RW" | "NG";
                 registrationNumber?: string | undefined;
@@ -2054,6 +2058,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 address?: string | undefined;
                 website?: string | undefined;
                 description?: string | undefined;
+                enabledJurisdictions?: ("KE" | "MW" | "RW" | "NG")[] | undefined;
             };
             output: {
                 type: string;
@@ -2082,6 +2087,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 planEndDate: Date | null;
                 maxSeats: number;
                 homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
                 stripeCustomerId: string | null;
                 stripeSubId: string | null;
                 customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -2107,7 +2114,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 id: string;
                 name?: string | undefined;
-                type?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE" | undefined;
+                type?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE" | undefined;
                 registrationNumber?: string | undefined;
                 industry?: string | undefined;
                 contactEmail?: string | undefined;
@@ -2117,6 +2124,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 description?: string | undefined;
                 homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
                 homeJurisdictionReason?: string | undefined;
+                enabledJurisdictions?: ("KE" | "MW" | "RW" | "NG")[] | undefined;
+                needsCountryConfirmation?: boolean | undefined;
             };
             output: {
                 type: string;
@@ -2145,6 +2154,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 planEndDate: Date | null;
                 maxSeats: number;
                 homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
                 stripeCustomerId: string | null;
                 stripeSubId: string | null;
                 customLimits: import("@prisma/client/runtime/client").JsonValue | null;
@@ -3960,6 +3971,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contactPhone?: string | undefined;
                 homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
                 homeJurisdictionReason?: string | undefined;
+                enabledJurisdictions?: ("KE" | "MW" | "RW" | "NG")[] | undefined;
             };
             output: {
                 id: string;
@@ -3973,6 +3985,117 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contactPosition: string | null;
                 contactEmail: string | null;
                 contactPhone: string | null;
+            };
+            meta: object;
+        }>;
+        confirmCountry: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                homeJurisdictionCode: "KE" | "MW" | "RW" | "NG";
+                organizationId?: string | undefined;
+                enabledJurisdictions?: ("KE" | "MW" | "RW" | "NG")[] | undefined;
+            };
+            output: {
+                type: string;
+                id: string;
+                mpesaPhoneNumber: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                organizationType: string;
+                registrationNumber: string | null;
+                cbkLicenseNumber: string | null;
+                website: string | null;
+                industry: string | null;
+                size: string | null;
+                subscriptionTier: string;
+                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+                trialEndsAt: Date | null;
+                gracePeriodEndsAt: Date | null;
+                cancelledAt: Date | null;
+                subscriptionEndsAt: Date | null;
+                verificationStatus: string;
+                verifiedAt: Date | null;
+                verifiedBy: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                planStartDate: Date | null;
+                planEndDate: Date | null;
+                maxSeats: number;
+                homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
+                stripeCustomerId: string | null;
+                stripeSubId: string | null;
+                customLimits: import("@prisma/client/runtime/client").JsonValue | null;
+                preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+                mpesaNextPaymentDueDate: Date | null;
+                subscriptionCycleEnd: Date | null;
+                mpesaFailedRenewalAttempts: number;
+                mpesaLastRenewalAttemptAt: Date | null;
+                mpesaNextRenewalRetryAt: Date | null;
+                mpesaCancelledByUserAt: Date | null;
+                address: string | null;
+                contactPerson: string | null;
+                contactPosition: string | null;
+                contactEmail: string | null;
+                contactPhone: string | null;
+                requireMfa: boolean;
+                mfaPolicyEnabledAt: Date | null;
+                mfaPolicyUpdatedBy: string | null;
+            };
+            meta: object;
+        }>;
+        updateEnabledJurisdictions: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                enabledJurisdictions: ("KE" | "MW" | "RW" | "NG")[];
+                organizationId?: string | undefined;
+            };
+            output: {
+                type: string;
+                id: string;
+                mpesaPhoneNumber: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                organizationType: string;
+                registrationNumber: string | null;
+                cbkLicenseNumber: string | null;
+                website: string | null;
+                industry: string | null;
+                size: string | null;
+                subscriptionTier: string;
+                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+                trialEndsAt: Date | null;
+                gracePeriodEndsAt: Date | null;
+                cancelledAt: Date | null;
+                subscriptionEndsAt: Date | null;
+                verificationStatus: string;
+                verifiedAt: Date | null;
+                verifiedBy: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                planStartDate: Date | null;
+                planEndDate: Date | null;
+                maxSeats: number;
+                homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
+                stripeCustomerId: string | null;
+                stripeSubId: string | null;
+                customLimits: import("@prisma/client/runtime/client").JsonValue | null;
+                preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+                mpesaNextPaymentDueDate: Date | null;
+                subscriptionCycleEnd: Date | null;
+                mpesaFailedRenewalAttempts: number;
+                mpesaLastRenewalAttemptAt: Date | null;
+                mpesaNextRenewalRetryAt: Date | null;
+                mpesaCancelledByUserAt: Date | null;
+                address: string | null;
+                contactPerson: string | null;
+                contactPosition: string | null;
+                contactEmail: string | null;
+                contactPhone: string | null;
+                requireMfa: boolean;
+                mfaPolicyEnabledAt: Date | null;
+                mfaPolicyUpdatedBy: string | null;
             };
             meta: object;
         }>;
@@ -5102,7 +5225,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 page?: number | undefined;
                 limit?: number | undefined;
-                role?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined;
+                role?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "ADMIN" | undefined;
                 status?: "active" | "inactive" | undefined;
                 recentlyActive?: boolean | undefined;
                 search?: string | undefined;
@@ -5134,7 +5257,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         updateUser: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 userId: string;
-                role?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined;
+                role?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "ADMIN" | undefined;
                 emailVerified?: boolean | undefined;
             };
             output: {
@@ -5542,7 +5665,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         createInvitation: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 email: string;
-                role: "REGULATOR" | "STARTUP" | "ENTERPRISE";
+                role: "ENTERPRISE" | "REGULATOR" | "STARTUP";
                 organizationId?: string | undefined;
                 expiresInDays?: number | undefined;
             };
@@ -5558,7 +5681,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         listInvitations: import("@trpc/server").TRPCQueryProcedure<{
             input: {
                 used?: boolean | undefined;
-                role?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | undefined;
+                role?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | undefined;
                 page?: number | undefined;
                 limit?: number | undefined;
             };
@@ -5689,8 +5812,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 email: string;
                 fullName: string;
                 password: string;
-                role?: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined;
-                subscriptionTier?: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE" | undefined;
+                role?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "ADMIN" | undefined;
+                subscriptionTier?: "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP" | undefined;
                 organizationId?: unknown;
                 organizationName?: unknown;
                 homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
@@ -5731,7 +5854,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         updateUserRole: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 userId: string;
-                role: "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN";
+                role: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "ADMIN";
             };
             output: import("../../modules/admin").AdminUserDetail;
             meta: object;
@@ -5762,7 +5885,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         updateOrganizationPlan: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 orgId: string;
-                plan: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
+                plan: "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
             };
             output: import("../../modules/admin").AdminOrgDetail;
             meta: object;
@@ -5866,7 +5989,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         updateBillingPlanCatalog: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 plans: {
-                    id: "STARTUP" | "BUSINESS";
+                    id: "BUSINESS" | "STARTUP";
                     price: {
                         monthly: number;
                         yearly: number | null;
@@ -6054,7 +6177,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         bulkUpdateUserTier: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 userIds: string[];
-                tier: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
+                tier: "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
             };
             output: {
                 success: boolean;
@@ -6647,7 +6770,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     subscriptionCycleEnd: string | null;
                     mpesaPhoneNumber: string | null;
                     homeJurisdictionCode: string | null;
-                    catalogPrice: Record<"STARTUP" | "BUSINESS", {
+                    catalogPrice: Record<"BUSINESS" | "STARTUP", {
                         monthly: number;
                         yearly: number;
                         currency: "KES";
@@ -6681,7 +6804,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         }>;
         createCheckoutSession: import("@trpc/server").TRPCMutationProcedure<{
             input: {
-                plan: "STARTUP" | "BUSINESS";
+                plan: "BUSINESS" | "STARTUP";
                 interval?: "monthly" | "yearly" | undefined;
             };
             output: {
@@ -6720,7 +6843,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         }>;
         initiateMpesaPayment: import("@trpc/server").TRPCMutationProcedure<{
             input: {
-                plan: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
+                plan: "FREE" | "STARTER" | "GROWTH" | "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
                 phoneNumber?: string | undefined;
                 paymentPurpose?: "INITIAL_PURCHASE" | "RENEWAL" | undefined;
             };
@@ -7266,7 +7389,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 organizationId?: unknown;
                 organizationName?: unknown;
                 homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
-                role?: "STARTUP" | "ENTERPRISE" | undefined;
+                role?: "ENTERPRISE" | "STARTUP" | undefined;
                 phone?: string | undefined;
                 temporaryPassword?: string | undefined;
                 pilotDurationDays?: number | undefined;

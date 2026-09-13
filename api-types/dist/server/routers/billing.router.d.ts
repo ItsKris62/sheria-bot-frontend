@@ -67,7 +67,7 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
                 subscriptionCycleEnd: string | null;
                 mpesaPhoneNumber: string | null;
                 homeJurisdictionCode: string | null;
-                catalogPrice: Record<"STARTUP" | "BUSINESS", {
+                catalogPrice: Record<"BUSINESS" | "STARTUP", {
                     monthly: number;
                     yearly: number;
                     currency: "KES";
@@ -112,7 +112,7 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
      */
     createCheckoutSession: import("@trpc/server").TRPCMutationProcedure<{
         input: {
-            plan: "STARTUP" | "BUSINESS";
+            plan: "BUSINESS" | "STARTUP";
             interval?: "monthly" | "yearly" | undefined;
         };
         output: {
@@ -184,7 +184,7 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
      */
     initiateMpesaPayment: import("@trpc/server").TRPCMutationProcedure<{
         input: {
-            plan: "REGULATOR" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
+            plan: "FREE" | "STARTER" | "GROWTH" | "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
             phoneNumber?: string | undefined;
             paymentPurpose?: "INITIAL_PURCHASE" | "RENEWAL" | undefined;
         };
