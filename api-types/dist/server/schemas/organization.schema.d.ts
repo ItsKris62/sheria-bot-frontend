@@ -203,6 +203,26 @@ export declare const updateEnabledJurisdictionsSchema: z.ZodObject<{
     }>>;
 }, z.core.$strip>;
 export type UpdateEnabledJurisdictionsInput = z.infer<typeof updateEnabledJurisdictionsSchema>;
+export declare const scheduleCountryReplacementSchema: z.ZodObject<{
+    organizationId: z.ZodOptional<z.ZodString>;
+    fromJurisdiction: z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>;
+    toJurisdiction: z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>;
+}, z.core.$strip>;
+export type ScheduleCountryReplacementInput = z.infer<typeof scheduleCountryReplacementSchema>;
+export declare const cancelCountryReplacementSchema: z.ZodObject<{
+    organizationId: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>;
+export type CancelCountryReplacementInput = z.infer<typeof cancelCountryReplacementSchema>;
 /**
  * Shared DTO for Organization Members
  */

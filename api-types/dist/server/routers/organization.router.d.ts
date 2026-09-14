@@ -2283,5 +2283,53 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
         };
         meta: object;
     }>;
+    /**
+     * Schedule secondary country replacement for the next monthly entitlement renewal boundary.
+     *
+     * @protected
+     */
+    scheduleCountryReplacement: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            fromJurisdiction: "KE" | "MW" | "RW" | "NG";
+            toJurisdiction: "KE" | "MW" | "RW" | "NG";
+            organizationId?: string | undefined;
+        };
+        output: {
+            scheduled: boolean;
+            effectiveAt: string;
+            fromJurisdiction: string;
+            toJurisdiction: string;
+        };
+        meta: object;
+    }>;
+    /**
+     * Get any pending scheduled secondary country replacement for the organization.
+     *
+     * @protected
+     */
+    getScheduledCountryReplacement: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            organizationId?: string | undefined;
+        };
+        output: {
+            scheduled: import("@/services/country-replacement.service").ScheduledCountryReplacement | null;
+        };
+        meta: object;
+    }>;
+    /**
+     * Cancel a pending scheduled secondary country replacement.
+     *
+     * @protected
+     */
+    cancelCountryReplacement: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            organizationId?: string | undefined;
+        };
+        output: {
+            success: boolean;
+            message: string;
+        };
+        meta: object;
+    }>;
 }>>;
 //# sourceMappingURL=organization.router.d.ts.map

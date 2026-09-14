@@ -79,5 +79,6 @@ export declare const FEATURE_CATALOG: FeatureCatalogItem[];
 export declare const PLANS: Record<SubscriptionPlan, PlanConfig>;
 export declare const PLAN_COMPARISON_ROWS: ComparisonRow[];
 export declare const PLAN_ORDER: SubscriptionPlan[];
+export { SubscriptionPlan };
 export type PlanId = SubscriptionPlan;
 //# sourceMappingURL=plans.config.d.ts.map

@@ -200,6 +200,163 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
             output: import("@/modules/agents/marketing/types").PersistedMarketingDraft;
             meta: object;
         }>;
+        leads: import("@trpc/server").TRPCBuiltRouter<{
+            ctx: import("../trpc/context").Context;
+            meta: object;
+            errorShape: {
+                message: string;
+                data: {
+                    stack: string | undefined;
+                    fieldErrors: Record<string, string> | null;
+                    code: import("@trpc/server").TRPC_ERROR_CODE_KEY;
+                    httpStatus: number;
+                    path?: string;
+                };
+                code: import("@trpc/server").TRPC_ERROR_CODE_NUMBER;
+            };
+            transformer: false;
+        }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
+            getDiscoverySources: import("@trpc/server").TRPCQueryProcedure<{
+                input: {
+                    jurisdiction?: string | undefined;
+                } | undefined;
+                output: import("../../modules/marketing/lead-discovery-sources").DiscoverySourceDefinition[];
+                meta: object;
+            }>;
+            updateDiscoverySourceState: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    sourceId: string;
+                    result: "FAILED" | "SUCCESS" | "SKIPPED_UNCHANGED";
+                    contentFingerprint?: string | null | undefined;
+                    processedCursor?: string | null | undefined;
+                    recordIdentifier?: string | null | undefined;
+                    sourceVersion?: string | null | undefined;
+                    errorMessage?: string | null | undefined;
+                    metadata?: Record<string, unknown> | undefined;
+                };
+                output: import("../../modules/marketing/lead-discovery-sources").DiscoverySourceState;
+                meta: object;
+            }>;
+            getBudgetStatus: import("@trpc/server").TRPCQueryProcedure<{
+                input: {
+                    period?: string | undefined;
+                } | undefined;
+                output: {
+                    period: string;
+                    budgetUsd: number;
+                    spentUsd: number;
+                    reservedUsd: number;
+                    remainingUsd: number;
+                    percentUsed: number;
+                    isHalted: boolean;
+                    providers: Record<import("../../lib/ai/gateway/types").LLMProviderName, number>;
+                };
+                meta: object;
+            }>;
+            initDiscoveryRun: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    runIdempotencyKey: string;
+                    workflowName?: string | undefined;
+                    sourceAuthority?: string | null | undefined;
+                    sourceUrl?: string | null | undefined;
+                    jurisdiction?: string | undefined;
+                    sourceSetId?: string | undefined;
+                    metadata?: Record<string, unknown> | undefined;
+                };
+                output: {
+                    metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                    id: string;
+                    status: import(".prisma/client").$Enums.DiscoveryRunStatus;
+                    errorMessage: string | null;
+                    completedAt: Date | null;
+                    startedAt: Date;
+                    sourceUrl: string;
+                    sourceAuthority: string;
+                    runIdempotencyKey: string;
+                    workflowName: string;
+                    totalDiscovered: number;
+                    totalQualified: number;
+                    totalDeduplicated: number;
+                    totalRejected: number;
+                    totalCreated: number;
+                    totalUpdated: number;
+                };
+                meta: object;
+            }>;
+            ingestBatch: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    discoveryRunId: string;
+                    batchId: string;
+                    candidates: {
+                        name: string;
+                        primarySourceUrl: string;
+                        domain?: string | null | undefined;
+                        country?: string | undefined;
+                        industry?: string | null | undefined;
+                        regulatoryBody?: string | null | undefined;
+                        licenceType?: string | null | undefined;
+                        licenceNumber?: string | null | undefined;
+                        licenceStatus?: string | null | undefined;
+                        sizeClass?: "ENTERPRISE" | "MEDIUM" | "UNKNOWN" | "MICRO" | "SMALL" | "LARGE" | null | undefined;
+                        primarySourceAuthority?: string | null | undefined;
+                        confidence?: number | undefined;
+                        hasComplianceObligation?: boolean | undefined;
+                        operatesCrossBorder?: boolean | undefined;
+                        handlesPersonalData?: boolean | undefined;
+                        handlesCustomerFunds?: boolean | undefined;
+                        hasNamedBuyerContact?: boolean | undefined;
+                        buyerRoleIdentified?: boolean | undefined;
+                        targetRoleTitle?: string | null | undefined;
+                        recentRegulatoryEvent?: boolean | undefined;
+                        recentLicensingDeadline?: boolean | undefined;
+                        evidence?: {
+                            field: string;
+                            extractedValue: string;
+                            sourceUrl: string;
+                            normalizedValue?: string | null | undefined;
+                            confidence?: number | undefined;
+                            sourceAuthority?: string | null | undefined;
+                            sourceRecordId?: string | null | undefined;
+                            evidenceSnippet?: string | null | undefined;
+                            verificationState?: "VERIFIED" | "UNVERIFIED" | "REJECTED" | "CONFLICTING" | undefined;
+                            extractionMethod?: string | null | undefined;
+                            modelProvider?: string | null | undefined;
+                            modelName?: string | null | undefined;
+                            extractorVersion?: string | null | undefined;
+                        }[] | undefined;
+                    }[];
+                };
+                output: import("@/modules/marketing/lead-ingestion.service").IngestBatchResult;
+                meta: object;
+            }>;
+            completeDiscoveryRun: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    discoveryRunId: string;
+                    status?: "COMPLETED" | "FAILED" | "RUNNING" | "PARTIALLY_COMPLETED" | undefined;
+                    errorMessage?: string | undefined;
+                    metadata?: Record<string, unknown> | undefined;
+                };
+                output: {
+                    metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                    id: string;
+                    status: import(".prisma/client").$Enums.DiscoveryRunStatus;
+                    errorMessage: string | null;
+                    completedAt: Date | null;
+                    startedAt: Date;
+                    sourceUrl: string;
+                    sourceAuthority: string;
+                    runIdempotencyKey: string;
+                    workflowName: string;
+                    totalDiscovered: number;
+                    totalQualified: number;
+                    totalDeduplicated: number;
+                    totalRejected: number;
+                    totalCreated: number;
+                    totalUpdated: number;
+                };
+                meta: object;
+            }>;
+        }>>;
     }>>;
     regIntel: import("@trpc/server").TRPCBuiltRouter<{
         ctx: import("../trpc/context").Context;
@@ -585,6 +742,8 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
                 errorMessage: string | null;
                 completedAt: Date | null;
                 sourceItemId: string | null;
+                modelProvider: string | null;
+                modelName: string | null;
                 promptVersion: string;
                 recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
                 requiresHumanReview: boolean;
@@ -598,8 +757,6 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
                 recommendedChannels: string[];
                 rationale: string;
                 sourceConfidence: number;
-                modelProvider: string | null;
-                modelName: string | null;
                 inputHash: string;
             } | null;
             meta: object;
@@ -627,12 +784,12 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
                 confidence: number;
                 reviewedAt: Date | null;
                 reviewedById: string | null;
+                modelProvider: string | null;
+                modelName: string | null;
                 blogPostId: string | null;
                 sourceSetHash: string;
                 promptVersion: string;
                 suggestionId: string | null;
-                modelProvider: string | null;
-                modelName: string | null;
                 inputHash: string;
                 researchObjective: string;
                 importantDates: import("@prisma/client/runtime/client").JsonValue | null;
@@ -835,7 +992,7 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
         }>;
         listBlogSuggestions: import("@trpc/server").TRPCMutationProcedure<{
             input: {
-                status?: "DUPLICATE" | "DISMISSED" | "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
+                status?: "PENDING_REVIEW" | "DUPLICATE" | "DISMISSED" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
                 jurisdictions?: string | undefined;
                 limit?: number | undefined;
             } | undefined;

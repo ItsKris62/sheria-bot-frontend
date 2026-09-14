@@ -4099,6 +4099,39 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        scheduleCountryReplacement: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                fromJurisdiction: "KE" | "MW" | "RW" | "NG";
+                toJurisdiction: "KE" | "MW" | "RW" | "NG";
+                organizationId?: string | undefined;
+            };
+            output: {
+                scheduled: boolean;
+                effectiveAt: string;
+                fromJurisdiction: string;
+                toJurisdiction: string;
+            };
+            meta: object;
+        }>;
+        getScheduledCountryReplacement: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                organizationId?: string | undefined;
+            };
+            output: {
+                scheduled: import("../../services/country-replacement.service").ScheduledCountryReplacement | null;
+            };
+            meta: object;
+        }>;
+        cancelCountryReplacement: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                organizationId?: string | undefined;
+            };
+            output: {
+                success: boolean;
+                message: string;
+            };
+            meta: object;
+        }>;
     }>>;
     policy: import("@trpc/server").TRPCBuiltRouter<{
         ctx: import("./context").Context;
@@ -5349,7 +5382,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         }>;
         listAIJobs: import("@trpc/server").TRPCQueryProcedure<{
             input: {
-                status?: "COMPLETED" | "QUEUED" | "RUNNING" | "DEAD_LETTERED" | "RETRYING" | undefined;
+                status?: "COMPLETED" | "RUNNING" | "QUEUED" | "DEAD_LETTERED" | "RETRYING" | undefined;
                 type?: string | undefined;
                 page?: number | undefined;
                 limit?: number | undefined;
@@ -6804,7 +6837,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         }>;
         createCheckoutSession: import("@trpc/server").TRPCMutationProcedure<{
             input: {
-                plan: "BUSINESS" | "STARTUP";
+                plan: "STARTER" | "GROWTH" | "BUSINESS" | "STARTUP";
                 interval?: "monthly" | "yearly" | undefined;
             };
             output: {
@@ -6841,11 +6874,92 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        getPlanConversionPreview: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                plan: "FREE" | "STARTER" | "GROWTH" | "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
+                interval?: "monthly" | "yearly" | undefined;
+            };
+            output: {
+                organization: {
+                    id: string;
+                    name: string;
+                    homeJurisdictionCode: string;
+                };
+                current: {
+                    plan: import("../../types/plan.types").EffectivePlan;
+                    isPilot: boolean;
+                    pilotProfile: import("../../types/plan.types").PilotEntitlementProfile | null;
+                    seatsUsed: number;
+                    seatsLimit: number;
+                    enabledCountries: string[];
+                    docStorageMb: number;
+                    docCount: number;
+                    pendingInvitesCount: number;
+                    entitlements: {
+                        policyGeneration: boolean;
+                        customFrameworks: boolean;
+                        complianceQueriesLimit: number;
+                        checklistGenerationsLimit: number;
+                        teamCollaboration: boolean;
+                    };
+                };
+                target: {
+                    plan: "FREE" | "STARTER" | "GROWTH" | "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
+                    interval: "monthly" | "yearly";
+                    price: {
+                        monthly: number;
+                        yearly: number;
+                        effective: number;
+                        currency: "KES";
+                        annualDiscountPercent: number;
+                    };
+                    seatsLimit: number;
+                    countriesLimit: number;
+                    docStorageLimitMb: number;
+                    entitlements: {
+                        policyGeneration: boolean;
+                        customFrameworks: boolean;
+                        complianceQueriesLimit: number;
+                        checklistGenerationsLimit: number;
+                        teamCollaboration: boolean;
+                    };
+                };
+                comparison: {
+                    isOverSeatCapacity: boolean;
+                    excessSeats: number;
+                    isOverCountryCapacity: boolean;
+                    excessCountries: number;
+                    isOverStorageCapacity: boolean;
+                    featuresRetained: {
+                        policyGeneration: boolean;
+                        customFrameworks: boolean;
+                        teamCollaboration: boolean;
+                    };
+                    featuresRestricted: {
+                        policyGeneration: boolean;
+                        customFrameworks: boolean;
+                        teamCollaboration: boolean;
+                    };
+                };
+                activeMembers: {
+                    membershipId: string;
+                    userId: string;
+                    email: string;
+                    fullName: string;
+                    role: import(".prisma/client").$Enums.MemberRole;
+                }[];
+                availableJurisdictions: string[];
+            };
+            meta: object;
+        }>;
         initiateMpesaPayment: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 plan: "FREE" | "STARTER" | "GROWTH" | "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
+                interval?: "monthly" | "yearly" | undefined;
                 phoneNumber?: string | undefined;
                 paymentPurpose?: "INITIAL_PURCHASE" | "RENEWAL" | undefined;
+                retainedMemberUserIds?: string[] | undefined;
+                retainedJurisdictionCodes?: string[] | undefined;
             };
             output: {
                 paymentId: string;
@@ -8384,10 +8498,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         tags: string[];
                         notes: string | null;
                         createdById: string;
+                        salesStage: import(".prisma/client").$Enums.SalesStage;
                         companyId: string | null;
                         firstName: string | null;
                         lastName: string | null;
                         primaryRegulator: string | null;
+                        linkedinUrl: string | null;
+                        lastContactedAt: Date | null;
+                        nextFollowUpAt: Date | null;
                         consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
                         consentSource: string | null;
                         consentTimestamp: Date | null;
@@ -8430,10 +8548,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     tags: string[];
                     notes: string | null;
                     createdById: string;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
                     companyId: string | null;
                     firstName: string | null;
                     lastName: string | null;
                     primaryRegulator: string | null;
+                    linkedinUrl: string | null;
+                    lastContactedAt: Date | null;
+                    nextFollowUpAt: Date | null;
                     consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
                     consentSource: string | null;
                     consentTimestamp: Date | null;
@@ -8465,10 +8587,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     tags: string[];
                     notes: string | null;
                     createdById: string;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
                     companyId: string | null;
                     firstName: string | null;
                     lastName: string | null;
                     primaryRegulator: string | null;
+                    linkedinUrl: string | null;
+                    lastContactedAt: Date | null;
+                    nextFollowUpAt: Date | null;
                     consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
                     consentSource: string | null;
                     consentTimestamp: Date | null;
@@ -8499,10 +8625,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     tags: string[];
                     notes: string | null;
                     createdById: string;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
                     companyId: string | null;
                     firstName: string | null;
                     lastName: string | null;
                     primaryRegulator: string | null;
+                    linkedinUrl: string | null;
+                    lastContactedAt: Date | null;
+                    nextFollowUpAt: Date | null;
                     consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
                     consentSource: string | null;
                     consentTimestamp: Date | null;
@@ -8832,6 +8962,735 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     isSuppressed: boolean;
                     reason: import(".prisma/client").$Enums.SuppressionReason | null;
                     addedAt: Date | null;
+                };
+                meta: object;
+            }>;
+        }>>;
+        companies: import("@trpc/server").TRPCBuiltRouter<{
+            ctx: import("./context").Context;
+            meta: object;
+            errorShape: {
+                message: string;
+                data: {
+                    stack: string | undefined;
+                    fieldErrors: Record<string, string> | null;
+                    code: import("@trpc/server").TRPC_ERROR_CODE_KEY;
+                    httpStatus: number;
+                    path?: string;
+                };
+                code: import("@trpc/server").TRPC_ERROR_CODE_NUMBER;
+            };
+            transformer: false;
+        }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
+            list: import("@trpc/server").TRPCQueryProcedure<{
+                input: {
+                    query?: string | undefined;
+                    leadStatus?: "CONVERTED" | "APPROVED" | "UNASSESSED" | "DISCOVERED" | "QUALIFIED" | "PENDING_REVIEW" | "REJECTED" | "NURTURE" | "DO_NOT_CONTACT" | undefined;
+                    icpTier?: "UNASSESSED" | "TIER_1_CORE_FINTECH" | "TIER_2_HIGH_EXPOSURE" | "TIER_3_ADJACENT" | "NON_ICP" | undefined;
+                    salesStage?: "PROSPECT" | "LEAD_QUALIFIED" | "OUTREACH_PENDING" | "CONTACTED" | "ENGAGED" | "MEETING_SCHEDULED" | "DEMO_COMPLETED" | "TRIAL_ACTIVE" | "PILOT_ACTIVE" | "OPPORTUNITY" | "CLOSED_WON" | "CLOSED_LOST" | "DISQUALIFIED" | "UNRESPONSIVE" | undefined;
+                    origin?: "MANUAL_CRM" | "AI_DISCOVERY" | "PILOT_APPLICATION" | "CONTACT_IMPORT" | "INBOUND_LEAD" | undefined;
+                    country?: string | undefined;
+                    minScore?: number | undefined;
+                    maxScore?: number | undefined;
+                    take?: number | undefined;
+                    skip?: number | undefined;
+                    orderBy?: "createdAt" | "updatedAt" | "name" | "leadScore" | undefined;
+                    orderDir?: "asc" | "desc" | undefined;
+                } | undefined;
+                output: {
+                    items: ({
+                        _count: {
+                            evidence: number;
+                            contacts: number;
+                        };
+                        reviewedBy: {
+                            id: string;
+                            email: string;
+                            fullName: string;
+                        } | null;
+                        owner: {
+                            id: string;
+                            email: string;
+                            fullName: string;
+                        } | null;
+                    } & {
+                        origin: import(".prisma/client").$Enums.CompanyOrigin;
+                        id: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        name: string;
+                        industry: string | null;
+                        confidence: number | null;
+                        regulatoryBody: string | null;
+                        notes: string | null;
+                        domain: string | null;
+                        reviewedAt: Date | null;
+                        createdById: string;
+                        regulatorMix: string[];
+                        leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                        salesStage: import(".prisma/client").$Enums.SalesStage;
+                        icpTier: import(".prisma/client").$Enums.IcpTier;
+                        leadScore: number | null;
+                        sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                        country: string;
+                        licenceType: string | null;
+                        licenceNumber: string | null;
+                        licenceStatus: string | null;
+                        primarySourceUrl: string | null;
+                        primarySourceAuthority: string | null;
+                        discoveredAt: Date | null;
+                        lastVerifiedAt: Date | null;
+                        reviewReason: string | null;
+                        rejectionReason: string | null;
+                        ownerId: string | null;
+                        reviewedById: string | null;
+                    })[];
+                    total: number;
+                };
+                meta: object;
+            }>;
+            getById: import("@trpc/server").TRPCQueryProcedure<{
+                input: {
+                    id: string;
+                };
+                output: {
+                    _count: {
+                        evidence: number;
+                        contacts: number;
+                    };
+                    reviewedBy: {
+                        id: string;
+                        email: string;
+                        fullName: string;
+                    } | null;
+                    owner: {
+                        id: string;
+                        email: string;
+                        fullName: string;
+                    } | null;
+                    evidence: {
+                        id: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        confidence: number;
+                        retrievedAt: Date;
+                        sourceUrl: string;
+                        verificationState: import(".prisma/client").$Enums.EvidenceVerificationState;
+                        companyId: string;
+                        discoveryRunId: string | null;
+                        field: string;
+                        extractedValue: string;
+                        normalizedValue: string | null;
+                        sourceAuthority: string | null;
+                        sourceRecordId: string | null;
+                        evidenceSnippet: string | null;
+                        evidenceHash: string;
+                        extractionMethod: string | null;
+                        modelProvider: string | null;
+                        modelName: string | null;
+                        extractorVersion: string | null;
+                    }[];
+                    contacts: {
+                        id: string;
+                        email: string;
+                        phone: string | null;
+                        role: string | null;
+                        createdAt: Date;
+                        salesStage: import(".prisma/client").$Enums.SalesStage;
+                        firstName: string | null;
+                        lastName: string | null;
+                        linkedinUrl: string | null;
+                        consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+                    }[];
+                    discoveryRuns: ({
+                        discoveryRun: {
+                            id: string;
+                            startedAt: Date;
+                            sourceAuthority: string;
+                            workflowName: string;
+                        };
+                    } & {
+                        id: string;
+                        createdAt: Date;
+                        action: string;
+                        reason: string | null;
+                        companyId: string;
+                        discoveryRunId: string;
+                        scoreAtRun: number | null;
+                        icpTierAtRun: import(".prisma/client").$Enums.IcpTier | null;
+                        leadStatusAtRun: import(".prisma/client").$Enums.LeadStatus | null;
+                    })[];
+                } & {
+                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    name: string;
+                    industry: string | null;
+                    confidence: number | null;
+                    regulatoryBody: string | null;
+                    notes: string | null;
+                    domain: string | null;
+                    reviewedAt: Date | null;
+                    createdById: string;
+                    regulatorMix: string[];
+                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadScore: number | null;
+                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    country: string;
+                    licenceType: string | null;
+                    licenceNumber: string | null;
+                    licenceStatus: string | null;
+                    primarySourceUrl: string | null;
+                    primarySourceAuthority: string | null;
+                    discoveredAt: Date | null;
+                    lastVerifiedAt: Date | null;
+                    reviewReason: string | null;
+                    rejectionReason: string | null;
+                    ownerId: string | null;
+                    reviewedById: string | null;
+                };
+                meta: object;
+            }>;
+            create: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    name: string;
+                    domain?: string | null | undefined;
+                    industry?: string | null | undefined;
+                    country?: string | undefined;
+                    regulatorMix?: string[] | undefined;
+                    regulatoryBody?: string | null | undefined;
+                    licenceType?: string | null | undefined;
+                    licenceNumber?: string | null | undefined;
+                    licenceStatus?: string | null | undefined;
+                    notes?: string | null | undefined;
+                    ownerId?: string | null | undefined;
+                };
+                output: {
+                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    name: string;
+                    industry: string | null;
+                    confidence: number | null;
+                    regulatoryBody: string | null;
+                    notes: string | null;
+                    domain: string | null;
+                    reviewedAt: Date | null;
+                    createdById: string;
+                    regulatorMix: string[];
+                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadScore: number | null;
+                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    country: string;
+                    licenceType: string | null;
+                    licenceNumber: string | null;
+                    licenceStatus: string | null;
+                    primarySourceUrl: string | null;
+                    primarySourceAuthority: string | null;
+                    discoveredAt: Date | null;
+                    lastVerifiedAt: Date | null;
+                    reviewReason: string | null;
+                    rejectionReason: string | null;
+                    ownerId: string | null;
+                    reviewedById: string | null;
+                };
+                meta: object;
+            }>;
+            update: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    id: string;
+                    name?: string | undefined;
+                    domain?: string | null | undefined;
+                    industry?: string | null | undefined;
+                    country?: string | undefined;
+                    regulatorMix?: string[] | undefined;
+                    regulatoryBody?: string | null | undefined;
+                    licenceType?: string | null | undefined;
+                    licenceNumber?: string | null | undefined;
+                    licenceStatus?: string | null | undefined;
+                    notes?: string | null | undefined;
+                    leadStatus?: "CONVERTED" | "APPROVED" | "UNASSESSED" | "DISCOVERED" | "QUALIFIED" | "PENDING_REVIEW" | "REJECTED" | "NURTURE" | "DO_NOT_CONTACT" | undefined;
+                    salesStage?: "PROSPECT" | "LEAD_QUALIFIED" | "OUTREACH_PENDING" | "CONTACTED" | "ENGAGED" | "MEETING_SCHEDULED" | "DEMO_COMPLETED" | "TRIAL_ACTIVE" | "PILOT_ACTIVE" | "OPPORTUNITY" | "CLOSED_WON" | "CLOSED_LOST" | "DISQUALIFIED" | "UNRESPONSIVE" | undefined;
+                    icpTier?: "UNASSESSED" | "TIER_1_CORE_FINTECH" | "TIER_2_HIGH_EXPOSURE" | "TIER_3_ADJACENT" | "NON_ICP" | undefined;
+                    leadScore?: number | null | undefined;
+                    sizeClass?: "ENTERPRISE" | "MEDIUM" | "UNKNOWN" | "MICRO" | "SMALL" | "LARGE" | undefined;
+                    ownerId?: string | null | undefined;
+                };
+                output: {
+                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    name: string;
+                    industry: string | null;
+                    confidence: number | null;
+                    regulatoryBody: string | null;
+                    notes: string | null;
+                    domain: string | null;
+                    reviewedAt: Date | null;
+                    createdById: string;
+                    regulatorMix: string[];
+                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadScore: number | null;
+                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    country: string;
+                    licenceType: string | null;
+                    licenceNumber: string | null;
+                    licenceStatus: string | null;
+                    primarySourceUrl: string | null;
+                    primarySourceAuthority: string | null;
+                    discoveredAt: Date | null;
+                    lastVerifiedAt: Date | null;
+                    reviewReason: string | null;
+                    rejectionReason: string | null;
+                    ownerId: string | null;
+                    reviewedById: string | null;
+                };
+                meta: object;
+            }>;
+            delete: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    id: string;
+                };
+                output: {
+                    success: boolean;
+                };
+                meta: object;
+            }>;
+            merge: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    primaryCompanyId: string;
+                    secondaryCompanyId: string;
+                };
+                output: {
+                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    name: string;
+                    industry: string | null;
+                    confidence: number | null;
+                    regulatoryBody: string | null;
+                    notes: string | null;
+                    domain: string | null;
+                    reviewedAt: Date | null;
+                    createdById: string;
+                    regulatorMix: string[];
+                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadScore: number | null;
+                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    country: string;
+                    licenceType: string | null;
+                    licenceNumber: string | null;
+                    licenceStatus: string | null;
+                    primarySourceUrl: string | null;
+                    primarySourceAuthority: string | null;
+                    discoveredAt: Date | null;
+                    lastVerifiedAt: Date | null;
+                    reviewReason: string | null;
+                    rejectionReason: string | null;
+                    ownerId: string | null;
+                    reviewedById: string | null;
+                };
+                meta: object;
+            }>;
+        }>>;
+        leads: import("@trpc/server").TRPCBuiltRouter<{
+            ctx: import("./context").Context;
+            meta: object;
+            errorShape: {
+                message: string;
+                data: {
+                    stack: string | undefined;
+                    fieldErrors: Record<string, string> | null;
+                    code: import("@trpc/server").TRPC_ERROR_CODE_KEY;
+                    httpStatus: number;
+                    path?: string;
+                };
+                code: import("@trpc/server").TRPC_ERROR_CODE_NUMBER;
+            };
+            transformer: false;
+        }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
+            listReviewQueue: import("@trpc/server").TRPCQueryProcedure<{
+                input: {
+                    leadStatus?: "CONVERTED" | "APPROVED" | "UNASSESSED" | "DISCOVERED" | "QUALIFIED" | "PENDING_REVIEW" | "REJECTED" | "NURTURE" | "DO_NOT_CONTACT" | undefined;
+                    icpTier?: "UNASSESSED" | "TIER_1_CORE_FINTECH" | "TIER_2_HIGH_EXPOSURE" | "TIER_3_ADJACENT" | "NON_ICP" | undefined;
+                    country?: string | undefined;
+                    take?: number | undefined;
+                    skip?: number | undefined;
+                } | undefined;
+                output: {
+                    items: ({
+                        _count: {
+                            evidence: number;
+                            contacts: number;
+                        };
+                        reviewedBy: {
+                            id: string;
+                            email: string;
+                            fullName: string;
+                        } | null;
+                        owner: {
+                            id: string;
+                            email: string;
+                            fullName: string;
+                        } | null;
+                    } & {
+                        origin: import(".prisma/client").$Enums.CompanyOrigin;
+                        id: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        name: string;
+                        industry: string | null;
+                        confidence: number | null;
+                        regulatoryBody: string | null;
+                        notes: string | null;
+                        domain: string | null;
+                        reviewedAt: Date | null;
+                        createdById: string;
+                        regulatorMix: string[];
+                        leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                        salesStage: import(".prisma/client").$Enums.SalesStage;
+                        icpTier: import(".prisma/client").$Enums.IcpTier;
+                        leadScore: number | null;
+                        sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                        country: string;
+                        licenceType: string | null;
+                        licenceNumber: string | null;
+                        licenceStatus: string | null;
+                        primarySourceUrl: string | null;
+                        primarySourceAuthority: string | null;
+                        discoveredAt: Date | null;
+                        lastVerifiedAt: Date | null;
+                        reviewReason: string | null;
+                        rejectionReason: string | null;
+                        ownerId: string | null;
+                        reviewedById: string | null;
+                    })[];
+                    total: number;
+                };
+                meta: object;
+            }>;
+            getReviewDetail: import("@trpc/server").TRPCQueryProcedure<{
+                input: {
+                    companyId: string;
+                };
+                output: {
+                    _count: {
+                        evidence: number;
+                        contacts: number;
+                    };
+                    reviewedBy: {
+                        id: string;
+                        email: string;
+                        fullName: string;
+                    } | null;
+                    owner: {
+                        id: string;
+                        email: string;
+                        fullName: string;
+                    } | null;
+                    evidence: {
+                        id: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        confidence: number;
+                        retrievedAt: Date;
+                        sourceUrl: string;
+                        verificationState: import(".prisma/client").$Enums.EvidenceVerificationState;
+                        companyId: string;
+                        discoveryRunId: string | null;
+                        field: string;
+                        extractedValue: string;
+                        normalizedValue: string | null;
+                        sourceAuthority: string | null;
+                        sourceRecordId: string | null;
+                        evidenceSnippet: string | null;
+                        evidenceHash: string;
+                        extractionMethod: string | null;
+                        modelProvider: string | null;
+                        modelName: string | null;
+                        extractorVersion: string | null;
+                    }[];
+                    contacts: {
+                        id: string;
+                        email: string;
+                        phone: string | null;
+                        role: string | null;
+                        createdAt: Date;
+                        salesStage: import(".prisma/client").$Enums.SalesStage;
+                        firstName: string | null;
+                        lastName: string | null;
+                        linkedinUrl: string | null;
+                        consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+                    }[];
+                    discoveryRuns: ({
+                        discoveryRun: {
+                            id: string;
+                            startedAt: Date;
+                            sourceAuthority: string;
+                            workflowName: string;
+                        };
+                    } & {
+                        id: string;
+                        createdAt: Date;
+                        action: string;
+                        reason: string | null;
+                        companyId: string;
+                        discoveryRunId: string;
+                        scoreAtRun: number | null;
+                        icpTierAtRun: import(".prisma/client").$Enums.IcpTier | null;
+                        leadStatusAtRun: import(".prisma/client").$Enums.LeadStatus | null;
+                    })[];
+                } & {
+                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    name: string;
+                    industry: string | null;
+                    confidence: number | null;
+                    regulatoryBody: string | null;
+                    notes: string | null;
+                    domain: string | null;
+                    reviewedAt: Date | null;
+                    createdById: string;
+                    regulatorMix: string[];
+                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadScore: number | null;
+                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    country: string;
+                    licenceType: string | null;
+                    licenceNumber: string | null;
+                    licenceStatus: string | null;
+                    primarySourceUrl: string | null;
+                    primarySourceAuthority: string | null;
+                    discoveredAt: Date | null;
+                    lastVerifiedAt: Date | null;
+                    reviewReason: string | null;
+                    rejectionReason: string | null;
+                    ownerId: string | null;
+                    reviewedById: string | null;
+                };
+                meta: object;
+            }>;
+            approveLead: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    companyId: string;
+                    reviewReason?: string | undefined;
+                    addToListId?: string | undefined;
+                };
+                output: {
+                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    name: string;
+                    industry: string | null;
+                    confidence: number | null;
+                    regulatoryBody: string | null;
+                    notes: string | null;
+                    domain: string | null;
+                    reviewedAt: Date | null;
+                    createdById: string;
+                    regulatorMix: string[];
+                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadScore: number | null;
+                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    country: string;
+                    licenceType: string | null;
+                    licenceNumber: string | null;
+                    licenceStatus: string | null;
+                    primarySourceUrl: string | null;
+                    primarySourceAuthority: string | null;
+                    discoveredAt: Date | null;
+                    lastVerifiedAt: Date | null;
+                    reviewReason: string | null;
+                    rejectionReason: string | null;
+                    ownerId: string | null;
+                    reviewedById: string | null;
+                };
+                meta: object;
+            }>;
+            rejectLead: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    companyId: string;
+                    rejectionReason: string;
+                };
+                output: {
+                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    name: string;
+                    industry: string | null;
+                    confidence: number | null;
+                    regulatoryBody: string | null;
+                    notes: string | null;
+                    domain: string | null;
+                    reviewedAt: Date | null;
+                    createdById: string;
+                    regulatorMix: string[];
+                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadScore: number | null;
+                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    country: string;
+                    licenceType: string | null;
+                    licenceNumber: string | null;
+                    licenceStatus: string | null;
+                    primarySourceUrl: string | null;
+                    primarySourceAuthority: string | null;
+                    discoveredAt: Date | null;
+                    lastVerifiedAt: Date | null;
+                    reviewReason: string | null;
+                    rejectionReason: string | null;
+                    ownerId: string | null;
+                    reviewedById: string | null;
+                };
+                meta: object;
+            }>;
+            nurtureLead: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    companyId: string;
+                    reason?: string | undefined;
+                };
+                output: {
+                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    name: string;
+                    industry: string | null;
+                    confidence: number | null;
+                    regulatoryBody: string | null;
+                    notes: string | null;
+                    domain: string | null;
+                    reviewedAt: Date | null;
+                    createdById: string;
+                    regulatorMix: string[];
+                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadScore: number | null;
+                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    country: string;
+                    licenceType: string | null;
+                    licenceNumber: string | null;
+                    licenceStatus: string | null;
+                    primarySourceUrl: string | null;
+                    primarySourceAuthority: string | null;
+                    discoveredAt: Date | null;
+                    lastVerifiedAt: Date | null;
+                    reviewReason: string | null;
+                    rejectionReason: string | null;
+                    ownerId: string | null;
+                    reviewedById: string | null;
+                };
+                meta: object;
+            }>;
+            requestResearch: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    companyId: string;
+                    researchNotes: string;
+                };
+                output: {
+                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    name: string;
+                    industry: string | null;
+                    confidence: number | null;
+                    regulatoryBody: string | null;
+                    notes: string | null;
+                    domain: string | null;
+                    reviewedAt: Date | null;
+                    createdById: string;
+                    regulatorMix: string[];
+                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadScore: number | null;
+                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    country: string;
+                    licenceType: string | null;
+                    licenceNumber: string | null;
+                    licenceStatus: string | null;
+                    primarySourceUrl: string | null;
+                    primarySourceAuthority: string | null;
+                    discoveredAt: Date | null;
+                    lastVerifiedAt: Date | null;
+                    reviewReason: string | null;
+                    rejectionReason: string | null;
+                    ownerId: string | null;
+                    reviewedById: string | null;
+                };
+                meta: object;
+            }>;
+            doNotContact: import("@trpc/server").TRPCMutationProcedure<{
+                input: {
+                    companyId: string;
+                    reason?: string | undefined;
+                };
+                output: {
+                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    name: string;
+                    industry: string | null;
+                    confidence: number | null;
+                    regulatoryBody: string | null;
+                    notes: string | null;
+                    domain: string | null;
+                    reviewedAt: Date | null;
+                    createdById: string;
+                    regulatorMix: string[];
+                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
+                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadScore: number | null;
+                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    country: string;
+                    licenceType: string | null;
+                    licenceNumber: string | null;
+                    licenceStatus: string | null;
+                    primarySourceUrl: string | null;
+                    primarySourceAuthority: string | null;
+                    discoveredAt: Date | null;
+                    lastVerifiedAt: Date | null;
+                    reviewReason: string | null;
+                    rejectionReason: string | null;
+                    ownerId: string | null;
+                    reviewedById: string | null;
                 };
                 meta: object;
             }>;
@@ -12207,10 +13066,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                             contentHash: string;
                             authorityType: import(".prisma/client").$Enums.BlogAuthorityType;
                             sourceType: import(".prisma/client").$Enums.BlogSourceType;
+                            discoveredAt: Date;
                             publisher: string | null;
                             monitorId: string;
                             normalizedUrl: string;
-                            discoveredAt: Date;
                             rawContentHash: string | null;
                             dismissedReason: string | null;
                         };
@@ -12617,7 +13476,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         }>;
         adminListSuggestions: import("@trpc/server").TRPCQueryProcedure<{
             input: {
-                status?: "DUPLICATE" | "DISMISSED" | "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
+                status?: "PENDING_REVIEW" | "DUPLICATE" | "DISMISSED" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
                 priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined;
                 jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
                 authorityType?: "OTHER" | "DATA_PROTECTION" | "AML_CFT" | "INTERNATIONAL_STANDARD" | "CONSUMER_PROTECTION" | "INTERNAL" | "CENTRAL_BANK" | "COMMUNICATIONS" | "SECURITIES" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | undefined;
@@ -12740,10 +13599,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         contentHash: string;
                         authorityType: import(".prisma/client").$Enums.BlogAuthorityType;
                         sourceType: import(".prisma/client").$Enums.BlogSourceType;
+                        discoveredAt: Date;
                         publisher: string | null;
                         monitorId: string;
                         normalizedUrl: string;
-                        discoveredAt: Date;
                         rawContentHash: string | null;
                         dismissedReason: string | null;
                     } | null;
@@ -12786,6 +13645,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     errorMessage: string | null;
                     completedAt: Date | null;
                     sourceItemId: string | null;
+                    modelProvider: string | null;
+                    modelName: string | null;
                     promptVersion: string;
                     recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
                     requiresHumanReview: boolean;
@@ -12799,8 +13660,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     recommendedChannels: string[];
                     rationale: string;
                     sourceConfidence: number;
-                    modelProvider: string | null;
-                    modelName: string | null;
                     inputHash: string;
                 })[];
                 pagination: {
@@ -12832,10 +13691,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     contentHash: string;
                     authorityType: import(".prisma/client").$Enums.BlogAuthorityType;
                     sourceType: import(".prisma/client").$Enums.BlogSourceType;
+                    discoveredAt: Date;
                     publisher: string | null;
                     monitorId: string;
                     normalizedUrl: string;
-                    discoveredAt: Date;
                     rawContentHash: string | null;
                     dismissedReason: string | null;
                 } | null;
@@ -12878,6 +13737,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 errorMessage: string | null;
                 completedAt: Date | null;
                 sourceItemId: string | null;
+                modelProvider: string | null;
+                modelName: string | null;
                 promptVersion: string;
                 recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
                 requiresHumanReview: boolean;
@@ -12891,8 +13752,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 recommendedChannels: string[];
                 rationale: string;
                 sourceConfidence: number;
-                modelProvider: string | null;
-                modelName: string | null;
                 inputHash: string;
             };
             meta: object;
@@ -12922,12 +13781,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     confidence: number;
                     reviewedAt: Date | null;
                     reviewedById: string | null;
+                    modelProvider: string | null;
+                    modelName: string | null;
                     blogPostId: string | null;
                     sourceSetHash: string;
                     promptVersion: string;
                     suggestionId: string | null;
-                    modelProvider: string | null;
-                    modelName: string | null;
                     inputHash: string;
                     researchObjective: string;
                     importantDates: import("@prisma/client/runtime/client").JsonValue | null;
@@ -12987,12 +13846,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 confidence: number;
                 reviewedAt: Date | null;
                 reviewedById: string | null;
+                modelProvider: string | null;
+                modelName: string | null;
                 blogPostId: string | null;
                 sourceSetHash: string;
                 promptVersion: string;
                 suggestionId: string | null;
-                modelProvider: string | null;
-                modelName: string | null;
                 inputHash: string;
                 researchObjective: string;
                 importantDates: import("@prisma/client/runtime/client").JsonValue | null;
@@ -13019,12 +13878,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 confidence: number;
                 reviewedAt: Date | null;
                 reviewedById: string | null;
+                modelProvider: string | null;
+                modelName: string | null;
                 blogPostId: string | null;
                 sourceSetHash: string;
                 promptVersion: string;
                 suggestionId: string | null;
-                modelProvider: string | null;
-                modelName: string | null;
                 inputHash: string;
                 researchObjective: string;
                 importantDates: import("@prisma/client/runtime/client").JsonValue | null;
@@ -13053,14 +13912,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 completedAt: Date | null;
                 action: import(".prisma/client").$Enums.BlogFreshnessAction;
                 contentHash: string;
+                modelProvider: string | null;
+                modelName: string | null;
                 blogPostId: string;
                 triggeredBy: string;
                 sourceSetHash: string;
                 promptVersion: string;
                 agentRunId: string | null;
                 rationale: string;
-                modelProvider: string | null;
-                modelName: string | null;
                 riskTier: import(".prisma/client").$Enums.BlogFreshnessRiskTier;
                 freshnessScore: number;
                 changedSourceIds: string[];
@@ -13091,14 +13950,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     completedAt: Date | null;
                     action: import(".prisma/client").$Enums.BlogFreshnessAction;
                     contentHash: string;
+                    modelProvider: string | null;
+                    modelName: string | null;
                     blogPostId: string;
                     triggeredBy: string;
                     sourceSetHash: string;
                     promptVersion: string;
                     agentRunId: string | null;
                     rationale: string;
-                    modelProvider: string | null;
-                    modelName: string | null;
                     riskTier: import(".prisma/client").$Enums.BlogFreshnessRiskTier;
                     freshnessScore: number;
                     changedSourceIds: string[];
@@ -13119,7 +13978,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         adminListRevisionRequests: import("@trpc/server").TRPCQueryProcedure<{
             input: {
                 blogPostId?: string | undefined;
-                status?: "RESOLVED" | "ACCEPTED" | "DISMISSED" | "PENDING_REVIEW" | "ASSIGNED" | undefined;
+                status?: "RESOLVED" | "PENDING_REVIEW" | "ACCEPTED" | "DISMISSED" | "ASSIGNED" | undefined;
                 page?: number | undefined;
                 limit?: number | undefined;
             };
@@ -13719,6 +14578,163 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 output: import("../../modules/agents/marketing/types").PersistedMarketingDraft;
                 meta: object;
             }>;
+            leads: import("@trpc/server").TRPCBuiltRouter<{
+                ctx: import("./context").Context;
+                meta: object;
+                errorShape: {
+                    message: string;
+                    data: {
+                        stack: string | undefined;
+                        fieldErrors: Record<string, string> | null;
+                        code: import("@trpc/server").TRPC_ERROR_CODE_KEY;
+                        httpStatus: number;
+                        path?: string;
+                    };
+                    code: import("@trpc/server").TRPC_ERROR_CODE_NUMBER;
+                };
+                transformer: false;
+            }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
+                getDiscoverySources: import("@trpc/server").TRPCQueryProcedure<{
+                    input: {
+                        jurisdiction?: string | undefined;
+                    } | undefined;
+                    output: import("../../modules/marketing/lead-discovery-sources").DiscoverySourceDefinition[];
+                    meta: object;
+                }>;
+                updateDiscoverySourceState: import("@trpc/server").TRPCMutationProcedure<{
+                    input: {
+                        sourceId: string;
+                        result: "FAILED" | "SUCCESS" | "SKIPPED_UNCHANGED";
+                        contentFingerprint?: string | null | undefined;
+                        processedCursor?: string | null | undefined;
+                        recordIdentifier?: string | null | undefined;
+                        sourceVersion?: string | null | undefined;
+                        errorMessage?: string | null | undefined;
+                        metadata?: Record<string, unknown> | undefined;
+                    };
+                    output: import("../../modules/marketing/lead-discovery-sources").DiscoverySourceState;
+                    meta: object;
+                }>;
+                getBudgetStatus: import("@trpc/server").TRPCQueryProcedure<{
+                    input: {
+                        period?: string | undefined;
+                    } | undefined;
+                    output: {
+                        period: string;
+                        budgetUsd: number;
+                        spentUsd: number;
+                        reservedUsd: number;
+                        remainingUsd: number;
+                        percentUsed: number;
+                        isHalted: boolean;
+                        providers: Record<import("../../lib/ai/gateway/types").LLMProviderName, number>;
+                    };
+                    meta: object;
+                }>;
+                initDiscoveryRun: import("@trpc/server").TRPCMutationProcedure<{
+                    input: {
+                        runIdempotencyKey: string;
+                        workflowName?: string | undefined;
+                        sourceAuthority?: string | null | undefined;
+                        sourceUrl?: string | null | undefined;
+                        jurisdiction?: string | undefined;
+                        sourceSetId?: string | undefined;
+                        metadata?: Record<string, unknown> | undefined;
+                    };
+                    output: {
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        status: import(".prisma/client").$Enums.DiscoveryRunStatus;
+                        errorMessage: string | null;
+                        completedAt: Date | null;
+                        startedAt: Date;
+                        sourceUrl: string;
+                        sourceAuthority: string;
+                        runIdempotencyKey: string;
+                        workflowName: string;
+                        totalDiscovered: number;
+                        totalQualified: number;
+                        totalDeduplicated: number;
+                        totalRejected: number;
+                        totalCreated: number;
+                        totalUpdated: number;
+                    };
+                    meta: object;
+                }>;
+                ingestBatch: import("@trpc/server").TRPCMutationProcedure<{
+                    input: {
+                        discoveryRunId: string;
+                        batchId: string;
+                        candidates: {
+                            name: string;
+                            primarySourceUrl: string;
+                            domain?: string | null | undefined;
+                            country?: string | undefined;
+                            industry?: string | null | undefined;
+                            regulatoryBody?: string | null | undefined;
+                            licenceType?: string | null | undefined;
+                            licenceNumber?: string | null | undefined;
+                            licenceStatus?: string | null | undefined;
+                            sizeClass?: "ENTERPRISE" | "MEDIUM" | "UNKNOWN" | "MICRO" | "SMALL" | "LARGE" | null | undefined;
+                            primarySourceAuthority?: string | null | undefined;
+                            confidence?: number | undefined;
+                            hasComplianceObligation?: boolean | undefined;
+                            operatesCrossBorder?: boolean | undefined;
+                            handlesPersonalData?: boolean | undefined;
+                            handlesCustomerFunds?: boolean | undefined;
+                            hasNamedBuyerContact?: boolean | undefined;
+                            buyerRoleIdentified?: boolean | undefined;
+                            targetRoleTitle?: string | null | undefined;
+                            recentRegulatoryEvent?: boolean | undefined;
+                            recentLicensingDeadline?: boolean | undefined;
+                            evidence?: {
+                                field: string;
+                                extractedValue: string;
+                                sourceUrl: string;
+                                normalizedValue?: string | null | undefined;
+                                confidence?: number | undefined;
+                                sourceAuthority?: string | null | undefined;
+                                sourceRecordId?: string | null | undefined;
+                                evidenceSnippet?: string | null | undefined;
+                                verificationState?: "VERIFIED" | "UNVERIFIED" | "REJECTED" | "CONFLICTING" | undefined;
+                                extractionMethod?: string | null | undefined;
+                                modelProvider?: string | null | undefined;
+                                modelName?: string | null | undefined;
+                                extractorVersion?: string | null | undefined;
+                            }[] | undefined;
+                        }[];
+                    };
+                    output: import("../../modules/marketing/lead-ingestion.service").IngestBatchResult;
+                    meta: object;
+                }>;
+                completeDiscoveryRun: import("@trpc/server").TRPCMutationProcedure<{
+                    input: {
+                        discoveryRunId: string;
+                        status?: "COMPLETED" | "FAILED" | "RUNNING" | "PARTIALLY_COMPLETED" | undefined;
+                        errorMessage?: string | undefined;
+                        metadata?: Record<string, unknown> | undefined;
+                    };
+                    output: {
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        status: import(".prisma/client").$Enums.DiscoveryRunStatus;
+                        errorMessage: string | null;
+                        completedAt: Date | null;
+                        startedAt: Date;
+                        sourceUrl: string;
+                        sourceAuthority: string;
+                        runIdempotencyKey: string;
+                        workflowName: string;
+                        totalDiscovered: number;
+                        totalQualified: number;
+                        totalDeduplicated: number;
+                        totalRejected: number;
+                        totalCreated: number;
+                        totalUpdated: number;
+                    };
+                    meta: object;
+                }>;
+            }>>;
         }>>;
         regIntel: import("@trpc/server").TRPCBuiltRouter<{
             ctx: import("./context").Context;
@@ -14104,6 +15120,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     errorMessage: string | null;
                     completedAt: Date | null;
                     sourceItemId: string | null;
+                    modelProvider: string | null;
+                    modelName: string | null;
                     promptVersion: string;
                     recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
                     requiresHumanReview: boolean;
@@ -14117,8 +15135,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     recommendedChannels: string[];
                     rationale: string;
                     sourceConfidence: number;
-                    modelProvider: string | null;
-                    modelName: string | null;
                     inputHash: string;
                 } | null;
                 meta: object;
@@ -14146,12 +15162,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     confidence: number;
                     reviewedAt: Date | null;
                     reviewedById: string | null;
+                    modelProvider: string | null;
+                    modelName: string | null;
                     blogPostId: string | null;
                     sourceSetHash: string;
                     promptVersion: string;
                     suggestionId: string | null;
-                    modelProvider: string | null;
-                    modelName: string | null;
                     inputHash: string;
                     researchObjective: string;
                     importantDates: import("@prisma/client/runtime/client").JsonValue | null;
@@ -14354,7 +15370,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             }>;
             listBlogSuggestions: import("@trpc/server").TRPCMutationProcedure<{
                 input: {
-                    status?: "DUPLICATE" | "DISMISSED" | "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
+                    status?: "PENDING_REVIEW" | "DUPLICATE" | "DISMISSED" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
                     jurisdictions?: string | undefined;
                     limit?: number | undefined;
                 } | undefined;

@@ -251,7 +251,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
      */
     listAIJobs: import("@trpc/server").TRPCQueryProcedure<{
         input: {
-            status?: "COMPLETED" | "QUEUED" | "RUNNING" | "DEAD_LETTERED" | "RETRYING" | undefined;
+            status?: "COMPLETED" | "RUNNING" | "QUEUED" | "DEAD_LETTERED" | "RETRYING" | undefined;
             type?: string | undefined;
             page?: number | undefined;
             limit?: number | undefined;

@@ -1,5 +1,4 @@
-import { SubscriptionPlan } from '@prisma/client';
-import type { EffectivePlan, PilotEntitlementProfile } from '@/types/plan.types';
+import { SubscriptionPlan, type EffectivePlan, type PilotEntitlementProfile } from '@/types/plan.types';
 export type SupportTier = 'community' | 'email-48hr' | 'priority-24hr' | 'dedicated';
 export type AnalyticsTier = 'none' | 'basic' | 'advanced';
 export type KnowledgeBaseAccess = 'read-only' | 'full';

@@ -328,10 +328,10 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
                         contentHash: string;
                         authorityType: import(".prisma/client").$Enums.BlogAuthorityType;
                         sourceType: import(".prisma/client").$Enums.BlogSourceType;
+                        discoveredAt: Date;
                         publisher: string | null;
                         monitorId: string;
                         normalizedUrl: string;
-                        discoveredAt: Date;
                         rawContentHash: string | null;
                         dismissedReason: string | null;
                     };

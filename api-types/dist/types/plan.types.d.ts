@@ -1,5 +1,16 @@
-import { SubscriptionPlan } from '@prisma/client';
-export type EffectivePlan = SubscriptionPlan | 'FREE_TRIAL';
+import { SubscriptionPlan as PrismaSubscriptionPlan } from '@prisma/client';
+export declare const SubscriptionPlan: {
+    readonly FREE: "FREE";
+    readonly STARTER: "STARTER";
+    readonly GROWTH: "GROWTH";
+    readonly BUSINESS: "BUSINESS";
+    readonly ENTERPRISE: "ENTERPRISE";
+    readonly REGULATOR: "REGULATOR";
+    readonly STARTUP: "STARTUP";
+};
+export type SubscriptionPlan = (typeof SubscriptionPlan)[keyof typeof SubscriptionPlan] | PrismaSubscriptionPlan;
+export type CanonicalPlan = 'FREE' | 'STARTER' | 'GROWTH' | 'BUSINESS' | 'ENTERPRISE';
+export type EffectivePlan = SubscriptionPlan | CanonicalPlan | 'FREE_TRIAL';
 export type EffectivePlanSource = 'SUBSCRIPTION' | 'FREE_TRIAL' | 'GRACE_PERIOD' | 'PILOT' | 'FALLBACK' | 'SUSPENDED';
 export type PilotEntitlementProfile = 'PILOT_FULL' | 'PILOT_FULL_WITH_POLICY_GENERATION';
 export interface PilotPlanState {

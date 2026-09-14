@@ -171,7 +171,7 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
     }>;
     adminListSuggestions: import("@trpc/server").TRPCQueryProcedure<{
         input: {
-            status?: "DUPLICATE" | "DISMISSED" | "PENDING_REVIEW" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
+            status?: "PENDING_REVIEW" | "DUPLICATE" | "DISMISSED" | "APPROVED_FOR_DRAFT" | "DRAFT_CREATED" | "NEEDS_MORE_SOURCES" | undefined;
             priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined;
             jurisdiction?: "KE" | "MW" | "RW" | "NG" | "REGIONAL" | "GLOBAL" | undefined;
             authorityType?: "OTHER" | "DATA_PROTECTION" | "AML_CFT" | "INTERNATIONAL_STANDARD" | "CONSUMER_PROTECTION" | "INTERNAL" | "CENTRAL_BANK" | "COMMUNICATIONS" | "SECURITIES" | "COMPETITION" | "GAZETTE" | "LEGAL_DATABASE" | "DEVELOPMENT_FINANCE" | "INDUSTRY_BODY" | undefined;
@@ -294,10 +294,10 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                     contentHash: string;
                     authorityType: import(".prisma/client").$Enums.BlogAuthorityType;
                     sourceType: import(".prisma/client").$Enums.BlogSourceType;
+                    discoveredAt: Date;
                     publisher: string | null;
                     monitorId: string;
                     normalizedUrl: string;
-                    discoveredAt: Date;
                     rawContentHash: string | null;
                     dismissedReason: string | null;
                 } | null;
@@ -340,6 +340,8 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 errorMessage: string | null;
                 completedAt: Date | null;
                 sourceItemId: string | null;
+                modelProvider: string | null;
+                modelName: string | null;
                 promptVersion: string;
                 recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
                 requiresHumanReview: boolean;
@@ -353,8 +355,6 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 recommendedChannels: string[];
                 rationale: string;
                 sourceConfidence: number;
-                modelProvider: string | null;
-                modelName: string | null;
                 inputHash: string;
             })[];
             pagination: {
@@ -386,10 +386,10 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 contentHash: string;
                 authorityType: import(".prisma/client").$Enums.BlogAuthorityType;
                 sourceType: import(".prisma/client").$Enums.BlogSourceType;
+                discoveredAt: Date;
                 publisher: string | null;
                 monitorId: string;
                 normalizedUrl: string;
-                discoveredAt: Date;
                 rawContentHash: string | null;
                 dismissedReason: string | null;
             } | null;
@@ -432,6 +432,8 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             errorMessage: string | null;
             completedAt: Date | null;
             sourceItemId: string | null;
+            modelProvider: string | null;
+            modelName: string | null;
             promptVersion: string;
             recommendation: import(".prisma/client").$Enums.BlogEditorialRecommendation;
             requiresHumanReview: boolean;
@@ -445,8 +447,6 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             recommendedChannels: string[];
             rationale: string;
             sourceConfidence: number;
-            modelProvider: string | null;
-            modelName: string | null;
             inputHash: string;
         };
         meta: object;
@@ -476,12 +476,12 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 confidence: number;
                 reviewedAt: Date | null;
                 reviewedById: string | null;
+                modelProvider: string | null;
+                modelName: string | null;
                 blogPostId: string | null;
                 sourceSetHash: string;
                 promptVersion: string;
                 suggestionId: string | null;
-                modelProvider: string | null;
-                modelName: string | null;
                 inputHash: string;
                 researchObjective: string;
                 importantDates: import("@prisma/client/runtime/client").JsonValue | null;
@@ -541,12 +541,12 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             confidence: number;
             reviewedAt: Date | null;
             reviewedById: string | null;
+            modelProvider: string | null;
+            modelName: string | null;
             blogPostId: string | null;
             sourceSetHash: string;
             promptVersion: string;
             suggestionId: string | null;
-            modelProvider: string | null;
-            modelName: string | null;
             inputHash: string;
             researchObjective: string;
             importantDates: import("@prisma/client/runtime/client").JsonValue | null;
@@ -573,12 +573,12 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             confidence: number;
             reviewedAt: Date | null;
             reviewedById: string | null;
+            modelProvider: string | null;
+            modelName: string | null;
             blogPostId: string | null;
             sourceSetHash: string;
             promptVersion: string;
             suggestionId: string | null;
-            modelProvider: string | null;
-            modelName: string | null;
             inputHash: string;
             researchObjective: string;
             importantDates: import("@prisma/client/runtime/client").JsonValue | null;
@@ -607,14 +607,14 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
             completedAt: Date | null;
             action: import(".prisma/client").$Enums.BlogFreshnessAction;
             contentHash: string;
+            modelProvider: string | null;
+            modelName: string | null;
             blogPostId: string;
             triggeredBy: string;
             sourceSetHash: string;
             promptVersion: string;
             agentRunId: string | null;
             rationale: string;
-            modelProvider: string | null;
-            modelName: string | null;
             riskTier: import(".prisma/client").$Enums.BlogFreshnessRiskTier;
             freshnessScore: number;
             changedSourceIds: string[];
@@ -645,14 +645,14 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
                 completedAt: Date | null;
                 action: import(".prisma/client").$Enums.BlogFreshnessAction;
                 contentHash: string;
+                modelProvider: string | null;
+                modelName: string | null;
                 blogPostId: string;
                 triggeredBy: string;
                 sourceSetHash: string;
                 promptVersion: string;
                 agentRunId: string | null;
                 rationale: string;
-                modelProvider: string | null;
-                modelName: string | null;
                 riskTier: import(".prisma/client").$Enums.BlogFreshnessRiskTier;
                 freshnessScore: number;
                 changedSourceIds: string[];
@@ -673,7 +673,7 @@ export declare const blogAutomationRouter: import("@trpc/server").TRPCBuiltRoute
     adminListRevisionRequests: import("@trpc/server").TRPCQueryProcedure<{
         input: {
             blogPostId?: string | undefined;
-            status?: "RESOLVED" | "ACCEPTED" | "DISMISSED" | "PENDING_REVIEW" | "ASSIGNED" | undefined;
+            status?: "RESOLVED" | "PENDING_REVIEW" | "ACCEPTED" | "DISMISSED" | "ASSIGNED" | undefined;
             page?: number | undefined;
             limit?: number | undefined;
         };

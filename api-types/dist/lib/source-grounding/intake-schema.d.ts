@@ -1,8 +1,8 @@
 import { z } from 'zod';
 export declare const ReviewStatusSchema: z.ZodEnum<{
     APPROVED: "APPROVED";
-    REJECTED: "REJECTED";
     PENDING_REVIEW: "PENDING_REVIEW";
+    REJECTED: "REJECTED";
     NEEDS_MANUAL_REVIEW: "NEEDS_MANUAL_REVIEW";
 }>;
 export declare const PrioritySourceMetadataIntakeSchema: z.ZodObject<{
@@ -26,8 +26,8 @@ export declare const PrioritySourceMetadataIntakeSchema: z.ZodObject<{
     notes: z.ZodNullable<z.ZodString>;
     reviewStatus: z.ZodEnum<{
         APPROVED: "APPROVED";
-        REJECTED: "REJECTED";
         PENDING_REVIEW: "PENDING_REVIEW";
+        REJECTED: "REJECTED";
         NEEDS_MANUAL_REVIEW: "NEEDS_MANUAL_REVIEW";
     }>;
 }, z.core.$strip>;

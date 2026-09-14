@@ -112,7 +112,7 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
      */
     createCheckoutSession: import("@trpc/server").TRPCMutationProcedure<{
         input: {
-            plan: "BUSINESS" | "STARTUP";
+            plan: "STARTER" | "GROWTH" | "BUSINESS" | "STARTUP";
             interval?: "monthly" | "yearly" | undefined;
         };
         output: {
@@ -177,6 +177,89 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
         meta: object;
     }>;
     /**
+     * Compare active pilot/plan access against a target paid plan before checkout.
+     * Shows seats, countries, document vault storage, monthly allowances, feature differences,
+     * annual discount, and any capacity overages requiring member/country selection.
+     */
+    getPlanConversionPreview: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            plan: "FREE" | "STARTER" | "GROWTH" | "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
+            interval?: "monthly" | "yearly" | undefined;
+        };
+        output: {
+            organization: {
+                id: string;
+                name: string;
+                homeJurisdictionCode: string;
+            };
+            current: {
+                plan: import("../../types/plan.types").EffectivePlan;
+                isPilot: boolean;
+                pilotProfile: import("../../types/plan.types").PilotEntitlementProfile | null;
+                seatsUsed: number;
+                seatsLimit: number;
+                enabledCountries: string[];
+                docStorageMb: number;
+                docCount: number;
+                pendingInvitesCount: number;
+                entitlements: {
+                    policyGeneration: boolean;
+                    customFrameworks: boolean;
+                    complianceQueriesLimit: number;
+                    checklistGenerationsLimit: number;
+                    teamCollaboration: boolean;
+                };
+            };
+            target: {
+                plan: "FREE" | "STARTER" | "GROWTH" | "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
+                interval: "monthly" | "yearly";
+                price: {
+                    monthly: number;
+                    yearly: number;
+                    effective: number;
+                    currency: "KES";
+                    annualDiscountPercent: number;
+                };
+                seatsLimit: number;
+                countriesLimit: number;
+                docStorageLimitMb: number;
+                entitlements: {
+                    policyGeneration: boolean;
+                    customFrameworks: boolean;
+                    complianceQueriesLimit: number;
+                    checklistGenerationsLimit: number;
+                    teamCollaboration: boolean;
+                };
+            };
+            comparison: {
+                isOverSeatCapacity: boolean;
+                excessSeats: number;
+                isOverCountryCapacity: boolean;
+                excessCountries: number;
+                isOverStorageCapacity: boolean;
+                featuresRetained: {
+                    policyGeneration: boolean;
+                    customFrameworks: boolean;
+                    teamCollaboration: boolean;
+                };
+                featuresRestricted: {
+                    policyGeneration: boolean;
+                    customFrameworks: boolean;
+                    teamCollaboration: boolean;
+                };
+            };
+            activeMembers: {
+                membershipId: string;
+                userId: string;
+                email: string;
+                fullName: string;
+                role: import(".prisma/client").$Enums.MemberRole;
+            }[];
+            availableJurisdictions: string[];
+        };
+        meta: object;
+    }>;
+    /**
      * Initiate an M-Pesa STK push for a subscription plan.
      *
      * Creates a PENDING Payment record first (idempotent via providerTransactionId),
@@ -185,8 +268,11 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
     initiateMpesaPayment: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             plan: "FREE" | "STARTER" | "GROWTH" | "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP";
+            interval?: "monthly" | "yearly" | undefined;
             phoneNumber?: string | undefined;
             paymentPurpose?: "INITIAL_PURCHASE" | "RENEWAL" | undefined;
+            retainedMemberUserIds?: string[] | undefined;
+            retainedJurisdictionCodes?: string[] | undefined;
         };
         output: {
             paymentId: string;

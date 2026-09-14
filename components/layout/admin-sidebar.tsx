@@ -36,10 +36,11 @@ import {
   FileQuestion,
   Database,
   ListOrdered,
-  Lightbulb,
+  Sparkles,
   ClipboardCheck,
   FileSearch,
   FileText,
+  Lightbulb,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { useSidebar } from "@/lib/sidebar-context"
@@ -102,10 +103,12 @@ export const adminNav: AdminNavGroup[] = [
     ],
   },
   {
-    title: "Marketing",
+    title: "Marketing & Leads",
     items: [
-      { title: "Campaigns",   href: "/admin/marketing/campaigns",   icon: Mail       },
+      { title: "Lead Queue",  href: "/admin/marketing/leads",       icon: Sparkles   },
+      { title: "Companies",   href: "/admin/marketing/companies",   icon: Building2  },
       { title: "Contacts",    href: "/admin/marketing/contacts",    icon: Users      },
+      { title: "Campaigns",   href: "/admin/marketing/campaigns",   icon: Mail       },
       { title: "Lists",       href: "/admin/marketing/lists",       icon: ListFilter },
       { title: "Suppression", href: "/admin/marketing/suppression", icon: Ban        },
     ],

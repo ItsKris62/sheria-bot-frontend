@@ -729,6 +729,7 @@ export declare const requirePlanFeature: (feature: FeatureKey) => import("@trpc/
  */
 export interface UsageLimitOptions {
     deferIncrement?: boolean;
+    units?: number;
 }
 export interface UsageLimitPatch {
     user: User;
