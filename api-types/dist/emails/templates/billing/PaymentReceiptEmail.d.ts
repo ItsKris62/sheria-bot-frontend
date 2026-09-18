@@ -13,7 +13,9 @@ export interface PaymentReceiptEmailProps {
         description: string;
         amount: string;
     }>;
+    kraPin?: string;
+    customerOrgName?: string;
 }
-export declare function PaymentReceiptEmail({ userName, invoiceNumber, amount, currency, paymentDate, paymentMethod, planName, billingPeriod, receiptUrl, items, }: PaymentReceiptEmailProps): React.JSX.Element;
+export declare function PaymentReceiptEmail({ userName, invoiceNumber, amount, currency, paymentDate, paymentMethod, planName, billingPeriod, receiptUrl, items, kraPin, customerOrgName, }: PaymentReceiptEmailProps): React.JSX.Element;
 export declare function getPaymentReceiptSubject(amount: string, invoiceNumber: string): string;
 //# sourceMappingURL=PaymentReceiptEmail.d.ts.map

@@ -151,6 +151,18 @@ export declare const adminListMonitorsSchema: z.ZodObject<{
 export declare const adminGetMonitorSchema: z.ZodObject<{
     id: z.ZodString;
 }, z.core.$strip>;
+export declare const apiMonitorConfigSchema: z.ZodObject<{
+    endpoint: z.ZodString;
+    headers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
+    itemsPath: z.ZodDefault<z.ZodString>;
+    fieldMapping: z.ZodObject<{
+        title: z.ZodString;
+        url: z.ZodString;
+        publicationDate: z.ZodString;
+        content: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>;
+}, z.core.$strip>;
+export type ApiMonitorConfig = z.infer<typeof apiMonitorConfigSchema>;
 export declare const adminCreateMonitorSchema: z.ZodObject<{
     name: z.ZodString;
     description: z.ZodNullable<z.ZodOptional<z.ZodString>>;
@@ -194,6 +206,17 @@ export declare const adminCreateMonitorSchema: z.ZodObject<{
     }>>;
     baseUrl: z.ZodString;
     feedUrl: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodLiteral<"">, z.ZodNull]>>;
+    apiConfig: z.ZodNullable<z.ZodOptional<z.ZodObject<{
+        endpoint: z.ZodString;
+        headers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
+        itemsPath: z.ZodDefault<z.ZodString>;
+        fieldMapping: z.ZodObject<{
+            title: z.ZodString;
+            url: z.ZodString;
+            publicationDate: z.ZodString;
+            content: z.ZodOptional<z.ZodString>;
+        }, z.core.$strip>;
+    }, z.core.$strip>>>;
     topics: z.ZodDefault<z.ZodArray<z.ZodString>>;
     keywords: z.ZodDefault<z.ZodArray<z.ZodString>>;
     status: z.ZodDefault<z.ZodEnum<{
@@ -252,6 +275,17 @@ export declare const adminUpdateMonitorSchema: z.ZodObject<{
     }>>;
     baseUrl: z.ZodOptional<z.ZodString>;
     feedUrl: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodLiteral<"">, z.ZodNull]>>;
+    apiConfig: z.ZodNullable<z.ZodOptional<z.ZodObject<{
+        endpoint: z.ZodString;
+        headers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
+        itemsPath: z.ZodDefault<z.ZodString>;
+        fieldMapping: z.ZodObject<{
+            title: z.ZodString;
+            url: z.ZodString;
+            publicationDate: z.ZodString;
+            content: z.ZodOptional<z.ZodString>;
+        }, z.core.$strip>;
+    }, z.core.$strip>>>;
     topics: z.ZodOptional<z.ZodArray<z.ZodString>>;
     keywords: z.ZodOptional<z.ZodArray<z.ZodString>>;
     maxItemsPerRun: z.ZodOptional<z.ZodNumber>;
@@ -445,7 +479,10 @@ export declare const adminCreateDraftFromSuggestionSchema: z.ZodObject<{
     suggestionId: z.ZodString;
 }, z.core.$strip>;
 export declare const adminGenerateAiDraftSchema: z.ZodObject<{
-    blogPostId: z.ZodString;
+    blogPostId: z.ZodOptional<z.ZodString>;
+    suggestionId: z.ZodOptional<z.ZodString>;
+    modelOverride: z.ZodOptional<z.ZodString>;
+    targetWordCount: z.ZodOptional<z.ZodNumber>;
 }, z.core.$strip>;
 export declare const adminRunBlogVerificationSchema: z.ZodObject<{
     blogPostId: z.ZodString;

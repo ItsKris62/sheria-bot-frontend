@@ -24,7 +24,8 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   Search, MoreVertical, FileText, CheckCircle2, XCircle, FileSearch,
   RefreshCw, AlertTriangle, ExternalLink, Globe, Sparkles,
-  ArrowUpDown, FilterX, Eye, Clock, ShieldCheck
+  ArrowUpDown, FilterX, Eye, Clock, ShieldCheck, ShieldAlert,
+  AlertOctagon, Cpu, Coins, Zap, Check, ArrowRight
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
@@ -45,6 +46,18 @@ const STATUS_STYLES: Record<string, string> = {
   DISMISSED: "bg-slate-100 text-slate-700 border-slate-200",
   DUPLICATE: "bg-slate-100 text-slate-700 border-slate-200",
   NEEDS_MORE_SOURCES: "bg-orange-50 text-orange-800 border-orange-300",
+}
+
+const VERIFICATION_STATUS_STYLES: Record<string, { badge: string; icon: string }> = {
+  PASSED: { badge: "bg-emerald-100 text-emerald-800 border-emerald-300", icon: "text-emerald-600" },
+  NEEDS_REVIEW: { badge: "bg-amber-100 text-amber-800 border-amber-300", icon: "text-amber-600" },
+  BLOCKED: { badge: "bg-rose-100 text-rose-800 border-rose-300", icon: "text-rose-600" },
+}
+
+const SEVERITY_STYLES: Record<string, string> = {
+  BLOCKING: "bg-rose-100 text-rose-800 border-rose-300 font-semibold",
+  WARNING: "bg-amber-100 text-amber-800 border-amber-300",
+  INFO: "bg-blue-100 text-blue-800 border-blue-300",
 }
 
 const JURISDICTION_LABELS: Record<string, { label: string; flag: string }> = {
@@ -101,6 +114,14 @@ export default function BlogSuggestionsPage() {
 
   // Detail Drawer state
   const [selectedSuggestionId, setSelectedSuggestionId] = useState<string | null>(null)
+
+  // Draft Generation Drawer state
+  const [generationDrawerTarget, setGenerationDrawerTarget] = useState<{
+    suggestionId: string
+    blogPostId?: string
+    title: string
+  } | null>(null)
+  const [generationLiveResult, setGenerationLiveResult] = useState<any | null>(null)
 
   // Dialog targets
   const [dismissTarget, setDismissTarget] = useState<{ id: string; title: string } | null>(null)
@@ -164,6 +185,23 @@ export default function BlogSuggestionsPage() {
     { enabled: !!selectedSuggestionId }
   )
 
+  // Query latest verification for active draft generation drawer target if available
+  const targetBlogPostId = generationLiveResult?.blogPostId || generationDrawerTarget?.blogPostId
+  const { data: latestVerificationData, isLoading: isVerificationLoading, refetch: refetchVerification } =
+    trpc.blogAutomation.adminGetLatestBlogVerification.useQuery(
+      { blogPostId: targetBlogPostId! },
+      { enabled: !!targetBlogPostId && !generationLiveResult }
+    )
+
+  // Query the full verification run to get individual issue details if we have a run ID
+  const activeVerificationRunId =
+    generationLiveResult?.verificationRun?.id || latestVerificationData?.run?.id
+  const { data: activeVerificationRunDetails, isLoading: isRunDetailsLoading } =
+    trpc.blogAutomation.adminGetBlogVerificationRun.useQuery(
+      { id: activeVerificationRunId! },
+      { enabled: !!activeVerificationRunId }
+    )
+
   // Mutations
   const scoreItemsMutation = trpc.blogAutomation.adminScoreEligibleSourceItems.useMutation({
     onSuccess: (res: any) => {
@@ -212,13 +250,63 @@ export default function BlogSuggestionsPage() {
 
   const createDraftMutation = trpc.blogAutomation.adminCreateDraftFromSuggestion.useMutation({
     onSuccess: (res) => {
-      toast.success("Draft created from suggestion.")
+      toast.success("Draft skeleton created from suggestion.")
       startTransition(() => {
         router.push(`/admin/content/blog/${res.blogPostId}`)
       })
     },
     onError: (err: any) => toast.error(err.message),
   })
+
+  // End-to-end AI Draft Generation mutation
+  const generateAiDraftMutation = trpc.blogAutomation.adminGenerateAiDraft.useMutation({
+    onSuccess: (res: any) => {
+      toast.success("AI draft generated and semantic verification completed!")
+      setGenerationLiveResult(res)
+      if (res.blogPostId) {
+        setGenerationDrawerTarget((prev) => ({
+          suggestionId: prev?.suggestionId || "",
+          blogPostId: res.blogPostId,
+          title: prev?.title || "Draft Generation Telemetry",
+        }))
+      }
+      void utils.blogAutomation.adminListSuggestions.invalidate()
+      if (selectedSuggestionId) {
+        void utils.blogAutomation.adminGetSuggestion.invalidate({ id: selectedSuggestionId })
+      }
+    },
+    onError: (err: any) => {
+      toast.error(`Draft generation failed: ${err.message}`)
+    },
+  })
+
+  // Manual re-verification mutation
+  const runVerificationMutation = trpc.blogAutomation.adminRunBlogVerification.useMutation({
+    onSuccess: () => {
+      toast.success("Verification completed successfully")
+      if (targetBlogPostId) {
+        void utils.blogAutomation.adminGetLatestBlogVerification.invalidate({ blogPostId: targetBlogPostId })
+      }
+      if (activeVerificationRunId) {
+        void utils.blogAutomation.adminGetBlogVerificationRun.invalidate({ id: activeVerificationRunId })
+      }
+    },
+    onError: (err: any) => toast.error(err.message),
+  })
+
+  const handleApproveAndGenerateDraft = (suggestionId: string, title: string, existingBlogPostId?: string) => {
+    setGenerationLiveResult(null)
+    setGenerationDrawerTarget({
+      suggestionId,
+      blogPostId: existingBlogPostId,
+      title,
+    })
+    generateAiDraftMutation.mutate(
+      existingBlogPostId
+        ? { suggestionId, blogPostId: existingBlogPostId }
+        : { suggestionId }
+    )
+  }
 
   const totalPages = data ? data.pagination.pages : 1
   const hasActiveFilters =
@@ -237,6 +325,13 @@ export default function BlogSuggestionsPage() {
     setSearchInput("")
     setPage(1)
   }
+
+  // Active run telemetry resolution
+  const activeVerification =
+    generationLiveResult?.verificationRun ||
+    activeVerificationRunDetails ||
+    latestVerificationData?.run
+  const activeGenerationRun = generationLiveResult?.generationRun
 
   return (
     <div className="p-4 md:p-6 space-y-6" data-testid="blog-suggestions-page">
@@ -480,6 +575,9 @@ export default function BlogSuggestionsPage() {
                         flag: "📍",
                       }
                       const primarySource = suggestion.sources?.[0]?.sourceItem
+                      const isGeneratingThis =
+                        generateAiDraftMutation.isPending &&
+                        generationDrawerTarget?.suggestionId === suggestion.id
 
                       return (
                         <tr
@@ -565,7 +663,57 @@ export default function BlogSuggestionsPage() {
                             className="px-4 py-3.5 text-right align-top whitespace-nowrap"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="flex items-center justify-end gap-1">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {/* Direct AI Draft Trigger button for PENDING_REVIEW or APPROVED_FOR_DRAFT */}
+                              {suggestion.status === "PENDING_REVIEW" && (
+                                <Button
+                                  size="sm"
+                                  className="h-8 px-2.5 text-xs bg-emerald-700 hover:bg-emerald-800 text-white gap-1.5 shadow-2xs"
+                                  onClick={() => handleApproveAndGenerateDraft(suggestion.id, suggestion.title, suggestion.blogPostId)}
+                                  disabled={generateAiDraftMutation.isPending}
+                                >
+                                  {isGeneratingThis ? (
+                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                                  )}
+                                  Approve & Draft
+                                </Button>
+                              )}
+
+                              {suggestion.status === "APPROVED_FOR_DRAFT" && (
+                                <Button
+                                  size="sm"
+                                  className="h-8 px-2.5 text-xs bg-purple-700 hover:bg-purple-800 text-white gap-1.5 shadow-2xs"
+                                  onClick={() => handleApproveAndGenerateDraft(suggestion.id, suggestion.title, suggestion.blogPostId)}
+                                  disabled={generateAiDraftMutation.isPending}
+                                >
+                                  {isGeneratingThis ? (
+                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                                  )}
+                                  Generate AI Draft
+                                </Button>
+                              )}
+
+                              {suggestion.status === "DRAFT_CREATED" && suggestion.blogPostId && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-2.5 text-xs border-purple-200 text-purple-700 hover:bg-purple-50 gap-1.5"
+                                  onClick={() => {
+                                    setGenerationDrawerTarget({
+                                      suggestionId: suggestion.id,
+                                      blogPostId: suggestion.blogPostId,
+                                      title: suggestion.title,
+                                    })
+                                  }}
+                                >
+                                  <ShieldCheck className="w-3.5 h-3.5 text-purple-600" /> Telemetry
+                                </Button>
+                              )}
+
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -581,11 +729,14 @@ export default function BlogSuggestionsPage() {
                                     <MoreVertical className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuContent align="end" className="w-52">
                                   {suggestion.status === "PENDING_REVIEW" && (
                                     <>
+                                      <DropdownMenuItem onClick={() => handleApproveAndGenerateDraft(suggestion.id, suggestion.title, suggestion.blogPostId)}>
+                                        <Sparkles className="mr-2 h-4 w-4 text-emerald-600" /> Approve & Generate Draft
+                                      </DropdownMenuItem>
                                       <DropdownMenuItem onClick={() => approveMutation.mutate({ id: suggestion.id })}>
-                                        <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" /> Approve for Draft
+                                        <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" /> Approve Only
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         onClick={() =>
@@ -604,24 +755,51 @@ export default function BlogSuggestionsPage() {
                                     </>
                                   )}
 
-                                  {suggestion.status === "APPROVED_FOR_DRAFT" && !suggestion.blogPostId && (
-                                    <DropdownMenuItem
-                                      onClick={() => createDraftMutation.mutate({ suggestionId: suggestion.id })}
-                                    >
-                                      <FileText className="mr-2 h-4 w-4 text-purple-600" /> Create Draft Article
-                                    </DropdownMenuItem>
+                                  {suggestion.status === "APPROVED_FOR_DRAFT" && (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() => handleApproveAndGenerateDraft(suggestion.id, suggestion.title, suggestion.blogPostId)}
+                                      >
+                                        <Sparkles className="mr-2 h-4 w-4 text-purple-600" /> Generate AI Draft
+                                      </DropdownMenuItem>
+                                      {!suggestion.blogPostId && (
+                                        <DropdownMenuItem
+                                          onClick={() => createDraftMutation.mutate({ suggestionId: suggestion.id })}
+                                        >
+                                          <FileText className="mr-2 h-4 w-4 text-slate-600" /> Create Skeleton Only
+                                        </DropdownMenuItem>
+                                      )}
+                                    </>
                                   )}
 
                                   {suggestion.status === "DRAFT_CREATED" && suggestion.blogPostId && (
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        startTransition(() => {
-                                          router.push(`/admin/content/blog/${suggestion.blogPostId}`)
-                                        })
-                                      }
-                                    >
-                                      <ExternalLink className="mr-2 h-4 w-4 text-purple-600" /> Open Draft Article
-                                    </DropdownMenuItem>
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          setGenerationDrawerTarget({
+                                            suggestionId: suggestion.id,
+                                            blogPostId: suggestion.blogPostId,
+                                            title: suggestion.title,
+                                          })
+                                        }
+                                      >
+                                        <ShieldCheck className="mr-2 h-4 w-4 text-purple-600" /> View Run & Verification
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => handleApproveAndGenerateDraft(suggestion.id, suggestion.title, suggestion.blogPostId)}
+                                      >
+                                        <RefreshCw className="mr-2 h-4 w-4 text-purple-600" /> Regenerate AI Draft
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          startTransition(() => {
+                                            router.push(`/admin/content/blog/${suggestion.blogPostId}`)
+                                          })
+                                        }
+                                      >
+                                        <ExternalLink className="mr-2 h-4 w-4 text-purple-600" /> Open in Post Editor
+                                      </DropdownMenuItem>
+                                    </>
                                   )}
 
                                   {primarySource?.url && safeExternalUrl(primarySource.url) && (
@@ -889,42 +1067,400 @@ export default function BlogSuggestionsPage() {
                     </Button>
                     <Button
                       size="sm"
-                      className="text-xs bg-emerald-700 hover:bg-emerald-800 text-white"
-                      onClick={() => approveMutation.mutate({ id: detailSuggestion.id })}
-                      disabled={approveMutation.isPending}
+                      className="text-xs bg-emerald-700 hover:bg-emerald-800 text-white gap-1.5"
+                      onClick={() => {
+                        handleApproveAndGenerateDraft(detailSuggestion.id, detailSuggestion.title, detailSuggestion.blogPostId)
+                        setSelectedSuggestionId(null)
+                      }}
+                      disabled={generateAiDraftMutation.isPending}
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Approve for Draft
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Approve & Generate Draft
                     </Button>
                   </>
                 )}
 
-                {detailSuggestion.status === "APPROVED_FOR_DRAFT" && !detailSuggestion.blogPostId && (
+                {detailSuggestion.status === "APPROVED_FOR_DRAFT" && (
                   <Button
                     size="sm"
-                    className="text-xs bg-purple-700 hover:bg-purple-800 text-white"
-                    onClick={() => createDraftMutation.mutate({ suggestionId: detailSuggestion.id })}
-                    disabled={createDraftMutation.isPending}
+                    className="text-xs bg-purple-700 hover:bg-purple-800 text-white gap-1.5"
+                    onClick={() => {
+                      handleApproveAndGenerateDraft(detailSuggestion.id, detailSuggestion.title, detailSuggestion.blogPostId)
+                      setSelectedSuggestionId(null)
+                    }}
+                    disabled={generateAiDraftMutation.isPending}
                   >
-                    <FileText className="w-3.5 h-3.5 mr-1" /> Create Draft Article
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Generate AI Draft
                   </Button>
                 )}
 
                 {detailSuggestion.status === "DRAFT_CREATED" && detailSuggestion.blogPostId && (
-                  <Button
-                    size="sm"
-                    className="text-xs bg-purple-700 hover:bg-purple-800 text-white"
-                    onClick={() =>
-                      startTransition(() => {
-                        router.push(`/admin/content/blog/${detailSuggestion.blogPostId}`)
-                      })
-                    }
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 mr-1" /> Open Draft Article
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs border-purple-200 text-purple-700 hover:bg-purple-50 gap-1.5"
+                      onClick={() => {
+                        setGenerationDrawerTarget({
+                          suggestionId: detailSuggestion.id,
+                          blogPostId: detailSuggestion.blogPostId,
+                          title: detailSuggestion.title,
+                        })
+                        setSelectedSuggestionId(null)
+                      }}
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-purple-600" /> Verification & Telemetry
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="text-xs bg-purple-700 hover:bg-purple-800 text-white"
+                      onClick={() =>
+                        startTransition(() => {
+                          router.push(`/admin/content/blog/${detailSuggestion.blogPostId}`)
+                        })
+                      }
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 mr-1" /> Open Draft Article
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
           )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Dedicated Draft Generation & Semantic Verification Details Sheet */}
+      <Sheet
+        open={!!generationDrawerTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setGenerationDrawerTarget(null)
+            setGenerationLiveResult(null)
+          }
+        }}
+      >
+        <SheetContent side="right" className="sm:max-w-2xl w-full p-0 flex flex-col h-full bg-card">
+          <SheetHeader className="p-6 border-b bg-muted/10">
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={
+                    generateAiDraftMutation.isPending
+                      ? "bg-amber-100 text-amber-800 border-amber-300 animate-pulse"
+                      : activeGenerationRun?.status === "FAILED"
+                      ? "bg-rose-100 text-rose-800 border-rose-300"
+                      : "bg-emerald-100 text-emerald-800 border-emerald-300"
+                  }
+                >
+                  {generateAiDraftMutation.isPending
+                    ? "GENERATING_DRAFT"
+                    : activeGenerationRun?.status || "COMPLETED"}
+                </Badge>
+                {activeVerification && (
+                  <Badge
+                    variant="outline"
+                    className={
+                      VERIFICATION_STATUS_STYLES[activeVerification.status]?.badge ||
+                      "bg-slate-100 text-slate-700"
+                    }
+                  >
+                    Verification: {activeVerification.status}
+                  </Badge>
+                )}
+              </div>
+              {targetBlogPostId && (
+                <span className="font-mono text-[11px] text-muted-foreground">
+                  Post ID: {targetBlogPostId.slice(0, 8)}...
+                </span>
+              )}
+            </div>
+            <SheetTitle className="text-lg font-bold text-foreground text-left flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-purple-600 shrink-0" />
+              Draft Generation & Citation Verification
+            </SheetTitle>
+            <SheetDescription className="text-xs text-muted-foreground text-left line-clamp-1">
+              {generationDrawerTarget?.title}
+            </SheetDescription>
+          </SheetHeader>
+
+          {/* Drawer Body */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {generateAiDraftMutation.isPending ? (
+              <div className="py-12 flex flex-col items-center justify-center space-y-4 text-center">
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-full border-4 border-purple-200 border-t-purple-600 animate-spin flex items-center justify-center" />
+                  <Sparkles className="w-6 h-6 text-purple-600 absolute inset-0 m-auto" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold text-foreground">
+                    Synthesizing Regulatory Draft & Running Post-Hoc Verification
+                  </h3>
+                  <p className="text-xs text-muted-foreground max-w-sm">
+                    Claude 3.5 Sonnet is structuring content from verified canonical sources and executing claim verification passes.
+                  </p>
+                </div>
+                <div className="w-full max-w-xs space-y-2 pt-4 text-xs text-left">
+                  <div className="flex items-center gap-2 text-emerald-700 font-medium">
+                    <Check className="w-4 h-4 text-emerald-600" /> Fetching Canonical Source Versions
+                  </div>
+                  <div className="flex items-center gap-2 text-purple-700 font-medium animate-pulse">
+                    <RefreshCw className="w-4 h-4 animate-spin text-purple-600" /> AI Draft Generation (Claude 3.5 Sonnet)
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <ShieldCheck className="w-4 h-4 text-muted-foreground" /> Semantic Claim Verification
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Error Banner if run failed */}
+                {activeGenerationRun?.status === "FAILED" && (
+                  <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 space-y-2">
+                    <div className="flex items-center gap-2 font-semibold text-sm">
+                      <AlertOctagon className="w-4 h-4 text-rose-600" /> AI Generation Failed
+                    </div>
+                    <p className="text-xs leading-relaxed">
+                      {activeGenerationRun.errorMessage || "An unexpected error occurred during draft synthesis."}
+                    </p>
+                  </div>
+                )}
+
+                {/* Telemetry Metrics Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3 rounded-lg bg-muted/40 border space-y-1">
+                    <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+                      <Cpu className="w-3.5 h-3.5 text-blue-500" /> Model
+                    </div>
+                    <div className="text-xs font-semibold text-foreground truncate" title="claude-3-5-sonnet-20240620">
+                      Claude 3.5 Sonnet
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-muted/40 border space-y-1">
+                    <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+                      <Zap className="w-3.5 h-3.5 text-amber-500" /> Token Usage
+                    </div>
+                    <div className="text-xs font-semibold text-foreground">
+                      {activeGenerationRun?.inputTokenEstimate
+                        ? `${activeGenerationRun.inputTokenEstimate + (activeGenerationRun.outputTokenEstimate || 0)} tokens`
+                        : "Dynamic Est."}
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-muted/40 border space-y-1">
+                    <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+                      <Coins className="w-3.5 h-3.5 text-emerald-500" /> Est. Cost (USD)
+                    </div>
+                    <div className="text-xs font-semibold text-foreground">
+                      {activeGenerationRun?.costUsdEstimate != null
+                        ? `$${activeGenerationRun.costUsdEstimate.toFixed(4)}`
+                        : "< $0.02"}
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-muted/40 border space-y-1">
+                    <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+                      <Clock className="w-3.5 h-3.5 text-purple-500" /> Completed
+                    </div>
+                    <div className="text-xs font-semibold text-foreground">
+                      {activeGenerationRun?.completedAt
+                        ? format(new Date(activeGenerationRun.completedAt), "HH:mm:ss")
+                        : "Just now"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reviewer Notes & Uncertainty Flags */}
+                {(generationLiveResult?.reviewerNotes || activeGenerationRun?.reviewerNotes) && (
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-purple-600" /> AI Reviewer Notes
+                    </h4>
+                    <div className="text-xs bg-purple-50/60 text-purple-950 p-3.5 rounded-md border border-purple-200 leading-relaxed">
+                      {generationLiveResult?.reviewerNotes || activeGenerationRun?.reviewerNotes}
+                    </div>
+                  </div>
+                )}
+
+                {(generationLiveResult?.uncertaintyFlags?.length > 0 ||
+                  activeGenerationRun?.uncertaintyFlags?.length > 0) && (
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-600" /> Uncertainty / Verification Flags
+                    </h4>
+                    <ul className="text-xs bg-amber-50/60 text-amber-950 p-3.5 rounded-md border border-amber-200 space-y-1.5 list-disc list-inside">
+                      {(generationLiveResult?.uncertaintyFlags || activeGenerationRun?.uncertaintyFlags || []).map(
+                        (flag: string, idx: number) => (
+                          <li key={idx} className="leading-snug">
+                            {flag}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Semantic Verification Results Section */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" /> Semantic Verification Audit
+                    </h4>
+                    {activeVerification && (
+                      <span className="text-xs text-muted-foreground font-medium">
+                        Quality Score: <span className="font-bold text-foreground">{activeVerification.qualityScore ?? 100}/100</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {isVerificationLoading || isRunDetailsLoading ? (
+                    <Skeleton className="h-28 w-full" />
+                  ) : activeVerification ? (
+                    <div className="space-y-3">
+                      {/* Issue summary badges */}
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <div className="px-3 py-1.5 rounded-md bg-muted/40 border flex items-center gap-2">
+                          <span className="font-medium text-muted-foreground">Status:</span>
+                          <Badge
+                            variant="outline"
+                            className={
+                              VERIFICATION_STATUS_STYLES[activeVerification.status]?.badge ||
+                              "bg-slate-100"
+                            }
+                          >
+                            {activeVerification.status}
+                          </Badge>
+                        </div>
+                        <div className="px-3 py-1.5 rounded-md bg-muted/40 border flex items-center gap-1.5">
+                          <span className="font-medium text-rose-700">Blocking Issues:</span>
+                          <span className="font-bold text-foreground">{activeVerification.blockingIssueCount ?? 0}</span>
+                        </div>
+                        <div className="px-3 py-1.5 rounded-md bg-muted/40 border flex items-center gap-1.5">
+                          <span className="font-medium text-amber-700">Warnings:</span>
+                          <span className="font-bold text-foreground">{activeVerification.warningIssueCount ?? 0}</span>
+                        </div>
+                        <div className="px-3 py-1.5 rounded-md bg-muted/40 border flex items-center gap-1.5">
+                          <span className="font-medium text-blue-700">Info Notices:</span>
+                          <span className="font-bold text-foreground">{activeVerification.infoIssueCount ?? 0}</span>
+                        </div>
+                      </div>
+
+                      {/* List of Issues */}
+                      {activeVerification.issues && activeVerification.issues.length > 0 ? (
+                        <div className="space-y-2.5">
+                          {activeVerification.issues.map((issue: any) => (
+                            <div
+                              key={issue.id}
+                              className="p-3.5 rounded-md border bg-card space-y-2 text-xs shadow-2xs"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2 font-semibold text-foreground">
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-[10px] py-0 px-1.5 ${
+                                      SEVERITY_STYLES[issue.severity] || "bg-slate-100"
+                                    }`}
+                                  >
+                                    {issue.severity}
+                                  </Badge>
+                                  <span>{issue.title}</span>
+                                </div>
+                                {issue.claimCategory && (
+                                  <Badge variant="secondary" className="text-[10px]">
+                                    {issue.claimCategory}
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {issue.claimText && (
+                                <div className="p-2 bg-muted/40 rounded border text-foreground/90 italic font-mono text-[11px]">
+                                  &ldquo;{issue.claimText}&rdquo;
+                                </div>
+                              )}
+
+                              <p className="text-foreground/80 leading-relaxed">
+                                {issue.description}
+                              </p>
+
+                              {issue.recommendation && (
+                                <div className="text-emerald-800 bg-emerald-50/70 p-2 rounded border border-emerald-200 flex items-start gap-1.5">
+                                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                                  <span><strong>Recommendation:</strong> {issue.recommendation}</span>
+                                </div>
+                              )}
+
+                              {issue.sourceUrl && (
+                                <div className="pt-1 flex items-center gap-2 text-muted-foreground text-[11px]">
+                                  <Globe className="w-3 h-3 text-muted-foreground" />
+                                  <span className="truncate max-w-sm">{issue.sourceUrl}</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-lg bg-emerald-50/50 border border-emerald-200 text-emerald-900 flex items-center gap-2.5 text-xs">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>All factual and legal obligations are strictly grounded against canonical verified sources. No blocking issues detected.</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg bg-muted/20 border text-center text-xs text-muted-foreground">
+                      No semantic verification run found for this post yet.
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Drawer Actions Footer */}
+          <div className="p-4 border-t bg-muted/20 flex flex-wrap items-center justify-between gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                setGenerationDrawerTarget(null)
+                setGenerationLiveResult(null)
+              }}
+            >
+              Close
+            </Button>
+
+            <div className="flex items-center gap-2">
+              {targetBlogPostId && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs gap-1.5"
+                    onClick={() => runVerificationMutation.mutate({ blogPostId: targetBlogPostId })}
+                    disabled={runVerificationMutation.isPending || generateAiDraftMutation.isPending}
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${runVerificationMutation.isPending ? "animate-spin" : ""}`} />
+                    Re-Verify Claims
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    className="text-xs bg-purple-700 hover:bg-purple-800 text-white gap-1.5"
+                    onClick={() => {
+                      startTransition(() => {
+                        router.push(`/admin/content/blog/${targetBlogPostId}`)
+                      })
+                    }}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    Review Draft in Editor
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
 

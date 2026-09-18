@@ -2,25 +2,21 @@ import * as React from 'react';
 export interface EmailSignatureProps {
     /**
      * @deprecated For transactional templates only. Marketing/bulk sends MUST use
-     * MarketingBaseLayout, which generates a token-signed unsubscribe URL. The
-     * email-based unsubscribe URL produced when this is true is insecure (anyone
-     * who knows the email can unsubscribe anyone) and is RFC 8058 non-compliant.
-     * Setting this to true on a marketing-context email may result in DPA 2019
-     * compliance failures.
+     * MarketingBaseLayout, which generates a token-signed unsubscribe URL.
      */
     showUnsubscribe?: boolean;
     recipientEmail?: string;
+    unsubscribeUrl?: string;
 }
 /**
- * Reusable email footer / signature block.
+ * Modernized Institutional Email Signature & Footer Block
  *
- * Renders:
- *   - New official SheriaBot Email Signature Banner (R2 served)
- *   - Contact info & support email
- *   - Optional unsubscribe link
- *   - Copyright notice
- *
- * Used by BaseLayout so all 16 templates inherit it automatically.
+ * Lightweight, email-safe HTML lockup replacing raster images with:
+ *   - Institutional RegTech wordmark & credentials
+ *   - Support, notification preferences, & website links
+ *   - Kenya DPA 2019 data sovereignty certification notice
+ *   - Mandatory statutory non-counsel legal disclaimer
+ *   - Registered business address in Nairobi, Kenya
  */
-export declare function EmailSignature({ showUnsubscribe, recipientEmail }: EmailSignatureProps): React.JSX.Element;
+export declare function EmailSignature({ showUnsubscribe, recipientEmail, unsubscribeUrl, }: EmailSignatureProps): React.JSX.Element;
 //# sourceMappingURL=EmailSignature.d.ts.map

@@ -13352,6 +13352,17 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 countryLabel?: string | null | undefined;
                 monitoringMethod?: "API" | "MANUAL" | "RSS" | "HTML_LISTING" | undefined;
                 feedUrl?: string | null | undefined;
+                apiConfig?: {
+                    endpoint: string;
+                    fieldMapping: {
+                        title: string;
+                        url: string;
+                        publicationDate: string;
+                        content?: string | undefined;
+                    };
+                    headers?: Record<string, string> | undefined;
+                    itemsPath?: string | undefined;
+                } | null | undefined;
                 topics?: string[] | undefined;
                 keywords?: string[] | undefined;
                 status?: "ACTIVE" | "INACTIVE" | "NEEDS_VERIFICATION" | "FAILING" | undefined;
@@ -13376,6 +13387,17 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 monitoringMethod?: "API" | "MANUAL" | "RSS" | "HTML_LISTING" | undefined;
                 baseUrl?: string | undefined;
                 feedUrl?: string | null | undefined;
+                apiConfig?: {
+                    endpoint: string;
+                    fieldMapping: {
+                        title: string;
+                        url: string;
+                        publicationDate: string;
+                        content?: string | undefined;
+                    };
+                    headers?: Record<string, string> | undefined;
+                    itemsPath?: string | undefined;
+                } | null | undefined;
                 topics?: string[] | undefined;
                 keywords?: string[] | undefined;
                 maxItemsPerRun?: number | undefined;
@@ -13539,7 +13561,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         }>;
         adminGenerateAiDraft: import("@trpc/server").TRPCMutationProcedure<{
             input: {
-                blogPostId: string;
+                blogPostId?: string | undefined;
+                suggestionId?: string | undefined;
+                modelOverride?: string | undefined;
+                targetWordCount?: number | undefined;
             };
             output: any;
             meta: object;

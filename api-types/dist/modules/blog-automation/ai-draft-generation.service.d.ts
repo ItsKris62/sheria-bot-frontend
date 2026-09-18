@@ -1,3 +1,8 @@
+export interface GenerateAiDraftOptions {
+    notifyUserId?: string;
+    modelOverride?: string;
+    targetWordCount?: number;
+}
 /**
  * notifyUserId defaults to adminUserId (identical to prior behavior for the
  * existing admin-dashboard caller, adminGenerateAiDraft, which never passes
@@ -6,7 +11,7 @@
  * since adminUserId for an automation call is the sys-automation-orchestrator
  * service principal - notifying that id directly would never reach a human.
  */
-export declare function generateAiDraftForBlogPost(blogPostId: string, adminUserId: string, notifyUserId?: string): Promise<{
+export declare function generateAiDraftForBlogPost(blogPostId: string, adminUserId: string, notifyUserIdOrOptions?: string | GenerateAiDraftOptions, maybeOptions?: GenerateAiDraftOptions): Promise<{
     post: {
         id: string;
         title: string;

@@ -14,6 +14,8 @@ export interface DiscoverySourceDefinition {
     targetSegment: string;
     landingPageUrl: string;
     resolvedDocumentUrl: string;
+    resolvedSourceUrl?: string;
+    documentTitle?: string;
     trustTier: 'OFFICIAL_REGULATOR' | 'GOVERNMENT_GAZETTE' | 'OFFICIAL_COMPANY';
     maxRecords: number;
     enabled: boolean;
@@ -36,6 +38,7 @@ export interface DiscoverySourceState {
     lastResult?: 'SUCCESS' | 'FAILED' | 'SKIPPED_UNCHANGED' | null;
     consecutiveFailures: number;
     updatedAt: string;
+    persistenceStatus?: 'REDIS_PERSISTED' | 'DEGRADED_UNPERSISTED';
     metadata?: Record<string, unknown>;
 }
 export interface UpdateDiscoverySourceStateInput {
@@ -48,6 +51,17 @@ export interface UpdateDiscoverySourceStateInput {
     errorMessage?: string | null;
     metadata?: Record<string, unknown>;
 }
+export interface DynamicResolutionResult {
+    resolvedUrl: string;
+    documentTitle: string;
+    publicationDate?: string;
+    sourceVersion?: string;
+}
+/**
+ * Dynamically resolves the latest official CBK Digital Credit Provider directory
+ * from the CBK landing page HTML, selecting the newest document by publication date.
+ */
+export declare function resolveCbkDcpDocumentFromHtml(landingPageHtml: string): DynamicResolutionResult;
 /**
  * Authoritative Canonical Source Definitions for Kenya
  */

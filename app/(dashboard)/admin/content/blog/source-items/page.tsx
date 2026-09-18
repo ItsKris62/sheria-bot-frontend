@@ -28,7 +28,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Eye, CheckCircle2, XCircle, Search, AlertTriangle } from 'lucide-react';
+import { ExternalLink, Eye, CheckCircle2, XCircle, Search, AlertTriangle, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -67,13 +67,23 @@ export default function BlogSourceItemsPage() {
       if (res.createdSuggestion) {
         toast.success('Suggestion created successfully!');
       } else {
-        toast.info(`Scored ${res.scoringResult.relevanceScore}/100. Below threshold or duplicate.`);
+        toast.info(`Scored ${res.scoringResult?.relevanceScore ?? 0}/100. Below threshold or duplicate.`);
       }
       setIsDrawerOpen(false);
       refetch();
     },
     onError: (err: any) => {
       toast.error(`Failed to score: ${err.message}`);
+    },
+  });
+
+  const batchScoreMutation = trpc.blogAutomation.adminScoreEligibleSourceItems.useMutation({
+    onSuccess: (res: any) => {
+      toast.success(`Batch scoring finished! Processed: ${res.processed}, Suggestions Created: ${res.suggestionsCreated}, Skipped: ${res.duplicatesSkipped + res.belowThreshold}`);
+      refetch();
+    },
+    onError: (err: any) => {
+      toast.error(`Batch scoring failed: ${err.message}`);
     },
   });
 
@@ -89,18 +99,18 @@ export default function BlogSourceItemsPage() {
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
           <Link href="/admin/content/blog/sources" className="hover:text-foreground transition-colors flex items-center gap-1">
-            <span className="text-blue-500">← Back to Source Monitors</span>
+            <span className="text-blue-500">&larr; Back to Source Monitors</span>
           </Link>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">Source Items</h1>
         <p className="text-muted-foreground flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
-          Source items are discovered regulatory updates. They are not blog suggestions yet.
+          Source items are discovered regulatory updates staged for relevance scoring and editorial triage.
         </p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="flex items-center gap-2 flex-1 w-full">
+        <div className="flex items-center gap-2 flex-1 w-full flex-wrap">
           <div className="relative max-w-sm w-full">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -156,6 +166,17 @@ export default function BlogSourceItemsPage() {
             </SelectContent>
           </Select>
         </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            className="bg-secondary hover:bg-[#007a50] text-white gap-2"
+            onClick={() => batchScoreMutation.mutate({ limit: 50, minScore: 45 })}
+            disabled={batchScoreMutation.isPending}
+          >
+            <Sparkles className="h-4 w-4" />
+            {batchScoreMutation.isPending ? 'Scoring...' : 'Score Pending Items'}
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -194,7 +215,7 @@ export default function BlogSourceItemsPage() {
                       {item.title}
                     </TableCell>
                     <TableCell>{item.jurisdiction}</TableCell>
-                    <TableCell>{item.monitor.name}</TableCell>
+                    <TableCell>{item.monitor?.name || 'Unknown'}</TableCell>
                     <TableCell>{item.sourceType}</TableCell>
                     <TableCell>{item.authorityType}</TableCell>
                     <TableCell>
