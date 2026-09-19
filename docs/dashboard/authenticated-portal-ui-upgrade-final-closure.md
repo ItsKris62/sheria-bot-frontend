@@ -45,7 +45,6 @@ The combined authenticated portal release branch (`release/authenticated-portal-
 ### Duplicate Classification
 
 - `sheria-bot-frontend` (`prj_HZdWUUZPPzoopyyYaj5X8zsU7ULS`): **OBSOLETE DUPLICATE**
-- `v0-sheria-bot-frontend`: **UNKNOWN** (Not present in team project listing)
 
 ---
 

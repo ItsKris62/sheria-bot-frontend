@@ -280,7 +280,7 @@ All components follow WCAG 2.1 AA:
 ## File Structure
 
 ```
-/vercel/share/v0-project/
+fintech-regulatory-platform/
 ├── app/
 │   ├── globals.css                 # Design tokens & animations
 │   ├── layout.tsx                  # Root layout
