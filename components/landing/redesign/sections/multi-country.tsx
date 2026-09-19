@@ -94,10 +94,8 @@ export function MultiCountry() {
                             ? "rgba(34,197,94,0.12)"
                             : "rgba(255,255,255,0.03)"
                       }
-                      stroke={
-                        highlight ? "rgba(34,197,94,0.5)" : "rgba(255,255,255,0.06)"
-                      }
-                      strokeWidth={highlight ? 0.8 : 0.5}
+                      stroke={highlight ? "#FFFFFF" : "rgba(255,255,255,0.42)"}
+                      strokeWidth={highlight ? 1.4 : 0.8}
                       onClick={
                         highlight ? () => setActive(c.name as CountryKey) : undefined
                       }
