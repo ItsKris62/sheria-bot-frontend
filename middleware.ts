@@ -33,6 +33,7 @@ const PUBLIC_ROUTES = [
   '/terms',
   '/pilot',
   '/unsubscribe',
+  '/landing-institutional',
 ];
 
 function isPublicRoute(pathname: string): boolean {
