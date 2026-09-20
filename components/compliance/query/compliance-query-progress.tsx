@@ -1,5 +1,6 @@
 import React from "react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
@@ -39,6 +40,7 @@ export interface ComplianceQueryProgressProps {
   saveLoading: Record<string, boolean>
   feedbackPulse: Record<string, FeedbackPulse | undefined>
   chatScrollRef: React.RefObject<HTMLDivElement | null>
+  onOpenJurisdictionSetup?: () => void
 }
 
 export function ComplianceQueryProgress({
@@ -58,6 +60,7 @@ export function ComplianceQueryProgress({
   saveLoading,
   feedbackPulse,
   chatScrollRef,
+  onOpenJurisdictionSetup,
 }: ComplianceQueryProgressProps) {
   const showEmptyState = messages.length === 0 && !isStreaming
   const selectedCountry = selectedJurisdictions.map(jurisdictionLabel).join(", ")
@@ -225,9 +228,32 @@ export function ComplianceQueryProgress({
 
       {/* Stream Error Alert Display */}
       {streamState.phase === "error" && streamState.errorMessage && (
-        <div className="mx-4 mb-3 flex items-center gap-2.5 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-400 motion-safe:animate-fade-slide-up">
-          <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
-          <span>{streamState.errorMessage}</span>
+        <div className={cn(
+          "mx-4 mb-3 flex items-center justify-between gap-3 rounded-xl p-3.5 text-xs motion-safe:animate-fade-slide-up",
+          streamState.errorMessage === "HOME_JURISDICTION_REQUIRED"
+            ? "border border-primary/40 bg-primary/10 text-foreground"
+            : "border border-red-500/40 bg-red-500/10 text-red-400"
+        )}>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <AlertCircle className={cn(
+              "h-4 w-4 shrink-0",
+              streamState.errorMessage === "HOME_JURISDICTION_REQUIRED" ? "text-primary" : "text-red-400"
+            )} aria-hidden="true" />
+            <span>
+              {streamState.errorMessage === "HOME_JURISDICTION_REQUIRED"
+                ? "Your organization's primary regulatory country must be confirmed before AI compliance queries can run."
+                : streamState.errorMessage}
+            </span>
+          </div>
+          {streamState.errorMessage === "HOME_JURISDICTION_REQUIRED" && onOpenJurisdictionSetup && (
+            <Button
+              size="sm"
+              onClick={onOpenJurisdictionSetup}
+              className="h-7 px-3 text-xs bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 font-medium"
+            >
+              Set Primary Country
+            </Button>
+          )}
         </div>
       )}
     </>

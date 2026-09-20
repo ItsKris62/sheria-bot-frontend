@@ -6,6 +6,7 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { AuthGuard } from "@/components/auth-guard"
 import { SubscriptionStatusBanner } from "@/components/plan/subscription-status-banner"
 import { TrialStatusBanner } from "@/components/trial/TrialStatusBanner"
+import { JurisdictionPromptBanner } from "@/components/jurisdiction/jurisdiction-prompt-banner"
 import { SidebarProvider, useSidebar } from "@/lib/sidebar-context"
 import { cn } from "@/lib/utils"
 
@@ -22,6 +23,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
       )}
     >
       <DashboardHeader userType="startup" />
+      <JurisdictionPromptBanner />
       <SubscriptionStatusBanner />
       <div className="min-w-0 px-4 pt-1 md:px-6">
         <TrialStatusBanner />

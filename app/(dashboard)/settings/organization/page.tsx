@@ -78,6 +78,9 @@ function isDirty(form: OrgFormData, original: OrgFormData): boolean {
 type OrganizationSettingsMeta = {
   id: string
   homeJurisdictionCode?: JurisdictionCode | null
+  needsCountryConfirmation?: boolean | null
+  enabledJurisdictions?: JurisdictionCode[] | null
+  plan?: string | null
   canManageOrganizationSettings?: boolean
   currentMemberRole?: string | null
 }
@@ -125,7 +128,7 @@ export default function OrganizationSettingsPage() {
   const formData = formDataOverride ?? savedData
   const homeJurisdictionCode = settingsMeta?.homeJurisdictionCode ?? null
   const canConfirmJurisdiction = Boolean(settingsMeta?.canManageOrganizationSettings) && !isRegulator
-  const needsJurisdictionConfirmation = !homeJurisdictionCode
+  const needsJurisdictionConfirmation = Boolean(settingsMeta?.needsCountryConfirmation) || !homeJurisdictionCode
 
   const handleSave = () => {
     // Only send fields that have changed, allow empty string to clear a field
@@ -247,13 +250,6 @@ export default function OrganizationSettingsPage() {
                         </span>
                       </Label>
                     ))}
-                    <div className="flex min-h-20 items-center gap-3 rounded-md border border-dashed border-border/60 bg-muted/20 p-3 text-sm text-muted-foreground">
-                      <span className="flex h-4 w-4 items-center justify-center rounded-full border border-border" />
-                      <span>
-                        <span className="block font-medium text-foreground">Nigeria</span>
-                        <span className="text-xs">Coming soon</span>
-                      </span>
-                    </div>
                   </RadioGroup>
                   {!canConfirmJurisdiction && (
                     <p className="text-sm text-muted-foreground">

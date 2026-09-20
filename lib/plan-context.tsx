@@ -128,6 +128,8 @@ export interface PlanBilling {
   subscriptionCycleEnd:    string | null; // ISO-8601, mirrors mpesaNextPaymentDueDate
   mpesaPhoneNumber:        string | null;
   homeJurisdictionCode:    JurisdictionCode | null;
+  enabledJurisdictions?:   JurisdictionCode[];
+  needsCountryConfirmation?: boolean;
   activePaymentProvider:   "INTASEND" | "STRIPE";
   stripeEnabled:           boolean;
   catalogPrice: Record<"STARTUP" | "BUSINESS", { monthly: number; yearly: number; currency: "KES" }>;
@@ -171,6 +173,15 @@ interface PlanContextValue {
 
   /** Billing / Stripe metadata. */
   billing: PlanBilling | null;
+
+  /** Primary regulatory jurisdiction code confirmed for the organization. */
+  homeJurisdictionCode: JurisdictionCode | null;
+
+  /** Whether the organization is pending primary country confirmation. */
+  needsCountryConfirmation: boolean;
+
+  /** List of enabled jurisdictions for multi-country plans. */
+  enabledJurisdictions: JurisdictionCode[];
 
   /** True while the billing query is in-flight. */
   isLoading: boolean;
@@ -228,6 +239,9 @@ const PlanContext = createContext<PlanContextValue>({
   entitlements: null,
   usage: null,
   billing: null,
+  homeJurisdictionCode: null,
+  needsCountryConfirmation: false,
+  enabledJurisdictions: [],
   isLoading: false,
   isError: false,
   hasFeature: () => false,
@@ -323,11 +337,18 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     const effectivePlanSource = data?.effectivePlanSource ?? null;
     const pilot = data?.pilot ?? null;
 
+    const homeJurisdictionCode = billing?.homeJurisdictionCode ?? null;
+    const needsCountryConfirmation = billing?.needsCountryConfirmation ?? (homeJurisdictionCode === null);
+    const enabledJurisdictions = billing?.enabledJurisdictions ?? (homeJurisdictionCode ? [homeJurisdictionCode] : []);
+
     return {
       plan,
       entitlements,
       usage,
       billing,
+      homeJurisdictionCode,
+      needsCountryConfirmation,
+      enabledJurisdictions,
       effectivePlanSource,
       pilot,
       isPilotAccess: effectivePlanSource === "PILOT",

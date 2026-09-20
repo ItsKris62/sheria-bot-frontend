@@ -30,6 +30,7 @@ import {
   type DetailLevel,
   type HistoryItem,
 } from "@/components/compliance/query"
+import { JurisdictionSetupModal } from "@/components/jurisdiction/jurisdiction-setup-modal"
 
 const JURISDICTION_STORAGE_KEY = "sheriabot:compliance-query:selected-jurisdiction"
 
@@ -91,6 +92,7 @@ export default function ComplianceQueryPage() {
   const { submit: streamSubmit, state: streamState } = useComplianceStream()
   const { data: historyData } = useComplianceHistory(1, 3)
   const [showAllQueries, setShowAllQueries] = useState(false)
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false)
 
   const feedbackMutation = trpc.compliance.submitFeedback.useMutation()
   const saveMutation = trpc.compliance.toggleSave.useMutation()
@@ -269,6 +271,13 @@ export default function ComplianceQueryPage() {
     e.preventDefault()
     const trimmed = query.trim()
     if (!trimmed || isStreaming) return
+
+    if (planData?.billing?.needsCountryConfirmation) {
+      setIsSetupModalOpen(true)
+      toast.info("Please confirm your organization's primary jurisdiction before submitting queries.")
+      return
+    }
+
     const effectiveCapability = jurisdictionCapabilities.find(
       (item) => isQueryableJurisdictionCode(item.code) && effectiveSelectedJurisdictions.includes(item.code),
     )
@@ -403,6 +412,7 @@ export default function ComplianceQueryPage() {
               onCopy={handleCopy}
               onFeedback={handleFeedback}
               onSave={handleSave}
+              onOpenJurisdictionSetup={() => setIsSetupModalOpen(true)}
               feedbackState={feedbackState}
               savedState={savedState}
               feedbackLoading={feedbackLoading}
@@ -436,6 +446,12 @@ export default function ComplianceQueryPage() {
           />
         </div>
       </div>
+
+      {/* Primary Jurisdiction Setup / Confirmation Modal */}
+      <JurisdictionSetupModal
+        open={isSetupModalOpen}
+        onOpenChange={setIsSetupModalOpen}
+      />
     </div>
   )
 }
