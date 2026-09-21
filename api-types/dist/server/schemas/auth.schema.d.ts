@@ -120,4 +120,13 @@ export declare const refreshTokenSchema: z.ZodObject<{
     refreshToken: z.ZodString;
 }, z.core.$strip>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
+/**
+ * Verify TOTP / 2FA login challenge (via authenticator app or backup code)
+ */
+export declare const verifyTotpLoginSchema: z.ZodObject<{
+    tempToken: z.ZodString;
+    code: z.ZodString;
+    isBackupCode: z.ZodDefault<z.ZodBoolean>;
+}, z.core.$strip>;
+export type VerifyTotpLoginInput = z.infer<typeof verifyTotpLoginSchema>;
 //# sourceMappingURL=auth.schema.d.ts.map

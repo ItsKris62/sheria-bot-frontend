@@ -36,6 +36,21 @@ function isUnauthorizedError(error: unknown): boolean {
   );
 }
 
+function isMfaRequiredError(error: unknown): boolean {
+  return (
+    error instanceof TRPCClientError &&
+    "data" in (error as unknown as Record<string, unknown>) &&
+    ((error as unknown as Record<string, unknown>).data as Record<string, unknown> | undefined)?.code === "PRECONDITION_FAILED" &&
+    Boolean(error.message?.includes("MFA_ENROLLMENT_REQUIRED") || error.message?.includes("Multi-Factor Authentication"))
+  );
+}
+
+function handleMfaRequired() {
+  if (typeof window !== "undefined" && !window.location.pathname.startsWith("/settings/security")) {
+    window.location.href = "/settings/security?enforce=true";
+  }
+}
+
 function makeQueryClient() {
   return new QueryClient({
     queryCache: new QueryCache({
@@ -45,12 +60,20 @@ function makeQueryClient() {
           // AuthGuard handles redirect; toast shown on login page via sessionStorage flag
           return;
         }
+        if (isMfaRequiredError(error)) {
+          handleMfaRequired();
+          return;
+        }
       },
     }),
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) => {
         if (isUnauthorizedError(error)) {
           handleUnauthorized();
+          return;
+        }
+        if (isMfaRequiredError(error)) {
+          handleMfaRequired();
           return;
         }
         // Only fire generic toast for mutations that have no onError handler of their own,
@@ -69,7 +92,8 @@ function makeQueryClient() {
           if (
             error &&
             "data" in (error as unknown as Record<string, unknown>) &&
-            ((error as unknown as Record<string, unknown>).data as Record<string, unknown>)?.code === "UNAUTHORIZED"
+            (((error as unknown as Record<string, unknown>).data as Record<string, unknown>)?.code === "UNAUTHORIZED" ||
+             ((error as unknown as Record<string, unknown>).data as Record<string, unknown>)?.code === "PRECONDITION_FAILED")
           ) {
             return false;
           }

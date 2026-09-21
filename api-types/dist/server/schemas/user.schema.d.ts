@@ -67,10 +67,12 @@ export declare const confirmTotpSchema: z.ZodObject<{
 }, z.core.$strip>;
 export type ConfirmTotpInput = z.infer<typeof confirmTotpSchema>;
 /**
- * Disable TOTP  -  requires current password for security
+ * Disable TOTP  -  requires current password and second factor (TOTP code or backup code)
  */
 export declare const disableTotpSchema: z.ZodObject<{
     password: z.ZodString;
+    code: z.ZodString;
+    isBackupCode: z.ZodDefault<z.ZodBoolean>;
 }, z.core.$strip>;
 export type DisableTotpInput = z.infer<typeof disableTotpSchema>;
 /**

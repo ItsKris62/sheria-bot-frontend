@@ -31,6 +31,7 @@ export interface User {
     supabaseAuthId: string;
     mustChangePassword?: boolean;
     totpEnabled?: boolean;
+    hasPasskey?: boolean;
     /** Unix ms timestamp of Session.expiresAt  -  enforced on every request (B6). */
     sessionExpiresAt?: number;
 }
@@ -45,6 +46,10 @@ export interface Context {
     res: FastifyReply;
     plan?: EffectivePlan;
     effectivePlanSource?: EffectivePlanSource;
+    mfaEnforcement?: {
+        state: 'grace' | 'enforced';
+        deadline?: Date;
+    };
     entitlementProfile?: PilotEntitlementProfile | null;
     entitlements?: PlanEntitlementConfig;
     appliedPlanOverrides?: AppliedEnterpriseOverride[];

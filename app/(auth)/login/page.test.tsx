@@ -5,6 +5,7 @@ import LoginPage from "./page"
 
 const mocks = vi.hoisted(() => ({
   login: vi.fn(),
+  verifyTotpLogin: vi.fn(),
 }))
 
 vi.mock("@/hooks/use-auth", () => ({
@@ -12,6 +13,9 @@ vi.mock("@/hooks/use-auth", () => ({
     login: mocks.login,
     isLoginLoading: false,
     loginError: null,
+    verifyTotpLogin: mocks.verifyTotpLogin,
+    isVerifyTotpLoading: false,
+    verifyTotpError: null,
   }),
 }))
 

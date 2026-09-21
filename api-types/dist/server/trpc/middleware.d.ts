@@ -38,6 +38,10 @@ export declare const isAuthenticated: import("@trpc/server").TRPCMiddlewareBuild
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -92,6 +96,10 @@ export declare const isAdmin: import("@trpc/server").TRPCMiddlewareBuilder<Conte
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -143,6 +151,10 @@ export declare const isRegulator: import("@trpc/server").TRPCMiddlewareBuilder<C
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -194,6 +206,10 @@ export declare const isStartup: import("@trpc/server").TRPCMiddlewareBuilder<Con
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -245,6 +261,10 @@ export declare const isEnterprise: import("@trpc/server").TRPCMiddlewareBuilder<
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -306,6 +326,10 @@ export declare const rateLimited: (action: string, maxRequests?: number, opts?: 
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -377,6 +401,10 @@ export declare const requireOrgMember: import("@trpc/server").TRPCMiddlewareBuil
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -416,6 +444,10 @@ export declare const requireMemberRole: (allowedRoles: MemberRole[]) => import("
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -485,6 +517,10 @@ export declare const requireOrgMembership: import("@trpc/server").TRPCMiddleware
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -543,6 +579,10 @@ export declare const requireOrgMembershipRole: (allowedRoles: MemberRole[]) => i
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -623,6 +663,10 @@ export declare const withPlanContext: import("@trpc/server").TRPCMiddlewareBuild
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     usageInfo: {
         metric: string;
         current: number;
@@ -677,6 +721,10 @@ export declare const requirePlanFeature: (feature: FeatureKey) => import("@trpc/
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -779,6 +827,10 @@ export declare const checkUsageLimit: (metric: BillingMetric, opts?: UsageLimitO
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
@@ -825,6 +877,10 @@ export declare const requireAgentCapability: (capability: string) => import("@tr
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
     entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
     appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
     pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;

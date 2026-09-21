@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { QRCodeSVG } from "qrcode.react"
 
 import { Button } from "@/components/ui/button"
@@ -62,6 +62,7 @@ import { format, formatDistanceToNow } from "date-fns"
 import { PasswordStrengthIndicator, checkPasswordStrength } from "@/components/auth/password-strength-indicator"
 import { generateStrongPassword } from "@/lib/password"
 import { getErrorMessage, trpc } from "@/lib/trpc"
+import { PasskeysCard } from "@/components/settings/passkeys-card"
 
 // ─── Change Password ───────────────────────────────────────────────────────────
 
@@ -302,17 +303,21 @@ function ChangePasswordCard() {
 // ─── TOTP / 2FA ───────────────────────────────────────────────────────────────
 
 function TwoFactorCard() {
-  const { totpEnabled, isLoadingStatus, setupTotp, isSettingUp, setupData, setupError, confirmTotpSetup, isConfirming, confirmError, disableTotp, isDisabling, disableError } = useTotp()
+  const { totpEnabled, isLoadingStatus, setupTotp, isSettingUp, setupData, confirmTotpSetup, isConfirming, confirmError, disableTotp, isDisabling, disableError } = useTotp()
 
   const [setupDialogOpen, setSetupDialogOpen] = useState(false)
   const [disableDialogOpen, setDisableDialogOpen] = useState(false)
   const [verifyCode, setVerifyCode] = useState("")
   const [disablePassword, setDisablePassword] = useState("")
-  const [step, setStep] = useState<"qr" | "verify">("qr")
+  const [disableCode, setDisableCode] = useState("")
+  const [isDisableBackupCode, setIsDisableBackupCode] = useState(false)
+  const [step, setStep] = useState<"qr" | "backupCodes">("qr")
+  const [generatedBackupCodes, setGeneratedBackupCodes] = useState<string[]>([])
 
   const handleStartSetup = async () => {
     setStep("qr")
     setVerifyCode("")
+    setGeneratedBackupCodes([])
     setSetupDialogOpen(true)
     try {
       await setupTotp({})
@@ -323,21 +328,42 @@ function TwoFactorCard() {
 
   const handleConfirm = async () => {
     try {
-      await confirmTotpSetup({ code: verifyCode })
+      const result = await confirmTotpSetup({ code: verifyCode })
       toast.success("Two-factor authentication enabled")
-      setSetupDialogOpen(false)
+      if (result && Array.isArray((result as any).backupCodes) && (result as any).backupCodes.length > 0) {
+        setGeneratedBackupCodes((result as any).backupCodes)
+        setStep("backupCodes")
+      } else {
+        setSetupDialogOpen(false)
+      }
       setVerifyCode("")
     } catch {
       // Error shown via confirmError
     }
   }
 
+  const handleCopyAllCodes = () => {
+    if (generatedBackupCodes.length > 0) {
+      navigator.clipboard.writeText(generatedBackupCodes.join("\n")).then(() => {
+        toast.success("All backup codes copied to clipboard")
+      }).catch(() => {
+        toast.error("Failed to copy codes")
+      })
+    }
+  }
+
   const handleDisable = async () => {
     try {
-      await disableTotp({ password: disablePassword })
+      await disableTotp({
+        password: disablePassword,
+        code: disableCode,
+        isBackupCode: isDisableBackupCode,
+      })
       toast.success("Two-factor authentication disabled")
       setDisableDialogOpen(false)
       setDisablePassword("")
+      setDisableCode("")
+      setIsDisableBackupCode(false)
     } catch {
       // Error shown via disableError
     }
@@ -386,7 +412,7 @@ function TwoFactorCard() {
                 <p className="font-medium text-foreground">Authenticator App</p>
                 <p className="text-sm text-muted-foreground">
                   {totpEnabled
-                    ? "Enabled — your account is protected with TOTP"
+                    ? "Enabled — your account is protected with TOTP and backup codes"
                     : "Use Google Authenticator, Authy, or any TOTP app"}
                 </p>
               </div>
@@ -417,81 +443,122 @@ function TwoFactorCard() {
       {/* Setup Dialog */}
       <Dialog open={setupDialogOpen} onOpenChange={setSetupDialogOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Set Up Two-Factor Authentication</DialogTitle>
-            <DialogDescription>
-              Scan the QR code with your authenticator app, then enter the 6-digit code to confirm.
-            </DialogDescription>
-          </DialogHeader>
+          {step === "qr" ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Set Up Two-Factor Authentication</DialogTitle>
+                <DialogDescription>
+                  Scan the QR code with your authenticator app, then enter the 6-digit code to confirm.
+                </DialogDescription>
+              </DialogHeader>
 
-          {isSettingUp || !setupData ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {/* QR Code */}
-              <div className="flex flex-col items-center gap-4">
-                <div className="rounded-lg border-2 border-border p-4 bg-white">
-                  <QRCodeSVG value={setupData.otpauth} size={180} />
+              {isSettingUp || !setupData ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-                <p className="text-sm text-center text-muted-foreground">
-                  Scan with Google Authenticator, Authy, or any TOTP-compatible app
+              ) : (
+                <div className="space-y-6">
+                  {/* QR Code */}
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="rounded-lg border-2 border-border p-4 bg-white">
+                      <QRCodeSVG value={setupData.otpauth} size={180} />
+                    </div>
+                    <p className="text-sm text-center text-muted-foreground">
+                      Scan with Google Authenticator, Authy, or any TOTP-compatible app
+                    </p>
+                  </div>
+
+                  {/* Manual entry */}
+                  <div className="space-y-2">
+                    <Label className="text-sm text-muted-foreground">
+                      Can&apos;t scan? Enter this key manually:
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={setupData.secret}
+                        readOnly
+                        className="font-mono text-xs bg-muted/50"
+                      />
+                      <Button variant="outline" size="icon" onClick={copySecret}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Verification */}
+                  <div className="space-y-2">
+                    <Label>Enter the 6-digit code from your app</Label>
+                    <Input
+                      value={verifyCode}
+                      onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="000000"
+                      maxLength={6}
+                      className="text-center text-xl tracking-widest font-mono bg-background"
+                    />
+                    {confirmError && (
+                      <p className="text-sm text-destructive">{confirmError}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSetupDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirm}
+                  disabled={verifyCode.length !== 6 || isConfirming || isSettingUp}
+                >
+                  {isConfirming ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    "Confirm & Enable"
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-emerald-600">
+                  <CheckCircle2 className="h-5 w-5" />
+                  Save Your Emergency Backup Codes
+                </DialogTitle>
+                <DialogDescription>
+                  Store these one-time recovery codes in a secure password manager. If you lose access to your authenticator device, you can use one of these codes to sign in.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-2 rounded-lg border bg-muted/40 p-4 font-mono text-center text-sm font-semibold tracking-wider">
+                  {generatedBackupCodes.map((code, idx) => (
+                    <div key={idx} className="rounded bg-background p-2 border border-border/60">
+                      {code}
+                    </div>
+                  ))}
+                </div>
+
+                <Button variant="outline" className="w-full" onClick={handleCopyAllCodes}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy All Backup Codes
+                </Button>
+
+                <p className="text-xs text-muted-foreground text-center">
+                  Each backup code can only be used once. Keep them private and secure.
                 </p>
               </div>
 
-              {/* Manual entry */}
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">
-                  Can&apos;t scan? Enter this key manually:
-                </Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={setupData.secret}
-                    readOnly
-                    className="font-mono text-xs bg-muted/50"
-                  />
-                  <Button variant="outline" size="icon" onClick={copySecret}>
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Verification */}
-              <div className="space-y-2">
-                <Label>Enter the 6-digit code from your app</Label>
-                <Input
-                  value={verifyCode}
-                  onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="000000"
-                  maxLength={6}
-                  className="text-center text-xl tracking-widest font-mono bg-background"
-                />
-                {confirmError && (
-                  <p className="text-sm text-destructive">{confirmError}</p>
-                )}
-              </div>
-            </div>
+              <DialogFooter>
+                <Button onClick={() => setSetupDialogOpen(false)} className="w-full">
+                  I have saved my backup codes
+                </Button>
+              </DialogFooter>
+            </>
           )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSetupDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirm}
-              disabled={verifyCode.length !== 6 || isConfirming || isSettingUp}
-            >
-              {isConfirming ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                "Confirm & Enable"
-              )}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -501,28 +568,63 @@ function TwoFactorCard() {
           <DialogHeader>
             <DialogTitle>Disable Two-Factor Authentication</DialogTitle>
             <DialogDescription>
-              Enter your current password to confirm disabling 2FA. This will reduce your account security.
+              Enter your current password and a 2FA verification code to confirm disabling 2FA. This will reduce account security and revoke all active sessions.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label>Current Password</Label>
-            <Input
-              type="password"
-              value={disablePassword}
-              onChange={(e) => setDisablePassword(e.target.value)}
-              className="bg-background"
-              placeholder="Enter your password"
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Current Password</Label>
+              <Input
+                type="password"
+                value={disablePassword}
+                onChange={(e) => setDisablePassword(e.target.value)}
+                className="bg-background"
+                placeholder="Enter your password"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>{isDisableBackupCode ? "Emergency Backup Code" : "Authenticator Code"}</Label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDisableBackupCode(!isDisableBackupCode)
+                    setDisableCode("")
+                  }}
+                  className="text-xs text-primary hover:underline"
+                >
+                  {isDisableBackupCode ? "Use Authenticator" : "Use Backup Code"}
+                </button>
+              </div>
+              <Input
+                type="text"
+                value={disableCode}
+                onChange={(e) => setDisableCode(e.target.value)}
+                className="bg-background font-mono"
+                placeholder={isDisableBackupCode ? "XXXX-XXXX" : "123456"}
+                maxLength={isDisableBackupCode ? 9 : 6}
+              />
+            </div>
+
             {disableError && <p className="text-sm text-destructive">{disableError}</p>}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDisableDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDisableDialogOpen(false)
+                setDisablePassword("")
+                setDisableCode("")
+                setIsDisableBackupCode(false)
+              }}
+            >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleDisable}
-              disabled={!disablePassword || isDisabling}
+              disabled={!disablePassword || !disableCode || isDisabling}
             >
               {isDisabling ? (
                 <>
@@ -947,6 +1049,27 @@ function OrganizationSecurityCenter() {
 }
 
 export default function SecuritySettingsPage() {
+  const searchParams = useSearchParams()
+  const isEnforced = searchParams.get("enforce") === "true"
+  const { user } = useAuth()
+
+  const securityCenterQuery = trpc.organization.getSecurityCenter.useQuery(undefined, {
+    enabled: Boolean(user?.organizationId),
+  })
+
+  const policy = securityCenterQuery.data?.policy
+  const isMfaMissing = Boolean(policy?.requireMfa && !securityCenterQuery.data?.currentUserMfaEnabled)
+
+  let graceHoursRemaining: number | null = null
+  if (isMfaMissing && policy?.mfaPolicyEnabledAt) {
+    const graceHours = policy.mfaPolicyGraceHours ?? 48
+    const deadline = new Date(policy.mfaPolicyEnabledAt).getTime() + graceHours * 3600 * 1000
+    const remainingMs = deadline - Date.now()
+    if (remainingMs > 0) {
+      graceHoursRemaining = Math.ceil(remainingMs / (3600 * 1000))
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -956,10 +1079,36 @@ export default function SecuritySettingsPage() {
         </p>
       </div>
 
+      {(isEnforced || (isMfaMissing && graceHoursRemaining === null)) && (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-amber-600 dark:text-amber-400 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold">MFA Enrollment Required</h3>
+            <p className="text-sm mt-0.5 opacity-90">
+              Your organization enforces mandatory Multi-Factor Authentication. Enable an authenticator app or register a passkey to comply with your organization&apos;s security policy.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {!isEnforced && isMfaMissing && graceHoursRemaining !== null && (
+        <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 text-blue-600 dark:text-blue-400 flex items-start gap-3">
+          <Clock className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold">MFA Grace Period Active</h3>
+            <p className="text-sm mt-0.5 opacity-90">
+              Your organization has enabled mandatory Multi-Factor Authentication. You have{" "}
+              <span className="font-bold">{graceHoursRemaining} hour(s)</span> remaining in your grace period to enable an authenticator app or register a passkey before organization access is restricted.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-6">
         <OrganizationSecurityCenter />
         <ChangePasswordCard />
         <TwoFactorCard />
+        <PasskeysCard />
         <ActiveSessionsCard />
 
         {/* Delete Account */}

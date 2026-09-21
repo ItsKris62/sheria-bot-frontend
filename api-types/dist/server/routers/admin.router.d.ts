@@ -677,10 +677,10 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                 organizationId: string | null;
                 createdAt: Date;
                 expiresAt: Date;
+                usedAt: Date | null;
                 revokedAt: Date | null;
                 organizationRole: import(".prisma/client").$Enums.MemberRole | null;
                 used: boolean;
-                usedAt: Date | null;
                 revokedBy: string | null;
                 invitedBy: string;
             }[];

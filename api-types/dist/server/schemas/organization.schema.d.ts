@@ -223,6 +223,12 @@ export declare const cancelCountryReplacementSchema: z.ZodObject<{
     organizationId: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export type CancelCountryReplacementInput = z.infer<typeof cancelCountryReplacementSchema>;
+export declare const setMfaPolicySchema: z.ZodObject<{
+    organizationId: z.ZodOptional<z.ZodString>;
+    requireMfa: z.ZodBoolean;
+    graceHours: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>;
+export type SetMfaPolicyInput = z.infer<typeof setMfaPolicySchema>;
 /**
  * Shared DTO for Organization Members
  */

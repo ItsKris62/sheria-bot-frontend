@@ -86,6 +86,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 password: string;
             };
             output: {
+                mfaRequired: boolean;
+                tempToken: string;
+                accessToken: null;
+                refreshToken: null;
+                user: null;
+            } | {
+                mfaRequired: boolean;
+                tempToken: null;
                 accessToken: string;
                 refreshToken: string;
                 user: {
@@ -103,6 +111,15 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     createdAt: Date;
                 };
             };
+            meta: object;
+        }>;
+        verifyTotpLogin: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                tempToken: string;
+                code: string;
+                isBackupCode?: boolean | undefined;
+            };
+            output: import("../services/session.service").SessionResponsePayload;
             meta: object;
         }>;
         logout: import("@trpc/server").TRPCMutationProcedure<{
@@ -536,12 +553,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         organizationId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        eventType: string;
                         dueDate: Date | null;
                         completedAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
                         licenseId: string;
-                        eventType: string;
                         assignedToUserId: string | null;
                         evidenceDocumentId: string | null;
                         complianceEventId: string | null;
@@ -553,12 +570,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         organizationId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        eventType: string;
                         dueDate: Date | null;
                         completedAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
                         licenseId: string;
-                        eventType: string;
                         assignedToUserId: string | null;
                         evidenceDocumentId: string | null;
                         complianceEventId: string | null;
@@ -1296,12 +1313,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         organizationId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        eventType: string;
                         dueDate: Date | null;
                         completedAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
                         licenseId: string;
-                        eventType: string;
                         assignedToUserId: string | null;
                         evidenceDocumentId: string | null;
                         complianceEventId: string | null;
@@ -1782,12 +1799,15 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             output: {
                 success: boolean;
                 message: string;
+                backupCodes: string[];
             };
             meta: object;
         }>;
         disableTotp: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 password: string;
+                code: string;
+                isBackupCode?: boolean | undefined;
             };
             output: {
                 success: boolean;
@@ -1974,6 +1994,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     contactPhone: string | null;
                     requireMfa: boolean;
                     mfaPolicyEnabledAt: Date | null;
+                    mfaPolicyFirstEnabledAt: Date | null;
+                    mfaPolicyGraceHours: number;
                     mfaPolicyUpdatedBy: string | null;
                 })[];
                 pagination: {
@@ -2042,6 +2064,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contactPhone: string | null;
                 requireMfa: boolean;
                 mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
                 mfaPolicyUpdatedBy: string | null;
             };
             meta: object;
@@ -2106,6 +2130,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contactPhone: string | null;
                 requireMfa: boolean;
                 mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
                 mfaPolicyUpdatedBy: string | null;
             };
             meta: object;
@@ -2173,6 +2199,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contactPhone: string | null;
                 requireMfa: boolean;
                 mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
                 mfaPolicyUpdatedBy: string | null;
             };
             meta: object;
@@ -2310,7 +2338,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 registrationNumber: string | null;
                 website: string | null;
                 industry: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
                 homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
                 address: string | null;
                 contactPerson: string | null;
                 contactPosition: string | null;
@@ -2395,6 +2426,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 policy: {
                     requireMfa: boolean;
                     mfaPolicyEnabledAt: any;
+                    mfaPolicyGraceHours: any;
                     mfaPolicyUpdatedBy: any;
                 };
                 posture: {
@@ -2420,6 +2452,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         updateSecurityPolicy: import("@trpc/server").TRPCMutationProcedure<{
             input: {
                 requireMfa: boolean;
+                graceHours?: number | undefined;
             };
             output: {
                 success: boolean;
@@ -2836,12 +2869,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         organizationId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        eventType: string;
                         dueDate: Date | null;
                         completedAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
                         licenseId: string;
-                        eventType: string;
                         assignedToUserId: string | null;
                         evidenceDocumentId: string | null;
                         complianceEventId: string | null;
@@ -2853,12 +2886,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         organizationId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        eventType: string;
                         dueDate: Date | null;
                         completedAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
                         licenseId: string;
-                        eventType: string;
                         assignedToUserId: string | null;
                         evidenceDocumentId: string | null;
                         complianceEventId: string | null;
@@ -3596,12 +3629,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         organizationId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        eventType: string;
                         dueDate: Date | null;
                         completedAt: Date | null;
                         createdByUserId: string;
                         updatedByUserId: string | null;
                         licenseId: string;
-                        eventType: string;
                         assignedToUserId: string | null;
                         evidenceDocumentId: string | null;
                         complianceEventId: string | null;
@@ -3874,6 +3907,25 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        setMfaPolicy: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                requireMfa: boolean;
+                organizationId?: string | undefined;
+                graceHours?: number | undefined;
+            };
+            output: {
+                success: boolean;
+                policy: {
+                    id: string;
+                    requireMfa: boolean;
+                    mfaPolicyEnabledAt: Date | null;
+                    mfaPolicyFirstEnabledAt: Date | null;
+                    mfaPolicyGraceHours: number;
+                    mfaPolicyUpdatedBy: string | null;
+                };
+            };
+            meta: object;
+        }>;
         getActivityLog: import("@trpc/server").TRPCQueryProcedure<{
             input: {
                 limit?: number | undefined;
@@ -3979,7 +4031,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 registrationNumber: string | null;
                 website: string | null;
                 industry: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
                 homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
                 address: string | null;
                 contactPerson: string | null;
                 contactPosition: string | null;
@@ -4040,6 +4095,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contactPhone: string | null;
                 requireMfa: boolean;
                 mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
                 mfaPolicyUpdatedBy: string | null;
             };
             meta: object;
@@ -4095,6 +4152,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contactPhone: string | null;
                 requireMfa: boolean;
                 mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
                 mfaPolicyUpdatedBy: string | null;
             };
             meta: object;
@@ -5726,10 +5785,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string | null;
                     createdAt: Date;
                     expiresAt: Date;
+                    usedAt: Date | null;
                     revokedAt: Date | null;
                     organizationRole: import(".prisma/client").$Enums.MemberRole | null;
                     used: boolean;
-                    usedAt: Date | null;
                     revokedBy: string | null;
                     invitedBy: string;
                 }[];
@@ -6803,6 +6862,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     subscriptionCycleEnd: string | null;
                     mpesaPhoneNumber: string | null;
                     homeJurisdictionCode: string | null;
+                    enabledJurisdictions: string[];
+                    needsCountryConfirmation: boolean;
                     catalogPrice: Record<"BUSINESS" | "STARTUP", {
                         monthly: number;
                         yearly: number;
@@ -10437,12 +10498,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -10583,12 +10644,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -10730,12 +10791,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -10883,12 +10944,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -11028,12 +11089,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -11164,12 +11225,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -11303,12 +11364,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -11439,12 +11500,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -11581,12 +11642,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -11724,12 +11785,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -11993,12 +12054,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -12141,12 +12202,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -15937,6 +15998,114 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contentType?: string;
                 previewText?: string;
                 error?: string;
+            };
+            meta: object;
+        }>;
+    }>>;
+    passkey: import("@trpc/server").TRPCBuiltRouter<{
+        ctx: import("./context").Context;
+        meta: object;
+        errorShape: {
+            message: string;
+            data: {
+                stack: string | undefined;
+                fieldErrors: Record<string, string> | null;
+                code: import("@trpc/server").TRPC_ERROR_CODE_KEY;
+                httpStatus: number;
+                path?: string;
+            };
+            code: import("@trpc/server").TRPC_ERROR_CODE_NUMBER;
+        };
+        transformer: false;
+    }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
+        generateRegistrationOptions: import("@trpc/server").TRPCMutationProcedure<{
+            input: void;
+            output: import("@simplewebauthn/types").PublicKeyCredentialCreationOptionsJSON;
+            meta: object;
+        }>;
+        verifyRegistration: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                response: {
+                    id: string;
+                    rawId: string;
+                    response: {
+                        clientDataJSON: string;
+                        attestationObject: string;
+                        transports?: string[] | undefined;
+                        authenticatorData?: string | undefined;
+                    };
+                    type: "public-key";
+                    authenticatorAttachment?: "platform" | "cross-platform" | undefined;
+                    clientExtensionResults?: Record<string, any> | undefined;
+                };
+                deviceName?: string | undefined;
+            };
+            output: {
+                id: string;
+                createdAt: Date;
+                deviceName: string | null;
+            };
+            meta: object;
+        }>;
+        generateAuthenticationOptions: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                userHandle?: string | undefined;
+            };
+            output: {
+                options: import("@simplewebauthn/types").PublicKeyCredentialRequestOptionsJSON;
+                challengeId: string;
+            };
+            meta: object;
+        }>;
+        verifyAuthentication: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                challengeId: string;
+                response: {
+                    id: string;
+                    rawId: string;
+                    response: {
+                        clientDataJSON: string;
+                        authenticatorData: string;
+                        signature: string;
+                        userHandle?: string | null | undefined;
+                    };
+                    type: "public-key";
+                    authenticatorAttachment?: "platform" | "cross-platform" | undefined;
+                    clientExtensionResults?: Record<string, any> | undefined;
+                };
+            };
+            output: import("../services/session.service").SessionResponsePayload;
+            meta: object;
+        }>;
+        listUserPasskeys: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                id: string;
+                createdAt: Date;
+                deviceName: string | null;
+                transports: string[];
+                backedUp: boolean;
+                lastUsedAt: Date | null;
+            }[];
+            meta: object;
+        }>;
+        renamePasskey: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                id: string;
+                deviceName: string;
+            };
+            output: {
+                success: boolean;
+            };
+            meta: object;
+        }>;
+        deletePasskey: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                id: string;
+            };
+            output: {
+                success: boolean;
+                remainingPasskeyCount: number;
             };
             meta: object;
         }>;

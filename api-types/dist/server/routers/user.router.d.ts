@@ -179,7 +179,7 @@ export declare const userRouter: import("@trpc/server").TRPCBuiltRouter<{
         meta: object;
     }>;
     /**
-     * Confirm TOTP setup  -  verify first code from authenticator app and enable 2FA
+     * Confirm TOTP setup  -  verify first code from authenticator app, generate backup codes, and enable 2FA
      */
     confirmTotpSetup: import("@trpc/server").TRPCMutationProcedure<{
         input: {
@@ -188,15 +188,18 @@ export declare const userRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             success: boolean;
             message: string;
+            backupCodes: string[];
         };
         meta: object;
     }>;
     /**
-     * Disable TOTP 2FA  -  requires current password for security confirmation
+     * Disable TOTP 2FA  -  requires current password and second factor (TOTP or backup code)
      */
     disableTotp: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             password: string;
+            code: string;
+            isBackupCode?: boolean | undefined;
         };
         output: {
             success: boolean;

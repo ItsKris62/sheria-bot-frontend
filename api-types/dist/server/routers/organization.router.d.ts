@@ -83,6 +83,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 contactPhone: string | null;
                 requireMfa: boolean;
                 mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
                 mfaPolicyUpdatedBy: string | null;
             })[];
             pagination: {
@@ -160,6 +162,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             contactPhone: string | null;
             requireMfa: boolean;
             mfaPolicyEnabledAt: Date | null;
+            mfaPolicyFirstEnabledAt: Date | null;
+            mfaPolicyGraceHours: number;
             mfaPolicyUpdatedBy: string | null;
         };
         meta: object;
@@ -229,6 +233,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             contactPhone: string | null;
             requireMfa: boolean;
             mfaPolicyEnabledAt: Date | null;
+            mfaPolicyFirstEnabledAt: Date | null;
+            mfaPolicyGraceHours: number;
             mfaPolicyUpdatedBy: string | null;
         };
         meta: object;
@@ -301,6 +307,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             contactPhone: string | null;
             requireMfa: boolean;
             mfaPolicyEnabledAt: Date | null;
+            mfaPolicyFirstEnabledAt: Date | null;
+            mfaPolicyGraceHours: number;
             mfaPolicyUpdatedBy: string | null;
         };
         meta: object;
@@ -479,7 +487,10 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             registrationNumber: string | null;
             website: string | null;
             industry: string | null;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
             homeJurisdictionCode: string | null;
+            enabledJurisdictions: string[];
+            needsCountryConfirmation: boolean;
             address: string | null;
             contactPerson: string | null;
             contactPosition: string | null;
@@ -564,6 +575,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             policy: {
                 requireMfa: boolean;
                 mfaPolicyEnabledAt: any;
+                mfaPolicyGraceHours: any;
                 mfaPolicyUpdatedBy: any;
             };
             posture: {
@@ -589,6 +601,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
     updateSecurityPolicy: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             requireMfa: boolean;
+            graceHours?: number | undefined;
         };
         output: {
             success: boolean;
@@ -1005,12 +1018,12 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -1022,12 +1035,12 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -1765,12 +1778,12 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -2043,6 +2056,25 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
         };
         meta: object;
     }>;
+    setMfaPolicy: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            requireMfa: boolean;
+            organizationId?: string | undefined;
+            graceHours?: number | undefined;
+        };
+        output: {
+            success: boolean;
+            policy: {
+                id: string;
+                requireMfa: boolean;
+                mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
+                mfaPolicyUpdatedBy: string | null;
+            };
+        };
+        meta: object;
+    }>;
     getActivityLog: import("@trpc/server").TRPCQueryProcedure<{
         input: {
             limit?: number | undefined;
@@ -2153,7 +2185,10 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             registrationNumber: string | null;
             website: string | null;
             industry: string | null;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
             homeJurisdictionCode: string | null;
+            enabledJurisdictions: string[];
+            needsCountryConfirmation: boolean;
             address: string | null;
             contactPerson: string | null;
             contactPosition: string | null;
@@ -2219,6 +2254,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             contactPhone: string | null;
             requireMfa: boolean;
             mfaPolicyEnabledAt: Date | null;
+            mfaPolicyFirstEnabledAt: Date | null;
+            mfaPolicyGraceHours: number;
             mfaPolicyUpdatedBy: string | null;
         };
         meta: object;
@@ -2279,6 +2316,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             contactPhone: string | null;
             requireMfa: boolean;
             mfaPolicyEnabledAt: Date | null;
+            mfaPolicyFirstEnabledAt: Date | null;
+            mfaPolicyGraceHours: number;
             mfaPolicyUpdatedBy: string | null;
         };
         meta: object;

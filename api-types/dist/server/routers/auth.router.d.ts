@@ -49,6 +49,14 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
             password: string;
         };
         output: {
+            mfaRequired: boolean;
+            tempToken: string;
+            accessToken: null;
+            refreshToken: null;
+            user: null;
+        } | {
+            mfaRequired: boolean;
+            tempToken: null;
             accessToken: string;
             refreshToken: string;
             user: {
@@ -66,6 +74,18 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                 createdAt: Date;
             };
         };
+        meta: object;
+    }>;
+    /**
+     * Verify TOTP / 2FA login challenge  -  validates OTP or backup code and returns session tokens.
+     */
+    verifyTotpLogin: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            tempToken: string;
+            code: string;
+            isBackupCode?: boolean | undefined;
+        };
+        output: import("@/server/services/session.service").SessionResponsePayload;
         meta: object;
     }>;
     /**
@@ -503,12 +523,12 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -520,12 +540,12 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
@@ -1263,12 +1283,12 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    eventType: string;
                     dueDate: Date | null;
                     completedAt: Date | null;
                     createdByUserId: string;
                     updatedByUserId: string | null;
                     licenseId: string;
-                    eventType: string;
                     assignedToUserId: string | null;
                     evidenceDocumentId: string | null;
                     complianceEventId: string | null;
