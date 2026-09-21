@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { decodeJwt } from 'jose';
 import { createSupabaseMiddlewareClient } from '@/lib/supabase/middleware';
+
+/**
+ * CRITICAL SECURITY NOTE:
+ * Signature verification and token authorization remain strictly in the backend
+ * (tRPC createContext / protected procedures) and MUST NOT be removed or bypassed.
+ *
+ * Edge Middleware only inspects the decoded token for structural validity, expiration,
+ * and clock-skew tolerance (45 seconds) to eliminate blocking external Supabase Auth
+ * HTTPS network roundtrips on routine client route navigation transitions.
+ */
+const CLOCK_SKEW_SECONDS = 45;
 
 /**
  * Routes that must remain accessible without authentication.
  * Includes all (auth) group pages, (public) marketing pages, the root landing
  * page, and the Supabase OAuth/email-verification callback.
- *
- * Note: /verify-email is public so unauthenticated users can land on it from
- * a verification email link. GuestGuard (client-side) handles redirecting
- * already-authenticated users away from auth pages.
  */
 const PUBLIC_ROUTES = [
   '/',
@@ -41,6 +49,15 @@ function isPublicRoute(pathname: string): boolean {
   );
 }
 
+function parseJwtExp(token: string): number | null {
+  try {
+    const claims = decodeJwt(token);
+    return typeof claims.exp === 'number' ? claims.exp : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -60,20 +77,34 @@ export async function middleware(request: NextRequest) {
   // All remaining routes require an authenticated session
   const { supabase, response } = createSupabaseMiddlewareClient(request);
 
-  // getUser() validates the JWT with Supabase Auth - more secure than getSession()
-  // which only reads the local cookie without server-side verification.
+  // Fast-path: read the session from cookies without an external network roundtrip
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!user) {
+  if (!session?.access_token) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
+  const exp = parseJwtExp(session.access_token);
+  const now = Math.floor(Date.now() / 1000);
+
+  // If token is missing, expired, or nearing expiry (with clock skew), invoke getUser() to refresh session
+  if (!exp || exp <= (now + CLOCK_SKEW_SECONDS)) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
   // Auth OK - authorization (role checks) stays in tRPC adminProcedure / protected procedures.
-  // Keeping those concerns separate avoids a DB call in middleware on every request.
   return response;
 }
 
