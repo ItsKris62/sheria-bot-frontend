@@ -27,28 +27,6 @@ function getRoleBasePath(role: UserRole): string {
   }
 }
 
-export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const { isAuthenticated, isInitialized, user } = useAuthStore()
-
-  useEffect(() => {
-    if (!isInitialized) return
-
-    if (!isAuthenticated) {
-      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`)
-      return
-    }
-
-    if (user?.mustChangePassword && pathname !== "/change-password") {
-      router.replace("/change-password")
-      return
-    }
-
-    if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-      // Redirect to the user's own dashboard
-      router.replace(getRoleBasePath(user.role))
-    }
 function DashboardShellSkeleton() {
   return (
     <div className="min-h-screen bg-background flex flex-col antialiased text-foreground" aria-busy="true" aria-live="polite">

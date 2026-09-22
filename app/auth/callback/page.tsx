@@ -19,7 +19,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabase-client"
-import { trpc } from "@/lib/trpc"
+import { trpc, createTRPCClient, setAccessToken } from "@/lib/trpc"
+import { useAuthStore, type AuthUser, type UserRole } from "@/lib/auth-store"
 import { LOGOS } from "@/lib/constants/logos"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -189,7 +190,20 @@ function SuccessState({ role }: { role: string }) {
       {/* CTA */}
       <Button
         className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11 font-semibold"
-        onClick={() => router.push("/startup")}
+        onClick={() => {
+          const authUser = useAuthStore.getState().user;
+          if (!authUser?.organizationId) {
+            router.push("/onboarding");
+            return;
+          }
+          if (role === "REGULATOR") {
+            router.push("/regulator");
+          } else if (role === "ADMIN") {
+            router.push("/admin");
+          } else {
+            router.push("/startup");
+          }
+        }}
       >
         Go to Dashboard
         <ArrowRight className="ml-2 h-4 w-4" />
@@ -377,16 +391,25 @@ export default function AuthCallbackPage() {
     if (calledRef.current) return
     calledRef.current = true
 
+    const authClient = createTRPCClient()
+
     async function handleCallback() {
       try {
-        // Supabase (detectSessionInUrl: true) auto-processes the URL hash and
-        // sets the session before getSession() is called.
+        // 1. Check if user is already authenticated in store
+        const currentAuth = useAuthStore.getState()
+        if (currentAuth.isAuthenticated && currentAuth.user && currentAuth.accessToken) {
+          setUserRole(currentAuth.user.role)
+          setStage("success")
+          return
+        }
+
+        // 2. Read session from Supabase client
         const {
           data: { session },
           error: sessionError,
         } = await supabase.auth.getSession()
 
-        if (sessionError || !session) {
+        if (sessionError || !session?.access_token) {
           setErrorMessage(
             "The verification link is invalid or has expired. Please request a new verification email."
           )
@@ -394,17 +417,49 @@ export default function AuthCallbackPage() {
           return
         }
 
-        // Get the Supabase user role from the session metadata to drive the UI
-        const supabaseRole = (session.user?.user_metadata?.role as string) || "STARTUP"
-        setUserRole(supabaseRole)
-
+        // 3. Confirm email with backend
+        setAccessToken(session.access_token)
         const result = await confirmMutation.mutateAsync({
           accessToken: session.access_token,
         })
 
+        const resolvedRole = (session.user?.user_metadata?.role as string) || "STARTUP"
+        setUserRole(resolvedRole)
+
         if (result.requiresApproval) {
           setStage("pending_approval")
-        } else {
+          return
+        }
+
+        // 4. Hydrate user profile via auth.me query
+        try {
+          const user = await authClient.auth.me.query()
+          const authUser: AuthUser = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role as UserRole,
+            organizationId: user.organization?.id ?? null,
+            emailVerified: user.emailVerified,
+            mustChangePassword: user.mustChangePassword,
+            createdAt: String(user.createdAt),
+          }
+
+          useAuthStore.getState().setAuth(authUser, session.access_token)
+          setUserRole(authUser.role)
+          setStage("success")
+        } catch (meErr: any) {
+          // If auth.me fails (e.g. temporary network blip), fallback to session metadata
+          const fallbackUser: AuthUser = {
+            id: session.user.id,
+            email: session.user.email || "",
+            name: (session.user.user_metadata?.fullName as string) || session.user.email || "",
+            role: (session.user.user_metadata?.role as UserRole) || "STARTUP",
+            organizationId: null,
+            emailVerified: true,
+            createdAt: new Date().toISOString(),
+          }
+          useAuthStore.getState().setAuth(fallbackUser, session.access_token)
           setStage("success")
         }
       } catch (err: any) {

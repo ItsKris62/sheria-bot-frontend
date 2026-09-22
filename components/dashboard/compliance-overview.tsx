@@ -29,7 +29,14 @@ export function ComplianceOverview({ data, isLoading, isError }: ComplianceOverv
         <ComplianceScoreGauge data={data} />
         <div className="min-w-0">
           <div className="mb-2 flex items-center justify-between"><div><h3 className="text-sm font-semibold text-[var(--portal-text-primary)]">Regulatory areas</h3><p className="text-xs text-[var(--portal-text-muted)]">Compare posture and completion at a glance</p></div><span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--portal-text-muted)]">{data.categories.length} tracked</span></div>
-          <div>{data.categories.map((category) => <ComplianceCategoryItem key={category.key} category={category} />)}</div>
+          {data.categories.length > 0 ? (
+            <div>{data.categories.map((category) => <ComplianceCategoryItem key={category.key} category={category} />)}</div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-[var(--portal-border)] p-6 text-center">
+              <p className="text-sm font-medium text-[var(--portal-text-primary)]">No regulatory areas tracked yet</p>
+              <p className="mt-1 text-xs text-[var(--portal-text-muted)]">Complete baseline compliance checklist items to populate your score.</p>
+            </div>
+          )}
         </div>
       </div>
     </PortalSurface>
