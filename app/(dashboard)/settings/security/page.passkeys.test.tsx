@@ -140,7 +140,7 @@ describe("PasskeysCard Component - Security Settings", () => {
     })
 
     trpcMocks.generateRegistrationOptions.mockResolvedValue({ challenge: "reg_chal_1" })
-    vi.mocked(simplewebauthn.startRegistration).mockResolvedValue({ id: "cred_new", rawId: "cred_new", response: {} as any, type: "public-key" })
+    vi.mocked(simplewebauthn.startRegistration).mockResolvedValue({ id: "cred_new", rawId: "cred_new", response: {} as any, clientExtensionResults: {}, type: "public-key" } as any)
     trpcMocks.verifyRegistration.mockResolvedValue({ id: "pk_new", deviceName: "My Laptop" })
 
     render(<PasskeysCard />)
@@ -179,7 +179,7 @@ describe("PasskeysCard Component - Security Settings", () => {
     })
 
     trpcMocks.generateRegistrationOptions.mockResolvedValue({ challenge: "reg_chal_1" })
-    vi.mocked(simplewebauthn.startRegistration).mockResolvedValue({ id: "cred_dup", rawId: "cred_dup", response: {} as any, type: "public-key" })
+    vi.mocked(simplewebauthn.startRegistration).mockResolvedValue({ id: "cred_dup", rawId: "cred_dup", response: {} as any, clientExtensionResults: {}, type: "public-key" } as any)
     trpcMocks.verifyRegistration.mockRejectedValue(new Error("This passkey is already registered"))
 
     render(<PasskeysCard />)
