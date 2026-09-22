@@ -83,7 +83,24 @@ vi.mock("@/lib/trpc", () => ({
       compliance: {
         getSuggestedQueries: { invalidate: vi.fn() },
       },
+      organization: {
+        getSettings: { invalidate: vi.fn() },
+      },
     }),
+    organization: {
+      getSettings: {
+        useQuery: () => ({
+          data: { primaryJurisdiction: "KE", isJurisdictionExplicit: true },
+          isLoading: false,
+        }),
+      },
+      updateSettings: {
+        useMutation: () => ({ mutate: vi.fn(), mutateAsync: vi.fn() }),
+      },
+      getMembership: {
+        useQuery: () => ({ data: { role: "OWNER" }, isLoading: false }),
+      },
+    },
     billing: {
       getPlanAndUsage: {
         useQuery: () => ({ data: mocks.planData }),
