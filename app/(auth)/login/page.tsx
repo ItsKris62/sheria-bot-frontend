@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, AlertCircle, Clock, Smartphone, KeyRound, ArrowLeft, Fingerprint, Loader2 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { SESSION_EXPIRED_FLAG } from "@/lib/session-timeouts"
-import { isWebAuthnSupported, isConditionalMediationAvailable, translateWebAuthnError } from "@/lib/webauthn"
+import { isWebAuthnSupported, translateWebAuthnError } from "@/lib/webauthn"
 
 export default function LoginPage() {
   const {
@@ -31,10 +31,8 @@ export default function LoginPage() {
   const [isBackupCode, setIsBackupCode] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isWebAuthnAvailable, setIsWebAuthnAvailable] = useState<boolean>(false)
+  const [isWebAuthnAvailable] = useState<boolean>(() => isWebAuthnSupported())
   const [isPasskeyManualLoading, setIsPasskeyManualLoading] = useState(false)
-
-  const autofillAbortControllerRef = useRef<AbortController | null>(null)
 
   const [sessionExpired] = useState(() => {
     if (typeof window === "undefined") return false
@@ -56,40 +54,13 @@ export default function LoginPage() {
     rememberMe: false,
   })
 
-  // Feature detection and conditional mediation (autofill)
-  useEffect(() => {
-    const supported = isWebAuthnSupported()
-    setIsWebAuthnAvailable(supported)
-
-    if (!supported || step !== "credentials") return
-
-    let isMounted = true
-    const controller = new AbortController()
-    autofillAbortControllerRef.current = controller
-
-    async function initAutofill() {
-      const hasConditionalMediation = await isConditionalMediationAvailable()
-      if (!hasConditionalMediation || !isMounted) return
-
-      try {
-        await loginWithPasskey({ useBrowserAutofill: true })
-      } catch (err: any) {
-        // Silently swallow background autofill errors (e.g. AbortError, user dismissal)
-      }
-    }
-
-    initAutofill()
-
-    return () => {
-      isMounted = false
-      controller.abort()
-    }
-  }, [step, loginWithPasskey])
+  // TODO: [FEATURE-FLAG] If browser conditional autofill is desired in the future,
+  // implement it behind an explicit feature flag with session+IP keying, cached challenges,
+  // and strict abort controllers to avoid burning public rate limits on page load.
 
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    autofillAbortControllerRef.current?.abort()
 
     try {
       const result = await login(formData.email, formData.password)
@@ -108,7 +79,6 @@ export default function LoginPage() {
   const handlePasskeyLogin = async () => {
     setError(null)
     setIsPasskeyManualLoading(true)
-    autofillAbortControllerRef.current?.abort()
 
     try {
       await loginWithPasskey({ useBrowserAutofill: false })

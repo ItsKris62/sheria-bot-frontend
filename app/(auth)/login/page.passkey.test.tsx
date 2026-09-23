@@ -48,16 +48,25 @@ beforeEach(() => {
 })
 
 describe("LoginPage - Passkey / WebAuthn Integration", () => {
-  it("1. renders 'Sign in with Passkey' when isWebAuthnSupported() returns true", () => {
+  it("1. does NOT trigger loginWithPasskey on page load / mount", () => {
     vi.spyOn(webauthnHelper, "isWebAuthnSupported").mockReturnValue(true)
-    vi.spyOn(webauthnHelper, "isConditionalMediationAvailable").mockResolvedValue(false)
+
+    render(<LoginPage />)
+
+    // Verify button renders but no background call was made on mount
+    expect(screen.getByRole("button", { name: /sign in with passkey/i })).toBeInTheDocument()
+    expect(authMocks.loginWithPasskey).not.toHaveBeenCalled()
+  })
+
+  it("2. renders 'Sign in with Passkey' when isWebAuthnSupported() returns true", () => {
+    vi.spyOn(webauthnHelper, "isWebAuthnSupported").mockReturnValue(true)
 
     render(<LoginPage />)
 
     expect(screen.getByRole("button", { name: /sign in with passkey/i })).toBeInTheDocument()
   })
 
-  it("2. does not render the button when unsupported", () => {
+  it("3. does not render the button when unsupported", () => {
     vi.spyOn(webauthnHelper, "isWebAuthnSupported").mockReturnValue(false)
 
     render(<LoginPage />)
@@ -65,9 +74,8 @@ describe("LoginPage - Passkey / WebAuthn Integration", () => {
     expect(screen.queryByRole("button", { name: /sign in with passkey/i })).not.toBeInTheDocument()
   })
 
-  it("3. clicking calls loginWithPasskey (triggering generateAuthenticationOptions, startAuthentication, verifyAuthentication)", async () => {
+  it("4. clicking calls loginWithPasskey (triggering generateAuthenticationOptions, startAuthentication, verifyAuthentication)", async () => {
     vi.spyOn(webauthnHelper, "isWebAuthnSupported").mockReturnValue(true)
-    vi.spyOn(webauthnHelper, "isConditionalMediationAvailable").mockResolvedValue(false)
     authMocks.loginWithPasskey.mockResolvedValue({ success: true })
 
     render(<LoginPage />)
@@ -80,9 +88,8 @@ describe("LoginPage - Passkey / WebAuthn Integration", () => {
     })
   })
 
-  it("4. NotAllowedError from ceremony does not surface an error message", async () => {
+  it("5. NotAllowedError from ceremony does not surface an error message", async () => {
     vi.spyOn(webauthnHelper, "isWebAuthnSupported").mockReturnValue(true)
-    vi.spyOn(webauthnHelper, "isConditionalMediationAvailable").mockResolvedValue(false)
 
     const notAllowedErr = new Error("The operation either timed out or was not allowed.")
     notAllowedErr.name = "NotAllowedError"
@@ -102,9 +109,8 @@ describe("LoginPage - Passkey / WebAuthn Integration", () => {
     expect(screen.queryByText(/failed/i)).not.toBeInTheDocument()
   })
 
-  it("5. backend PASSKEY_RATE_LIMITED renders the rate-limit message", async () => {
+  it("6. backend PASSKEY_RATE_LIMITED renders the rate-limit message", async () => {
     vi.spyOn(webauthnHelper, "isWebAuthnSupported").mockReturnValue(true)
-    vi.spyOn(webauthnHelper, "isConditionalMediationAvailable").mockResolvedValue(false)
 
     authMocks.loginWithPasskey.mockRejectedValue(new Error("PASSKEY_RATE_LIMITED"))
 
@@ -118,9 +124,8 @@ describe("LoginPage - Passkey / WebAuthn Integration", () => {
     })
   })
 
-  it("6. backend UNAUTHORIZED (expired) renders timeout message and allows retry", async () => {
+  it("7. backend UNAUTHORIZED (expired) renders timeout message and allows retry", async () => {
     vi.spyOn(webauthnHelper, "isWebAuthnSupported").mockReturnValue(true)
-    vi.spyOn(webauthnHelper, "isConditionalMediationAvailable").mockResolvedValue(false)
 
     authMocks.loginWithPasskey.mockRejectedValue(new Error("Passkey authentication expired"))
 
