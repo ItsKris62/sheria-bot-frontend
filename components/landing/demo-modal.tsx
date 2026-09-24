@@ -10,7 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
-const R2_BASE = "https://pub-724936356a15494f9ce61480c5225e6f.r2.dev/demos"
+const R2_ASSETS_URL = process.env.NEXT_PUBLIC_R2_ASSETS_URL ?? ""
+const DEMOS_URL = `${R2_ASSETS_URL}/demos`
 
 interface DemoSection {
   id: string
@@ -26,21 +27,21 @@ const DEMO_SECTIONS: DemoSection[] = [
     title: "AI Compliance Queries",
     description: "Ask regulatory questions and review cited answers",
     icon: <Shield className="h-4 w-4" />,
-    videoUrl: `${R2_BASE}/compliance-c.mp4`,
+    videoUrl: `${DEMOS_URL}/compliance-c.mp4`,
   },
   {
     id: "compliance-checklist",
     title: "Compliance Checklist",
     description: "Generate checklists for your fintech workflow",
     icon: <FileText className="h-4 w-4" />,
-    videoUrl: `${R2_BASE}/0421.mp4`,
+    videoUrl: `${DEMOS_URL}/0421.mp4`,
   },
   {
     id: "support-ticket",
     title: "Support Tickets",
     description: "Learn how to create and track support tickets",
     icon: <Ticket className="h-4 w-4" />,
-    videoUrl: `${R2_BASE}/suupport-ticket.mp4`,
+    videoUrl: `${DEMOS_URL}/suupport-ticket.mp4`,
   },
   {
     id: "gap-analysis",

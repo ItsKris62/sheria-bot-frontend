@@ -9,11 +9,13 @@ import {
   SectionShell,
 } from "@/components/landing/redesign/kit"
 
+const R2_ASSETS_URL = process.env.NEXT_PUBLIC_R2_ASSETS_URL ?? ""
+ 
 const personas = [
   {
     role: "Founder & Lead Developer",
     body: "Building SheriaBot to solve regulatory bottlenecks for African fintechs.",
-    img: "https://pub-724936356a15494f9ce61480c5225e6f.r2.dev/branding/Christopher_rateng-Passport-Photo.jpg",
+    img: `${R2_ASSETS_URL}/branding/Christopher_rateng-Passport-Photo.jpg`,
   }
 ]
 
