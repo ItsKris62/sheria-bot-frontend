@@ -450,13 +450,14 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
   const { setMobileOpen } = useSidebar()
   const utils = trpc.useUtils()
   const { data: profileData } = useProfile()
-  const avatarUrl = (profileData as { avatar?: string | null } | undefined)?.avatar ?? null
+  const avatarUrl = (profileData as { avatar?: string | null } | undefined)?.avatar ?? authUser?.avatar ?? null
 
   const user = {
     name: authUser?.name || (userType === "regulator" ? "Regulator" : "User"),
     email: authUser?.email || "",
     organization: userType === "regulator" ? "Regulator" : "Startup",
     role: authUser?.role || userType.toUpperCase(),
+    avatar: avatarUrl,
   }
 
   // Existing notification data

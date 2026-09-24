@@ -133,7 +133,7 @@ export declare const EMAIL_SIGNATURE_LOGO_URL: string;
 export declare const APP_NAME = "SheriaBot";
 export declare const SUPPORT_EMAIL: string;
 export declare const CURRENT_YEAR: number;
-export declare const REGISTERED_OFFICE = "The Mirage, Tower 2, Penthouse Suite, Westlands, Nairobi, Kenya";
+export declare const REGISTERED_OFFICE = "Nairobi, Kenya";
 export declare const DATA_PROTECTION_DISCLAIMER = "SheriaBot processes compliance telemetry in accordance with the Kenya Data Protection Act, 2019 (ODPC Registered).";
 export declare const LEGAL_DISCLAIMER = "SheriaBot provides regulatory intelligence and automated compliance insights for informational purposes and does not constitute formal legal counsel.";
 //# sourceMappingURL=theme.d.ts.map

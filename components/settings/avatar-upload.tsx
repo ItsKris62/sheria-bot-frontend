@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { trpc } from '@/lib/trpc'
+import { useAuthStore } from '@/lib/auth-store'
 
 /* -------------------------------------------------------------------------- */
 /*                                  Constants                                 */
@@ -118,8 +119,10 @@ export function AvatarUpload({ user }: AvatarUploadProps) {
       URL.revokeObjectURL(objectUrl)
       setPreview(publicUrl)
 
-      // Step 4 — Refresh profile query (header + page pick up new avatar)
-      utils.user.getProfile.invalidate()
+      // Step 4 — Refresh profile query and auth state (header + dashboard pick up new avatar)
+      useAuthStore.getState().updateUser({ avatar: publicUrl })
+      await utils.user.getProfile.invalidate()
+      await utils.user.getProfile.refetch()
 
       toast.success('Profile photo updated.')
     } catch (err: unknown) {
@@ -139,7 +142,9 @@ export function AvatarUpload({ user }: AvatarUploadProps) {
     try {
       await deleteAvatarMutation.mutateAsync()
       setPreview(null)
-      utils.user.getProfile.invalidate()
+      useAuthStore.getState().updateUser({ avatar: null })
+      await utils.user.getProfile.invalidate()
+      await utils.user.getProfile.refetch()
       toast.success('Profile photo removed.')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to remove photo'

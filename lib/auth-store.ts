@@ -10,6 +10,7 @@ export interface AuthUser {
   email: string;
   name: string;
   role: UserRole;
+  avatar?: string | null;
   organizationId: string | null;
   emailVerified: boolean;
   mustChangePassword?: boolean;
