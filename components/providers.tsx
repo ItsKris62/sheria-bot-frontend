@@ -11,6 +11,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import type { AuthUser, UserRole } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase-client";
 import { PlanProvider } from "@/lib/plan-context";
+import { StepUpModal, requestStepUpChallenge } from "@/components/auth/step-up-modal";
 
 /** Clears local auth state when the backend returns UNAUTHORIZED.
  *  Called from both QueryCache and MutationCache onError handlers.
@@ -36,12 +37,26 @@ function isUnauthorizedError(error: unknown): boolean {
   );
 }
 
+function isMfaStepUpError(error: unknown): boolean {
+  return (
+    error instanceof TRPCClientError &&
+    "data" in (error as unknown as Record<string, unknown>) &&
+    ((error as unknown as Record<string, unknown>).data as Record<string, unknown> | undefined)?.code === "PRECONDITION_FAILED" &&
+    Boolean(error.message?.includes("MFA_STEP_UP_REQUIRED"))
+  );
+}
+
 function isMfaRequiredError(error: unknown): boolean {
   return (
     error instanceof TRPCClientError &&
     "data" in (error as unknown as Record<string, unknown>) &&
     ((error as unknown as Record<string, unknown>).data as Record<string, unknown> | undefined)?.code === "PRECONDITION_FAILED" &&
-    Boolean(error.message?.includes("MFA_ENROLLMENT_REQUIRED") || error.message?.includes("Multi-Factor Authentication"))
+    !error.message?.includes("MFA_STEP_UP_REQUIRED") &&
+    Boolean(
+      error.message?.includes("MFA_ENROLLMENT_REQUIRED") ||
+      error.message?.includes("MFA_REQUIRED_FOR_ADMIN") ||
+      error.message?.includes("Multi-Factor Authentication")
+    )
   );
 }
 
@@ -70,6 +85,29 @@ function makeQueryClient() {
       onError: (error, _variables, _context, mutation) => {
         if (isUnauthorizedError(error)) {
           handleUnauthorized();
+          return;
+        }
+        if (isMfaStepUpError(error)) {
+          const meta = (mutation.meta as Record<string, unknown>) || {};
+          if (meta.stepUpRetried) {
+            toast.error("Multi-factor step-up verification failed. Action cancelled.");
+            return;
+          }
+
+          mutation.meta = { ...meta, stepUpRetried: true };
+
+          requestStepUpChallenge({
+            onSuccess: async () => {
+              try {
+                await mutation.execute(_variables);
+              } catch {
+                toast.error("Action failed after step-up authentication.");
+              }
+            },
+            onCancel: () => {
+              toast.error("Action cancelled: Fresh MFA verification required.");
+            },
+          });
           return;
         }
         if (isMfaRequiredError(error)) {
@@ -173,7 +211,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <AuthInitializer>
-          <PlanProvider>{children}</PlanProvider>
+          <PlanProvider>
+            {children}
+            <StepUpModal />
+          </PlanProvider>
         </AuthInitializer>
         <Toaster position="top-right" closeButton />
       </QueryClientProvider>

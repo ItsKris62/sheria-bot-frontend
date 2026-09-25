@@ -193,6 +193,19 @@ export declare const userRouter: import("@trpc/server").TRPCBuiltRouter<{
         meta: object;
     }>;
     /**
+     * Step-up MFA verification
+     */
+    verifyStepUp: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            code: string;
+            isBackupCode?: boolean | undefined;
+        };
+        output: {
+            success: boolean;
+        };
+        meta: object;
+    }>;
+    /**
      * Disable TOTP 2FA  -  requires current password and second factor (TOTP or backup code)
      */
     disableTotp: import("@trpc/server").TRPCMutationProcedure<{
