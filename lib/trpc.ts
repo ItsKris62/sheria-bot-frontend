@@ -16,18 +16,47 @@ export function getAccessToken(): string | null {
   return accessToken;
 }
 
+let activeIdempotencyKey: string | null = null;
+
+export function setIdempotencyKey(key: string | null) {
+  activeIdempotencyKey = key;
+}
+
+export function getActiveIdempotencyKey(): string | null {
+  return activeIdempotencyKey;
+}
+
 export function createTRPCClient() {
   return trpc.createClient({
     links: [
       httpBatchLink({
         url: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/trpc",
         headers() {
+          const headers: Record<string, string> = {};
           const token = getAccessToken();
-          return token ? { Authorization: `Bearer ${token}` } : {};
+          if (token) {
+            headers.Authorization = `Bearer ${token}`;
+          }
+          const idempotencyKey = getActiveIdempotencyKey();
+          if (idempotencyKey) {
+            headers["Idempotency-Key"] = idempotencyKey;
+          }
+          return headers;
         },
         fetch(url, options) {
+          const urlStr = typeof url === "string" ? url : url.toString();
+          const isPaymentMutation =
+            urlStr.includes("billing.createCheckoutSession") ||
+            urlStr.includes("billing.initiateMpesaPayment");
+
+          const headers = new Headers(options?.headers);
+          if (!isPaymentMutation && headers.has("Idempotency-Key")) {
+            headers.delete("Idempotency-Key");
+          }
+
           return fetch(url, {
             ...options,
+            headers,
             credentials: "include",
           });
         },

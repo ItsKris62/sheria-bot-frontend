@@ -15,7 +15,7 @@
  */
 
 import { useState, useEffect, useRef } from "react"
-import { trpc } from "@/lib/trpc"
+import { trpc, setIdempotencyKey } from "@/lib/trpc"
 import { useQueryClient } from "@tanstack/react-query"
 import { getQueryKey } from "@trpc/react-query"
 import { Button } from "@/components/ui/button"
@@ -283,14 +283,26 @@ export function MpesaPaymentFlow({
       return
     }
 
-    initiateMutation.mutate({
-      plan,
-      interval,
-      phoneNumber: normalised,
-      paymentPurpose,
-      retainedMemberUserIds: selectedMemberUserIds,
-      retainedJurisdictionCodes: selectedJurisdictions,
-    })
+    const key = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : undefined
+    if (key) setIdempotencyKey(key)
+
+    initiateMutation.mutate(
+      {
+        plan,
+        interval,
+        phoneNumber: normalised,
+        paymentPurpose,
+        retainedMemberUserIds: selectedMemberUserIds,
+        retainedJurisdictionCodes: selectedJurisdictions,
+      },
+      {
+        onSettled: () => {
+          setIdempotencyKey(null)
+        },
+      }
+    )
   }
 
   function handleRetry() {

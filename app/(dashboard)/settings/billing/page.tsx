@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { getQueryKey } from "@trpc/react-query"
-import { trpc } from "@/lib/trpc"
+import { trpc, setIdempotencyKey } from "@/lib/trpc"
 import { usePlan } from "@/lib/plan-context"
 import type { SubscriptionStatusValue } from "@/lib/plan-context"
 import { UsageCard } from "@/components/usage/usage-card"
@@ -395,8 +395,17 @@ export default function BillingSettingsPage() {
       setMpesaFlow({ plan: selectedPlan, paymentPurpose })
       return
     }
+    const key = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : undefined
+    if (key) setIdempotencyKey(key)
+
     const input: CheckoutInput = { plan: selectedPlan }
-    checkoutMutation.mutate(input)
+    checkoutMutation.mutate(input, {
+      onSettled: () => {
+        setIdempotencyKey(null)
+      },
+    })
   }
 
   function openPortal() {
