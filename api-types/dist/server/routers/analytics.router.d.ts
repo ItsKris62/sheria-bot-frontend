@@ -303,5 +303,18 @@ export declare const analyticsRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         meta: object;
     }>;
+    /**
+     * Retrieves tenant AI cost breakdown (USD and KES) for analytics dashboards.
+     *
+     * @protected
+     */
+    getTenantCostSummary: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            periodStart?: string | undefined;
+            periodEnd?: string | undefined;
+        } | undefined;
+        output: import("@/services/usage-tracking.service").TenantCostSummary;
+        meta: object;
+    }>;
 }>>;
 //# sourceMappingURL=analytics.router.d.ts.map

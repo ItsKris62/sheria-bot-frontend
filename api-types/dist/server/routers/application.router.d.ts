@@ -23,42 +23,17 @@ export declare const applicationRouter: import("@trpc/server").TRPCBuiltRouter<{
             search?: string | undefined;
         };
         output: {
-            applications: ({
-                _count: {
-                    timelineEvents: number;
-                    documents: number;
-                    fees: number;
-                    regulatorFeedback: number;
-                };
-            } & {
-                id: string;
-                title: string;
-                userId: string;
-                status: string;
-                organizationId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                deletedAt: Date | null;
-                jurisdictionCode: string;
-                regulator: string;
-                licenseType: string;
-                progress: number;
-                referenceNumber: string | null;
-                nextAction: string | null;
-                dueDate: Date | null;
-                submittedAt: Date | null;
-                decidedAt: Date | null;
-            })[];
+            applications: any;
             stats: {
-                total: number;
-                inProgress: number;
-                submitted: number;
-                approved: number;
+                total: any;
+                inProgress: any;
+                submitted: any;
+                approved: any;
             };
             pagination: {
                 page: number;
                 limit: number;
-                total: number;
+                total: any;
                 pages: number;
             };
         };
@@ -68,76 +43,7 @@ export declare const applicationRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             id: string;
         };
-        output: ({
-            user: {
-                id: string;
-                email: string;
-                fullName: string;
-            };
-            timelineEvents: {
-                id: string;
-                title: string;
-                description: string | null;
-                userId: string;
-                createdAt: Date;
-                applicationId: string;
-                eventDate: Date;
-                completed: boolean;
-            }[];
-            documents: {
-                id: string;
-                userId: string;
-                status: string;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                applicationId: string;
-                vaultDocumentId: string | null;
-                notes: string | null;
-                uploadedAt: Date | null;
-            }[];
-            fees: {
-                id: string;
-                description: string;
-                userId: string;
-                status: string;
-                createdAt: Date;
-                updatedAt: Date;
-                applicationId: string;
-                amount: number;
-                currency: string;
-                paidAt: Date | null;
-            }[];
-            regulatorFeedback: {
-                message: string;
-                id: string;
-                userId: string;
-                createdAt: Date;
-                dueDate: Date | null;
-                applicationId: string;
-                fromName: string | null;
-                actionRequired: boolean;
-                receivedAt: Date;
-            }[];
-        } & {
-            id: string;
-            title: string;
-            userId: string;
-            status: string;
-            organizationId: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
-            jurisdictionCode: string;
-            regulator: string;
-            licenseType: string;
-            progress: number;
-            referenceNumber: string | null;
-            nextAction: string | null;
-            dueDate: Date | null;
-            submittedAt: Date | null;
-            decidedAt: Date | null;
-        }) | null;
+        output: any;
         meta: object;
     }>;
     create: import("@trpc/server").TRPCMutationProcedure<{
@@ -152,25 +58,7 @@ export declare const applicationRouter: import("@trpc/server").TRPCBuiltRouter<{
             nextAction?: string | undefined;
             dueDate?: Date | undefined;
         };
-        output: {
-            id: string;
-            title: string;
-            userId: string;
-            status: string;
-            organizationId: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
-            jurisdictionCode: string;
-            regulator: string;
-            licenseType: string;
-            progress: number;
-            referenceNumber: string | null;
-            nextAction: string | null;
-            dueDate: Date | null;
-            submittedAt: Date | null;
-            decidedAt: Date | null;
-        };
+        output: any;
         meta: object;
     }>;
     update: import("@trpc/server").TRPCMutationProcedure<{
@@ -188,25 +76,7 @@ export declare const applicationRouter: import("@trpc/server").TRPCBuiltRouter<{
             submittedAt?: Date | null | undefined;
             decidedAt?: Date | null | undefined;
         };
-        output: {
-            id: string;
-            title: string;
-            userId: string;
-            status: string;
-            organizationId: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
-            jurisdictionCode: string;
-            regulator: string;
-            licenseType: string;
-            progress: number;
-            referenceNumber: string | null;
-            nextAction: string | null;
-            dueDate: Date | null;
-            submittedAt: Date | null;
-            decidedAt: Date | null;
-        };
+        output: any;
         meta: object;
     }>;
     delete: import("@trpc/server").TRPCMutationProcedure<{

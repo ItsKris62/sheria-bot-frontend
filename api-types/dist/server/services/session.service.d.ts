@@ -27,6 +27,7 @@ export interface SessionResponsePayload {
         email: string;
         name: string;
         role: string;
+        avatar?: string | null;
         emailVerified: boolean;
         mustChangePassword: boolean;
         organization: any;

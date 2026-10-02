@@ -7,6 +7,7 @@ import type { PlanEntitlementConfig } from '@/config/entitlements.config';
 import type { OrgMembershipEntry } from '@/server/trpc/context';
 import { type ComplianceFallbackReason } from '@/lib/source-grounding/source-insufficiency';
 import { type JurisdictionContext } from '@/types/jurisdiction';
+export declare const MAX_STREAM_DURATION_MS: number;
 export declare function extractNamedRegulations(question: string): string[];
 export declare function buildComplianceRagQuery(question: string, detectedRegulations?: string[], jurisdictionContext?: JurisdictionContext): string;
 export declare function getFallbackReasonForRetrieval(resultsCount: number, context: string | null | undefined): ComplianceFallbackReason;
@@ -31,11 +32,12 @@ interface AuthContext {
     orgMembership: OrgMembershipEntry;
 }
 export declare function resolveAuth(authHeader: string | undefined): Promise<AuthContext | null>;
-interface UsageCheck {
+export interface UsageCheck {
     allowed: boolean;
     statusCode: 403 | 429;
     message: string;
     increment: (tokensUsed?: number) => Promise<void>;
+    release: () => Promise<void>;
 }
 export declare function checkAndPrepareUsage(auth: AuthContext, requiredCredits?: number): Promise<UsageCheck>;
 export declare function registerComplianceStreamRoute(app: FastifyInstance, allowedOrigins: string[]): Promise<void>;

@@ -38,9 +38,9 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
             inputTokens: number;
             outputTokens: number;
             completedAt: Date | null;
+            costUsd: import("@prisma/client-runtime-utils").Decimal;
             idempotencyKey: string;
             startedAt: Date;
-            costUsd: import("@prisma/client-runtime-utils").Decimal;
             agentType: string;
             iterations: number;
         } & {
@@ -65,9 +65,9 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
             inputTokens: number;
             outputTokens: number;
             completedAt: Date | null;
+            costUsd: import("@prisma/client-runtime-utils").Decimal;
             idempotencyKey: string;
             startedAt: Date;
-            costUsd: import("@prisma/client-runtime-utils").Decimal;
             agentType: string;
             iterations: number;
         };
@@ -90,9 +90,9 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
             inputTokens: number;
             outputTokens: number;
             completedAt: Date | null;
+            costUsd: import("@prisma/client-runtime-utils").Decimal;
             idempotencyKey: string;
             startedAt: Date;
-            costUsd: import("@prisma/client-runtime-utils").Decimal;
             agentType: string;
             iterations: number;
         };
@@ -113,9 +113,9 @@ export declare const agentsRouter: import("@trpc/server").TRPCBuiltRouter<{
             inputTokens: number;
             outputTokens: number;
             completedAt: Date | null;
+            costUsd: import("@prisma/client-runtime-utils").Decimal;
             idempotencyKey: string;
             startedAt: Date;
-            costUsd: import("@prisma/client-runtime-utils").Decimal;
             agentType: string;
             iterations: number;
         };

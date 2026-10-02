@@ -91,7 +91,7 @@ export declare const pilotRouter: import("@trpc/server").TRPCBuiltRouter<{
             expired: number;
             converted: number;
             totalEvents: number;
-            cohorts: string[];
+            cohorts: any[];
         };
         meta: object;
     }>;
@@ -102,14 +102,14 @@ export declare const pilotRouter: import("@trpc/server").TRPCBuiltRouter<{
     listTesters: import("@trpc/server").TRPCQueryProcedure<{
         input: void;
         output: {
-            id: string;
-            email: string;
-            fullName: string;
-            organization: string | null;
-            cohort: string | null;
-            pilotStartedAt: string | null;
-            pilotExpiresAt: string | null;
-            pilotConvertedAt: string | null;
+            id: any;
+            email: any;
+            fullName: any;
+            organization: any;
+            cohort: any;
+            pilotStartedAt: any;
+            pilotExpiresAt: any;
+            pilotConvertedAt: any;
             pilotAccessStatus: any;
             pilotExtensionCount: any;
             pilotFirstExtensionGrantedAt: any;
@@ -119,8 +119,8 @@ export declare const pilotRouter: import("@trpc/server").TRPCBuiltRouter<{
             daysSinceStart: number;
             engagementScore: number;
             engagementPercent: number;
-            totalEvents: number;
-            lastEventAt: string;
+            totalEvents: any;
+            lastEventAt: any;
             eventsByAction: Record<string, number>;
         }[];
         meta: object;

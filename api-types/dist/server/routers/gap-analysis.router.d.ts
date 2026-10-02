@@ -54,11 +54,7 @@ export declare const gapAnalysisRouter: import("@trpc/server").TRPCBuiltRouter<{
             analysisDepth?: "standard" | "quick" | "deep" | undefined;
             focusAreas?: string[] | undefined;
         };
-        output: {
-            id: string;
-            status: string;
-            progress: number;
-        };
+        output: any;
         meta: object;
     }>;
     /**

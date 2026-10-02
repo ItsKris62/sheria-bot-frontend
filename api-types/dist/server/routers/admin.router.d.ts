@@ -559,13 +559,13 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                 evidence: string[];
             };
             vaultDocuments: {
-                total: number;
-                verified: number;
-                pending: number;
-                failed: number;
+                total: any;
+                verified: any;
+                pending: any;
+                failed: any;
                 unverified: number;
-                missingContentHash: number;
-                recentlyUploadedLast7d: number;
+                missingContentHash: any;
+                recentlyUploadedLast7d: any;
             };
             reconciliation: {
                 status: "not_configured";
@@ -877,13 +877,6 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
             role: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "ADMIN";
         };
         output: import("@/modules/admin").AdminUserDetail;
-        meta: object;
-    }>;
-    impersonateUser: import("@trpc/server").TRPCMutationProcedure<{
-        input: {
-            userId: string;
-        };
-        output: import("@/modules/admin").ImpersonationToken;
         meta: object;
     }>;
     updateOrganization: import("@trpc/server").TRPCMutationProcedure<{
@@ -1304,7 +1297,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
      */
     exportAuditLogs: import("@trpc/server").TRPCMutationProcedure<{
         input: {
-            format: "docx" | "csv";
+            format: "docx" | "csv" | "jsonl";
             userId?: string | undefined;
             actorEmail?: string | undefined;
             organizationId?: string | undefined;
@@ -1319,6 +1312,77 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: {
             url: string;
             expiresAt: Date;
+        };
+        meta: object;
+    }>;
+    /**
+     * Platform-wide AI usage, financial spend, health, and circuit breaker telemetry.
+     *
+     * @admin
+     */
+    getAIPlatformStats: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            period?: string | undefined;
+        } | undefined;
+        output: {
+            period: string;
+            fxRate: import("@/lib/ai/gateway/fx.service").FxRateResult;
+            budgetUsd: import("@/lib/ai/gateway/llm-gateway").MonthlyBudgetStatus;
+            budgetKes: {
+                budgetKes: number;
+                spentKes: number;
+                reservedKes: number;
+                remainingKes: number;
+                providers: {
+                    anthropic: number;
+                    openai: number;
+                    gemini: number;
+                };
+            };
+            circuitBreakers: import("@/lib/circuit-breaker/circuit-breaker.service").CircuitBreakerMetrics[];
+            topTenants: {
+                costUsd: number;
+                costKes: number;
+                orgId: string;
+                orgName: string;
+                plan: string;
+                requests: number;
+            }[];
+        };
+        meta: object;
+    }>;
+    /**
+     * Paginated per-tenant AI usage & cost report with filters.
+     *
+     * @admin
+     */
+    getAIPlatformStatsByTenant: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            page?: number | undefined;
+            pageSize?: number | undefined;
+            organizationId?: string | undefined;
+            plan?: string | undefined;
+            period?: string | undefined;
+        };
+        output: {
+            period: string;
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+            tenants: {
+                organizationId: string;
+                organizationName: string;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                totalRequests: number;
+                totalCostUsd: number;
+                totalCostKes: number;
+                byMetric: Record<string, {
+                    count: number;
+                    costUsd: number;
+                    costKes: number;
+                }>;
+            }[];
         };
         meta: object;
     }>;

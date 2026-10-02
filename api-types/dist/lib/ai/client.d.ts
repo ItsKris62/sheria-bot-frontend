@@ -29,6 +29,9 @@ export interface AICompletionResult {
     cached?: boolean;
     /** Anthropic stop_reason: 'end_turn' | 'max_tokens' | 'stop_sequence' | null */
     stopReason?: string | null;
+    cacheReadTokens?: number;
+    cacheWriteTokens?: number;
+    providerCacheStatus?: 'hit' | 'miss' | 'write' | 'unsupported' | 'disabled';
 }
 /**
  * AI streaming options

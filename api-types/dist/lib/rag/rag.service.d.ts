@@ -1,6 +1,8 @@
 import { ChunkConfig } from './chunking';
 import { type JurisdictionCode, type JurisdictionContext } from '@/types/jurisdiction';
 import { type CorpusVersionSnapshot } from '@/lib/rag/corpus-version';
+export { rerankChunks, type RerankOutcome } from './reranker.service';
+export { compressContextChunks, type CompressionOutcome } from './compression.service';
 /**
  * Document to index
  */

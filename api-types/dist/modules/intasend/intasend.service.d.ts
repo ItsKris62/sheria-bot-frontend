@@ -11,6 +11,7 @@
  *   it goes back to the authoritative source.
  */
 import { type STKPushInput, type STKPushResponse, type PaymentStatusResponse } from './intasend.types';
+export declare function _resetSDK(): void;
 /**
  * Normalise a Kenyan phone number to the 254XXXXXXXXX format.
  *
@@ -28,17 +29,18 @@ declare class IntaSendService {
      * Initiate an M-Pesa STK push.
      *
      * @param input - phoneNumber (254XXXXXXXXX), amount in KES (whole number,
-     *                NOT cents), accountReference, and narrative.
+     *                NOT cents), accountReference, narrative, and optional signal.
+     * @param signal - optional AbortSignal for cancellation.
      * @returns invoiceId for status polling + raw response for metadata storage.
      */
-    initiateSTKPush(input: STKPushInput): Promise<STKPushResponse>;
+    initiateSTKPush(input: STKPushInput, signal?: AbortSignal): Promise<STKPushResponse>;
     /**
      * Check the current status of a payment by its IntaSend invoice ID.
      *
      * Called both by the frontend polling endpoint and by the webhook handler
      * to re-verify the reported state before acting on it.
      */
-    getPaymentStatus(invoiceId: string): Promise<PaymentStatusResponse>;
+    getPaymentStatus(invoiceId: string, signal?: AbortSignal): Promise<PaymentStatusResponse>;
 }
 export declare const intaSendService: IntaSendService;
 export { IntaSendService };

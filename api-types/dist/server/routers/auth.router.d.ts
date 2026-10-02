@@ -34,6 +34,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
             success: boolean;
             userId: any;
             email: any;
+            requiresEmailVerification: boolean;
             message: string;
         };
         meta: object;
@@ -64,6 +65,7 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                 email: string;
                 name: string;
                 role: import(".prisma/client").$Enums.UserRole;
+                avatar: string | null;
                 emailVerified: boolean;
                 mustChangePassword: boolean;
                 organization: {
@@ -111,7 +113,72 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
             emailVerified: boolean;
             totpEnabled: any;
             organization: {
-                [x: string]: ({
+                [x: string]: {
+                    complianceQueries: number;
+                    gapAnalyses: number;
+                    id: string;
+                    organizationId: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    periodStart: Date;
+                    periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    checklistGenerations: number;
+                    apiCalls: number;
+                    documentStorageMb: number;
+                    policyGenerations: number;
+                    planTier: string;
+                    complianceQueryLimit: number;
+                    checklistGenerationLimit: number;
+                    apiCallLimit: number;
+                    documentStorageMbLimit: number;
+                    gapAnalysisLimit: number;
+                    policyGenerationLimit: number;
+                    syncedFromRedisAt: Date | null;
+                }[] | {
+                    id: string;
+                    count: number;
+                    organizationId: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    metric: import(".prisma/client").$Enums.BillingMetric;
+                    periodStart: Date;
+                    periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateCapturedAt: Date | null;
+                    pricingVersion: string | null;
+                }[] | ({
+                    id: string;
+                    count: number;
+                    organizationId: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    metric: import(".prisma/client").$Enums.BillingMetric;
+                    periodStart: Date;
+                    periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateCapturedAt: Date | null;
+                    pricingVersion: string | null;
+                } | {
+                    id: string;
+                    count: number;
+                    organizationId: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    metric: import(".prisma/client").$Enums.BillingMetric;
+                    periodStart: Date;
+                    periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateCapturedAt: Date | null;
+                    pricingVersion: string | null;
+                })[] | ({
                     id: string;
                     email: string;
                     password: string | null;
@@ -859,24 +926,6 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     createdById: string;
                     sourceType: string | null;
                     sourceId: string | null;
-                })[] | ({
-                    id: string;
-                    count: number;
-                    organizationId: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    metric: import(".prisma/client").$Enums.BillingMetric;
-                    periodStart: Date;
-                    periodEnd: Date;
-                } | {
-                    id: string;
-                    count: number;
-                    organizationId: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    metric: import(".prisma/client").$Enums.BillingMetric;
-                    periodStart: Date;
-                    periodEnd: Date;
                 })[] | ({
                     complianceQueries: number;
                     gapAnalyses: number;
@@ -886,6 +935,8 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     periodStart: Date;
                     periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
                     checklistGenerations: number;
                     apiCalls: number;
                     documentStorageMb: number;
@@ -907,6 +958,8 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     updatedAt: Date;
                     periodStart: Date;
                     periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
                     checklistGenerations: number;
                     apiCalls: number;
                     documentStorageMb: number;
@@ -1448,36 +1501,6 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
                     sourceType: string | null;
                     sourceId: string | null;
                 }[] | {
-                    id: string;
-                    count: number;
-                    organizationId: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    metric: import(".prisma/client").$Enums.BillingMetric;
-                    periodStart: Date;
-                    periodEnd: Date;
-                }[] | {
-                    complianceQueries: number;
-                    gapAnalyses: number;
-                    id: string;
-                    organizationId: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    periodStart: Date;
-                    periodEnd: Date;
-                    checklistGenerations: number;
-                    apiCalls: number;
-                    documentStorageMb: number;
-                    policyGenerations: number;
-                    planTier: string;
-                    complianceQueryLimit: number;
-                    checklistGenerationLimit: number;
-                    apiCallLimit: number;
-                    documentStorageMbLimit: number;
-                    gapAnalysisLimit: number;
-                    policyGenerationLimit: number;
-                    syncedFromRedisAt: Date | null;
-                }[] | {
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
                     id: string;
                     description: string | null;
@@ -1667,6 +1690,10 @@ export declare const authRouter: import("@trpc/server").TRPCBuiltRouter<{
             success: boolean;
             requiresApproval: boolean;
             alreadyVerified: boolean;
+            session: {
+                id: string;
+                expiresAt: string;
+            } | null;
         };
         meta: object;
     }>;

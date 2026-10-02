@@ -104,6 +104,18 @@ export declare function findPaginated<T>(model: keyof typeof prisma, page?: numb
     page: number;
     pages: number;
 }>;
+/**
+ * Executes a transaction with an explicit elevated statement_timeout (via SET LOCAL).
+ * Used for legitimate long-running admin or cron batch jobs (e.g. reconciliation)
+ * without raising the global pool-level statement_timeout.
+ *
+ * NOTE ON $executeRawUnsafe:
+ * PostgreSQL grammar strictly prohibits prepared-statement parameter placeholders ($1)
+ * for SET/SET LOCAL configuration commands (e.g. `SET LOCAL statement_timeout = $1` results in syntax error 42601).
+ * Therefore, raw string construction is required. SQL injection is completely prevented by validating
+ * that timeoutMs is a finite number and clamping it to a strictly bounded integer [1000ms, 300000ms].
+ */
+export declare function withElevatedStatementTimeout<T>(timeoutMs: number, callback: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T>;
 export type { ExtendedPrismaClient };
 export type TransactionClient = Omit<ExtendedPrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'>;
 //# sourceMappingURL=client.d.ts.map

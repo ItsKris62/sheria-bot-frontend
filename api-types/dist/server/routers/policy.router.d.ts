@@ -34,24 +34,11 @@ export declare const policyRouter: import("@trpc/server").TRPCBuiltRouter<{
             search?: string | undefined;
         };
         output: {
-            policies: {
-                id: string;
-                title: string | null;
-                user: {
-                    id: string;
-                    email: string;
-                    fullName: string;
-                };
-                status: import(".prisma/client").$Enums.PolicyStatus;
-                createdAt: Date;
-                updatedAt: Date;
-                scenario: string;
-                regulatoryAreas: string[];
-            }[];
+            policies: any;
             pagination: {
                 page: number;
                 limit: number;
-                total: number;
+                total: any;
                 pages: number;
             };
         };
@@ -66,7 +53,7 @@ export declare const policyRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             id: string;
         };
-        output: {};
+        output: any;
         meta: object;
     }>;
     /**
@@ -194,16 +181,16 @@ export declare const policyRouter: import("@trpc/server").TRPCBuiltRouter<{
             policyId: string;
         };
         output: {
-            policyId: string;
-            title: string | null;
-            status: import(".prisma/client").$Enums.PolicyStatus;
+            policyId: any;
+            title: any;
+            status: any;
             progress: number;
             isComplete: boolean;
             isFailed: boolean;
             errorMessage: any;
             generatedAt: any;
             tokensUsed: any;
-            updatedAt: Date;
+            updatedAt: any;
         };
         meta: object;
     }>;
@@ -220,16 +207,8 @@ export declare const policyRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         output: {
             policyId: string;
-            rootId: string;
-            versions: {
-                id: string;
-                title: string | null;
-                status: import(".prisma/client").$Enums.PolicyStatus;
-                createdAt: Date;
-                updatedAt: Date;
-                isLatestVersion: boolean;
-                version: number;
-            }[];
+            rootId: any;
+            versions: any;
         };
         meta: object;
     }>;

@@ -250,6 +250,7 @@ declare class ComplianceModule {
      */
     getUserChecklists(userId: string, organizationId: string): Promise<{
         id: string;
+        organizationId?: string | null;
         title: string;
         productType: string | null;
         businessStage: string | null;

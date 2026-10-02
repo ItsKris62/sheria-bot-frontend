@@ -193,7 +193,9 @@ export declare const userRouter: import("@trpc/server").TRPCBuiltRouter<{
         meta: object;
     }>;
     /**
-     * Step-up MFA verification
+     * Step-up MFA verification: verifies a TOTP code or backup code for an already-enrolled user/admin
+     * and records fresh MFA verification in Redis (sheriabot:admin:mfa_verified:${userId})
+     * allowing high-risk operations within the step-up window.
      */
     verifyStepUp: import("@trpc/server").TRPCMutationProcedure<{
         input: {

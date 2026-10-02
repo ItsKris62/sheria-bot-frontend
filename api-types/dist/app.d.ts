@@ -1,6 +1,6 @@
-import { FastifyInstance, FastifyServerOptions } from 'fastify';
-type TrustProxyValue = NonNullable<FastifyServerOptions['trustProxy']>;
-export declare function parseTrustProxy(rawValue: string | undefined, rawHopValue?: string | undefined): TrustProxyValue;
+import { FastifyInstance } from 'fastify';
+import { resolveTrustProxy, parseTrustProxy, type TrustProxyValue, type TrustProxyMode, type ResolvedTrustProxy } from './server/lib/trust-proxy';
+export { resolveTrustProxy, parseTrustProxy, type TrustProxyValue, type TrustProxyMode, type ResolvedTrustProxy, };
 /**
  * Build and configure the Fastify application.
  *
@@ -12,5 +12,4 @@ export declare function parseTrustProxy(rawValue: string | undefined, rawHopValu
  * Call this once from src/index.ts inside the start() bootstrap function.
  */
 export declare function buildApp(): Promise<FastifyInstance>;
-export {};
 //# sourceMappingURL=app.d.ts.map

@@ -4,6 +4,13 @@ import { FileMetadata } from './client';
  */
 export interface FileUploadResult {
     key: string;
+    /**
+     * Raw R2 storage key. Always safe to persist to the database.
+     * For private categories this is NEVER a public URL — callers that
+     * need a browser-accessible link must call
+     * `storageService.getDownloadUrl(key)` to obtain a short-lived
+     * presigned GET URL.
+     */
     url: string;
     size: number;
     contentType: string;

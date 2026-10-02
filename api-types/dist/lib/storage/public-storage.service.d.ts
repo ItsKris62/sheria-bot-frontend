@@ -12,9 +12,10 @@ export declare const avatarUploadSchema: z.ZodObject<{
     fileSize: z.ZodNumber;
 }, z.core.$strip>;
 export type AvatarUploadInput = z.infer<typeof avatarUploadSchema>;
+export declare function getPublicBucketUrl(): string;
 /**
  * Derives the R2 object key from an existing public avatar URL.
- * Returns null if the URL does not belong to the configured public bucket.
+ * Returns null if the URL cannot be safely resolved to an avatar key.
  */
 export declare function extractKeyFromAvatarUrl(avatarUrl: string): string | null;
 /**

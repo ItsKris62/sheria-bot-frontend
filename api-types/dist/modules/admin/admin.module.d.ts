@@ -408,7 +408,7 @@ declare class AdminModule {
      *
      * The export key is `exports/audit-logs/<nanoid(12)>.<ext>`.
      */
-    exportAuditLogs(filters: AuditLogExportFilters, format: 'csv' | 'docx'): Promise<{
+    exportAuditLogs(filters: AuditLogExportFilters, format: 'csv' | 'docx' | 'jsonl'): Promise<{
         url: string;
         expiresAt: Date;
     }>;
@@ -416,6 +416,7 @@ declare class AdminModule {
         url: string;
         expiresAt: Date;
     }>;
+    private buildAuditLogJsonl;
     private buildAuditLogCsv;
     private buildAuditLogDocx;
     /**

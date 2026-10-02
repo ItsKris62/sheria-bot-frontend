@@ -17,7 +17,6 @@ export declare const storageConfig: {
     readonly bucket: {
         readonly name: string;
         readonly region: "auto";
-        readonly publicUrl: string;
     };
     /**
      * S3 client configuration
@@ -217,12 +216,6 @@ export declare function generateUniqueFilename(originalName: string, preserveExt
  * @returns Full S3 key
  */
 export declare function getFileKey(category: keyof typeof storageConfig.paths, filename: string): string;
-/**
- * Get public URL for file
- * @param key S3 key
- * @returns Public URL
- */
-export declare function getPublicUrl(key: string): string;
 /**
  * Get presigned URL expiry time
  * @param useCase Use case for URL

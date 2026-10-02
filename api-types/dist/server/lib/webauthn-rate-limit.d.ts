@@ -1,19 +1,23 @@
+export declare function getAuthOptionsRateLimits(): {
+    max: number;
+    windowSec: number;
+};
 export declare const PASSKEY_RATE_LIMITS: {
-    readonly registrationOptions: {
-        readonly max: 10;
-        readonly windowSec: 3600;
+    registrationOptions: {
+        max: number;
+        windowSec: number;
     };
-    readonly registrationVerify: {
-        readonly max: 10;
-        readonly windowSec: 3600;
+    registrationVerify: {
+        max: number;
+        windowSec: number;
     };
     readonly authOptions: {
-        readonly max: 30;
-        readonly windowSec: 900;
+        max: number;
+        windowSec: number;
     };
-    readonly authVerify: {
-        readonly max: 5;
-        readonly windowSec: 300;
+    authVerify: {
+        max: number;
+        windowSec: number;
     };
 };
 export declare const PASSKEY_REDIS_KEYS: {
@@ -32,9 +36,27 @@ export interface CheckRateLimitParams {
 export interface CheckRateLimitResult {
     allowed: boolean;
     remaining: number;
+    resetAt: number;
 }
+/**
+ * Builds a rate limit key for passkey authentication options.
+ * - If IP is valid: returns 'sheriabot:passkey:rl:auth_opts:<ip>'
+ * - If sessionIdentifier is provided: appends truncated SHA-256 hash to reduce NAT collateral
+ * - If IP is null or invalid: returns null (fail closed)
+ */
+export declare function buildAuthOptionsRateLimitKey(params: {
+    ip: string | null | undefined;
+    sessionIdentifier?: string | null;
+}): string | null;
 /**
  * Atomic sliding-counter rate limiter using Redis INCR + EXPIRE.
  */
 export declare function checkRateLimit(params: CheckRateLimitParams): Promise<CheckRateLimitResult>;
+/**
+ * Rate limiter specifically for passkey authentication options with safe IP/session keying.
+ */
+export declare function checkAuthOptionsRateLimit(params: {
+    ip: string | null | undefined;
+    sessionIdentifier?: string | null;
+}): Promise<CheckRateLimitResult>;
 //# sourceMappingURL=webauthn-rate-limit.d.ts.map

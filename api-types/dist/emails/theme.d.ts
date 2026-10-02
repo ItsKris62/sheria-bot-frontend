@@ -2,6 +2,7 @@
  * SheriaBot Email Design System Tokens & Primitives
  * Authoritative RegTech & GovTech Design System for Kenya
  */
+export declare const DEFAULT_R2_PUBLIC_BUCKET_URL = "https://pub-724936356a15494f9ce61480c5225e6f.r2.dev";
 export declare const SHERIABOT_URL: string;
 /**
  * SheriaBot Core Design Tokens

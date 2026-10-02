@@ -98,26 +98,26 @@ export declare const paymentRouter: import("@trpc/server").TRPCBuiltRouter<{
             paymentId: string;
         };
         output: {
-            id: string;
-            invoiceNumber: string | null;
-            amount: number;
-            currency: string;
-            status: import(".prisma/client").$Enums.PaymentStatus;
-            paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
-            provider: import(".prisma/client").$Enums.PaymentProvider;
-            subscriptionPlan: string | null;
-            billingPeriodStart: string | null;
-            billingPeriodEnd: string | null;
-            providerTransactionId: string | null;
-            description: string | null;
-            paidAt: string | null;
-            createdAt: string;
+            id: any;
+            invoiceNumber: any;
+            amount: any;
+            currency: any;
+            status: any;
+            paymentPurpose: any;
+            provider: any;
+            subscriptionPlan: any;
+            billingPeriodStart: any;
+            billingPeriodEnd: any;
+            providerTransactionId: any;
+            description: any;
+            paidAt: any;
+            createdAt: any;
             metadata: Record<string, unknown> | null;
             paymentMethodDisplay: string;
             organization: {
-                name: string;
-                address: string | null;
-                contactEmail: string | null;
+                name: any;
+                address: any;
+                contactEmail: any;
             };
             user: {
                 email: string;

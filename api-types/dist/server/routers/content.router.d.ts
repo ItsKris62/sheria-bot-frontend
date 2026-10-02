@@ -42,12 +42,12 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
             status?: "DRAFT" | "ARCHIVED" | "PUBLISHED" | "UNDER_REVIEW" | undefined;
         };
         output: {
-            id: string;
-            slug: string | null;
-            contentType: import(".prisma/client").$Enums.ContentType;
-            contentStatus: import(".prisma/client").$Enums.ContentStatus;
-            title: string | null;
-            createdAt: Date;
+            id: any;
+            slug: any;
+            contentType: any;
+            contentStatus: any;
+            title: any;
+            createdAt: any;
         };
         meta: object;
     }>;
@@ -72,11 +72,11 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
             status?: "DRAFT" | "ARCHIVED" | "PUBLISHED" | "UNDER_REVIEW" | undefined;
         };
         output: {
-            id: string;
-            slug: string | null;
-            contentStatus: import(".prisma/client").$Enums.ContentStatus;
-            title: string | null;
-            updatedAt: Date;
+            id: any;
+            slug: any;
+            contentStatus: any;
+            title: any;
+            updatedAt: any;
         };
         meta: object;
     }>;
@@ -95,27 +95,27 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         output: {
             items: {
-                id: string;
-                title: string | null;
-                slug: string;
-                excerpt: string | null;
-                category: string | null;
-                subcategory: string | null;
-                tags: string[];
-                publishedAt: Date | null;
-                updatedAt: Date;
-                viewCount: number;
+                id: any;
+                title: any;
+                slug: any;
+                excerpt: any;
+                category: any;
+                subcategory: any;
+                tags: any;
+                publishedAt: any;
+                updatedAt: any;
+                viewCount: any;
                 readingTime: number;
                 author: {
-                    id: string;
-                    name: string;
-                    avatar: string | null;
+                    id: any;
+                    name: any;
+                    avatar: any;
                 } | null;
             }[];
             pagination: {
                 page: number;
                 limit: number;
-                total: number;
+                total: any;
                 totalPages: number;
             };
         };
@@ -138,33 +138,11 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
             authorId?: string | undefined;
         };
         output: {
-            items: {
-                id: string;
-                title: string | null;
-                createdAt: Date;
-                updatedAt: Date;
-                version: number;
-                authorId: string | null;
-                category: string | null;
-                contentStatus: import(".prisma/client").$Enums.ContentStatus;
-                contentType: import(".prisma/client").$Enums.ContentType;
-                excerpt: string | null;
-                helpfulCount: number;
-                publishedAt: Date | null;
-                slug: string | null;
-                subcategory: string | null;
-                tags: string[];
-                viewCount: number;
-                author: {
-                    id: string;
-                    fullName: string;
-                    avatar: string | null;
-                } | null;
-            }[];
+            items: any;
             pagination: {
                 page: number;
                 limit: number;
-                total: number;
+                total: any;
                 pages: number;
             };
         };
@@ -179,62 +157,7 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             id: string;
         };
-        output: {
-            publisher: {
-                id: string;
-                fullName: string;
-            } | null;
-            author: {
-                id: string;
-                fullName: string;
-                avatar: string | null;
-            } | null;
-        } & {
-            id: string;
-            title: string | null;
-            userId: string | null;
-            status: import(".prisma/client").$Enums.DocumentStatus;
-            organizationId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
-            content: string | null;
-            isLatestVersion: boolean;
-            parentId: string | null;
-            version: number;
-            actName: string;
-            documentType: string;
-            enactmentDate: Date | null;
-            effectiveDate: Date | null;
-            amendedBy: string[];
-            regulatoryBody: string | null;
-            originalFilename: string;
-            fileUrl: string;
-            fileSize: number;
-            mimeType: string;
-            totalChunks: number | null;
-            processedAt: Date | null;
-            fullText: string | null;
-            summary: string | null;
-            keywords: string[];
-            authorId: string | null;
-            category: string | null;
-            contentStatus: import(".prisma/client").$Enums.ContentStatus;
-            contentType: import(".prisma/client").$Enums.ContentType;
-            excerpt: string | null;
-            helpfulCount: number;
-            htmlContent: string | null;
-            notHelpfulCount: number;
-            publishedAt: Date | null;
-            publishedBy: string | null;
-            seoDescription: string | null;
-            seoKeywords: string[];
-            seoTitle: string | null;
-            slug: string | null;
-            subcategory: string | null;
-            tags: string[];
-            viewCount: number;
-        };
+        output: any;
         meta: object;
     }>;
     /**
@@ -246,29 +169,25 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
             contentType?: "KNOWLEDGE_BASE_ARTICLE" | undefined;
         };
         output: {
-            id: string;
-            contentType: import(".prisma/client").$Enums.ContentType;
-            title: string | null;
-            slug: string | null;
-            excerpt: string | null;
-            htmlContent: string | null;
-            content: string | null;
-            category: string | null;
-            subcategory: string | null;
-            tags: string[];
-            seoTitle: string | null;
-            seoDescription: string | null;
-            seoKeywords: string[];
-            publishedAt: Date | null;
-            updatedAt: Date;
-            viewCount: number;
-            helpfulCount: number;
-            notHelpfulCount: number;
-            author: {
-                id: string;
-                fullName: string;
-                avatar: string | null;
-            } | null;
+            id: any;
+            contentType: any;
+            title: any;
+            slug: any;
+            excerpt: any;
+            htmlContent: any;
+            content: any;
+            category: any;
+            subcategory: any;
+            tags: any;
+            seoTitle: any;
+            seoDescription: any;
+            seoKeywords: any;
+            publishedAt: any;
+            updatedAt: any;
+            viewCount: any;
+            helpfulCount: any;
+            notHelpfulCount: any;
+            author: any;
         };
         meta: object;
     }>;
@@ -282,10 +201,10 @@ export declare const contentRouter: import("@trpc/server").TRPCBuiltRouter<{
             id: string;
         };
         output: {
-            id: string;
-            slug: string | null;
-            contentStatus: import(".prisma/client").$Enums.ContentStatus;
-            publishedAt: Date | null;
+            id: any;
+            slug: any;
+            contentStatus: any;
+            publishedAt: any;
         };
         meta: object;
     }>;

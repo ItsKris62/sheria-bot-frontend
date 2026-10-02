@@ -17,6 +17,8 @@ export declare const frameworkRouter: import("@trpc/server").TRPCBuiltRouter<{
     list: import("@trpc/server").TRPCQueryProcedure<{
         input: {
             includeInactive?: boolean | undefined;
+            limit?: number | undefined;
+            cursor?: string | undefined;
         } | undefined;
         output: any[];
         meta: object;

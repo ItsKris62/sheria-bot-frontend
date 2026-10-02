@@ -90,7 +90,10 @@ export declare const passkeyRouter: import("@trpc/server").TRPCBuiltRouter<{
      * 5. List Current User Passkeys
      */
     listUserPasskeys: import("@trpc/server").TRPCQueryProcedure<{
-        input: void;
+        input: {
+            limit?: number | undefined;
+            cursor?: string | undefined;
+        } | undefined;
         output: {
             id: string;
             createdAt: Date;

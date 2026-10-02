@@ -1,5 +1,93 @@
+import { z } from 'zod';
 import type { EffectivePlan } from '@/types/plan.types';
 import type { VaultDocumentListItem, VaultDocumentListResult, VaultDocumentStats, GenerateUploadUrlParams, GenerateUploadUrlResult, CreateDocumentParams, ListDocumentsParams, GetDocumentByIdParams, GenerateDownloadUrlParams, UpdateDocumentParams, UpdateDocumentStatusParams, DeleteDocumentParams, GetDocumentStatsParams, ReplaceDocumentParams } from './vault.types';
+export declare const VAULT_TIER_VALUES: readonly ["FREE", "FREE_TRIAL", "STARTER", "GROWTH", "STARTUP", "BUSINESS", "ENTERPRISE", "REGULATOR"];
+export type VaultTier = (typeof VAULT_TIER_VALUES)[number];
+export declare const vaultPresignInputSchema: z.ZodObject<{
+    organizationId: z.ZodString;
+    uploaderId: z.ZodString;
+    documentId: z.ZodString;
+    name: z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>;
+    description: z.ZodOptional<z.ZodString>;
+    expiryDate: z.ZodOptional<z.ZodString>;
+    declaredFilename: z.ZodString;
+    declaredMimeType: z.ZodEnum<{
+        "application/pdf": "application/pdf";
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation": "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+        "application/msword": "application/msword";
+        "application/vnd.ms-excel": "application/vnd.ms-excel";
+        "application/vnd.ms-powerpoint": "application/vnd.ms-powerpoint";
+        "text/plain": "text/plain";
+        "text/csv": "text/csv";
+        "image/png": "image/png";
+        "image/jpeg": "image/jpeg";
+        "image/webp": "image/webp";
+    }>;
+    declaredSize: z.ZodNumber;
+    category: z.ZodEnum<{
+        COMPLIANCE: "COMPLIANCE";
+        OTHER: "OTHER";
+        CORPORATE: "CORPORATE";
+        FINANCIAL: "FINANCIAL";
+        LICENSE: "LICENSE";
+        OPERATIONS: "OPERATIONS";
+        TAX: "TAX";
+    }>;
+    tags: z.ZodArray<z.ZodString>;
+    tier: z.ZodEnum<{
+        FREE: "FREE";
+        STARTER: "STARTER";
+        GROWTH: "GROWTH";
+        BUSINESS: "BUSINESS";
+        ENTERPRISE: "ENTERPRISE";
+        REGULATOR: "REGULATOR";
+        STARTUP: "STARTUP";
+        FREE_TRIAL: "FREE_TRIAL";
+    }>;
+}, z.core.$strip>;
+export declare const vaultReplacePresignInputSchema: z.ZodObject<{
+    organizationId: z.ZodString;
+    documentId: z.ZodString;
+    category: z.ZodEnum<{
+        COMPLIANCE: "COMPLIANCE";
+        OTHER: "OTHER";
+        CORPORATE: "CORPORATE";
+        FINANCIAL: "FINANCIAL";
+        LICENSE: "LICENSE";
+        OPERATIONS: "OPERATIONS";
+        TAX: "TAX";
+    }>;
+    tags: z.ZodArray<z.ZodString>;
+    tier: z.ZodEnum<{
+        FREE: "FREE";
+        STARTER: "STARTER";
+        GROWTH: "GROWTH";
+        BUSINESS: "BUSINESS";
+        ENTERPRISE: "ENTERPRISE";
+        REGULATOR: "REGULATOR";
+        STARTUP: "STARTUP";
+        FREE_TRIAL: "FREE_TRIAL";
+    }>;
+    declaredFilename: z.ZodString;
+    uploaderId: z.ZodString;
+    declaredMimeType: z.ZodEnum<{
+        "application/pdf": "application/pdf";
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation": "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+        "application/msword": "application/msword";
+        "application/vnd.ms-excel": "application/vnd.ms-excel";
+        "application/vnd.ms-powerpoint": "application/vnd.ms-powerpoint";
+        "text/plain": "text/plain";
+        "text/csv": "text/csv";
+        "image/png": "image/png";
+        "image/jpeg": "image/jpeg";
+        "image/webp": "image/webp";
+    }>;
+    declaredSize: z.ZodNumber;
+}, z.core.$strip>;
 declare class VaultModule {
     /**
      * Step 1 of the two-step upload flow.

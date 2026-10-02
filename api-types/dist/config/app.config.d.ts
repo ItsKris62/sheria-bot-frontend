@@ -25,6 +25,7 @@ export declare const appConfig: {
     readonly features: {
         readonly orchestratorEnabled: boolean;
         readonly agentsEnabled: boolean;
+        readonly autoCreateSessionOnValidToken: boolean;
     };
     readonly payments: {
         readonly activeProvider: "INTASEND" | "STRIPE";
@@ -124,7 +125,12 @@ export declare const appConfig: {
         readonly accessKeyId: string;
         readonly secretAccessKey: string;
         readonly bucketName: string;
+        readonly auditBucketName: string;
         readonly publicUrl: string;
+    };
+    readonly auditStorage: {
+        readonly bucketName: string;
+        readonly endpoint: `https://${string}.r2.cloudflarestorage.com`;
     };
     readonly publicStorage: {
         readonly accessKeyId: string;
@@ -132,6 +138,19 @@ export declare const appConfig: {
         readonly bucketName: string;
         readonly endpoint: `https://${string}.r2.cloudflarestorage.com`;
         readonly bucketUrl: string;
+    };
+    readonly backupStorage: {
+        readonly bucketName: string;
+        readonly endpoint: `https://${string}.r2.cloudflarestorage.com`;
+    };
+    readonly proxy: {
+        readonly trustProxy: "true" | "false" | undefined;
+        readonly trustProxyHops: number | undefined;
+        readonly trustProxyCidrs: string | undefined;
+    };
+    readonly webauthnRateLimit: {
+        readonly authOptsMax: number;
+        readonly authOptsWindowSeconds: number;
     };
     readonly rateLimit: {
         readonly max: number;

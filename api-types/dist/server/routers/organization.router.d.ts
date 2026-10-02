@@ -381,27 +381,11 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             limit?: number | undefined;
         };
         output: {
-            members: {
-                role: import(".prisma/client").$Enums.MemberRole;
-                platformRole: import(".prisma/client").$Enums.UserRole;
-                orgRole: import(".prisma/client").$Enums.MemberRole;
-                membershipId: string;
-                status: import(".prisma/client").$Enums.MemberStatus;
-                joinedAt: Date;
-                invitedAt: Date | null;
-                totpEnabled: boolean;
-                id: string;
-                email: string;
-                phone: string | null;
-                fullName: string;
-                emailVerified: boolean;
-                lastLoginAt: Date | null;
-                createdAt: Date;
-            }[];
+            members: any[];
             pagination: {
                 page: number;
                 limit: number;
-                total: number;
+                total: any;
                 pages: number;
             };
         };
@@ -423,17 +407,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
         };
         output: {
             success: boolean;
-            member: {
-                id: string;
-                userId: string;
-                user: {
-                    email: string;
-                    fullName: string;
-                };
-                role: import(".prisma/client").$Enums.MemberRole;
-                status: import(".prisma/client").$Enums.MemberStatus;
-                organizationId: string;
-            };
+            member: any;
             message: string;
         };
         meta: object;
@@ -480,7 +454,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
     getSettings: import("@trpc/server").TRPCQueryProcedure<{
         input: void;
         output: {
-            currentMemberRole: import(".prisma/client").$Enums.MemberRole | null;
+            currentMemberRole: any;
             canManageOrganizationSettings: boolean;
             id: string;
             name: string;
@@ -532,40 +506,29 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             canManageMembers: boolean;
             seatUsage: import("../services/organization-seat.service").OrganizationSeatUsage;
             memberCounts: {
-                active: number;
-                suspended: number;
-                pendingInvitations: number;
+                active: any;
+                suspended: any;
+                pendingInvitations: any;
                 capacity: number;
             };
-            owner: {
-                id: string;
-                email: string;
-                fullName: string;
-            } | null;
+            owner: any;
             members: {
-                id: string;
-                membershipId: string;
-                name: string;
-                email: string;
-                role: import(".prisma/client").$Enums.MemberRole;
-                orgRole: import(".prisma/client").$Enums.MemberRole;
-                platformRole: import(".prisma/client").$Enums.UserRole;
-                status: import(".prisma/client").$Enums.MemberStatus;
-                joinedAt: Date;
-                invitedAt: Date | null;
-                createdAt: Date;
-                lastActive: Date | null;
-                lastLoginAt: Date | null;
-                totpEnabled: boolean;
+                id: any;
+                membershipId: any;
+                name: any;
+                email: any;
+                role: any;
+                orgRole: any;
+                platformRole: any;
+                status: any;
+                joinedAt: any;
+                invitedAt: any;
+                createdAt: any;
+                lastActive: any;
+                lastLoginAt: any;
+                totpEnabled: any;
             }[];
-            pendingInvitations: {
-                id: string;
-                email: string;
-                createdAt: Date;
-                expiresAt: Date;
-                organizationRole: import(".prisma/client").$Enums.MemberRole | null;
-                invitedBy: string;
-            }[];
+            pendingInvitations: any;
         };
         meta: object;
     }>;
@@ -579,7 +542,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 mfaPolicyUpdatedBy: any;
             };
             posture: {
-                totalMembers: number;
+                totalMembers: any;
                 mfaEnabled: number;
                 mfaMissing: number;
                 percentage: number;
@@ -587,13 +550,13 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             canManageSecurity: boolean;
             currentUserMfaEnabled: boolean;
             members: {
-                id: string;
-                name: string;
-                email: string;
-                role: import(".prisma/client").$Enums.MemberRole;
-                status: import(".prisma/client").$Enums.MemberStatus;
-                totpEnabled: boolean;
-                lastActive: Date | null;
+                id: any;
+                name: any;
+                email: any;
+                role: any;
+                status: any;
+                totpEnabled: any;
+                lastActive: any;
             }[];
         };
         meta: object;
@@ -606,7 +569,72 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
         output: {
             success: boolean;
             policy: {
-                [x: string]: ({
+                [x: string]: {
+                    complianceQueries: number;
+                    gapAnalyses: number;
+                    id: string;
+                    organizationId: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    periodStart: Date;
+                    periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    checklistGenerations: number;
+                    apiCalls: number;
+                    documentStorageMb: number;
+                    policyGenerations: number;
+                    planTier: string;
+                    complianceQueryLimit: number;
+                    checklistGenerationLimit: number;
+                    apiCallLimit: number;
+                    documentStorageMbLimit: number;
+                    gapAnalysisLimit: number;
+                    policyGenerationLimit: number;
+                    syncedFromRedisAt: Date | null;
+                }[] | {
+                    id: string;
+                    count: number;
+                    organizationId: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    metric: import(".prisma/client").$Enums.BillingMetric;
+                    periodStart: Date;
+                    periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateCapturedAt: Date | null;
+                    pricingVersion: string | null;
+                }[] | ({
+                    id: string;
+                    count: number;
+                    organizationId: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    metric: import(".prisma/client").$Enums.BillingMetric;
+                    periodStart: Date;
+                    periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateCapturedAt: Date | null;
+                    pricingVersion: string | null;
+                } | {
+                    id: string;
+                    count: number;
+                    organizationId: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    metric: import(".prisma/client").$Enums.BillingMetric;
+                    periodStart: Date;
+                    periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    fxRateCapturedAt: Date | null;
+                    pricingVersion: string | null;
+                })[] | ({
                     id: string;
                     email: string;
                     password: string | null;
@@ -1354,24 +1382,6 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     createdById: string;
                     sourceType: string | null;
                     sourceId: string | null;
-                })[] | ({
-                    id: string;
-                    count: number;
-                    organizationId: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    metric: import(".prisma/client").$Enums.BillingMetric;
-                    periodStart: Date;
-                    periodEnd: Date;
-                } | {
-                    id: string;
-                    count: number;
-                    organizationId: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    metric: import(".prisma/client").$Enums.BillingMetric;
-                    periodStart: Date;
-                    periodEnd: Date;
                 })[] | ({
                     complianceQueries: number;
                     gapAnalyses: number;
@@ -1381,6 +1391,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     periodStart: Date;
                     periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
                     checklistGenerations: number;
                     apiCalls: number;
                     documentStorageMb: number;
@@ -1402,6 +1414,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     periodStart: Date;
                     periodEnd: Date;
+                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
                     checklistGenerations: number;
                     apiCalls: number;
                     documentStorageMb: number;
@@ -1943,36 +1957,6 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     sourceType: string | null;
                     sourceId: string | null;
                 }[] | {
-                    id: string;
-                    count: number;
-                    organizationId: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    metric: import(".prisma/client").$Enums.BillingMetric;
-                    periodStart: Date;
-                    periodEnd: Date;
-                }[] | {
-                    complianceQueries: number;
-                    gapAnalyses: number;
-                    id: string;
-                    organizationId: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    periodStart: Date;
-                    periodEnd: Date;
-                    checklistGenerations: number;
-                    apiCalls: number;
-                    documentStorageMb: number;
-                    policyGenerations: number;
-                    planTier: string;
-                    complianceQueryLimit: number;
-                    checklistGenerationLimit: number;
-                    apiCallLimit: number;
-                    documentStorageMbLimit: number;
-                    gapAnalysisLimit: number;
-                    policyGenerationLimit: number;
-                    syncedFromRedisAt: Date | null;
-                }[] | {
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
                     id: string;
                     description: string | null;
@@ -2118,14 +2102,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
     listPendingInvitations: import("@trpc/server").TRPCQueryProcedure<{
         input: void;
         output: {
-            invitations: {
-                id: string;
-                email: string;
-                createdAt: Date;
-                expiresAt: Date;
-                organizationRole: import(".prisma/client").$Enums.MemberRole | null;
-                invitedBy: string;
-            }[];
+            invitations: any;
         };
         meta: object;
     }>;
@@ -2367,6 +2344,45 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
         output: {
             success: boolean;
             message: string;
+        };
+        meta: object;
+    }>;
+    /**
+     * Retrieves organization-scoped AI usage, cost in KES/USD, and quota status.
+     * Scoped strictly to the session's organization (never accepts orgId from client).
+     *
+     * @protected
+     */
+    getAIUsageStats: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            page?: number | undefined;
+            pageSize?: number | undefined;
+        } | undefined;
+        output: {
+            organization: any;
+            period: {
+                start: Date;
+                end: Date;
+                daysRemaining: number;
+                daysTotal: number;
+            };
+            planTier: any;
+            categories: import("@/services/usage-tracking.service").CategorySummary[];
+            costs: {
+                totalCostUsd: number;
+                totalCostKes: number;
+                byMetric: Record<string, {
+                    count: number;
+                    costUsd: number;
+                    costKes: number;
+                }>;
+            };
+            recentActivity: {
+                total: any;
+                page: number;
+                pageSize: number;
+                items: any;
+            };
         };
         meta: object;
     }>;

@@ -88,6 +88,10 @@ declare class StripeWebhookService {
      * TTL is 30 days  -  longer than Stripe's maximum 3-day retry window.
      */
     private markProcessed;
+    /**
+     * Release the idempotency lock on failure so subsequent retries by Stripe can process.
+     */
+    private releaseLock;
     private findOrgByCustomerId;
     /**
      * Fetch the primary contact (first owner / admin user) for an org so we

@@ -66,7 +66,9 @@ function handleMfaRequired() {
   }
 }
 
-function makeQueryClient() {
+const stepUpRetriesInFlight = new WeakSet<object>();
+
+export function makeQueryClient() {
   return new QueryClient({
     queryCache: new QueryCache({
       onError: (error) => {
@@ -88,20 +90,24 @@ function makeQueryClient() {
           return;
         }
         if (isMfaStepUpError(error)) {
-          const meta = (mutation.meta as Record<string, unknown>) || {};
-          if (meta.stepUpRetried) {
+          if (stepUpRetriesInFlight.has(mutation)) {
             toast.error("Multi-factor step-up verification failed. Action cancelled.");
             return;
           }
 
-          mutation.meta = { ...meta, stepUpRetried: true };
-
           requestStepUpChallenge({
             onSuccess: async () => {
+              stepUpRetriesInFlight.add(mutation);
               try {
                 await mutation.execute(_variables);
-              } catch {
-                toast.error("Action failed after step-up authentication.");
+              } catch (retryError) {
+                // Avoid duplicate toast if retry failure was another MFA step-up error
+                // already handled and toasted above during mutation.execute.
+                if (!isMfaStepUpError(retryError)) {
+                  toast.error("Action failed after step-up authentication.");
+                }
+              } finally {
+                stepUpRetriesInFlight.delete(mutation);
               }
             },
             onCancel: () => {

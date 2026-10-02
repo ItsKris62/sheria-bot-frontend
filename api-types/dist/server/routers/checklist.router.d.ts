@@ -52,6 +52,7 @@ export declare const checklistRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: void;
         output: {
             id: string;
+            organizationId?: string | null;
             title: string;
             productType: string | null;
             businessStage: string | null;

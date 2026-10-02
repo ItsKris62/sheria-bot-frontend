@@ -53,6 +53,11 @@ declare class BillingModule {
         metric: import(".prisma/client").$Enums.BillingMetric;
         periodStart: Date;
         periodEnd: Date;
+        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+        fxRateCapturedAt: Date | null;
+        pricingVersion: string | null;
     } | null>;
     /**
      * Scans all `sheriabot:usage:*` Redis keys and upserts their current counts

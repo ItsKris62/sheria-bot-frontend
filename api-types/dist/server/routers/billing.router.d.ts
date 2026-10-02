@@ -198,12 +198,12 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
                 plan: import("../../types/plan.types").EffectivePlan;
                 isPilot: boolean;
                 pilotProfile: import("../../types/plan.types").PilotEntitlementProfile | null;
-                seatsUsed: number;
+                seatsUsed: any;
                 seatsLimit: number;
                 enabledCountries: string[];
                 docStorageMb: number;
-                docCount: number;
-                pendingInvitesCount: number;
+                docCount: any;
+                pendingInvitesCount: any;
                 entitlements: {
                     policyGeneration: boolean;
                     customFrameworks: boolean;
@@ -250,13 +250,7 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
                     teamCollaboration: boolean;
                 };
             };
-            activeMembers: {
-                membershipId: string;
-                userId: string;
-                email: string;
-                fullName: string;
-                role: import(".prisma/client").$Enums.MemberRole;
-            }[];
+            activeMembers: any;
             availableJurisdictions: string[];
         };
         meta: object;
@@ -277,7 +271,7 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
             retainedJurisdictionCodes?: string[] | undefined;
         };
         output: {
-            paymentId: string;
+            paymentId: any;
             trackingId?: undefined;
             message?: undefined;
         } | {

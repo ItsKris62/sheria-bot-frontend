@@ -13,6 +13,8 @@ export interface STKPushInput {
     accountReference: string;
     /** Human-readable narrative / description */
     narrative: string;
+    /** Optional AbortSignal for caller-driven cancellation */
+    signal?: AbortSignal;
 }
 export interface STKPushResponse {
     /** IntaSend invoice ID  -  used to poll for status */

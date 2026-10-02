@@ -18,4 +18,13 @@
  *                    Defaults to 90 if not set.
  */
 import 'dotenv/config';
+/**
+ * Extract a raw R2 object key from a stored value that may be:
+ *   - a raw key: "documents/org-1/doc-2/file.pdf"
+ *   - a legacy full URL: "https://.../documents/org-1/doc-2/file.pdf"
+ *   - a path-prefixed URL: "/documents/org-1/doc-2/file.pdf"
+ *
+ * Returns the key, or null if the input cannot be parsed.
+ */
+export declare function extractR2Key(stored: string): string | null;
 //# sourceMappingURL=cleanup-deleted-documents.d.ts.map

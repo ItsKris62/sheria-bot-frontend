@@ -41,12 +41,19 @@ export declare class LLMGateway {
         remainingBudget: number;
         percentUsed: number;
     }>;
-    generateCacheKey(provider: LLMProviderName, model: string, prompt: string, systemPrompt?: string): string;
+    generateCacheKey(provider: LLMProviderName, model: string, prompt: string, systemPrompt?: string, scope?: string | {
+        orgId?: string;
+        globalCache?: boolean;
+    } | null): string;
     getCachedCompletion(cacheKey: string): Promise<LLMCompletionResult | null>;
     cacheCompletion(cacheKey: string, result: LLMCompletionResult, ttl: number): Promise<void>;
     private resolveProviderAndModel;
     complete(req: LLMCompletionRequest, cacheTTL?: number): Promise<LLMCompletionResult>;
     stream(opts: LLMStreamOptions): Promise<LLMCompletionResult>;
+    /**
+     * Best-effort, non-blocking persistence of per-tenant AI costs in KES and USD in SQL.
+     */
+    persistTenantCost(orgId: string | undefined, useCase: string | undefined, costUsd: number): Promise<void>;
 }
 export declare const llmGateway: LLMGateway;
 //# sourceMappingURL=llm-gateway.d.ts.map

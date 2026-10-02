@@ -76,6 +76,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 success: boolean;
                 userId: any;
                 email: any;
+                requiresEmailVerification: boolean;
                 message: string;
             };
             meta: object;
@@ -101,6 +102,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     email: string;
                     name: string;
                     role: import(".prisma/client").$Enums.UserRole;
+                    avatar: string | null;
                     emailVerified: boolean;
                     mustChangePassword: boolean;
                     organization: {
@@ -141,7 +143,72 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 emailVerified: boolean;
                 totpEnabled: any;
                 organization: {
-                    [x: string]: ({
+                    [x: string]: {
+                        complianceQueries: number;
+                        gapAnalyses: number;
+                        id: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        checklistGenerations: number;
+                        apiCalls: number;
+                        documentStorageMb: number;
+                        policyGenerations: number;
+                        planTier: string;
+                        complianceQueryLimit: number;
+                        checklistGenerationLimit: number;
+                        apiCallLimit: number;
+                        documentStorageMbLimit: number;
+                        gapAnalysisLimit: number;
+                        policyGenerationLimit: number;
+                        syncedFromRedisAt: Date | null;
+                    }[] | {
+                        id: string;
+                        count: number;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        metric: import(".prisma/client").$Enums.BillingMetric;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateCapturedAt: Date | null;
+                        pricingVersion: string | null;
+                    }[] | ({
+                        id: string;
+                        count: number;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        metric: import(".prisma/client").$Enums.BillingMetric;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateCapturedAt: Date | null;
+                        pricingVersion: string | null;
+                    } | {
+                        id: string;
+                        count: number;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        metric: import(".prisma/client").$Enums.BillingMetric;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateCapturedAt: Date | null;
+                        pricingVersion: string | null;
+                    })[] | ({
                         id: string;
                         email: string;
                         password: string | null;
@@ -889,24 +956,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdById: string;
                         sourceType: string | null;
                         sourceId: string | null;
-                    })[] | ({
-                        id: string;
-                        count: number;
-                        organizationId: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        metric: import(".prisma/client").$Enums.BillingMetric;
-                        periodStart: Date;
-                        periodEnd: Date;
-                    } | {
-                        id: string;
-                        count: number;
-                        organizationId: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        metric: import(".prisma/client").$Enums.BillingMetric;
-                        periodStart: Date;
-                        periodEnd: Date;
                     })[] | ({
                         complianceQueries: number;
                         gapAnalyses: number;
@@ -916,6 +965,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         periodStart: Date;
                         periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
                         checklistGenerations: number;
                         apiCalls: number;
                         documentStorageMb: number;
@@ -937,6 +988,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         periodStart: Date;
                         periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
                         checklistGenerations: number;
                         apiCalls: number;
                         documentStorageMb: number;
@@ -1478,36 +1531,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         sourceType: string | null;
                         sourceId: string | null;
                     }[] | {
-                        id: string;
-                        count: number;
-                        organizationId: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        metric: import(".prisma/client").$Enums.BillingMetric;
-                        periodStart: Date;
-                        periodEnd: Date;
-                    }[] | {
-                        complianceQueries: number;
-                        gapAnalyses: number;
-                        id: string;
-                        organizationId: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        periodStart: Date;
-                        periodEnd: Date;
-                        checklistGenerations: number;
-                        apiCalls: number;
-                        documentStorageMb: number;
-                        policyGenerations: number;
-                        planTier: string;
-                        complianceQueryLimit: number;
-                        checklistGenerationLimit: number;
-                        apiCallLimit: number;
-                        documentStorageMbLimit: number;
-                        gapAnalysisLimit: number;
-                        policyGenerationLimit: number;
-                        syncedFromRedisAt: Date | null;
-                    }[] | {
                         metadata: import("@prisma/client/runtime/client").JsonValue | null;
                         id: string;
                         description: string | null;
@@ -1657,6 +1680,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 success: boolean;
                 requiresApproval: boolean;
                 alreadyVerified: boolean;
+                session: {
+                    id: string;
+                    expiresAt: string;
+                } | null;
             };
             meta: object;
         }>;
@@ -1800,6 +1827,16 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 success: boolean;
                 message: string;
                 backupCodes: string[];
+            };
+            meta: object;
+        }>;
+        verifyStepUp: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                code: string;
+                isBackupCode?: boolean | undefined;
+            };
+            output: {
+                success: boolean;
             };
             meta: object;
         }>;
@@ -2245,27 +2282,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 limit?: number | undefined;
             };
             output: {
-                members: {
-                    role: import(".prisma/client").$Enums.MemberRole;
-                    platformRole: import(".prisma/client").$Enums.UserRole;
-                    orgRole: import(".prisma/client").$Enums.MemberRole;
-                    membershipId: string;
-                    status: import(".prisma/client").$Enums.MemberStatus;
-                    joinedAt: Date;
-                    invitedAt: Date | null;
-                    totpEnabled: boolean;
-                    id: string;
-                    email: string;
-                    phone: string | null;
-                    fullName: string;
-                    emailVerified: boolean;
-                    lastLoginAt: Date | null;
-                    createdAt: Date;
-                }[];
+                members: any[];
                 pagination: {
                     page: number;
                     limit: number;
-                    total: number;
+                    total: any;
                     pages: number;
                 };
             };
@@ -2279,17 +2300,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             output: {
                 success: boolean;
-                member: {
-                    id: string;
-                    userId: string;
-                    user: {
-                        email: string;
-                        fullName: string;
-                    };
-                    role: import(".prisma/client").$Enums.MemberRole;
-                    status: import(".prisma/client").$Enums.MemberStatus;
-                    organizationId: string;
-                };
+                member: any;
                 message: string;
             };
             meta: object;
@@ -2331,7 +2342,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         getSettings: import("@trpc/server").TRPCQueryProcedure<{
             input: void;
             output: {
-                currentMemberRole: import(".prisma/client").$Enums.MemberRole | null;
+                currentMemberRole: any;
                 canManageOrganizationSettings: boolean;
                 id: string;
                 name: string;
@@ -2383,40 +2394,29 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 canManageMembers: boolean;
                 seatUsage: import("../services/organization-seat.service").OrganizationSeatUsage;
                 memberCounts: {
-                    active: number;
-                    suspended: number;
-                    pendingInvitations: number;
+                    active: any;
+                    suspended: any;
+                    pendingInvitations: any;
                     capacity: number;
                 };
-                owner: {
-                    id: string;
-                    email: string;
-                    fullName: string;
-                } | null;
+                owner: any;
                 members: {
-                    id: string;
-                    membershipId: string;
-                    name: string;
-                    email: string;
-                    role: import(".prisma/client").$Enums.MemberRole;
-                    orgRole: import(".prisma/client").$Enums.MemberRole;
-                    platformRole: import(".prisma/client").$Enums.UserRole;
-                    status: import(".prisma/client").$Enums.MemberStatus;
-                    joinedAt: Date;
-                    invitedAt: Date | null;
-                    createdAt: Date;
-                    lastActive: Date | null;
-                    lastLoginAt: Date | null;
-                    totpEnabled: boolean;
+                    id: any;
+                    membershipId: any;
+                    name: any;
+                    email: any;
+                    role: any;
+                    orgRole: any;
+                    platformRole: any;
+                    status: any;
+                    joinedAt: any;
+                    invitedAt: any;
+                    createdAt: any;
+                    lastActive: any;
+                    lastLoginAt: any;
+                    totpEnabled: any;
                 }[];
-                pendingInvitations: {
-                    id: string;
-                    email: string;
-                    createdAt: Date;
-                    expiresAt: Date;
-                    organizationRole: import(".prisma/client").$Enums.MemberRole | null;
-                    invitedBy: string;
-                }[];
+                pendingInvitations: any;
             };
             meta: object;
         }>;
@@ -2430,7 +2430,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     mfaPolicyUpdatedBy: any;
                 };
                 posture: {
-                    totalMembers: number;
+                    totalMembers: any;
                     mfaEnabled: number;
                     mfaMissing: number;
                     percentage: number;
@@ -2438,13 +2438,13 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 canManageSecurity: boolean;
                 currentUserMfaEnabled: boolean;
                 members: {
-                    id: string;
-                    name: string;
-                    email: string;
-                    role: import(".prisma/client").$Enums.MemberRole;
-                    status: import(".prisma/client").$Enums.MemberStatus;
-                    totpEnabled: boolean;
-                    lastActive: Date | null;
+                    id: any;
+                    name: any;
+                    email: any;
+                    role: any;
+                    status: any;
+                    totpEnabled: any;
+                    lastActive: any;
                 }[];
             };
             meta: object;
@@ -2457,7 +2457,72 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             output: {
                 success: boolean;
                 policy: {
-                    [x: string]: ({
+                    [x: string]: {
+                        complianceQueries: number;
+                        gapAnalyses: number;
+                        id: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        checklistGenerations: number;
+                        apiCalls: number;
+                        documentStorageMb: number;
+                        policyGenerations: number;
+                        planTier: string;
+                        complianceQueryLimit: number;
+                        checklistGenerationLimit: number;
+                        apiCallLimit: number;
+                        documentStorageMbLimit: number;
+                        gapAnalysisLimit: number;
+                        policyGenerationLimit: number;
+                        syncedFromRedisAt: Date | null;
+                    }[] | {
+                        id: string;
+                        count: number;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        metric: import(".prisma/client").$Enums.BillingMetric;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateCapturedAt: Date | null;
+                        pricingVersion: string | null;
+                    }[] | ({
+                        id: string;
+                        count: number;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        metric: import(".prisma/client").$Enums.BillingMetric;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateCapturedAt: Date | null;
+                        pricingVersion: string | null;
+                    } | {
+                        id: string;
+                        count: number;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        metric: import(".prisma/client").$Enums.BillingMetric;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateCapturedAt: Date | null;
+                        pricingVersion: string | null;
+                    })[] | ({
                         id: string;
                         email: string;
                         password: string | null;
@@ -3205,24 +3270,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         createdById: string;
                         sourceType: string | null;
                         sourceId: string | null;
-                    })[] | ({
-                        id: string;
-                        count: number;
-                        organizationId: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        metric: import(".prisma/client").$Enums.BillingMetric;
-                        periodStart: Date;
-                        periodEnd: Date;
-                    } | {
-                        id: string;
-                        count: number;
-                        organizationId: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        metric: import(".prisma/client").$Enums.BillingMetric;
-                        periodStart: Date;
-                        periodEnd: Date;
                     })[] | ({
                         complianceQueries: number;
                         gapAnalyses: number;
@@ -3232,6 +3279,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         periodStart: Date;
                         periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
                         checklistGenerations: number;
                         apiCalls: number;
                         documentStorageMb: number;
@@ -3253,6 +3302,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         updatedAt: Date;
                         periodStart: Date;
                         periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
                         checklistGenerations: number;
                         apiCalls: number;
                         documentStorageMb: number;
@@ -3794,36 +3845,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         sourceType: string | null;
                         sourceId: string | null;
                     }[] | {
-                        id: string;
-                        count: number;
-                        organizationId: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        metric: import(".prisma/client").$Enums.BillingMetric;
-                        periodStart: Date;
-                        periodEnd: Date;
-                    }[] | {
-                        complianceQueries: number;
-                        gapAnalyses: number;
-                        id: string;
-                        organizationId: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        periodStart: Date;
-                        periodEnd: Date;
-                        checklistGenerations: number;
-                        apiCalls: number;
-                        documentStorageMb: number;
-                        policyGenerations: number;
-                        planTier: string;
-                        complianceQueryLimit: number;
-                        checklistGenerationLimit: number;
-                        apiCallLimit: number;
-                        documentStorageMbLimit: number;
-                        gapAnalysisLimit: number;
-                        policyGenerationLimit: number;
-                        syncedFromRedisAt: Date | null;
-                    }[] | {
                         metadata: import("@prisma/client/runtime/client").JsonValue | null;
                         id: string;
                         description: string | null;
@@ -3969,14 +3990,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         listPendingInvitations: import("@trpc/server").TRPCQueryProcedure<{
             input: void;
             output: {
-                invitations: {
-                    id: string;
-                    email: string;
-                    createdAt: Date;
-                    expiresAt: Date;
-                    organizationRole: import(".prisma/client").$Enums.MemberRole | null;
-                    invitedBy: string;
-                }[];
+                invitations: any;
             };
             meta: object;
         }>;
@@ -4191,6 +4205,2321 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        getAIUsageStats: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                page?: number | undefined;
+                pageSize?: number | undefined;
+            } | undefined;
+            output: {
+                organization: any;
+                period: {
+                    start: Date;
+                    end: Date;
+                    daysRemaining: number;
+                    daysTotal: number;
+                };
+                planTier: any;
+                categories: import("../../services/usage-tracking.service").CategorySummary[];
+                costs: {
+                    totalCostUsd: number;
+                    totalCostKes: number;
+                    byMetric: Record<string, {
+                        count: number;
+                        costUsd: number;
+                        costKes: number;
+                    }>;
+                };
+                recentActivity: {
+                    total: any;
+                    page: number;
+                    pageSize: number;
+                    items: any;
+                };
+            };
+            meta: object;
+        }>;
+    }>>;
+    org: import("@trpc/server").TRPCBuiltRouter<{
+        ctx: import("./context").Context;
+        meta: object;
+        errorShape: {
+            message: string;
+            data: {
+                stack: string | undefined;
+                fieldErrors: Record<string, string> | null;
+                code: import("@trpc/server").TRPC_ERROR_CODE_KEY;
+                httpStatus: number;
+                path?: string;
+            };
+            code: import("@trpc/server").TRPC_ERROR_CODE_NUMBER;
+        };
+        transformer: false;
+    }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
+        list: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                page?: number | undefined;
+                limit?: number | undefined;
+                type?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE" | undefined;
+                search?: string | undefined;
+            };
+            output: {
+                organizations: ({
+                    _count: {
+                        users: number;
+                    };
+                } & {
+                    type: string;
+                    id: string;
+                    mpesaPhoneNumber: string | null;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    name: string;
+                    organizationType: string;
+                    registrationNumber: string | null;
+                    cbkLicenseNumber: string | null;
+                    website: string | null;
+                    industry: string | null;
+                    size: string | null;
+                    subscriptionTier: string;
+                    subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+                    trialEndsAt: Date | null;
+                    gracePeriodEndsAt: Date | null;
+                    cancelledAt: Date | null;
+                    subscriptionEndsAt: Date | null;
+                    verificationStatus: string;
+                    verifiedAt: Date | null;
+                    verifiedBy: string | null;
+                    plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                    planStartDate: Date | null;
+                    planEndDate: Date | null;
+                    maxSeats: number;
+                    homeJurisdictionCode: string | null;
+                    enabledJurisdictions: string[];
+                    needsCountryConfirmation: boolean;
+                    stripeCustomerId: string | null;
+                    stripeSubId: string | null;
+                    customLimits: import("@prisma/client/runtime/client").JsonValue | null;
+                    preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+                    mpesaNextPaymentDueDate: Date | null;
+                    subscriptionCycleEnd: Date | null;
+                    mpesaFailedRenewalAttempts: number;
+                    mpesaLastRenewalAttemptAt: Date | null;
+                    mpesaNextRenewalRetryAt: Date | null;
+                    mpesaCancelledByUserAt: Date | null;
+                    address: string | null;
+                    contactPerson: string | null;
+                    contactPosition: string | null;
+                    contactEmail: string | null;
+                    contactPhone: string | null;
+                    requireMfa: boolean;
+                    mfaPolicyEnabledAt: Date | null;
+                    mfaPolicyFirstEnabledAt: Date | null;
+                    mfaPolicyGraceHours: number;
+                    mfaPolicyUpdatedBy: string | null;
+                })[];
+                pagination: {
+                    page: number;
+                    limit: number;
+                    total: number;
+                    pages: number;
+                };
+            };
+            meta: object;
+        }>;
+        get: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                id: string;
+            };
+            output: {
+                users: {
+                    id: string;
+                    email: string;
+                    fullName: string;
+                    role: import(".prisma/client").$Enums.UserRole;
+                }[];
+            } & {
+                type: string;
+                id: string;
+                mpesaPhoneNumber: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                organizationType: string;
+                registrationNumber: string | null;
+                cbkLicenseNumber: string | null;
+                website: string | null;
+                industry: string | null;
+                size: string | null;
+                subscriptionTier: string;
+                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+                trialEndsAt: Date | null;
+                gracePeriodEndsAt: Date | null;
+                cancelledAt: Date | null;
+                subscriptionEndsAt: Date | null;
+                verificationStatus: string;
+                verifiedAt: Date | null;
+                verifiedBy: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                planStartDate: Date | null;
+                planEndDate: Date | null;
+                maxSeats: number;
+                homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
+                stripeCustomerId: string | null;
+                stripeSubId: string | null;
+                customLimits: import("@prisma/client/runtime/client").JsonValue | null;
+                preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+                mpesaNextPaymentDueDate: Date | null;
+                subscriptionCycleEnd: Date | null;
+                mpesaFailedRenewalAttempts: number;
+                mpesaLastRenewalAttemptAt: Date | null;
+                mpesaNextRenewalRetryAt: Date | null;
+                mpesaCancelledByUserAt: Date | null;
+                address: string | null;
+                contactPerson: string | null;
+                contactPosition: string | null;
+                contactEmail: string | null;
+                contactPhone: string | null;
+                requireMfa: boolean;
+                mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
+                mfaPolicyUpdatedBy: string | null;
+            };
+            meta: object;
+        }>;
+        create: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                name: string;
+                type: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE";
+                contactEmail: string;
+                homeJurisdictionCode: "KE" | "MW" | "RW" | "NG";
+                registrationNumber?: string | undefined;
+                industry?: string | undefined;
+                contactPhone?: string | undefined;
+                address?: string | undefined;
+                website?: string | undefined;
+                description?: string | undefined;
+                enabledJurisdictions?: ("KE" | "MW" | "RW" | "NG")[] | undefined;
+            };
+            output: {
+                type: string;
+                id: string;
+                mpesaPhoneNumber: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                organizationType: string;
+                registrationNumber: string | null;
+                cbkLicenseNumber: string | null;
+                website: string | null;
+                industry: string | null;
+                size: string | null;
+                subscriptionTier: string;
+                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+                trialEndsAt: Date | null;
+                gracePeriodEndsAt: Date | null;
+                cancelledAt: Date | null;
+                subscriptionEndsAt: Date | null;
+                verificationStatus: string;
+                verifiedAt: Date | null;
+                verifiedBy: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                planStartDate: Date | null;
+                planEndDate: Date | null;
+                maxSeats: number;
+                homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
+                stripeCustomerId: string | null;
+                stripeSubId: string | null;
+                customLimits: import("@prisma/client/runtime/client").JsonValue | null;
+                preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+                mpesaNextPaymentDueDate: Date | null;
+                subscriptionCycleEnd: Date | null;
+                mpesaFailedRenewalAttempts: number;
+                mpesaLastRenewalAttemptAt: Date | null;
+                mpesaNextRenewalRetryAt: Date | null;
+                mpesaCancelledByUserAt: Date | null;
+                address: string | null;
+                contactPerson: string | null;
+                contactPosition: string | null;
+                contactEmail: string | null;
+                contactPhone: string | null;
+                requireMfa: boolean;
+                mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
+                mfaPolicyUpdatedBy: string | null;
+            };
+            meta: object;
+        }>;
+        update: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                id: string;
+                name?: string | undefined;
+                type?: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "OTHER" | "BANK" | "TELECOM" | "INSURANCE" | undefined;
+                registrationNumber?: string | undefined;
+                industry?: string | undefined;
+                contactEmail?: string | undefined;
+                contactPhone?: string | undefined;
+                address?: string | undefined;
+                website?: string | undefined;
+                description?: string | undefined;
+                homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
+                homeJurisdictionReason?: string | undefined;
+                enabledJurisdictions?: ("KE" | "MW" | "RW" | "NG")[] | undefined;
+                needsCountryConfirmation?: boolean | undefined;
+            };
+            output: {
+                type: string;
+                id: string;
+                mpesaPhoneNumber: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                organizationType: string;
+                registrationNumber: string | null;
+                cbkLicenseNumber: string | null;
+                website: string | null;
+                industry: string | null;
+                size: string | null;
+                subscriptionTier: string;
+                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+                trialEndsAt: Date | null;
+                gracePeriodEndsAt: Date | null;
+                cancelledAt: Date | null;
+                subscriptionEndsAt: Date | null;
+                verificationStatus: string;
+                verifiedAt: Date | null;
+                verifiedBy: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                planStartDate: Date | null;
+                planEndDate: Date | null;
+                maxSeats: number;
+                homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
+                stripeCustomerId: string | null;
+                stripeSubId: string | null;
+                customLimits: import("@prisma/client/runtime/client").JsonValue | null;
+                preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+                mpesaNextPaymentDueDate: Date | null;
+                subscriptionCycleEnd: Date | null;
+                mpesaFailedRenewalAttempts: number;
+                mpesaLastRenewalAttemptAt: Date | null;
+                mpesaNextRenewalRetryAt: Date | null;
+                mpesaCancelledByUserAt: Date | null;
+                address: string | null;
+                contactPerson: string | null;
+                contactPosition: string | null;
+                contactEmail: string | null;
+                contactPhone: string | null;
+                requireMfa: boolean;
+                mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
+                mfaPolicyUpdatedBy: string | null;
+            };
+            meta: object;
+        }>;
+        delete: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                id: string;
+            };
+            output: {
+                success: boolean;
+                message: string;
+            };
+            meta: object;
+        }>;
+        addMember: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                organizationId: string;
+                userId: string;
+                role?: "ADMIN" | "MEMBER" | "VIEWER" | undefined;
+            };
+            output: {
+                success: boolean;
+                message: string;
+            };
+            meta: object;
+        }>;
+        removeMember: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                organizationId: string;
+                userId: string;
+            };
+            output: {
+                success: boolean;
+                message: string;
+            };
+            meta: object;
+        }>;
+        getMembers: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                organizationId: string;
+                page?: number | undefined;
+                limit?: number | undefined;
+            };
+            output: {
+                members: any[];
+                pagination: {
+                    page: number;
+                    limit: number;
+                    total: any;
+                    pages: number;
+                };
+            };
+            meta: object;
+        }>;
+        updateMemberRole: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                userId: string;
+                role: "ADMIN" | "MEMBER" | "VIEWER";
+                organizationId?: string | undefined;
+            };
+            output: {
+                success: boolean;
+                member: any;
+                message: string;
+            };
+            meta: object;
+        }>;
+        suspendMember: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                userId: string;
+                organizationId?: string | undefined;
+            };
+            output: {
+                success: boolean;
+                message: string;
+            };
+            meta: object;
+        }>;
+        reactivateMember: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                userId: string;
+                organizationId?: string | undefined;
+            };
+            output: {
+                success: boolean;
+                member: {
+                    id: string;
+                    userId: string;
+                    user: {
+                        email: string;
+                        fullName: string;
+                    };
+                    role: import(".prisma/client").$Enums.MemberRole;
+                    status: import(".prisma/client").$Enums.MemberStatus;
+                    organizationId: string;
+                    joinedAt: Date;
+                };
+                message: string;
+            };
+            meta: object;
+        }>;
+        getSettings: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                currentMemberRole: any;
+                canManageOrganizationSettings: boolean;
+                id: string;
+                name: string;
+                registrationNumber: string | null;
+                website: string | null;
+                industry: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
+                address: string | null;
+                contactPerson: string | null;
+                contactPosition: string | null;
+                contactEmail: string | null;
+                contactPhone: string | null;
+            };
+            meta: object;
+        }>;
+        getSeatUsage: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                canManageMembers: boolean;
+                seatLimit: number;
+                activeMembers: number;
+                pendingInvites: number;
+                usedSeats: number;
+                availableSeats: number;
+            };
+            meta: object;
+        }>;
+        getTeamOverview: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                organization: {
+                    id: string;
+                    name: string;
+                    registrationNumber: string | null;
+                    website: string | null;
+                    industry: string | null;
+                    subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+                    plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                    maxSeats: number;
+                    address: string | null;
+                    contactPerson: string | null;
+                    contactEmail: string | null;
+                    contactPhone: string | null;
+                };
+                callerOrgRole: import(".prisma/client").$Enums.MemberRole;
+                canManageMembers: boolean;
+                seatUsage: import("../services/organization-seat.service").OrganizationSeatUsage;
+                memberCounts: {
+                    active: any;
+                    suspended: any;
+                    pendingInvitations: any;
+                    capacity: number;
+                };
+                owner: any;
+                members: {
+                    id: any;
+                    membershipId: any;
+                    name: any;
+                    email: any;
+                    role: any;
+                    orgRole: any;
+                    platformRole: any;
+                    status: any;
+                    joinedAt: any;
+                    invitedAt: any;
+                    createdAt: any;
+                    lastActive: any;
+                    lastLoginAt: any;
+                    totpEnabled: any;
+                }[];
+                pendingInvitations: any;
+            };
+            meta: object;
+        }>;
+        getSecurityCenter: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                policy: {
+                    requireMfa: boolean;
+                    mfaPolicyEnabledAt: any;
+                    mfaPolicyGraceHours: any;
+                    mfaPolicyUpdatedBy: any;
+                };
+                posture: {
+                    totalMembers: any;
+                    mfaEnabled: number;
+                    mfaMissing: number;
+                    percentage: number;
+                };
+                canManageSecurity: boolean;
+                currentUserMfaEnabled: boolean;
+                members: {
+                    id: any;
+                    name: any;
+                    email: any;
+                    role: any;
+                    status: any;
+                    totpEnabled: any;
+                    lastActive: any;
+                }[];
+            };
+            meta: object;
+        }>;
+        updateSecurityPolicy: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                requireMfa: boolean;
+                graceHours?: number | undefined;
+            };
+            output: {
+                success: boolean;
+                policy: {
+                    [x: string]: {
+                        complianceQueries: number;
+                        gapAnalyses: number;
+                        id: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        checklistGenerations: number;
+                        apiCalls: number;
+                        documentStorageMb: number;
+                        policyGenerations: number;
+                        planTier: string;
+                        complianceQueryLimit: number;
+                        checklistGenerationLimit: number;
+                        apiCallLimit: number;
+                        documentStorageMbLimit: number;
+                        gapAnalysisLimit: number;
+                        policyGenerationLimit: number;
+                        syncedFromRedisAt: Date | null;
+                    }[] | {
+                        id: string;
+                        count: number;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        metric: import(".prisma/client").$Enums.BillingMetric;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateCapturedAt: Date | null;
+                        pricingVersion: string | null;
+                    }[] | ({
+                        id: string;
+                        count: number;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        metric: import(".prisma/client").$Enums.BillingMetric;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateCapturedAt: Date | null;
+                        pricingVersion: string | null;
+                    } | {
+                        id: string;
+                        count: number;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        metric: import(".prisma/client").$Enums.BillingMetric;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        fxRateCapturedAt: Date | null;
+                        pricingVersion: string | null;
+                    })[] | ({
+                        id: string;
+                        email: string;
+                        password: string | null;
+                        phone: string | null;
+                        supabaseAuthId: string | null;
+                        fullName: string;
+                        avatar: string | null;
+                        role: import(".prisma/client").$Enums.UserRole;
+                        status: import(".prisma/client").$Enums.UserStatus;
+                        accountStatus: string;
+                        emailVerified: boolean;
+                        emailVerifiedAt: Date | null;
+                        emailVerificationToken: string | null;
+                        emailVerificationExpiry: Date | null;
+                        passwordResetToken: string | null;
+                        passwordResetExpiry: Date | null;
+                        mustChangePassword: boolean;
+                        temporaryPasswordExpiresAt: Date | null;
+                        temporaryPasswordIssuedAt: Date | null;
+                        temporaryPasswordUsedAt: Date | null;
+                        temporaryPasswordCreatedByAdminId: string | null;
+                        temporaryPasswordDeliveryStatus: string | null;
+                        temporaryPasswordVersion: number;
+                        organizationId: string | null;
+                        lastLoginAt: Date | null;
+                        lastLoginIp: string | null;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        preferences: import("@prisma/client/runtime/client").JsonValue | null;
+                        totpEnabled: boolean;
+                        totpSecret: string | null;
+                        freeTrialActivatedAt: Date | null;
+                        freeTrialExpiresAt: Date | null;
+                        freeTrialUsage: import("@prisma/client/runtime/client").JsonValue | null;
+                        isPilot: boolean;
+                        pilotCohort: string | null;
+                        pilotStartedAt: Date | null;
+                        pilotExpiresAt: Date | null;
+                        pilotAccessStatus: string;
+                        pilotFirstExtensionGrantedAt: Date | null;
+                        pilotSecondExtensionGrantedAt: Date | null;
+                        pilotExtensionCount: number;
+                        pilotCreatedByAdminId: string | null;
+                        pilotLastExtendedByAdminId: string | null;
+                        postPilotTier: string;
+                        pilotConvertedAt: Date | null;
+                        deletionScheduledAt: Date | null;
+                        deletionReason: string | null;
+                        deletionFeedback: string | null;
+                    } | {
+                        id: string;
+                        email: string;
+                        password: string | null;
+                        phone: string | null;
+                        supabaseAuthId: string | null;
+                        fullName: string;
+                        avatar: string | null;
+                        role: import(".prisma/client").$Enums.UserRole;
+                        status: import(".prisma/client").$Enums.UserStatus;
+                        accountStatus: string;
+                        emailVerified: boolean;
+                        emailVerifiedAt: Date | null;
+                        emailVerificationToken: string | null;
+                        emailVerificationExpiry: Date | null;
+                        passwordResetToken: string | null;
+                        passwordResetExpiry: Date | null;
+                        mustChangePassword: boolean;
+                        temporaryPasswordExpiresAt: Date | null;
+                        temporaryPasswordIssuedAt: Date | null;
+                        temporaryPasswordUsedAt: Date | null;
+                        temporaryPasswordCreatedByAdminId: string | null;
+                        temporaryPasswordDeliveryStatus: string | null;
+                        temporaryPasswordVersion: number;
+                        organizationId: string | null;
+                        lastLoginAt: Date | null;
+                        lastLoginIp: string | null;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        preferences: import("@prisma/client/runtime/client").JsonValue | null;
+                        totpEnabled: boolean;
+                        totpSecret: string | null;
+                        freeTrialActivatedAt: Date | null;
+                        freeTrialExpiresAt: Date | null;
+                        freeTrialUsage: import("@prisma/client/runtime/client").JsonValue | null;
+                        isPilot: boolean;
+                        pilotCohort: string | null;
+                        pilotStartedAt: Date | null;
+                        pilotExpiresAt: Date | null;
+                        pilotAccessStatus: string;
+                        pilotFirstExtensionGrantedAt: Date | null;
+                        pilotSecondExtensionGrantedAt: Date | null;
+                        pilotExtensionCount: number;
+                        pilotCreatedByAdminId: string | null;
+                        pilotLastExtendedByAdminId: string | null;
+                        postPilotTier: string;
+                        pilotConvertedAt: Date | null;
+                        deletionScheduledAt: Date | null;
+                        deletionReason: string | null;
+                        deletionFeedback: string | null;
+                    })[] | ({
+                        id: string;
+                        title: string | null;
+                        userId: string;
+                        status: import(".prisma/client").$Enums.PolicyStatus;
+                        organizationId: string | null;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        organizationType: string | null;
+                        scenario: string;
+                        regulatoryAreas: string[];
+                        urgency: string;
+                        stakeholders: string[];
+                        executiveSummary: string | null;
+                        analysis: string | null;
+                        recommendations: import("@prisma/client/runtime/client").JsonValue | null;
+                        complianceChecklist: import("@prisma/client/runtime/client").JsonValue | null;
+                        implementationTimeline: import("@prisma/client/runtime/client").JsonValue | null;
+                        appendices: import("@prisma/client/runtime/client").JsonValue | null;
+                        content: string | null;
+                        specificRequirements: string | null;
+                        targetAudience: string | null;
+                        generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        isLatestVersion: boolean;
+                        parentId: string | null;
+                        generationTime: number | null;
+                        version: number;
+                        assignedTo: string | null;
+                        reviewers: string[];
+                    } | {
+                        id: string;
+                        title: string | null;
+                        userId: string;
+                        status: import(".prisma/client").$Enums.PolicyStatus;
+                        organizationId: string | null;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        organizationType: string | null;
+                        scenario: string;
+                        regulatoryAreas: string[];
+                        urgency: string;
+                        stakeholders: string[];
+                        executiveSummary: string | null;
+                        analysis: string | null;
+                        recommendations: import("@prisma/client/runtime/client").JsonValue | null;
+                        complianceChecklist: import("@prisma/client/runtime/client").JsonValue | null;
+                        implementationTimeline: import("@prisma/client/runtime/client").JsonValue | null;
+                        appendices: import("@prisma/client/runtime/client").JsonValue | null;
+                        content: string | null;
+                        specificRequirements: string | null;
+                        targetAudience: string | null;
+                        generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        isLatestVersion: boolean;
+                        parentId: string | null;
+                        generationTime: number | null;
+                        version: number;
+                        assignedTo: string | null;
+                        reviewers: string[];
+                    })[] | ({
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        summary: import("@prisma/client/runtime/client").JsonValue | null;
+                        citations: import("@prisma/client/runtime/client").JsonValue | null;
+                        jurisdictionCode: string | null;
+                        progress: number;
+                        dueDate: Date | null;
+                        productType: string | null;
+                        businessStage: string | null;
+                        targetSegments: import("@prisma/client/runtime/client").JsonValue | null;
+                        servicesOffered: import("@prisma/client/runtime/client").JsonValue | null;
+                        additionalConcerns: string | null;
+                        items: import("@prisma/client/runtime/client").JsonValue;
+                        checklistData: import("@prisma/client/runtime/client").JsonValue | null;
+                        itemProgress: import("@prisma/client/runtime/client").JsonValue | null;
+                        completedItems: number;
+                        totalItems: number;
+                        evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
+                        generatedAt: Date | null;
+                        completedAt: Date | null;
+                    } | {
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        summary: import("@prisma/client/runtime/client").JsonValue | null;
+                        citations: import("@prisma/client/runtime/client").JsonValue | null;
+                        jurisdictionCode: string | null;
+                        progress: number;
+                        dueDate: Date | null;
+                        productType: string | null;
+                        businessStage: string | null;
+                        targetSegments: import("@prisma/client/runtime/client").JsonValue | null;
+                        servicesOffered: import("@prisma/client/runtime/client").JsonValue | null;
+                        additionalConcerns: string | null;
+                        items: import("@prisma/client/runtime/client").JsonValue;
+                        checklistData: import("@prisma/client/runtime/client").JsonValue | null;
+                        itemProgress: import("@prisma/client/runtime/client").JsonValue | null;
+                        completedItems: number;
+                        totalItems: number;
+                        evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
+                        generatedAt: Date | null;
+                        completedAt: Date | null;
+                    })[] | ({
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.VaultDocumentStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        name: string;
+                        verifiedAt: Date | null;
+                        verifiedBy: string | null;
+                        version: number;
+                        fileSize: number;
+                        category: import(".prisma/client").$Enums.DocumentCategory;
+                        tags: string[];
+                        notes: string | null;
+                        fileName: string;
+                        fileType: string;
+                        storageKey: string;
+                        contentHash: string | null;
+                        expiryDate: Date | null;
+                        fileExtension: string;
+                        uploadedById: string;
+                        isArchived: boolean;
+                        r2Bucket: string | null;
+                        encryptionKeyId: string | null;
+                        uploadStatus: import(".prisma/client").$Enums.VaultDocumentUploadStatus | null;
+                        retentionExpiresAt: Date | null;
+                    } | {
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.VaultDocumentStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        name: string;
+                        verifiedAt: Date | null;
+                        verifiedBy: string | null;
+                        version: number;
+                        fileSize: number;
+                        category: import(".prisma/client").$Enums.DocumentCategory;
+                        tags: string[];
+                        notes: string | null;
+                        fileName: string;
+                        fileType: string;
+                        storageKey: string;
+                        contentHash: string | null;
+                        expiryDate: Date | null;
+                        fileExtension: string;
+                        uploadedById: string;
+                        isArchived: boolean;
+                        r2Bucket: string | null;
+                        encryptionKeyId: string | null;
+                        uploadStatus: import(".prisma/client").$Enums.VaultDocumentUploadStatus | null;
+                        retentionExpiresAt: Date | null;
+                    })[] | ({
+                        id: string;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        complianceQueryId: string;
+                        notes: string | null;
+                        runId: string;
+                        question: string;
+                        suggestedDocument: string | null;
+                        statusChangedAt: Date | null;
+                    } | {
+                        id: string;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        complianceQueryId: string;
+                        notes: string | null;
+                        runId: string;
+                        question: string;
+                        suggestedDocument: string | null;
+                        statusChangedAt: Date | null;
+                    })[] | ({
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.CorpusGapReportStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        documentType: import(".prisma/client").$Enums.CorpusGapDocumentType;
+                        documentName: string;
+                        jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
+                        sourceUrl: string | null;
+                        reportedByUserId: string;
+                        issuingAuthority: string;
+                        adminNotes: string | null;
+                        resolvedAt: Date | null;
+                    } | {
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.CorpusGapReportStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        documentType: import(".prisma/client").$Enums.CorpusGapDocumentType;
+                        documentName: string;
+                        jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
+                        sourceUrl: string | null;
+                        reportedByUserId: string;
+                        issuingAuthority: string;
+                        adminNotes: string | null;
+                        resolvedAt: Date | null;
+                    })[] | ({
+                        id: string;
+                        title: string;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        jurisdictionCode: string;
+                        regulator: string;
+                        licenseType: string;
+                        progress: number;
+                        referenceNumber: string | null;
+                        nextAction: string | null;
+                        dueDate: Date | null;
+                        submittedAt: Date | null;
+                        decidedAt: Date | null;
+                    } | {
+                        id: string;
+                        title: string;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        jurisdictionCode: string;
+                        regulator: string;
+                        licenseType: string;
+                        progress: number;
+                        referenceNumber: string | null;
+                        nextAction: string | null;
+                        dueDate: Date | null;
+                        submittedAt: Date | null;
+                        decidedAt: Date | null;
+                    })[] | ({
+                        id: string;
+                        status: import(".prisma/client").$Enums.LicenseStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        regulator: string;
+                        licenseType: string;
+                        submittedAt: Date | null;
+                        notes: string | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        licenseNumber: string | null;
+                        issueDate: Date | null;
+                        expiryDate: Date | null;
+                        renewalDueDate: Date | null;
+                        approvedAt: Date | null;
+                        assignedOwnerId: string | null;
+                    } | {
+                        id: string;
+                        status: import(".prisma/client").$Enums.LicenseStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        regulator: string;
+                        licenseType: string;
+                        submittedAt: Date | null;
+                        notes: string | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        licenseNumber: string | null;
+                        issueDate: Date | null;
+                        expiryDate: Date | null;
+                        renewalDueDate: Date | null;
+                        approvedAt: Date | null;
+                        assignedOwnerId: string | null;
+                    })[] | ({
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        eventType: string;
+                        dueDate: Date | null;
+                        completedAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        licenseId: string;
+                        assignedToUserId: string | null;
+                        evidenceDocumentId: string | null;
+                        complianceEventId: string | null;
+                    } | {
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        eventType: string;
+                        dueDate: Date | null;
+                        completedAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        licenseId: string;
+                        assignedToUserId: string | null;
+                        evidenceDocumentId: string | null;
+                        complianceEventId: string | null;
+                    })[] | ({
+                        id: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        documentType: string | null;
+                        vaultDocumentId: string;
+                        notes: string | null;
+                        createdByUserId: string;
+                        licenseId: string;
+                    } | {
+                        id: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        documentType: string | null;
+                        vaultDocumentId: string;
+                        notes: string | null;
+                        createdByUserId: string;
+                        licenseId: string;
+                    })[] | ({
+                        id: string;
+                        description: string | null;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        dueDate: Date | null;
+                        amount: import("@prisma/client-runtime-utils").Decimal | null;
+                        currency: string;
+                        paidAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        licenseId: string;
+                    } | {
+                        id: string;
+                        description: string | null;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        dueDate: Date | null;
+                        amount: import("@prisma/client-runtime-utils").Decimal | null;
+                        currency: string;
+                        paidAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        licenseId: string;
+                    })[] | ({
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        userId: string;
+                        status: import(".prisma/client").$Enums.PilotAccessStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        expiresAt: Date;
+                        revokedAt: Date | null;
+                        entitlementProfile: string;
+                        startsAt: Date;
+                        extensionCount: number;
+                        createdByAdminId: string | null;
+                        lastExtendedByAdminId: string | null;
+                        revokedByAdminId: string | null;
+                        convertedAt: Date | null;
+                        convertedPlan: string | null;
+                    } | {
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        userId: string;
+                        status: import(".prisma/client").$Enums.PilotAccessStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        expiresAt: Date;
+                        revokedAt: Date | null;
+                        entitlementProfile: string;
+                        startsAt: Date;
+                        extensionCount: number;
+                        createdByAdminId: string | null;
+                        lastExtendedByAdminId: string | null;
+                        revokedByAdminId: string | null;
+                        convertedAt: Date | null;
+                        convertedPlan: string | null;
+                    })[] | ({
+                        id: string;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        readAt: Date | null;
+                        alertId: string;
+                        channel: string;
+                        sentAt: Date | null;
+                    } | {
+                        id: string;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        readAt: Date | null;
+                        alertId: string;
+                        channel: string;
+                        sentAt: Date | null;
+                    })[] | ({
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        userId: string;
+                        status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        organizationType: string | null;
+                        executiveSummary: string | null;
+                        targetAudience: string | null;
+                        generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        isLatestVersion: boolean;
+                        parentId: string | null;
+                        version: number;
+                        errorMessage: string | null;
+                        progress: number;
+                        completedAt: Date | null;
+                        regulatoryFrameworks: string[];
+                        ragGrounded: boolean;
+                        jurisdiction: string;
+                        reviewNotes: string | null;
+                        policyType: string;
+                        sourceGapAnalysisId: string | null;
+                        sourceGapId: string | null;
+                        tableOfContents: import("@prisma/client/runtime/client").JsonValue | null;
+                        sections: import("@prisma/client/runtime/client").JsonValue | null;
+                        lastExportedAt: Date | null;
+                        lastExportFormat: string | null;
+                    } | {
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        userId: string;
+                        status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        organizationType: string | null;
+                        executiveSummary: string | null;
+                        targetAudience: string | null;
+                        generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        isLatestVersion: boolean;
+                        parentId: string | null;
+                        version: number;
+                        errorMessage: string | null;
+                        progress: number;
+                        completedAt: Date | null;
+                        regulatoryFrameworks: string[];
+                        ragGrounded: boolean;
+                        jurisdiction: string;
+                        reviewNotes: string | null;
+                        policyType: string;
+                        sourceGapAnalysisId: string | null;
+                        sourceGapId: string | null;
+                        tableOfContents: import("@prisma/client/runtime/client").JsonValue | null;
+                        sections: import("@prisma/client/runtime/client").JsonValue | null;
+                        lastExportedAt: Date | null;
+                        lastExportFormat: string | null;
+                    })[] | ({
+                        type: string;
+                        id: string;
+                        userId: string | null;
+                        status: string;
+                        organizationId: string | null;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        progress: number;
+                        completedAt: Date | null;
+                        priority: number;
+                        idempotencyKey: string;
+                        targetEntityType: string;
+                        targetEntityId: string;
+                        payload: import("@prisma/client/runtime/client").JsonValue;
+                        attempts: number;
+                        maxAttempts: number;
+                        runAfter: Date;
+                        lockedAt: Date | null;
+                        lockedBy: string | null;
+                        startedAt: Date | null;
+                        failedAt: Date | null;
+                        lastError: string | null;
+                        deadLetteredAt: Date | null;
+                    } | {
+                        type: string;
+                        id: string;
+                        userId: string | null;
+                        status: string;
+                        organizationId: string | null;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        progress: number;
+                        completedAt: Date | null;
+                        priority: number;
+                        idempotencyKey: string;
+                        targetEntityType: string;
+                        targetEntityId: string;
+                        payload: import("@prisma/client/runtime/client").JsonValue;
+                        attempts: number;
+                        maxAttempts: number;
+                        runAfter: Date;
+                        lockedAt: Date | null;
+                        lockedBy: string | null;
+                        startedAt: Date | null;
+                        failedAt: Date | null;
+                        lastError: string | null;
+                        deadLetteredAt: Date | null;
+                    })[] | ({
+                        id: string;
+                        userId: string;
+                        role: import(".prisma/client").$Enums.MemberRole;
+                        status: import(".prisma/client").$Enums.MemberStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        invitedBy: string | null;
+                        invitedAt: Date | null;
+                        joinedAt: Date;
+                    } | {
+                        id: string;
+                        userId: string;
+                        role: import(".prisma/client").$Enums.MemberRole;
+                        status: import(".prisma/client").$Enums.MemberStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        invitedBy: string | null;
+                        invitedAt: Date | null;
+                        joinedAt: Date;
+                    })[] | ({
+                        id: string;
+                        title: string;
+                        description: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        category: import(".prisma/client").$Enums.ComplianceCategory;
+                        completedAt: Date | null;
+                        isCompleted: boolean;
+                    } | {
+                        id: string;
+                        title: string;
+                        description: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        category: import(".prisma/client").$Enums.ComplianceCategory;
+                        completedAt: Date | null;
+                        isCompleted: boolean;
+                    })[] | ({
+                        id: string;
+                        organizationId: string;
+                        overallScore: number;
+                        dataProtectionScore: number;
+                        amlKycScore: number;
+                        consumerProtectionScore: number;
+                        cbkLicensingScore: number;
+                        cybersecurityScore: number;
+                        calculatedAt: Date;
+                    } | {
+                        id: string;
+                        organizationId: string;
+                        overallScore: number;
+                        dataProtectionScore: number;
+                        amlKycScore: number;
+                        consumerProtectionScore: number;
+                        cbkLicensingScore: number;
+                        cybersecurityScore: number;
+                        calculatedAt: Date;
+                    })[] | ({
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        category: string;
+                        dueDate: Date;
+                        completedAt: Date | null;
+                        priority: string;
+                        regulation: string | null;
+                        recurrence: string | null;
+                        assigneeId: string | null;
+                        createdById: string;
+                        sourceType: string | null;
+                        sourceId: string | null;
+                    } | {
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        category: string;
+                        dueDate: Date;
+                        completedAt: Date | null;
+                        priority: string;
+                        regulation: string | null;
+                        recurrence: string | null;
+                        assigneeId: string | null;
+                        createdById: string;
+                        sourceType: string | null;
+                        sourceId: string | null;
+                    })[] | ({
+                        complianceQueries: number;
+                        gapAnalyses: number;
+                        id: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        checklistGenerations: number;
+                        apiCalls: number;
+                        documentStorageMb: number;
+                        policyGenerations: number;
+                        planTier: string;
+                        complianceQueryLimit: number;
+                        checklistGenerationLimit: number;
+                        apiCallLimit: number;
+                        documentStorageMbLimit: number;
+                        gapAnalysisLimit: number;
+                        policyGenerationLimit: number;
+                        syncedFromRedisAt: Date | null;
+                    } | {
+                        complianceQueries: number;
+                        gapAnalyses: number;
+                        id: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        periodStart: Date;
+                        periodEnd: Date;
+                        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
+                        costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                        checklistGenerations: number;
+                        apiCalls: number;
+                        documentStorageMb: number;
+                        policyGenerations: number;
+                        planTier: string;
+                        complianceQueryLimit: number;
+                        checklistGenerationLimit: number;
+                        apiCallLimit: number;
+                        documentStorageMbLimit: number;
+                        gapAnalysisLimit: number;
+                        policyGenerationLimit: number;
+                        syncedFromRedisAt: Date | null;
+                    })[] | ({
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.PaymentStatus;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        amount: number;
+                        currency: string;
+                        paidAt: Date | null;
+                        orgId: string;
+                        subscriptionId: string | null;
+                        provider: import(".prisma/client").$Enums.PaymentProvider;
+                        providerTransactionId: string | null;
+                        paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
+                        invoiceNumber: string | null;
+                        subscriptionPlan: string | null;
+                        billingPeriodStart: Date | null;
+                        billingPeriodEnd: Date | null;
+                    } | {
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.PaymentStatus;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        amount: number;
+                        currency: string;
+                        paidAt: Date | null;
+                        orgId: string;
+                        subscriptionId: string | null;
+                        provider: import(".prisma/client").$Enums.PaymentProvider;
+                        providerTransactionId: string | null;
+                        paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
+                        invoiceNumber: string | null;
+                        subscriptionPlan: string | null;
+                        billingPeriodStart: Date | null;
+                        billingPeriodEnd: Date | null;
+                    })[] | ({
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.CustomFrameworkStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        name: string;
+                        generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        version: number;
+                        category: string | null;
+                        publishedAt: Date | null;
+                        slug: string;
+                        citations: import("@prisma/client/runtime/client").JsonValue | null;
+                        regulator: string | null;
+                        evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
+                        jurisdiction: string | null;
+                        archivedAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                    } | {
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.CustomFrameworkStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        name: string;
+                        generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        version: number;
+                        category: string | null;
+                        publishedAt: Date | null;
+                        slug: string;
+                        citations: import("@prisma/client/runtime/client").JsonValue | null;
+                        regulator: string | null;
+                        evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
+                        jurisdiction: string | null;
+                        archivedAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                    })[] | ({
+                        id: string;
+                        status: import(".prisma/client").$Enums.EnterpriseContractStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        notes: string | null;
+                        currency: string | null;
+                        startsAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        contractName: string | null;
+                        contractNumber: string | null;
+                        endsAt: Date | null;
+                        renewalDate: Date | null;
+                        billingCycle: string | null;
+                        monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
+                        annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
+                        approvedByUserId: string | null;
+                    } | {
+                        id: string;
+                        status: import(".prisma/client").$Enums.EnterpriseContractStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        notes: string | null;
+                        currency: string | null;
+                        startsAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        contractName: string | null;
+                        contractNumber: string | null;
+                        endsAt: Date | null;
+                        renewalDate: Date | null;
+                        billingCycle: string | null;
+                        monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
+                        annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
+                        approvedByUserId: string | null;
+                    })[] | ({
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        status: string;
+                        organizationId: string;
+                        generatedAt: Date;
+                        priority: string;
+                        subject: string;
+                        reviewedBy: string | null;
+                        reviewedAt: Date | null;
+                        body: string;
+                        agentRunId: string;
+                        sourceFingerprint: string;
+                        editedBody: string | null;
+                        sourceSignalId: string;
+                        triggerReason: string;
+                        engagementContext: import("@prisma/client/runtime/client").JsonValue | null;
+                    } | {
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        status: string;
+                        organizationId: string;
+                        generatedAt: Date;
+                        priority: string;
+                        subject: string;
+                        reviewedBy: string | null;
+                        reviewedAt: Date | null;
+                        body: string;
+                        agentRunId: string;
+                        sourceFingerprint: string;
+                        editedBody: string | null;
+                        sourceSignalId: string;
+                        triggerReason: string;
+                        engagementContext: import("@prisma/client/runtime/client").JsonValue | null;
+                    })[] | {
+                        id: string;
+                        email: string;
+                        password: string | null;
+                        phone: string | null;
+                        supabaseAuthId: string | null;
+                        fullName: string;
+                        avatar: string | null;
+                        role: import(".prisma/client").$Enums.UserRole;
+                        status: import(".prisma/client").$Enums.UserStatus;
+                        accountStatus: string;
+                        emailVerified: boolean;
+                        emailVerifiedAt: Date | null;
+                        emailVerificationToken: string | null;
+                        emailVerificationExpiry: Date | null;
+                        passwordResetToken: string | null;
+                        passwordResetExpiry: Date | null;
+                        mustChangePassword: boolean;
+                        temporaryPasswordExpiresAt: Date | null;
+                        temporaryPasswordIssuedAt: Date | null;
+                        temporaryPasswordUsedAt: Date | null;
+                        temporaryPasswordCreatedByAdminId: string | null;
+                        temporaryPasswordDeliveryStatus: string | null;
+                        temporaryPasswordVersion: number;
+                        organizationId: string | null;
+                        lastLoginAt: Date | null;
+                        lastLoginIp: string | null;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        preferences: import("@prisma/client/runtime/client").JsonValue | null;
+                        totpEnabled: boolean;
+                        totpSecret: string | null;
+                        freeTrialActivatedAt: Date | null;
+                        freeTrialExpiresAt: Date | null;
+                        freeTrialUsage: import("@prisma/client/runtime/client").JsonValue | null;
+                        isPilot: boolean;
+                        pilotCohort: string | null;
+                        pilotStartedAt: Date | null;
+                        pilotExpiresAt: Date | null;
+                        pilotAccessStatus: string;
+                        pilotFirstExtensionGrantedAt: Date | null;
+                        pilotSecondExtensionGrantedAt: Date | null;
+                        pilotExtensionCount: number;
+                        pilotCreatedByAdminId: string | null;
+                        pilotLastExtendedByAdminId: string | null;
+                        postPilotTier: string;
+                        pilotConvertedAt: Date | null;
+                        deletionScheduledAt: Date | null;
+                        deletionReason: string | null;
+                        deletionFeedback: string | null;
+                    }[] | {
+                        id: string;
+                        title: string | null;
+                        userId: string;
+                        status: import(".prisma/client").$Enums.PolicyStatus;
+                        organizationId: string | null;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        organizationType: string | null;
+                        scenario: string;
+                        regulatoryAreas: string[];
+                        urgency: string;
+                        stakeholders: string[];
+                        executiveSummary: string | null;
+                        analysis: string | null;
+                        recommendations: import("@prisma/client/runtime/client").JsonValue | null;
+                        complianceChecklist: import("@prisma/client/runtime/client").JsonValue | null;
+                        implementationTimeline: import("@prisma/client/runtime/client").JsonValue | null;
+                        appendices: import("@prisma/client/runtime/client").JsonValue | null;
+                        content: string | null;
+                        specificRequirements: string | null;
+                        targetAudience: string | null;
+                        generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        isLatestVersion: boolean;
+                        parentId: string | null;
+                        generationTime: number | null;
+                        version: number;
+                        assignedTo: string | null;
+                        reviewers: string[];
+                    }[] | {
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        summary: import("@prisma/client/runtime/client").JsonValue | null;
+                        citations: import("@prisma/client/runtime/client").JsonValue | null;
+                        jurisdictionCode: string | null;
+                        progress: number;
+                        dueDate: Date | null;
+                        productType: string | null;
+                        businessStage: string | null;
+                        targetSegments: import("@prisma/client/runtime/client").JsonValue | null;
+                        servicesOffered: import("@prisma/client/runtime/client").JsonValue | null;
+                        additionalConcerns: string | null;
+                        items: import("@prisma/client/runtime/client").JsonValue;
+                        checklistData: import("@prisma/client/runtime/client").JsonValue | null;
+                        itemProgress: import("@prisma/client/runtime/client").JsonValue | null;
+                        completedItems: number;
+                        totalItems: number;
+                        evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
+                        generatedAt: Date | null;
+                        completedAt: Date | null;
+                    }[] | {
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.VaultDocumentStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        name: string;
+                        verifiedAt: Date | null;
+                        verifiedBy: string | null;
+                        version: number;
+                        fileSize: number;
+                        category: import(".prisma/client").$Enums.DocumentCategory;
+                        tags: string[];
+                        notes: string | null;
+                        fileName: string;
+                        fileType: string;
+                        storageKey: string;
+                        contentHash: string | null;
+                        expiryDate: Date | null;
+                        fileExtension: string;
+                        uploadedById: string;
+                        isArchived: boolean;
+                        r2Bucket: string | null;
+                        encryptionKeyId: string | null;
+                        uploadStatus: import(".prisma/client").$Enums.VaultDocumentUploadStatus | null;
+                        retentionExpiresAt: Date | null;
+                    }[] | {
+                        id: string;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        complianceQueryId: string;
+                        notes: string | null;
+                        runId: string;
+                        question: string;
+                        suggestedDocument: string | null;
+                        statusChangedAt: Date | null;
+                    }[] | {
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.CorpusGapReportStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        documentType: import(".prisma/client").$Enums.CorpusGapDocumentType;
+                        documentName: string;
+                        jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
+                        sourceUrl: string | null;
+                        reportedByUserId: string;
+                        issuingAuthority: string;
+                        adminNotes: string | null;
+                        resolvedAt: Date | null;
+                    }[] | {
+                        id: string;
+                        title: string;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        jurisdictionCode: string;
+                        regulator: string;
+                        licenseType: string;
+                        progress: number;
+                        referenceNumber: string | null;
+                        nextAction: string | null;
+                        dueDate: Date | null;
+                        submittedAt: Date | null;
+                        decidedAt: Date | null;
+                    }[] | {
+                        id: string;
+                        status: import(".prisma/client").$Enums.LicenseStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        regulator: string;
+                        licenseType: string;
+                        submittedAt: Date | null;
+                        notes: string | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        licenseNumber: string | null;
+                        issueDate: Date | null;
+                        expiryDate: Date | null;
+                        renewalDueDate: Date | null;
+                        approvedAt: Date | null;
+                        assignedOwnerId: string | null;
+                    }[] | {
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        eventType: string;
+                        dueDate: Date | null;
+                        completedAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        licenseId: string;
+                        assignedToUserId: string | null;
+                        evidenceDocumentId: string | null;
+                        complianceEventId: string | null;
+                    }[] | {
+                        id: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        documentType: string | null;
+                        vaultDocumentId: string;
+                        notes: string | null;
+                        createdByUserId: string;
+                        licenseId: string;
+                    }[] | {
+                        id: string;
+                        description: string | null;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        dueDate: Date | null;
+                        amount: import("@prisma/client-runtime-utils").Decimal | null;
+                        currency: string;
+                        paidAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        licenseId: string;
+                    }[] | {
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        userId: string;
+                        status: import(".prisma/client").$Enums.PilotAccessStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        expiresAt: Date;
+                        revokedAt: Date | null;
+                        entitlementProfile: string;
+                        startsAt: Date;
+                        extensionCount: number;
+                        createdByAdminId: string | null;
+                        lastExtendedByAdminId: string | null;
+                        revokedByAdminId: string | null;
+                        convertedAt: Date | null;
+                        convertedPlan: string | null;
+                    }[] | {
+                        id: string;
+                        userId: string;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        readAt: Date | null;
+                        alertId: string;
+                        channel: string;
+                        sentAt: Date | null;
+                    }[] | {
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        userId: string;
+                        status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        organizationType: string | null;
+                        executiveSummary: string | null;
+                        targetAudience: string | null;
+                        generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        isLatestVersion: boolean;
+                        parentId: string | null;
+                        version: number;
+                        errorMessage: string | null;
+                        progress: number;
+                        completedAt: Date | null;
+                        regulatoryFrameworks: string[];
+                        ragGrounded: boolean;
+                        jurisdiction: string;
+                        reviewNotes: string | null;
+                        policyType: string;
+                        sourceGapAnalysisId: string | null;
+                        sourceGapId: string | null;
+                        tableOfContents: import("@prisma/client/runtime/client").JsonValue | null;
+                        sections: import("@prisma/client/runtime/client").JsonValue | null;
+                        lastExportedAt: Date | null;
+                        lastExportFormat: string | null;
+                    }[] | {
+                        type: string;
+                        id: string;
+                        userId: string | null;
+                        status: string;
+                        organizationId: string | null;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        progress: number;
+                        completedAt: Date | null;
+                        priority: number;
+                        idempotencyKey: string;
+                        targetEntityType: string;
+                        targetEntityId: string;
+                        payload: import("@prisma/client/runtime/client").JsonValue;
+                        attempts: number;
+                        maxAttempts: number;
+                        runAfter: Date;
+                        lockedAt: Date | null;
+                        lockedBy: string | null;
+                        startedAt: Date | null;
+                        failedAt: Date | null;
+                        lastError: string | null;
+                        deadLetteredAt: Date | null;
+                    }[] | {
+                        id: string;
+                        userId: string;
+                        role: import(".prisma/client").$Enums.MemberRole;
+                        status: import(".prisma/client").$Enums.MemberStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        invitedBy: string | null;
+                        invitedAt: Date | null;
+                        joinedAt: Date;
+                    }[] | {
+                        id: string;
+                        title: string;
+                        description: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        category: import(".prisma/client").$Enums.ComplianceCategory;
+                        completedAt: Date | null;
+                        isCompleted: boolean;
+                    }[] | {
+                        id: string;
+                        organizationId: string;
+                        overallScore: number;
+                        dataProtectionScore: number;
+                        amlKycScore: number;
+                        consumerProtectionScore: number;
+                        cbkLicensingScore: number;
+                        cybersecurityScore: number;
+                        calculatedAt: Date;
+                    }[] | {
+                        id: string;
+                        title: string;
+                        description: string | null;
+                        status: string;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        category: string;
+                        dueDate: Date;
+                        completedAt: Date | null;
+                        priority: string;
+                        regulation: string | null;
+                        recurrence: string | null;
+                        assigneeId: string | null;
+                        createdById: string;
+                        sourceType: string | null;
+                        sourceId: string | null;
+                    }[] | {
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.PaymentStatus;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        amount: number;
+                        currency: string;
+                        paidAt: Date | null;
+                        orgId: string;
+                        subscriptionId: string | null;
+                        provider: import(".prisma/client").$Enums.PaymentProvider;
+                        providerTransactionId: string | null;
+                        paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
+                        invoiceNumber: string | null;
+                        subscriptionPlan: string | null;
+                        billingPeriodStart: Date | null;
+                        billingPeriodEnd: Date | null;
+                    }[] | {
+                        id: string;
+                        description: string | null;
+                        status: import(".prisma/client").$Enums.CustomFrameworkStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        name: string;
+                        generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        version: number;
+                        category: string | null;
+                        publishedAt: Date | null;
+                        slug: string;
+                        citations: import("@prisma/client/runtime/client").JsonValue | null;
+                        regulator: string | null;
+                        evidenceProvenance: import("@prisma/client/runtime/client").JsonValue | null;
+                        jurisdiction: string | null;
+                        archivedAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                    }[] | {
+                        id: string;
+                        status: import(".prisma/client").$Enums.EnterpriseContractStatus;
+                        organizationId: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        deletedAt: Date | null;
+                        notes: string | null;
+                        currency: string | null;
+                        startsAt: Date | null;
+                        createdByUserId: string;
+                        updatedByUserId: string | null;
+                        contractName: string | null;
+                        contractNumber: string | null;
+                        endsAt: Date | null;
+                        renewalDate: Date | null;
+                        billingCycle: string | null;
+                        monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
+                        annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
+                        approvedByUserId: string | null;
+                    }[] | {
+                        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+                        id: string;
+                        status: string;
+                        organizationId: string;
+                        generatedAt: Date;
+                        priority: string;
+                        subject: string;
+                        reviewedBy: string | null;
+                        reviewedAt: Date | null;
+                        body: string;
+                        agentRunId: string;
+                        sourceFingerprint: string;
+                        editedBody: string | null;
+                        sourceSignalId: string;
+                        triggerReason: string;
+                        engagementContext: import("@prisma/client/runtime/client").JsonValue | null;
+                    }[];
+                    [x: number]: never;
+                    [x: symbol]: never;
+                };
+            };
+            meta: object;
+        }>;
+        setMfaPolicy: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                requireMfa: boolean;
+                organizationId?: string | undefined;
+                graceHours?: number | undefined;
+            };
+            output: {
+                success: boolean;
+                policy: {
+                    id: string;
+                    requireMfa: boolean;
+                    mfaPolicyEnabledAt: Date | null;
+                    mfaPolicyFirstEnabledAt: Date | null;
+                    mfaPolicyGraceHours: number;
+                    mfaPolicyUpdatedBy: string | null;
+                };
+            };
+            meta: object;
+        }>;
+        getActivityLog: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                limit?: number | undefined;
+            } | undefined;
+            output: {
+                logs: {
+                    id: string;
+                    timestamp: Date;
+                    actor: {
+                        id: string;
+                        email: string;
+                        name: string;
+                    } | null;
+                    action: string;
+                    target: string | null;
+                    targetId: string | null;
+                    result: string;
+                    metadata: import("@prisma/client/runtime/client").JsonValue;
+                }[];
+            };
+            meta: object;
+        }>;
+        createInvitation: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                email: string;
+                role?: "ADMIN" | "MEMBER" | "VIEWER" | undefined;
+                expiresInDays?: number | undefined;
+            };
+            output: {
+                success: boolean;
+                invitation: {
+                    id: any;
+                    email: any;
+                    organizationRole: any;
+                    expiresAt: any;
+                    createdAt: any;
+                };
+            };
+            meta: object;
+        }>;
+        listPendingInvitations: import("@trpc/server").TRPCQueryProcedure<{
+            input: void;
+            output: {
+                invitations: any;
+            };
+            meta: object;
+        }>;
+        revokeInvitation: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                invitationId: string;
+            };
+            output: {
+                success: boolean;
+                invitation: {
+                    id: string;
+                    email: string;
+                    revokedAt: Date | null;
+                };
+            };
+            meta: object;
+        }>;
+        resendInvitation: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                invitationId: string;
+                expiresInDays?: number | undefined;
+            };
+            output: {
+                success: boolean;
+                invitation: {
+                    id: string;
+                    email: string;
+                    expiresAt: Date;
+                    organizationRole: import(".prisma/client").$Enums.MemberRole | null;
+                };
+            };
+            meta: object;
+        }>;
+        updateSettings: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                name?: string | undefined;
+                registrationNumber?: string | undefined;
+                industry?: string | undefined;
+                website?: string | undefined;
+                address?: string | undefined;
+                contactPerson?: string | undefined;
+                contactPosition?: string | undefined;
+                contactEmail?: string | undefined;
+                contactPhone?: string | undefined;
+                homeJurisdictionCode?: "KE" | "MW" | "RW" | "NG" | undefined;
+                homeJurisdictionReason?: string | undefined;
+                enabledJurisdictions?: ("KE" | "MW" | "RW" | "NG")[] | undefined;
+            };
+            output: {
+                id: string;
+                name: string;
+                registrationNumber: string | null;
+                website: string | null;
+                industry: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
+                address: string | null;
+                contactPerson: string | null;
+                contactPosition: string | null;
+                contactEmail: string | null;
+                contactPhone: string | null;
+            };
+            meta: object;
+        }>;
+        confirmCountry: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                homeJurisdictionCode: "KE" | "MW" | "RW" | "NG";
+                organizationId?: string | undefined;
+                enabledJurisdictions?: ("KE" | "MW" | "RW" | "NG")[] | undefined;
+            };
+            output: {
+                type: string;
+                id: string;
+                mpesaPhoneNumber: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                organizationType: string;
+                registrationNumber: string | null;
+                cbkLicenseNumber: string | null;
+                website: string | null;
+                industry: string | null;
+                size: string | null;
+                subscriptionTier: string;
+                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+                trialEndsAt: Date | null;
+                gracePeriodEndsAt: Date | null;
+                cancelledAt: Date | null;
+                subscriptionEndsAt: Date | null;
+                verificationStatus: string;
+                verifiedAt: Date | null;
+                verifiedBy: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                planStartDate: Date | null;
+                planEndDate: Date | null;
+                maxSeats: number;
+                homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
+                stripeCustomerId: string | null;
+                stripeSubId: string | null;
+                customLimits: import("@prisma/client/runtime/client").JsonValue | null;
+                preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+                mpesaNextPaymentDueDate: Date | null;
+                subscriptionCycleEnd: Date | null;
+                mpesaFailedRenewalAttempts: number;
+                mpesaLastRenewalAttemptAt: Date | null;
+                mpesaNextRenewalRetryAt: Date | null;
+                mpesaCancelledByUserAt: Date | null;
+                address: string | null;
+                contactPerson: string | null;
+                contactPosition: string | null;
+                contactEmail: string | null;
+                contactPhone: string | null;
+                requireMfa: boolean;
+                mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
+                mfaPolicyUpdatedBy: string | null;
+            };
+            meta: object;
+        }>;
+        updateEnabledJurisdictions: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                enabledJurisdictions: ("KE" | "MW" | "RW" | "NG")[];
+                organizationId?: string | undefined;
+            };
+            output: {
+                type: string;
+                id: string;
+                mpesaPhoneNumber: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                organizationType: string;
+                registrationNumber: string | null;
+                cbkLicenseNumber: string | null;
+                website: string | null;
+                industry: string | null;
+                size: string | null;
+                subscriptionTier: string;
+                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+                trialEndsAt: Date | null;
+                gracePeriodEndsAt: Date | null;
+                cancelledAt: Date | null;
+                subscriptionEndsAt: Date | null;
+                verificationStatus: string;
+                verifiedAt: Date | null;
+                verifiedBy: string | null;
+                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                planStartDate: Date | null;
+                planEndDate: Date | null;
+                maxSeats: number;
+                homeJurisdictionCode: string | null;
+                enabledJurisdictions: string[];
+                needsCountryConfirmation: boolean;
+                stripeCustomerId: string | null;
+                stripeSubId: string | null;
+                customLimits: import("@prisma/client/runtime/client").JsonValue | null;
+                preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+                mpesaNextPaymentDueDate: Date | null;
+                subscriptionCycleEnd: Date | null;
+                mpesaFailedRenewalAttempts: number;
+                mpesaLastRenewalAttemptAt: Date | null;
+                mpesaNextRenewalRetryAt: Date | null;
+                mpesaCancelledByUserAt: Date | null;
+                address: string | null;
+                contactPerson: string | null;
+                contactPosition: string | null;
+                contactEmail: string | null;
+                contactPhone: string | null;
+                requireMfa: boolean;
+                mfaPolicyEnabledAt: Date | null;
+                mfaPolicyFirstEnabledAt: Date | null;
+                mfaPolicyGraceHours: number;
+                mfaPolicyUpdatedBy: string | null;
+            };
+            meta: object;
+        }>;
+        scheduleCountryReplacement: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                fromJurisdiction: "KE" | "MW" | "RW" | "NG";
+                toJurisdiction: "KE" | "MW" | "RW" | "NG";
+                organizationId?: string | undefined;
+            };
+            output: {
+                scheduled: boolean;
+                effectiveAt: string;
+                fromJurisdiction: string;
+                toJurisdiction: string;
+            };
+            meta: object;
+        }>;
+        getScheduledCountryReplacement: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                organizationId?: string | undefined;
+            };
+            output: {
+                scheduled: import("../../services/country-replacement.service").ScheduledCountryReplacement | null;
+            };
+            meta: object;
+        }>;
+        cancelCountryReplacement: import("@trpc/server").TRPCMutationProcedure<{
+            input: {
+                organizationId?: string | undefined;
+            };
+            output: {
+                success: boolean;
+                message: string;
+            };
+            meta: object;
+        }>;
+        getAIUsageStats: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                page?: number | undefined;
+                pageSize?: number | undefined;
+            } | undefined;
+            output: {
+                organization: any;
+                period: {
+                    start: Date;
+                    end: Date;
+                    daysRemaining: number;
+                    daysTotal: number;
+                };
+                planTier: any;
+                categories: import("../../services/usage-tracking.service").CategorySummary[];
+                costs: {
+                    totalCostUsd: number;
+                    totalCostKes: number;
+                    byMetric: Record<string, {
+                        count: number;
+                        costUsd: number;
+                        costKes: number;
+                    }>;
+                };
+                recentActivity: {
+                    total: any;
+                    page: number;
+                    pageSize: number;
+                    items: any;
+                };
+            };
+            meta: object;
+        }>;
     }>>;
     policy: import("@trpc/server").TRPCBuiltRouter<{
         ctx: import("./context").Context;
@@ -4217,24 +6546,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 search?: string | undefined;
             };
             output: {
-                policies: {
-                    id: string;
-                    title: string | null;
-                    user: {
-                        id: string;
-                        email: string;
-                        fullName: string;
-                    };
-                    status: import(".prisma/client").$Enums.PolicyStatus;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    scenario: string;
-                    regulatoryAreas: string[];
-                }[];
+                policies: any;
                 pagination: {
                     page: number;
                     limit: number;
-                    total: number;
+                    total: any;
                     pages: number;
                 };
             };
@@ -4244,7 +6560,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 id: string;
             };
-            output: {};
+            output: any;
             meta: object;
         }>;
         generate: import("@trpc/server").TRPCMutationProcedure<{
@@ -4332,16 +6648,16 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 policyId: string;
             };
             output: {
-                policyId: string;
-                title: string | null;
-                status: import(".prisma/client").$Enums.PolicyStatus;
+                policyId: any;
+                title: any;
+                status: any;
                 progress: number;
                 isComplete: boolean;
                 isFailed: boolean;
                 errorMessage: any;
                 generatedAt: any;
                 tokensUsed: any;
-                updatedAt: Date;
+                updatedAt: any;
             };
             meta: object;
         }>;
@@ -4351,16 +6667,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             output: {
                 policyId: string;
-                rootId: string;
-                versions: {
-                    id: string;
-                    title: string | null;
-                    status: import(".prisma/client").$Enums.PolicyStatus;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    isLatestVersion: boolean;
-                    version: number;
-                }[];
+                rootId: any;
+                versions: any;
             };
             meta: object;
         }>;
@@ -4496,23 +6804,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 limit?: number | undefined;
             };
             output: {
-                queries: {
-                    id: string;
-                    query: string;
-                    user: {
-                        id: string;
-                        email: string;
-                        fullName: string;
-                    };
-                    createdAt: Date;
-                    jurisdictions: string[];
-                    primaryJurisdiction: string | null;
-                    jurisdictionSource: string | null;
-                }[];
+                queries: any;
                 pagination: {
                     page: number;
                     limit: number;
-                    total: number;
+                    total: any;
                     pages: number;
                 };
             };
@@ -4522,38 +6818,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 id: string;
             };
-            output: {
-                user: {
-                    id: string;
-                    email: string;
-                    fullName: string;
-                };
-            } & {
-                metadata: import("@prisma/client/runtime/client").JsonValue | null;
-                id: string;
-                userId: string;
-                query: string;
-                status: string;
-                organizationId: string | null;
-                createdAt: Date;
-                updatedAt: Date;
-                regulatoryAreas: import("@prisma/client/runtime/client").JsonValue | null;
-                recommendations: import("@prisma/client/runtime/client").JsonValue | null;
-                confidence: number | null;
-                summary: string | null;
-                response: string | null;
-                citations: import("@prisma/client/runtime/client").JsonValue | null;
-                processingTimeMs: number | null;
-                mode: string | null;
-                jurisdictions: string[];
-                primaryJurisdiction: string | null;
-                jurisdictionSource: string | null;
-                corpusVersionSnapshot: import("@prisma/client/runtime/client").JsonValue | null;
-                productCategory: string | null;
-                regulations: import("@prisma/client/runtime/client").JsonValue | null;
-                requirements: import("@prisma/client/runtime/client").JsonValue | null;
-                gaps: import("@prisma/client/runtime/client").JsonValue | null;
-            };
+            output: any;
             meta: object;
         }>;
         getFollowUps: import("@trpc/server").TRPCQueryProcedure<{
@@ -4773,7 +7038,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 notes?: string | undefined;
             };
             output: {
-                feedbackId: string;
+                feedbackId: any;
             };
             meta: object;
         }>;
@@ -4821,7 +7086,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 metadata?: Record<string, unknown> | undefined;
             };
             output: {
-                documentId: string;
+                documentId: any;
                 success: boolean;
                 message: string;
             };
@@ -4835,24 +7100,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 search?: string | undefined;
             };
             output: {
-                documents: {
-                    id: string;
-                    title: string | null;
-                    createdAt: Date;
-                    actName: string;
-                    documentType: string;
-                    regulatoryBody: string | null;
-                    fileSize: number;
-                    author: {
-                        id: string;
-                        email: string;
-                        fullName: string;
-                    } | null;
-                }[];
+                documents: any;
                 pagination: {
                     page: number;
                     limit: number;
-                    total: number;
+                    total: any;
                     pages: number;
                 };
             };
@@ -4871,58 +7123,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 id: string;
             };
-            output: {
-                author: {
-                    id: string;
-                    email: string;
-                    fullName: string;
-                } | null;
-            } & {
-                id: string;
-                title: string | null;
-                userId: string | null;
-                status: import(".prisma/client").$Enums.DocumentStatus;
-                organizationId: string | null;
-                createdAt: Date;
-                updatedAt: Date;
-                deletedAt: Date | null;
-                content: string | null;
-                isLatestVersion: boolean;
-                parentId: string | null;
-                version: number;
-                actName: string;
-                documentType: string;
-                enactmentDate: Date | null;
-                effectiveDate: Date | null;
-                amendedBy: string[];
-                regulatoryBody: string | null;
-                originalFilename: string;
-                fileUrl: string;
-                fileSize: number;
-                mimeType: string;
-                totalChunks: number | null;
-                processedAt: Date | null;
-                fullText: string | null;
-                summary: string | null;
-                keywords: string[];
-                authorId: string | null;
-                category: string | null;
-                contentStatus: import(".prisma/client").$Enums.ContentStatus;
-                contentType: import(".prisma/client").$Enums.ContentType;
-                excerpt: string | null;
-                helpfulCount: number;
-                htmlContent: string | null;
-                notHelpfulCount: number;
-                publishedAt: Date | null;
-                publishedBy: string | null;
-                seoDescription: string | null;
-                seoKeywords: string[];
-                seoTitle: string | null;
-                slug: string | null;
-                subcategory: string | null;
-                tags: string[];
-                viewCount: number;
-            };
+            output: any;
             meta: object;
         }>;
         getDownloadUrl: import("@trpc/server").TRPCMutationProcedure<{
@@ -4931,7 +7132,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             output: {
                 downloadUrl: string;
-                filename: string;
+                filename: any;
                 expiresAt: string;
             };
             meta: object;
@@ -4961,11 +7162,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 documentId: string;
             };
             output: {
-                documentId: string;
-                status: import(".prisma/client").$Enums.DocumentStatus;
-                totalChunks: number;
+                documentId: any;
+                status: any;
+                totalChunks: any;
                 processedChunks: number;
-                processedAt: Date | null;
+                processedAt: any;
                 isComplete: boolean;
                 isFailed: boolean;
             };
@@ -5015,12 +7216,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 status?: "DRAFT" | "ARCHIVED" | "PUBLISHED" | "UNDER_REVIEW" | undefined;
             };
             output: {
-                id: string;
-                slug: string | null;
-                contentType: import(".prisma/client").$Enums.ContentType;
-                contentStatus: import(".prisma/client").$Enums.ContentStatus;
-                title: string | null;
-                createdAt: Date;
+                id: any;
+                slug: any;
+                contentType: any;
+                contentStatus: any;
+                title: any;
+                createdAt: any;
             };
             meta: object;
         }>;
@@ -5040,11 +7241,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 status?: "DRAFT" | "ARCHIVED" | "PUBLISHED" | "UNDER_REVIEW" | undefined;
             };
             output: {
-                id: string;
-                slug: string | null;
-                contentStatus: import(".prisma/client").$Enums.ContentStatus;
-                title: string | null;
-                updatedAt: Date;
+                id: any;
+                slug: any;
+                contentStatus: any;
+                title: any;
+                updatedAt: any;
             };
             meta: object;
         }>;
@@ -5058,27 +7259,27 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             output: {
                 items: {
-                    id: string;
-                    title: string | null;
-                    slug: string;
-                    excerpt: string | null;
-                    category: string | null;
-                    subcategory: string | null;
-                    tags: string[];
-                    publishedAt: Date | null;
-                    updatedAt: Date;
-                    viewCount: number;
+                    id: any;
+                    title: any;
+                    slug: any;
+                    excerpt: any;
+                    category: any;
+                    subcategory: any;
+                    tags: any;
+                    publishedAt: any;
+                    updatedAt: any;
+                    viewCount: any;
                     readingTime: number;
                     author: {
-                        id: string;
-                        name: string;
-                        avatar: string | null;
+                        id: any;
+                        name: any;
+                        avatar: any;
                     } | null;
                 }[];
                 pagination: {
                     page: number;
                     limit: number;
-                    total: number;
+                    total: any;
                     totalPages: number;
                 };
             };
@@ -5096,33 +7297,11 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 authorId?: string | undefined;
             };
             output: {
-                items: {
-                    id: string;
-                    title: string | null;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    version: number;
-                    authorId: string | null;
-                    category: string | null;
-                    contentStatus: import(".prisma/client").$Enums.ContentStatus;
-                    contentType: import(".prisma/client").$Enums.ContentType;
-                    excerpt: string | null;
-                    helpfulCount: number;
-                    publishedAt: Date | null;
-                    slug: string | null;
-                    subcategory: string | null;
-                    tags: string[];
-                    viewCount: number;
-                    author: {
-                        id: string;
-                        fullName: string;
-                        avatar: string | null;
-                    } | null;
-                }[];
+                items: any;
                 pagination: {
                     page: number;
                     limit: number;
-                    total: number;
+                    total: any;
                     pages: number;
                 };
             };
@@ -5132,62 +7311,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 id: string;
             };
-            output: {
-                publisher: {
-                    id: string;
-                    fullName: string;
-                } | null;
-                author: {
-                    id: string;
-                    fullName: string;
-                    avatar: string | null;
-                } | null;
-            } & {
-                id: string;
-                title: string | null;
-                userId: string | null;
-                status: import(".prisma/client").$Enums.DocumentStatus;
-                organizationId: string | null;
-                createdAt: Date;
-                updatedAt: Date;
-                deletedAt: Date | null;
-                content: string | null;
-                isLatestVersion: boolean;
-                parentId: string | null;
-                version: number;
-                actName: string;
-                documentType: string;
-                enactmentDate: Date | null;
-                effectiveDate: Date | null;
-                amendedBy: string[];
-                regulatoryBody: string | null;
-                originalFilename: string;
-                fileUrl: string;
-                fileSize: number;
-                mimeType: string;
-                totalChunks: number | null;
-                processedAt: Date | null;
-                fullText: string | null;
-                summary: string | null;
-                keywords: string[];
-                authorId: string | null;
-                category: string | null;
-                contentStatus: import(".prisma/client").$Enums.ContentStatus;
-                contentType: import(".prisma/client").$Enums.ContentType;
-                excerpt: string | null;
-                helpfulCount: number;
-                htmlContent: string | null;
-                notHelpfulCount: number;
-                publishedAt: Date | null;
-                publishedBy: string | null;
-                seoDescription: string | null;
-                seoKeywords: string[];
-                seoTitle: string | null;
-                slug: string | null;
-                subcategory: string | null;
-                tags: string[];
-                viewCount: number;
-            };
+            output: any;
             meta: object;
         }>;
         getBySlug: import("@trpc/server").TRPCQueryProcedure<{
@@ -5196,29 +7320,25 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 contentType?: "KNOWLEDGE_BASE_ARTICLE" | undefined;
             };
             output: {
-                id: string;
-                contentType: import(".prisma/client").$Enums.ContentType;
-                title: string | null;
-                slug: string | null;
-                excerpt: string | null;
-                htmlContent: string | null;
-                content: string | null;
-                category: string | null;
-                subcategory: string | null;
-                tags: string[];
-                seoTitle: string | null;
-                seoDescription: string | null;
-                seoKeywords: string[];
-                publishedAt: Date | null;
-                updatedAt: Date;
-                viewCount: number;
-                helpfulCount: number;
-                notHelpfulCount: number;
-                author: {
-                    id: string;
-                    fullName: string;
-                    avatar: string | null;
-                } | null;
+                id: any;
+                contentType: any;
+                title: any;
+                slug: any;
+                excerpt: any;
+                htmlContent: any;
+                content: any;
+                category: any;
+                subcategory: any;
+                tags: any;
+                seoTitle: any;
+                seoDescription: any;
+                seoKeywords: any;
+                publishedAt: any;
+                updatedAt: any;
+                viewCount: any;
+                helpfulCount: any;
+                notHelpfulCount: any;
+                author: any;
             };
             meta: object;
         }>;
@@ -5227,10 +7347,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 id: string;
             };
             output: {
-                id: string;
-                slug: string | null;
-                contentStatus: import(".prisma/client").$Enums.ContentStatus;
-                publishedAt: Date | null;
+                id: any;
+                slug: any;
+                contentStatus: any;
+                publishedAt: any;
             };
             meta: object;
         }>;
@@ -5677,13 +7797,13 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     evidence: string[];
                 };
                 vaultDocuments: {
-                    total: number;
-                    verified: number;
-                    pending: number;
-                    failed: number;
+                    total: any;
+                    verified: any;
+                    pending: any;
+                    failed: any;
                     unverified: number;
-                    missingContentHash: number;
-                    recentlyUploadedLast7d: number;
+                    missingContentHash: any;
+                    recentlyUploadedLast7d: any;
                 };
                 reconciliation: {
                     status: "not_configured";
@@ -5949,13 +8069,6 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 role: "ENTERPRISE" | "REGULATOR" | "STARTUP" | "ADMIN";
             };
             output: import("../../modules/admin").AdminUserDetail;
-            meta: object;
-        }>;
-        impersonateUser: import("@trpc/server").TRPCMutationProcedure<{
-            input: {
-                userId: string;
-            };
-            output: import("../../modules/admin").ImpersonationToken;
             meta: object;
         }>;
         updateOrganization: import("@trpc/server").TRPCMutationProcedure<{
@@ -6315,7 +8428,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         }>;
         exportAuditLogs: import("@trpc/server").TRPCMutationProcedure<{
             input: {
-                format: "docx" | "csv";
+                format: "docx" | "csv" | "jsonl";
                 userId?: string | undefined;
                 actorEmail?: string | undefined;
                 organizationId?: string | undefined;
@@ -6330,6 +8443,67 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             output: {
                 url: string;
                 expiresAt: Date;
+            };
+            meta: object;
+        }>;
+        getAIPlatformStats: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                period?: string | undefined;
+            } | undefined;
+            output: {
+                period: string;
+                fxRate: import("../../lib/ai/gateway/fx.service").FxRateResult;
+                budgetUsd: import("../../lib/ai/gateway/llm-gateway").MonthlyBudgetStatus;
+                budgetKes: {
+                    budgetKes: number;
+                    spentKes: number;
+                    reservedKes: number;
+                    remainingKes: number;
+                    providers: {
+                        anthropic: number;
+                        openai: number;
+                        gemini: number;
+                    };
+                };
+                circuitBreakers: import("../../lib/circuit-breaker/circuit-breaker.service").CircuitBreakerMetrics[];
+                topTenants: {
+                    costUsd: number;
+                    costKes: number;
+                    orgId: string;
+                    orgName: string;
+                    plan: string;
+                    requests: number;
+                }[];
+            };
+            meta: object;
+        }>;
+        getAIPlatformStatsByTenant: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                page?: number | undefined;
+                pageSize?: number | undefined;
+                organizationId?: string | undefined;
+                plan?: string | undefined;
+                period?: string | undefined;
+            };
+            output: {
+                period: string;
+                page: number;
+                pageSize: number;
+                total: number;
+                totalPages: number;
+                tenants: {
+                    organizationId: string;
+                    organizationName: string;
+                    plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                    totalRequests: number;
+                    totalCostUsd: number;
+                    totalCostKes: number;
+                    byMetric: Record<string, {
+                        count: number;
+                        costUsd: number;
+                        costKes: number;
+                    }>;
+                }[];
             };
             meta: object;
         }>;
@@ -6669,6 +8843,14 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             };
             meta: object;
         }>;
+        getTenantCostSummary: import("@trpc/server").TRPCQueryProcedure<{
+            input: {
+                periodStart?: string | undefined;
+                periodEnd?: string | undefined;
+            } | undefined;
+            output: import("../../services/usage-tracking.service").TenantCostSummary;
+            meta: object;
+        }>;
     }>>;
     vault: import("@trpc/server").TRPCBuiltRouter<{
         ctx: import("./context").Context;
@@ -6950,12 +9132,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     plan: import("../../types/plan.types").EffectivePlan;
                     isPilot: boolean;
                     pilotProfile: import("../../types/plan.types").PilotEntitlementProfile | null;
-                    seatsUsed: number;
+                    seatsUsed: any;
                     seatsLimit: number;
                     enabledCountries: string[];
                     docStorageMb: number;
-                    docCount: number;
-                    pendingInvitesCount: number;
+                    docCount: any;
+                    pendingInvitesCount: any;
                     entitlements: {
                         policyGeneration: boolean;
                         customFrameworks: boolean;
@@ -7002,13 +9184,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                         teamCollaboration: boolean;
                     };
                 };
-                activeMembers: {
-                    membershipId: string;
-                    userId: string;
-                    email: string;
-                    fullName: string;
-                    role: import(".prisma/client").$Enums.MemberRole;
-                }[];
+                activeMembers: any;
                 availableJurisdictions: string[];
             };
             meta: object;
@@ -7023,7 +9199,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 retainedJurisdictionCodes?: string[] | undefined;
             };
             output: {
-                paymentId: string;
+                paymentId: any;
                 trackingId?: undefined;
                 message?: undefined;
             } | {
@@ -7131,26 +9307,26 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 paymentId: string;
             };
             output: {
-                id: string;
-                invoiceNumber: string | null;
-                amount: number;
-                currency: string;
-                status: import(".prisma/client").$Enums.PaymentStatus;
-                paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
-                provider: import(".prisma/client").$Enums.PaymentProvider;
-                subscriptionPlan: string | null;
-                billingPeriodStart: string | null;
-                billingPeriodEnd: string | null;
-                providerTransactionId: string | null;
-                description: string | null;
-                paidAt: string | null;
-                createdAt: string;
+                id: any;
+                invoiceNumber: any;
+                amount: any;
+                currency: any;
+                status: any;
+                paymentPurpose: any;
+                provider: any;
+                subscriptionPlan: any;
+                billingPeriodStart: any;
+                billingPeriodEnd: any;
+                providerTransactionId: any;
+                description: any;
+                paidAt: any;
+                createdAt: any;
                 metadata: Record<string, unknown> | null;
                 paymentMethodDisplay: string;
                 organization: {
-                    name: string;
-                    address: string | null;
-                    contactEmail: string | null;
+                    name: any;
+                    address: any;
+                    contactEmail: any;
                 };
                 user: {
                     email: string;
@@ -7621,21 +9797,21 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 expired: number;
                 converted: number;
                 totalEvents: number;
-                cohorts: string[];
+                cohorts: any[];
             };
             meta: object;
         }>;
         listTesters: import("@trpc/server").TRPCQueryProcedure<{
             input: void;
             output: {
-                id: string;
-                email: string;
-                fullName: string;
-                organization: string | null;
-                cohort: string | null;
-                pilotStartedAt: string | null;
-                pilotExpiresAt: string | null;
-                pilotConvertedAt: string | null;
+                id: any;
+                email: any;
+                fullName: any;
+                organization: any;
+                cohort: any;
+                pilotStartedAt: any;
+                pilotExpiresAt: any;
+                pilotConvertedAt: any;
                 pilotAccessStatus: any;
                 pilotExtensionCount: any;
                 pilotFirstExtensionGrantedAt: any;
@@ -7645,8 +9821,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 daysSinceStart: number;
                 engagementScore: number;
                 engagementPercent: number;
-                totalEvents: number;
-                lastEventAt: string;
+                totalEvents: any;
+                lastEventAt: any;
                 eventsByAction: Record<string, number>;
             }[];
             meta: object;
@@ -7691,6 +9867,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: void;
             output: {
                 id: string;
+                organizationId?: string | null;
                 title: string;
                 productType: string | null;
                 businessStage: string | null;
@@ -7912,11 +10089,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 analysisDepth?: "standard" | "quick" | "deep" | undefined;
                 focusAreas?: string[] | undefined;
             };
-            output: {
-                id: string;
-                status: string;
-                progress: number;
-            };
+            output: any;
             meta: object;
         }>;
         getGapAnalyses: import("@trpc/server").TRPCQueryProcedure<{
@@ -7999,6 +10172,8 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
         list: import("@trpc/server").TRPCQueryProcedure<{
             input: {
                 includeInactive?: boolean | undefined;
+                limit?: number | undefined;
+                cursor?: string | undefined;
             } | undefined;
             output: any[];
             meta: object;
@@ -9853,12 +12028,12 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 sourceGapId?: string | undefined;
             };
             output: {
-                policyId: string;
-                status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
-                title: string;
-                policyType: string;
+                policyId: any;
+                status: any;
+                title: any;
+                policyType: any;
                 jobId: string;
-                createdAt: Date;
+                createdAt: any;
             };
             meta: object;
         }>;
@@ -9867,30 +12042,17 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 policyId: string;
             };
             output: {
-                policyId: string;
-                job: {
-                    id: string;
-                    status: string;
-                    updatedAt: Date;
-                    attempts: number;
-                    maxAttempts: number;
-                    lastError: string | null;
-                    events: {
-                        type: string;
-                        message: string | null;
-                        createdAt: Date;
-                        progress: number | null;
-                    }[];
-                } | null;
+                policyId: any;
+                job: any;
                 jobId: {} | null;
-                status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
-                progress: number;
-                title: string;
+                status: any;
+                progress: any;
+                title: any;
                 currentStage: string;
                 isComplete: boolean;
                 isFailed: boolean;
-                errorMessage: string | null;
-                updatedAt: Date;
+                errorMessage: any;
+                updatedAt: any;
             };
             meta: object;
         }>;
@@ -9898,60 +12060,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 policyId: string;
             };
-            output: {
-                citations: {
-                    id: string;
-                    createdAt: Date;
-                    actName: string;
-                    section: string;
-                    subsection: string | null;
-                    textSnippet: string;
-                    confidence: string;
-                    verified: boolean;
-                    rawSource: import("@prisma/client/runtime/client").JsonValue | null;
-                    sectionId: string;
-                    generatedPolicyId: string;
-                    citationVerified: boolean | null;
-                    sourceSnapshotId: string | null;
-                }[];
-                sourceGapAnalysis: {
-                    id: string;
-                    documentName: string;
-                    regulatoryFrameworks: import("@prisma/client/runtime/client").JsonValue;
-                    overallScore: number | null;
-                } | null;
-            } & {
-                id: string;
-                title: string;
-                description: string | null;
-                userId: string;
-                status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
-                organizationId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                deletedAt: Date | null;
-                organizationType: string | null;
-                executiveSummary: string | null;
-                targetAudience: string | null;
-                generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
-                isLatestVersion: boolean;
-                parentId: string | null;
-                version: number;
-                errorMessage: string | null;
-                progress: number;
-                completedAt: Date | null;
-                regulatoryFrameworks: string[];
-                ragGrounded: boolean;
-                jurisdiction: string;
-                reviewNotes: string | null;
-                policyType: string;
-                sourceGapAnalysisId: string | null;
-                sourceGapId: string | null;
-                tableOfContents: import("@prisma/client/runtime/client").JsonValue | null;
-                sections: import("@prisma/client/runtime/client").JsonValue | null;
-                lastExportedAt: Date | null;
-                lastExportFormat: string | null;
-            };
+            output: any;
             meta: object;
         }>;
         listPolicies: import("@trpc/server").TRPCQueryProcedure<{
@@ -9962,25 +12071,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 limit?: number | undefined;
             };
             output: {
-                items: {
-                    id: string;
-                    title: string;
-                    description: string | null;
-                    status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    version: number;
-                    progress: number;
-                    completedAt: Date | null;
-                    regulatoryFrameworks: string[];
-                    jurisdiction: string;
-                    policyType: string;
-                    sourceGapAnalysisId: string | null;
-                    lastExportedAt: Date | null;
-                    lastExportFormat: string | null;
-                }[];
+                items: any;
                 nextCursor: string | undefined;
-                totalEstimate: number;
+                totalEstimate: any;
             };
             meta: object;
         }>;
@@ -10004,7 +12097,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     editedByUserId?: string;
                 } | undefined;
                 version: number;
-                updatedAt: Date;
+                updatedAt: any;
             };
             meta: object;
         }>;
@@ -10027,7 +12120,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                     editedByUserId?: string;
                 } | undefined;
                 version: number;
-                updatedAt: Date;
+                updatedAt: any;
             };
             meta: object;
         }>;
@@ -10095,42 +12188,17 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 search?: string | undefined;
             };
             output: {
-                applications: ({
-                    _count: {
-                        timelineEvents: number;
-                        documents: number;
-                        fees: number;
-                        regulatorFeedback: number;
-                    };
-                } & {
-                    id: string;
-                    title: string;
-                    userId: string;
-                    status: string;
-                    organizationId: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    deletedAt: Date | null;
-                    jurisdictionCode: string;
-                    regulator: string;
-                    licenseType: string;
-                    progress: number;
-                    referenceNumber: string | null;
-                    nextAction: string | null;
-                    dueDate: Date | null;
-                    submittedAt: Date | null;
-                    decidedAt: Date | null;
-                })[];
+                applications: any;
                 stats: {
-                    total: number;
-                    inProgress: number;
-                    submitted: number;
-                    approved: number;
+                    total: any;
+                    inProgress: any;
+                    submitted: any;
+                    approved: any;
                 };
                 pagination: {
                     page: number;
                     limit: number;
-                    total: number;
+                    total: any;
                     pages: number;
                 };
             };
@@ -10140,76 +12208,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             input: {
                 id: string;
             };
-            output: ({
-                user: {
-                    id: string;
-                    email: string;
-                    fullName: string;
-                };
-                timelineEvents: {
-                    id: string;
-                    title: string;
-                    description: string | null;
-                    userId: string;
-                    createdAt: Date;
-                    applicationId: string;
-                    eventDate: Date;
-                    completed: boolean;
-                }[];
-                documents: {
-                    id: string;
-                    userId: string;
-                    status: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    name: string;
-                    applicationId: string;
-                    vaultDocumentId: string | null;
-                    notes: string | null;
-                    uploadedAt: Date | null;
-                }[];
-                fees: {
-                    id: string;
-                    description: string;
-                    userId: string;
-                    status: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    applicationId: string;
-                    amount: number;
-                    currency: string;
-                    paidAt: Date | null;
-                }[];
-                regulatorFeedback: {
-                    message: string;
-                    id: string;
-                    userId: string;
-                    createdAt: Date;
-                    dueDate: Date | null;
-                    applicationId: string;
-                    fromName: string | null;
-                    actionRequired: boolean;
-                    receivedAt: Date;
-                }[];
-            } & {
-                id: string;
-                title: string;
-                userId: string;
-                status: string;
-                organizationId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                deletedAt: Date | null;
-                jurisdictionCode: string;
-                regulator: string;
-                licenseType: string;
-                progress: number;
-                referenceNumber: string | null;
-                nextAction: string | null;
-                dueDate: Date | null;
-                submittedAt: Date | null;
-                decidedAt: Date | null;
-            }) | null;
+            output: any;
             meta: object;
         }>;
         create: import("@trpc/server").TRPCMutationProcedure<{
@@ -10224,25 +12223,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 nextAction?: string | undefined;
                 dueDate?: Date | undefined;
             };
-            output: {
-                id: string;
-                title: string;
-                userId: string;
-                status: string;
-                organizationId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                deletedAt: Date | null;
-                jurisdictionCode: string;
-                regulator: string;
-                licenseType: string;
-                progress: number;
-                referenceNumber: string | null;
-                nextAction: string | null;
-                dueDate: Date | null;
-                submittedAt: Date | null;
-                decidedAt: Date | null;
-            };
+            output: any;
             meta: object;
         }>;
         update: import("@trpc/server").TRPCMutationProcedure<{
@@ -10260,25 +12241,7 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 submittedAt?: Date | null | undefined;
                 decidedAt?: Date | null | undefined;
             };
-            output: {
-                id: string;
-                title: string;
-                userId: string;
-                status: string;
-                organizationId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                deletedAt: Date | null;
-                jurisdictionCode: string;
-                regulator: string;
-                licenseType: string;
-                progress: number;
-                referenceNumber: string | null;
-                nextAction: string | null;
-                dueDate: Date | null;
-                submittedAt: Date | null;
-                decidedAt: Date | null;
-            };
+            output: any;
             meta: object;
         }>;
         delete: import("@trpc/server").TRPCMutationProcedure<{
@@ -12929,7 +14892,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             meta: object;
         }>;
         publicSlugs: import("@trpc/server").TRPCQueryProcedure<{
-            input: void;
+            input: {
+                limit?: number | undefined;
+                cursor?: string | undefined;
+            } | undefined;
             output: {
                 updatedAt: Date;
                 publishedAt: Date | null;
@@ -12938,7 +14904,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             meta: object;
         }>;
         publicTaxonomy: import("@trpc/server").TRPCQueryProcedure<{
-            input: void;
+            input: {
+                limit?: number | undefined;
+                cursor?: string | undefined;
+            } | undefined;
             output: {
                 categories: {
                     name: string;
@@ -14502,9 +16471,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 inputTokens: number;
                 outputTokens: number;
                 completedAt: Date | null;
+                costUsd: import("@prisma/client-runtime-utils").Decimal;
                 idempotencyKey: string;
                 startedAt: Date;
-                costUsd: import("@prisma/client-runtime-utils").Decimal;
                 agentType: string;
                 iterations: number;
             } & {
@@ -14529,9 +16498,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 inputTokens: number;
                 outputTokens: number;
                 completedAt: Date | null;
+                costUsd: import("@prisma/client-runtime-utils").Decimal;
                 idempotencyKey: string;
                 startedAt: Date;
-                costUsd: import("@prisma/client-runtime-utils").Decimal;
                 agentType: string;
                 iterations: number;
             };
@@ -14554,9 +16523,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 inputTokens: number;
                 outputTokens: number;
                 completedAt: Date | null;
+                costUsd: import("@prisma/client-runtime-utils").Decimal;
                 idempotencyKey: string;
                 startedAt: Date;
-                costUsd: import("@prisma/client-runtime-utils").Decimal;
                 agentType: string;
                 iterations: number;
             };
@@ -14577,9 +16546,9 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
                 inputTokens: number;
                 outputTokens: number;
                 completedAt: Date | null;
+                costUsd: import("@prisma/client-runtime-utils").Decimal;
                 idempotencyKey: string;
                 startedAt: Date;
-                costUsd: import("@prisma/client-runtime-utils").Decimal;
                 agentType: string;
                 iterations: number;
             };
@@ -16078,7 +18047,10 @@ export declare const appRouter: import("@trpc/server").TRPCBuiltRouter<{
             meta: object;
         }>;
         listUserPasskeys: import("@trpc/server").TRPCQueryProcedure<{
-            input: void;
+            input: {
+                limit?: number | undefined;
+                cursor?: string | undefined;
+            } | undefined;
             output: {
                 id: string;
                 createdAt: Date;

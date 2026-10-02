@@ -56,7 +56,7 @@ export declare const documentRouter: import("@trpc/server").TRPCBuiltRouter<{
             metadata?: Record<string, unknown> | undefined;
         };
         output: {
-            documentId: string;
+            documentId: any;
             success: boolean;
             message: string;
         };
@@ -75,24 +75,11 @@ export declare const documentRouter: import("@trpc/server").TRPCBuiltRouter<{
             search?: string | undefined;
         };
         output: {
-            documents: {
-                id: string;
-                title: string | null;
-                createdAt: Date;
-                actName: string;
-                documentType: string;
-                regulatoryBody: string | null;
-                fileSize: number;
-                author: {
-                    id: string;
-                    email: string;
-                    fullName: string;
-                } | null;
-            }[];
+            documents: any;
             pagination: {
                 page: number;
                 limit: number;
-                total: number;
+                total: any;
                 pages: number;
             };
         };
@@ -121,58 +108,7 @@ export declare const documentRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             id: string;
         };
-        output: {
-            author: {
-                id: string;
-                email: string;
-                fullName: string;
-            } | null;
-        } & {
-            id: string;
-            title: string | null;
-            userId: string | null;
-            status: import(".prisma/client").$Enums.DocumentStatus;
-            organizationId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
-            content: string | null;
-            isLatestVersion: boolean;
-            parentId: string | null;
-            version: number;
-            actName: string;
-            documentType: string;
-            enactmentDate: Date | null;
-            effectiveDate: Date | null;
-            amendedBy: string[];
-            regulatoryBody: string | null;
-            originalFilename: string;
-            fileUrl: string;
-            fileSize: number;
-            mimeType: string;
-            totalChunks: number | null;
-            processedAt: Date | null;
-            fullText: string | null;
-            summary: string | null;
-            keywords: string[];
-            authorId: string | null;
-            category: string | null;
-            contentStatus: import(".prisma/client").$Enums.ContentStatus;
-            contentType: import(".prisma/client").$Enums.ContentType;
-            excerpt: string | null;
-            helpfulCount: number;
-            htmlContent: string | null;
-            notHelpfulCount: number;
-            publishedAt: Date | null;
-            publishedBy: string | null;
-            seoDescription: string | null;
-            seoKeywords: string[];
-            seoTitle: string | null;
-            slug: string | null;
-            subcategory: string | null;
-            tags: string[];
-            viewCount: number;
-        };
+        output: any;
         meta: object;
     }>;
     /**
@@ -186,7 +122,7 @@ export declare const documentRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         output: {
             downloadUrl: string;
-            filename: string;
+            filename: any;
             expiresAt: string;
         };
         meta: object;
@@ -238,11 +174,11 @@ export declare const documentRouter: import("@trpc/server").TRPCBuiltRouter<{
             documentId: string;
         };
         output: {
-            documentId: string;
-            status: import(".prisma/client").$Enums.DocumentStatus;
-            totalChunks: number;
+            documentId: any;
+            status: any;
+            totalChunks: any;
             processedChunks: number;
-            processedAt: Date | null;
+            processedAt: any;
             isComplete: boolean;
             isFailed: boolean;
         };

@@ -33,10 +33,12 @@ export declare const isAuthenticated: import("@trpc/server").TRPCMiddlewareBuild
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -69,6 +71,66 @@ export declare const isAuthenticated: import("@trpc/server").TRPCMiddlewareBuild
 /**
  * Role-based Middlewares
  */
+export declare const ALL_ADMIN_ROLES: readonly ["SUPER_ADMIN", "SUPPORT_ADMIN", "BILLING_ADMIN", "SECURITY_ADMIN", "ADMIN"];
+export type AdminRole = typeof ALL_ADMIN_ROLES[number];
+export declare function isAnyAdmin(role?: string | null): boolean;
+export declare const hasRole: (...allowedRoles: string[]) => import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
+    req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
+    res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
+    user: User | null;
+    plan: import("@/types/plan.types").EffectivePlan | undefined;
+    customLimits: Record<string, unknown> | null | undefined;
+    entitlementProfile: import("@/types/plan.types").PilotEntitlementProfile | null | undefined;
+    prisma: import("@prisma/client/runtime/client").DynamicClientExtensionThis<import(".prisma/client").Prisma.TypeMap<import("@prisma/client/runtime/client").InternalArgs & {
+        result: {};
+        model: {};
+        query: {};
+        client: {};
+    }, {}>, import(".prisma/client").Prisma.TypeMapCb<{
+        adapter: import("@prisma/adapter-pg").PrismaPg;
+        log: (import(".prisma/client").Prisma.LogLevel | import(".prisma/client").Prisma.LogDefinition)[];
+        errorFormat: "pretty";
+    }>, {
+        result: {};
+        model: {};
+        query: {};
+        client: {};
+    }>;
+    tenantPrisma: any;
+    aiService: import("../../lib/ai/ai.service").AIService;
+    ragService: import("../../lib/rag/rag.service").RAGService;
+    storageService: import("../../lib/storage/storage.service").StorageService;
+    mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
+    effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
+    mfaEnforcement: {
+        state: "grace" | "enforced";
+        deadline?: Date;
+    } | undefined;
+    entitlements: import("@/config/entitlements.config").PlanEntitlementConfig | undefined;
+    appliedPlanOverrides: import("../../modules/billing/enterprise-contract-overrides").AppliedEnterpriseOverride[] | undefined;
+    pilotState: import("@/types/plan.types").PilotPlanState | null | undefined;
+    usageInfo: {
+        metric: string;
+        current: number;
+        limit: number;
+    } | undefined;
+    trialState: import("@/modules/trial").TrialContextState | undefined;
+    incrementUsage: (() => Promise<void>) | undefined;
+    orgMember: {
+        id: string;
+        userId: string;
+        role: import(".prisma/client").$Enums.MemberRole;
+        status: import(".prisma/client").$Enums.MemberStatus;
+        organizationId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        invitedBy: string | null;
+        invitedAt: Date | null;
+        joinedAt: Date;
+    } | undefined;
+    orgMembership: OrgMembershipEntry | undefined;
+}, unknown>;
 export declare const isAdmin: import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
@@ -91,10 +153,12 @@ export declare const isAdmin: import("@trpc/server").TRPCMiddlewareBuilder<Conte
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -146,10 +210,12 @@ export declare const isRegulator: import("@trpc/server").TRPCMiddlewareBuilder<C
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -201,10 +267,12 @@ export declare const isStartup: import("@trpc/server").TRPCMiddlewareBuilder<Con
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -256,10 +324,12 @@ export declare const isEnterprise: import("@trpc/server").TRPCMiddlewareBuilder<
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -294,11 +364,7 @@ export declare const isEnterprise: import("@trpc/server").TRPCMiddlewareBuilder<
  */
 export declare const rateLimited: (action: string, maxRequests?: number, opts?: {
     window?: number;
-    identifier?: (ctx: {
-        req: {
-            ip: string;
-        };
-    }) => string;
+    identifier?: (ctx: any) => string;
 }) => import("@trpc/server").TRPCMiddlewareBuilder<Context, object, {
     req: import("fastify").FastifyRequest<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown, import("fastify").FastifyBaseLogger, import("fastify/types/type-provider").ResolveFastifyRequestType<import("fastify").FastifyTypeProviderDefault, import("fastify").FastifySchema, import("fastify").RouteGenericInterface>>;
     res: import("fastify").FastifyReply<import("fastify").RouteGenericInterface, import("fastify").RawServerDefault, import("node:http").IncomingMessage, import("node:http").ServerResponse<import("node:http").IncomingMessage>, unknown, import("fastify").FastifySchema, import("fastify").FastifyTypeProviderDefault, unknown>;
@@ -321,10 +387,12 @@ export declare const rateLimited: (action: string, maxRequests?: number, opts?: 
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -396,10 +464,12 @@ export declare const requireOrgMember: import("@trpc/server").TRPCMiddlewareBuil
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -439,10 +509,12 @@ export declare const requireMemberRole: (allowedRoles: MemberRole[]) => import("
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -512,10 +584,12 @@ export declare const requireOrgMembership: import("@trpc/server").TRPCMiddleware
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -574,10 +648,12 @@ export declare const requireOrgMembershipRole: (allowedRoles: MemberRole[]) => i
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -659,10 +735,12 @@ export declare const withPlanContext: import("@trpc/server").TRPCMiddlewareBuild
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
         deadline?: Date;
@@ -716,10 +794,12 @@ export declare const requirePlanFeature: (feature: FeatureKey) => import("@trpc/
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -822,10 +902,12 @@ export declare const checkUsageLimit: (metric: BillingMetric, opts?: UsageLimitO
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";
@@ -872,10 +954,12 @@ export declare const requireAgentCapability: (capability: string) => import("@tr
         query: {};
         client: {};
     }>;
+    tenantPrisma: any;
     aiService: import("../../lib/ai/ai.service").AIService;
     ragService: import("../../lib/rag/rag.service").RAGService;
     storageService: import("../../lib/storage/storage.service").StorageService;
     mailer: import("../../lib/email/mailer.service").MailerService;
+    getTenantPrisma: (() => import("../../lib/prisma/tenant-scope.extension").TenantScopedPrismaClient) | undefined;
     effectivePlanSource: import("@/types/plan.types").EffectivePlanSource | undefined;
     mfaEnforcement: {
         state: "grace" | "enforced";

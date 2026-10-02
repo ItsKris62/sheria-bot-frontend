@@ -49,12 +49,12 @@ export declare const enterprisePolicyRouter: import("@trpc/server").TRPCBuiltRou
             sourceGapId?: string | undefined;
         };
         output: {
-            policyId: string;
-            status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
-            title: string;
-            policyType: string;
+            policyId: any;
+            status: any;
+            title: any;
+            policyType: any;
             jobId: string;
-            createdAt: Date;
+            createdAt: any;
         };
         meta: object;
     }>;
@@ -67,30 +67,17 @@ export declare const enterprisePolicyRouter: import("@trpc/server").TRPCBuiltRou
             policyId: string;
         };
         output: {
-            policyId: string;
-            job: {
-                id: string;
-                status: string;
-                updatedAt: Date;
-                attempts: number;
-                maxAttempts: number;
-                lastError: string | null;
-                events: {
-                    type: string;
-                    message: string | null;
-                    createdAt: Date;
-                    progress: number | null;
-                }[];
-            } | null;
+            policyId: any;
+            job: any;
             jobId: {} | null;
-            status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
-            progress: number;
-            title: string;
+            status: any;
+            progress: any;
+            title: any;
             currentStage: string;
             isComplete: boolean;
             isFailed: boolean;
-            errorMessage: string | null;
-            updatedAt: Date;
+            errorMessage: any;
+            updatedAt: any;
         };
         meta: object;
     }>;
@@ -102,60 +89,7 @@ export declare const enterprisePolicyRouter: import("@trpc/server").TRPCBuiltRou
         input: {
             policyId: string;
         };
-        output: {
-            citations: {
-                id: string;
-                createdAt: Date;
-                actName: string;
-                section: string;
-                subsection: string | null;
-                textSnippet: string;
-                confidence: string;
-                verified: boolean;
-                rawSource: import("@prisma/client/runtime/client").JsonValue | null;
-                sectionId: string;
-                generatedPolicyId: string;
-                citationVerified: boolean | null;
-                sourceSnapshotId: string | null;
-            }[];
-            sourceGapAnalysis: {
-                id: string;
-                documentName: string;
-                regulatoryFrameworks: import("@prisma/client/runtime/client").JsonValue;
-                overallScore: number | null;
-            } | null;
-        } & {
-            id: string;
-            title: string;
-            description: string | null;
-            userId: string;
-            status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
-            organizationId: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
-            organizationType: string | null;
-            executiveSummary: string | null;
-            targetAudience: string | null;
-            generationMetadata: import("@prisma/client/runtime/client").JsonValue | null;
-            isLatestVersion: boolean;
-            parentId: string | null;
-            version: number;
-            errorMessage: string | null;
-            progress: number;
-            completedAt: Date | null;
-            regulatoryFrameworks: string[];
-            ragGrounded: boolean;
-            jurisdiction: string;
-            reviewNotes: string | null;
-            policyType: string;
-            sourceGapAnalysisId: string | null;
-            sourceGapId: string | null;
-            tableOfContents: import("@prisma/client/runtime/client").JsonValue | null;
-            sections: import("@prisma/client/runtime/client").JsonValue | null;
-            lastExportedAt: Date | null;
-            lastExportFormat: string | null;
-        };
+        output: any;
         meta: object;
     }>;
     /**
@@ -170,25 +104,9 @@ export declare const enterprisePolicyRouter: import("@trpc/server").TRPCBuiltRou
             limit?: number | undefined;
         };
         output: {
-            items: {
-                id: string;
-                title: string;
-                description: string | null;
-                status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
-                createdAt: Date;
-                updatedAt: Date;
-                version: number;
-                progress: number;
-                completedAt: Date | null;
-                regulatoryFrameworks: string[];
-                jurisdiction: string;
-                policyType: string;
-                sourceGapAnalysisId: string | null;
-                lastExportedAt: Date | null;
-                lastExportFormat: string | null;
-            }[];
+            items: any;
             nextCursor: string | undefined;
-            totalEstimate: number;
+            totalEstimate: any;
         };
         meta: object;
     }>;
@@ -207,7 +125,7 @@ export declare const enterprisePolicyRouter: import("@trpc/server").TRPCBuiltRou
             success: boolean;
             section: PolicySection | undefined;
             version: number;
-            updatedAt: Date;
+            updatedAt: any;
         };
         meta: object;
     }>;
@@ -221,7 +139,7 @@ export declare const enterprisePolicyRouter: import("@trpc/server").TRPCBuiltRou
             success: boolean;
             section: PolicySection | undefined;
             version: number;
-            updatedAt: Date;
+            updatedAt: any;
         };
         meta: object;
     }>;

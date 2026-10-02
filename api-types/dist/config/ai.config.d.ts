@@ -90,6 +90,22 @@ export declare const aiConfig: {
             readonly citationVerification: 604800;
         };
         readonly keyPrefix: "claude:cache:";
+        /**
+         * Provider-native prompt caching settings
+         * Reduces input token cost on repetitive static instruction headers
+         */
+        readonly providerPromptCaching: {
+            readonly anthropic: {
+                readonly enabled: boolean;
+                readonly minTokens: 1024;
+            };
+            readonly openai: {
+                readonly enabled: boolean;
+            };
+            readonly gemini: {
+                readonly enabled: boolean;
+            };
+        };
     };
     /**
      * Streaming configuration
@@ -123,6 +139,26 @@ export declare const aiConfig: {
         readonly logTokens: true;
         readonly logContent: boolean;
         readonly logErrorsOnly: boolean;
+    };
+    /**
+     * RAG Advanced Pipeline Settings: Neural Reranking & Context Compression
+     */
+    readonly rag: {
+        readonly reranker: {
+            readonly provider: "cohere" | "heuristic" | "local";
+            readonly apiKey: string;
+            readonly model: string;
+            readonly timeoutMs: number;
+            readonly topK: number;
+            readonly topN: number;
+        };
+        readonly compression: {
+            readonly enabled: boolean;
+            readonly strategy: "rule-based" | "extractive";
+            readonly maxOutputTokensPerChunk: number;
+            readonly timeoutMs: number;
+        };
+        readonly latencyBudgetMs: number;
     };
 };
 /**

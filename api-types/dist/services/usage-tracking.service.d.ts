@@ -133,6 +133,22 @@ declare class UsageTrackingService {
      * Throws a descriptive error if the comparison period is not found.
      */
     compareUsage(organizationId: string, comparePeriodStart: Date): Promise<UsageComparison>;
+    /**
+     * Summarizes per-tenant AI spend in USD and KES over a billing period.
+     */
+    getTenantCostSummary(organizationId: string, periodStart?: Date, periodEnd?: Date): Promise<TenantCostSummary>;
+}
+export interface TenantCostSummary {
+    organizationId: string;
+    totalCostUsd: number;
+    totalCostKes: number;
+    periodStart: Date;
+    periodEnd: Date;
+    byMetric: Record<string, {
+        count: number;
+        costUsd: number;
+        costKes: number;
+    }>;
 }
 export declare const usageTrackingService: UsageTrackingService;
 export { UsageTrackingService };

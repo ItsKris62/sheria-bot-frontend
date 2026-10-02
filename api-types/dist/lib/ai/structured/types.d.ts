@@ -28,6 +28,8 @@ export interface CompleteStructuredInput<T> {
     correctionAttemptLimit?: 0 | 1;
     overrideTimeoutMs?: number;
     signal?: AbortSignal;
+    orgId?: string;
+    globalCache?: boolean;
 }
 export type AIStructuredOutputErrorCode = 'NO_JSON_FOUND' | 'RESPONSE_TOO_LARGE' | 'SCHEMA_VALIDATION_FAILED' | 'CORRECTION_FAILED' | 'PROVIDER_TIMEOUT' | 'BUDGET_EXHAUSTED' | 'UNSUPPORTED_PROVIDER' | 'FALLBACK_EXHAUSTED' | 'INVALID_SCHEMA_CONFIGURATION';
 //# sourceMappingURL=types.d.ts.map

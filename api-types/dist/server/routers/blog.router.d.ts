@@ -130,7 +130,10 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
         meta: object;
     }>;
     publicSlugs: import("@trpc/server").TRPCQueryProcedure<{
-        input: void;
+        input: {
+            limit?: number | undefined;
+            cursor?: string | undefined;
+        } | undefined;
         output: {
             updatedAt: Date;
             publishedAt: Date | null;
@@ -139,7 +142,10 @@ export declare const blogRouter: import("@trpc/server").TRPCBuiltRouter<{
         meta: object;
     }>;
     publicTaxonomy: import("@trpc/server").TRPCQueryProcedure<{
-        input: void;
+        input: {
+            limit?: number | undefined;
+            cursor?: string | undefined;
+        } | undefined;
         output: {
             categories: {
                 name: string;

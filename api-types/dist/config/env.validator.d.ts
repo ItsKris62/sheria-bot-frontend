@@ -55,7 +55,8 @@ declare const envSchema: z.ZodObject<{
     R2_ACCESS_KEY_ID: z.ZodString;
     R2_SECRET_ACCESS_KEY: z.ZodString;
     R2_BUCKET_NAME: z.ZodDefault<z.ZodString>;
-    R2_PUBLIC_URL: z.ZodString;
+    R2_AUDIT_BUCKET_NAME: z.ZodDefault<z.ZodString>;
+    R2_PUBLIC_URL: z.ZodDefault<z.ZodOptional<z.ZodString>>;
     MALWARE_SCAN_ENABLED: z.ZodDefault<z.ZodCoercedBoolean<unknown>>;
     CLAMAV_HOST: z.ZodOptional<z.ZodString>;
     CLAMAV_PORT: z.ZodDefault<z.ZodCoercedNumber<unknown>>;

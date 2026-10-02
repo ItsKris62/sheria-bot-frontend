@@ -158,23 +158,11 @@ export declare const complianceRouter: import("@trpc/server").TRPCBuiltRouter<{
             limit?: number | undefined;
         };
         output: {
-            queries: {
-                id: string;
-                query: string;
-                user: {
-                    id: string;
-                    email: string;
-                    fullName: string;
-                };
-                createdAt: Date;
-                jurisdictions: string[];
-                primaryJurisdiction: string | null;
-                jurisdictionSource: string | null;
-            }[];
+            queries: any;
             pagination: {
                 page: number;
                 limit: number;
-                total: number;
+                total: any;
                 pages: number;
             };
         };
@@ -189,38 +177,7 @@ export declare const complianceRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: {
             id: string;
         };
-        output: {
-            user: {
-                id: string;
-                email: string;
-                fullName: string;
-            };
-        } & {
-            metadata: import("@prisma/client/runtime/client").JsonValue | null;
-            id: string;
-            userId: string;
-            query: string;
-            status: string;
-            organizationId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
-            regulatoryAreas: import("@prisma/client/runtime/client").JsonValue | null;
-            recommendations: import("@prisma/client/runtime/client").JsonValue | null;
-            confidence: number | null;
-            summary: string | null;
-            response: string | null;
-            citations: import("@prisma/client/runtime/client").JsonValue | null;
-            processingTimeMs: number | null;
-            mode: string | null;
-            jurisdictions: string[];
-            primaryJurisdiction: string | null;
-            jurisdictionSource: string | null;
-            corpusVersionSnapshot: import("@prisma/client/runtime/client").JsonValue | null;
-            productCategory: string | null;
-            regulations: import("@prisma/client/runtime/client").JsonValue | null;
-            requirements: import("@prisma/client/runtime/client").JsonValue | null;
-            gaps: import("@prisma/client/runtime/client").JsonValue | null;
-        };
+        output: any;
         meta: object;
     }>;
     getFollowUps: import("@trpc/server").TRPCQueryProcedure<{
@@ -575,7 +532,7 @@ export declare const complianceRouter: import("@trpc/server").TRPCBuiltRouter<{
             notes?: string | undefined;
         };
         output: {
-            feedbackId: string;
+            feedbackId: any;
         };
         meta: object;
     }>;
