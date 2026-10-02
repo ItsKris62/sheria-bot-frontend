@@ -3,37 +3,12 @@
 import React from "react"
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
+import { DashboardShell } from "@/components/layout/dashboard-shell"
 import { AuthGuard } from "@/components/auth-guard"
 import { SubscriptionStatusBanner } from "@/components/plan/subscription-status-banner"
 import { TrialStatusBanner } from "@/components/trial/TrialStatusBanner"
 import { JurisdictionPromptBanner } from "@/components/jurisdiction/jurisdiction-prompt-banner"
-import { SidebarProvider, useSidebar } from "@/lib/sidebar-context"
-import { cn } from "@/lib/utils"
-
-/** Inner wrapper reads collapsed state from context to adjust left padding. */
-function LayoutInner({ children }: { children: React.ReactNode }) {
-  const { collapsed } = useSidebar()
-  return (
-    <div
-      className={cn(
-        "flex min-w-0 flex-1 flex-col overflow-x-clip transition-all duration-500 ease-out",
-        // Mobile: no offset (sidebar is a drawer overlay)
-        // md+: match collapsed (72px) or expanded (256px) sidebar width
-        collapsed ? "md:pl-[72px]" : "md:pl-64"
-      )}
-    >
-      <DashboardHeader userType="startup" />
-      <JurisdictionPromptBanner />
-      <SubscriptionStatusBanner />
-      <div className="min-w-0 px-4 pt-1 md:px-6">
-        <TrialStatusBanner />
-      </div>
-      <main className="min-w-0 flex-1 overflow-x-clip p-4 md:p-6">
-        {children}
-      </main>
-    </div>
-  )
-}
+import { SidebarProvider } from "@/lib/sidebar-context"
 
 export default function StartupLayout({
   children,
@@ -43,11 +18,23 @@ export default function StartupLayout({
   return (
     <AuthGuard allowedRoles={["STARTUP", "ENTERPRISE", "ADMIN"]}>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full overflow-x-hidden">
-          <DashboardSidebar userType="startup" />
-          <LayoutInner>{children}</LayoutInner>
-        </div>
+        <DashboardShell
+          sidebar={<DashboardSidebar userType="startup" />}
+          header={<DashboardHeader userType="startup" />}
+          banners={
+            <>
+              <JurisdictionPromptBanner />
+              <SubscriptionStatusBanner />
+              <div className="min-w-0 px-4 pt-1 md:px-6">
+                <TrialStatusBanner />
+              </div>
+            </>
+          }
+        >
+          {children}
+        </DashboardShell>
       </SidebarProvider>
     </AuthGuard>
   )
 }
+

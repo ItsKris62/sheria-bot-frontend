@@ -1,3 +1,4 @@
+import * as React from "react"
 import { TrendingDown, TrendingUp, Minus } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { getComplianceScoreTheme } from "@/lib/utils/compliance"
@@ -7,41 +8,87 @@ import { ScoreIcon } from "./compliance-category-item"
 
 export function ComplianceScoreGauge({ data }: { data: DashboardData }) {
   const theme = getComplianceScoreTheme(data.overallScore)
-  const score = Math.max(0, Math.min(100, data.overallScore))
-  const circumference = 2 * Math.PI * 62
+  const score = Math.max(0, Math.min(100, Math.round(data.overallScore)))
+  const radius = 60
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (score / 100) * circumference
   const trend = data.trend
   const trendIcon = trend?.label === "increase" ? TrendingUp : trend?.label === "decrease" ? TrendingDown : Minus
   const trendStatus = trend?.label === "increase" ? "success" : trend?.label === "decrease" ? "danger" : "neutral"
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-background)]/50 px-6 py-7 text-center sm:px-8">
-      <div className="relative size-44" role="img" aria-label={`Overall compliance score ${score} out of 100, ${theme.label}`}>
+    <div className="flex flex-col items-center justify-center gap-3.5 rounded-xl border border-[var(--portal-border,#E2E8E5)] bg-[var(--portal-surface,#FFFFFF)] px-6 py-6 text-center sm:px-7">
+      <div
+        className="relative size-40 sm:size-44"
+        role="img"
+        aria-label={`Overall compliance score ${score} out of 100, ${theme.label}`}
+      >
         <svg className="size-full -rotate-90" viewBox="0 0 144 144" aria-hidden="true">
-          <circle cx="72" cy="72" r="62" fill="none" stroke="var(--portal-border)" strokeWidth="10" />
+          {/* Neutral track circle */}
           <circle
-            cx="72" cy="72" r="62" fill="none" stroke={theme.color} strokeWidth="10" strokeLinecap="round"
-            strokeDasharray={circumference} strokeDashoffset={circumference - (score / 100) * circumference}
-            className="animate-score-ring transition-[stroke-dashoffset] duration-700 ease-out motion-reduce:transition-none"
-            style={{ filter: `drop-shadow(0 0 8px ${theme.color}66)` }}
+            cx="72"
+            cy="72"
+            r={radius}
+            fill="none"
+            stroke="var(--portal-border, #E2E8E5)"
+            strokeWidth="9"
+          />
+          {/* Active progress arc */}
+          <circle
+            cx="72"
+            cy="72"
+            r={radius}
+            fill="none"
+            stroke={theme.color}
+            strokeWidth="9"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            className="transition-[stroke-dashoffset] duration-700 ease-out motion-reduce:transition-none"
           />
         </svg>
+
+        {/* Center score readout */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-5xl font-semibold tracking-[-0.06em]" style={{ color: theme.color }}>{score}</span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--portal-text-muted)]">/ 100</span>
+          <span className="text-4xl sm:text-5xl font-semibold tracking-[-0.05em] text-[var(--portal-text-primary,#101814)]">
+            {score}
+          </span>
+          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--portal-text-muted,#64766D)]">
+            / 100
+          </span>
           <span className="sr-only">{score}%</span>
         </div>
       </div>
-      <div className="flex items-center gap-2" style={{ color: theme.color }}>
-        <ScoreIcon icon={theme.icon} color={theme.color} className="h-4 w-4" />
-        <span className="font-mono text-xs font-semibold uppercase tracking-[0.16em]">{theme.label}</span>
+
+      {/* Semantic posture pill */}
+      <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--portal-border,#E2E8E5)] bg-[var(--portal-surface-hover,#F0F4F2)] px-3 py-1 text-xs font-semibold text-[var(--portal-text-primary,#101814)]">
+        <ScoreIcon icon={theme.icon} color={theme.color} className="h-3.5 w-3.5" />
+        <span className="font-mono uppercase tracking-[0.12em]">{theme.label}</span>
       </div>
-      {trend && <PortalStatusBadge status={trendStatus as "success" | "danger" | "neutral"} icon={trendIcon}>
-        {trend.label === "increase" ? `+${trend.points} pts vs 30d ago` : trend.label === "decrease" ? `${trend.points} pts vs 30d ago` : "No change vs 30d ago"}
-      </PortalStatusBadge>}
-      <p className="max-w-[220px] text-xs leading-5 text-[var(--portal-text-muted)]">
-        {score === 0 ? "Start completing tracked requirements to build your posture." : "Based on your tracked regulatory requirements."}
+
+      {/* 30+ Days Trend Badge (Only rendered when historical points exist) */}
+      {trend && trend.points !== null && (
+        <PortalStatusBadge status={trendStatus as "success" | "danger" | "neutral"} icon={trendIcon}>
+          {trend.points > 0
+            ? `+${trend.points} pts vs 30+ days ago`
+            : trend.points < 0
+            ? `${trend.points} pts vs 30+ days ago`
+            : "No change vs 30+ days ago"}
+        </PortalStatusBadge>
+      )}
+
+      {/* Micro Explanatory Text */}
+      <p className="max-w-[210px] text-xs leading-relaxed text-[var(--portal-text-secondary,#53615A)]">
+        {score === 0
+          ? "Start completing tracked requirements to build your posture."
+          : "Based on active regulatory requirements across 5 categories."}
       </p>
-      {data.lastUpdated && <p className="text-[10px] text-[var(--portal-text-muted)]">Last calculated {formatDistanceToNow(new Date(data.lastUpdated), { addSuffix: true })}</p>}
+
+      {data.lastUpdated && (
+        <p className="font-mono text-[10px] text-[var(--portal-text-muted,#64766D)]">
+          Calculated {formatDistanceToNow(new Date(data.lastUpdated), { addSuffix: true })}
+        </p>
+      )}
     </div>
   )
 }

@@ -34,15 +34,24 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Ensure portaled Radix elements (dialogs, dropdowns, tooltips) inherit portal light theme
+  React.useEffect(() => {
+    document.body.setAttribute("data-portal-theme", "light")
+    return () => {
+      document.body.removeAttribute("data-portal-theme")
+    }
+  }, [])
+
   return (
     <AuthGuard>
       <IdleTimeoutWrapper>
         <NotificationSoundProvider />
         <AlertSSEProvider />
-        <div data-portal-shell="true" className="portal-shell min-h-screen bg-background">
+        <div data-portal-shell="true" className="portal-shell min-h-screen bg-background text-foreground">
           {children}
         </div>
       </IdleTimeoutWrapper>
     </AuthGuard>
   )
 }
+

@@ -37,6 +37,13 @@ import { useSidebar } from "@/lib/sidebar-context"
 import { useAlertNotifications } from "@/hooks/use-alert-notifications"
 import { ReportMissingDocumentDialog } from "@/components/corpus-gap-report/report-missing-document-dialog"
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 function createSidebarIcon(src: string, alt: string) {
   return function SidebarIcon({ className }: { className?: string }) {
     return (
@@ -44,7 +51,7 @@ function createSidebarIcon(src: string, alt: string) {
         role="img"
         aria-label={alt}
         className={cn(
-          "h-6 w-6 shrink-0 bg-current transition-all duration-300 group-hover:scale-110 inline-block",
+          "h-5 w-5 shrink-0 bg-current transition-transform duration-200 group-hover:scale-105 inline-block",
           className
         )}
         style={{
@@ -198,7 +205,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
     return navGroups.map((group) => (
       <div key={group.title}>
         {!opts.showCollapsed && (
-          <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-widest text-primary/70">
+          <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-[var(--portal-sidebar-muted)]">
             {group.title}
           </p>
         )}
@@ -215,71 +222,107 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
             const isLocked = item.lockedFeature ? !hasFeature(item.lockedFeature) : false
 
             if (isAction) {
-              return (
+              const actionBtn = (
                 <button
                   key={itemKey}
                   type="button"
+                  aria-label={item.title}
                   className={cn(
-                    "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-white/[0.08] hover:text-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                    opts.showCollapsed && "justify-center px-2"
+                    "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                    opts.showCollapsed && "justify-center px-0 w-10 h-10 mx-auto"
                   )}
-                  title={opts.showCollapsed ? item.title : undefined}
                   onClick={() => {
                     setReportDialogOpen(true)
                     setMobileOpen(false)
                   }}
                 >
-                  <item.icon className="h-6 w-6 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
-                  {!opts.showCollapsed && <span className="flex-1">{item.title}</span>}
+                  <item.icon className="h-5 w-5 shrink-0 transition-colors duration-150 group-hover:text-[var(--portal-sidebar-text)]" />
+                  {!opts.showCollapsed && <span className="flex-1 truncate">{item.title}</span>}
                 </button>
               )
+
+              if (opts.showCollapsed) {
+                return (
+                  <Tooltip key={itemKey} delayDuration={150}>
+                    <TooltipTrigger asChild>
+                      {actionBtn}
+                    </TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={12} className="bg-[#0D281A] text-[#F4F7F5] border-[#153D26] text-xs py-1 px-2.5 shadow-lg">
+                      {item.title}
+                    </TooltipContent>
+                  </Tooltip>
+                )
+              }
+
+              return actionBtn
             }
 
-            return (
+            const navLink = (
               <Link
                 key={itemKey}
                 href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                aria-label={item.title}
                 className={cn(
-                  "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                  "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
                   isLocked
-                    ? "opacity-50 cursor-pointer"
+                    ? "opacity-50 cursor-pointer text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)]"
                     : isActive
-                    ? "bg-primary/15 text-primary shadow-sm font-semibold"
-                    : "text-muted-foreground hover:bg-white/[0.08] hover:text-white hover:shadow-sm",
-                  opts.showCollapsed && "justify-center px-2"
+                    ? "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)] font-semibold shadow-sm"
+                    : "text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)]",
+                  opts.showCollapsed && "justify-center px-0 w-10 h-10 mx-auto"
                 )}
-                title={opts.showCollapsed ? item.title : undefined}
               >
                 {isActive && !isLocked && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#22C55E] rounded-r-full" />
                 )}
                 <item.icon className={cn(
-                  "h-6 w-6 shrink-0 transition-all duration-300",
+                  "h-5 w-5 shrink-0 transition-colors duration-150",
                   isLocked
-                    ? "text-muted-foreground opacity-40 grayscale"
+                    ? "text-[var(--portal-sidebar-muted)] opacity-50"
                     : isActive
-                    ? "text-primary opacity-100 drop-shadow-[0_0_8px_rgba(34,197,94,0.35)]"
-                    : "text-muted-foreground opacity-80 group-hover:opacity-100 group-hover:text-primary"
+                    ? "text-[#22C55E]"
+                    : "text-[var(--portal-sidebar-muted)] group-hover:text-[var(--portal-sidebar-text)]"
                 )} />
                 {!opts.showCollapsed && (
                   <>
-                    <span className="flex-1">{item.title}</span>
+                    <span className="flex-1 truncate">{item.title}</span>
                     {isLocked ? (
-                      <Lock className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
+                      <Lock className="h-3.5 w-3.5 text-[var(--portal-sidebar-muted)]/70 shrink-0" />
                     ) : item.badge ? (
                       <span className={cn(
-                        "flex h-5.5 min-w-[24px] items-center justify-center rounded-full px-2 text-[11px] font-bold tracking-wide transition-all duration-300",
+                        "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold tracking-wide",
                         typeof item.badge === "number"
-                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                          : "bg-primary/20 text-primary"
+                          ? "bg-[#22C55E] text-black"
+                          : "bg-[var(--portal-sidebar-raised)] text-[#22C55E] border border-[#153D26]"
                       )}>
                         {item.badge}
                       </span>
                     ) : null}
                   </>
                 )}
+                {opts.showCollapsed && item.badge && (
+                  <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#22C55E]" />
+                )}
               </Link>
             )
+
+            if (opts.showCollapsed) {
+              return (
+                <Tooltip key={itemKey} delayDuration={150}>
+                  <TooltipTrigger asChild>
+                    {navLink}
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={12} className="bg-[#0D281A] text-[#F4F7F5] border-[#153D26] text-xs py-1 px-2.5 shadow-lg flex items-center gap-1.5">
+                    <span>{item.title}</span>
+                    {isLocked && <Lock className="h-3 w-3 text-[var(--portal-sidebar-muted)]" />}
+                    {item.badge && <span className="text-[10px] font-bold text-[#22C55E]">({item.badge})</span>}
+                  </TooltipContent>
+                </Tooltip>
+              )
+            }
+
+            return navLink
           })}
         </div>
       </div>
@@ -287,93 +330,137 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
   }
 
   return (
-    <>
+    <TooltipProvider>
       {/* ── Desktop sidebar (md and above) ───────────────────────────────── */}
       <aside
+        aria-label="Sidebar navigation"
         className={cn(
-          "fixed left-0 top-0 z-40 hidden md:flex h-screen flex-col border-r portal-surface-shell transition-all duration-500 ease-out",
+          "fixed left-0 top-0 z-40 hidden md:flex h-screen flex-col border-r border-[#0D281A] bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] transition-[width] duration-200 ease-out",
           collapsed ? "w-[72px]" : "w-64"
         )}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b border-border/50 px-4">
+        <div className="flex h-16 items-center justify-between border-b border-[#0D281A] px-4">
           {!collapsed && (
-            <Link href="/" className="group flex items-center gap-3 rounded-xl transition-all duration-300 hover:scale-105 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black">
+            <Link href="/" className="group flex items-center gap-3 rounded-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]">
               <Image
                 src={LOGOS.hero}
                 alt="SheriaBot"
-                width={36}
-                height={36}
-                className="h-9 w-9 object-contain"
+                width={32}
+                height={32}
+                className="h-8 w-8 object-contain"
                 priority
               />
               <div className="flex flex-col">
-                <span className="brand-wordmark font-bold text-white">
-                  Sheria<span className="text-brand-green">Bot</span>
+                <span className="brand-wordmark font-bold text-white tracking-tight">
+                  Sheria<span className="text-[#22C55E]">Bot</span>
                 </span>
-                <span className="text-[10px] text-primary font-medium -mt-0.5 tracking-wider uppercase">Dashboard</span>
+                <span className="text-[10px] text-[var(--portal-sidebar-muted)] font-medium -mt-0.5 tracking-wider uppercase">
+                  {userType === "regulator" ? "Regulator" : "Dashboard"}
+                </span>
               </div>
             </Link>
           )}
           {collapsed && (
-            <Link href="/" className="group mx-auto rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black">
+            <Link href="/" aria-label="SheriaBot home" className="group mx-auto rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]">
               <Image
                 src={LOGOS.hero}
                 alt="SheriaBot"
-                width={36}
-                height={36}
-                className="h-9 w-9 object-contain transition-all duration-300 group-hover:scale-110 group-hover:opacity-90"
+                width={32}
+                height={32}
+                className="h-8 w-8 object-contain transition-opacity group-hover:opacity-90"
               />
             </Link>
           )}
         </div>
 
         {/* Navigation */}
-        <ScrollArea className="flex-1 px-3 py-6">
-          <nav className="flex flex-col gap-8">
+        <ScrollArea className="flex-1 px-3 py-4">
+          <nav className="flex flex-col gap-6" aria-label="Main Navigation">
             {renderGroups({ showCollapsed: collapsed })}
           </nav>
         </ScrollArea>
 
         {/* Footer */}
-        <div className="border-t border-border/50 p-3">
+        <div className="border-t border-[#0D281A] p-3">
           <div className="flex flex-col gap-1">
-            <Link
-              href="/settings"
-              className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-white/[0.08] hover:text-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                collapsed && "justify-center px-2",
-                pathname.startsWith("/settings") && "bg-primary/15 text-primary"
-              )}
-            >
-              <Settings className={cn(
-                "h-6 w-6 shrink-0 transition-all duration-300",
-                pathname.startsWith("/settings") ? "text-primary" : "group-hover:text-primary"
-              )} />
-              {!collapsed && <span>Settings</span>}
-            </Link>
-            <Link
-              href="/support"
-              className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-white/[0.08] hover:text-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                collapsed && "justify-center px-2",
-                pathname.startsWith("/support") && "bg-primary/15 text-primary"
-              )}
-            >
-              <HelpCircle className={cn(
-                "h-6 w-6 shrink-0 transition-all duration-300",
-                pathname.startsWith("/support") ? "text-primary" : "group-hover:text-primary"
-              )} />
-              {!collapsed && <span>Support</span>}
-            </Link>
+            {collapsed ? (
+              <Tooltip delayDuration={150}>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/settings"
+                    aria-label="Settings"
+                    className={cn(
+                      "group flex h-10 w-10 mx-auto items-center justify-center rounded-lg text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                      pathname.startsWith("/settings") && "bg-[var(--portal-sidebar-active)] text-[#22C55E]"
+                    )}
+                  >
+                    <Settings className="h-5 w-5 shrink-0" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={12} className="bg-[#0D281A] text-[#F4F7F5] border-[#153D26] text-xs py-1 px-2.5 shadow-lg">
+                  Settings
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Link
+                href="/settings"
+                className={cn(
+                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                  pathname.startsWith("/settings") && "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)] font-semibold"
+                )}
+              >
+                <Settings className={cn(
+                  "h-5 w-5 shrink-0 transition-colors duration-150",
+                  pathname.startsWith("/settings") ? "text-[#22C55E]" : "group-hover:text-[var(--portal-sidebar-text)]"
+                )} />
+                <span className="truncate">Settings</span>
+              </Link>
+            )}
+
+            {collapsed ? (
+              <Tooltip delayDuration={150}>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/support"
+                    aria-label="Support"
+                    className={cn(
+                      "group flex h-10 w-10 mx-auto items-center justify-center rounded-lg text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                      pathname.startsWith("/support") && "bg-[var(--portal-sidebar-active)] text-[#22C55E]"
+                    )}
+                  >
+                    <HelpCircle className="h-5 w-5 shrink-0" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={12} className="bg-[#0D281A] text-[#F4F7F5] border-[#153D26] text-xs py-1 px-2.5 shadow-lg">
+                  Support
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Link
+                href="/support"
+                className={cn(
+                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                  pathname.startsWith("/support") && "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)] font-semibold"
+                )}
+              >
+                <HelpCircle className={cn(
+                  "h-5 w-5 shrink-0 transition-colors duration-150",
+                  pathname.startsWith("/support") ? "text-[#22C55E]" : "group-hover:text-[var(--portal-sidebar-text)]"
+                )} />
+                <span className="truncate">Support</span>
+              </Link>
+            )}
           </div>
 
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
             className={cn(
-              "mt-3 w-full rounded-xl text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-300",
+              "mt-3 w-full rounded-lg text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
               collapsed && "mx-auto"
             )}
           >
@@ -389,62 +476,64 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
 
       {/* ── Mobile drawer (below md) ──────────────────────────────────────── */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-72 p-0 flex flex-col">
+        <SheetContent side="left" className="w-72 p-0 flex flex-col bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] border-r border-[#0D281A]">
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
 
           {/* Logo */}
-          <div className="flex h-16 items-center border-b border-border/50 px-4">
-            <Link href="/" className="group flex items-center gap-3 rounded-xl transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black">
+          <div className="flex h-16 items-center border-b border-[#0D281A] px-4">
+            <Link href="/" className="group flex items-center gap-3 rounded-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]">
               <Image
                 src={LOGOS.hero}
                 alt="SheriaBot"
-                width={36}
-                height={36}
-                className="h-9 w-9 object-contain"
+                width={32}
+                height={32}
+                className="h-8 w-8 object-contain"
                 priority
               />
               <div className="flex flex-col">
                 <span className="brand-wordmark font-bold text-white">
-                  Sheria<span className="text-brand-green">Bot</span>
+                  Sheria<span className="text-[#22C55E]">Bot</span>
                 </span>
-                <span className="text-[10px] text-primary font-medium -mt-0.5 tracking-wider uppercase">Dashboard</span>
+                <span className="text-[10px] text-[var(--portal-sidebar-muted)] font-medium -mt-0.5 tracking-wider uppercase">
+                  {userType === "regulator" ? "Regulator" : "Dashboard"}
+                </span>
               </div>
             </Link>
           </div>
 
           {/* Navigation */}
-          <ScrollArea className="flex-1 px-3 py-6">
-            <nav className="flex flex-col gap-8">
+          <ScrollArea className="flex-1 px-3 py-4">
+            <nav className="flex flex-col gap-6">
               {renderGroups({ showCollapsed: false })}
             </nav>
           </ScrollArea>
 
           {/* Footer */}
-          <div className="border-t border-border/50 p-3">
+          <div className="border-t border-[#0D281A] p-3">
             <div className="flex flex-col gap-1">
               <Link
                 href="/settings"
                 className={cn(
-                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-white/[0.08] hover:text-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                  pathname.startsWith("/settings") && "bg-primary/15 text-primary"
+                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]",
+                  pathname.startsWith("/settings") && "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)]"
                 )}
               >
                 <Settings className={cn(
-                  "h-6 w-6 shrink-0 transition-all duration-300",
-                  pathname.startsWith("/settings") ? "text-primary" : "group-hover:text-primary"
+                  "h-5 w-5 shrink-0 transition-colors",
+                  pathname.startsWith("/settings") ? "text-[#22C55E]" : "group-hover:text-[var(--portal-sidebar-text)]"
                 )} />
                 <span>Settings</span>
               </Link>
               <Link
                 href="/support"
                 className={cn(
-                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-white/[0.08] hover:text-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                  pathname.startsWith("/support") && "bg-primary/15 text-primary"
+                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]",
+                  pathname.startsWith("/support") && "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)]"
                 )}
               >
                 <HelpCircle className={cn(
-                  "h-6 w-6 shrink-0 transition-all duration-300",
-                  pathname.startsWith("/support") ? "text-primary" : "group-hover:text-primary"
+                  "h-5 w-5 shrink-0 transition-colors",
+                  pathname.startsWith("/support") ? "text-[#22C55E]" : "group-hover:text-[var(--portal-sidebar-text)]"
                 )} />
                 <span>Support</span>
               </Link>
@@ -456,6 +545,8 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
         open={reportDialogOpen}
         onOpenChange={setReportDialogOpen}
       />
-    </>
+    </TooltipProvider>
   )
 }
+
+

@@ -15,10 +15,11 @@ export interface PortalSurfaceProps extends React.HTMLAttributes<HTMLDivElement>
 }
 
 const variantStyles: Record<NonNullable<PortalSurfaceProps["variant"]>, string> = {
-  shell: "portal-surface-shell border-b transition-colors",
-  raised: "portal-surface-raised transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px hover:border-[var(--portal-accent-border)] hover:bg-[var(--portal-surface-hover)] hover:shadow-[0_10px_30px_-24px_var(--portal-accent)] motion-reduce:transform-none motion-reduce:transition-none",
-  solid: "portal-surface-solid transition-[background-color,border-color,color] duration-200 ease-out hover:border-[var(--portal-border-strong)] motion-reduce:transition-none",
+  shell: "portal-surface-shell border-b transition-colors bg-white",
+  raised: "portal-surface-raised bg-white border border-[var(--portal-border)] rounded-xl shadow-[0_1px_2px_rgba(16,24,20,0.04)] transition-[border-color,box-shadow] duration-200 ease-out hover:border-[var(--portal-border-strong)] hover:shadow-[0_2px_4px_rgba(16,24,20,0.06)] motion-reduce:transition-none",
+  solid: "portal-surface-solid bg-[var(--portal-surface-solid)] border border-[var(--portal-border)] rounded-lg transition-colors duration-200 ease-out hover:border-[var(--portal-border-strong)] motion-reduce:transition-none",
 }
+
 
 export const PortalSurface = React.forwardRef<HTMLDivElement, PortalSurfaceProps>(
   ({ className, variant = "raised", asChild = false, ...props }, ref) => {

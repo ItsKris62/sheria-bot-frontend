@@ -559,13 +559,13 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b portal-surface-shell px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[var(--portal-border)] bg-white px-6 shadow-[0_1px_2px_rgba(16,24,20,0.02)]">
       {/* Left side */}
       <div className="flex items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="md:hidden text-[var(--portal-text-secondary)] hover:text-[var(--portal-text-primary)] hover:bg-[var(--portal-surface-solid)]"
           onClick={() => setMobileOpen(true)}
           aria-label="Open navigation"
         >
@@ -573,19 +573,19 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
         </Button>
         <button
           type="button"
-          className="hidden w-64 h-9 items-center gap-2.5 rounded-xl border border-border/50 bg-muted/30 px-3 text-sm text-muted-foreground transition-all duration-200 hover:border-[#22C55E]/30 hover:bg-[#22C55E]/[0.04] hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:flex"
+          className="hidden w-72 h-9 items-center gap-2.5 rounded-lg border border-[var(--portal-border)] bg-[var(--portal-surface-solid)] px-3 text-sm text-[var(--portal-text-secondary)] transition-colors duration-150 hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-white lg:flex"
           onClick={() => handleSearchOpenChange(true)}
         >
-          <Search className="h-3.5 w-3.5 text-muted-foreground/60" />
-          <span className="flex-1 text-left">Search...</span>
-          <kbd className="ml-auto flex items-center gap-0.5 rounded-md border border-border/40 bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/70">
+          <Search className="h-4 w-4 text-[var(--portal-text-muted)]" />
+          <span className="flex-1 text-left text-xs font-normal">Search pages, actions, settings...</span>
+          <kbd className="ml-auto flex items-center gap-0.5 rounded border border-[var(--portal-border)] bg-white px-1.5 py-0.5 text-[10px] font-medium text-[var(--portal-text-muted)] shadow-none">
             <span className="text-[11px]">⌘</span>K
           </kbd>
         </button>
         <Button
           variant="ghost"
           size="icon"
-          className="lg:hidden"
+          className="lg:hidden text-[var(--portal-text-secondary)] hover:text-[var(--portal-text-primary)]"
           onClick={() => handleSearchOpenChange(true)}
         >
           <Search className="h-5 w-5" />
@@ -598,10 +598,10 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
         {/* Notifications + Alerts Sheet */}
         <Sheet open={notificationsOpen} onOpenChange={handlePanelOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative text-[var(--portal-text-secondary)] hover:text-[var(--portal-text-primary)] hover:bg-[var(--portal-surface-solid)]">
               <Bell className="h-5 w-5" />
               {totalUnreadCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-[10px] font-medium text-primary-foreground">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 min-w-[1rem] items-center justify-center rounded-full bg-[#22C55E] px-0.5 text-[10px] font-bold text-black shadow-sm">
                   {totalUnreadCount > 99 ? "99+" : totalUnreadCount}
                 </span>
               )}
@@ -614,18 +614,18 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
             </SheetHeader>
 
             {/* Panel switcher */}
-            <div className="mt-4 grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+            <div className="mt-4 grid grid-cols-2 gap-1 rounded-lg bg-[var(--portal-surface-solid)] p-1 border border-[var(--portal-border)]">
               <button
                 onClick={() => setActivePanel("NOTIFICATIONS")}
                 className={`flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] ${
                   activePanel === "NOTIFICATIONS"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-white text-[var(--portal-text-primary)] shadow-sm"
+                    : "text-[var(--portal-text-muted)] hover:text-[var(--portal-text-primary)]"
                 }`}
               >
                 Updates
                 {unreadCount > 0 && (
-                  <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
+                  <span className="rounded-full bg-[#22C55E] px-1.5 py-0.5 text-[10px] font-bold text-black">
                     {unreadCount}
                   </span>
                 )}
@@ -634,13 +634,13 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
                 onClick={() => setActivePanel("ALERTS")}
                 className={`flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] ${
                   activePanel === "ALERTS"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-white text-[var(--portal-text-primary)] shadow-sm"
+                    : "text-[var(--portal-text-muted)] hover:text-[var(--portal-text-primary)]"
                 }`}
               >
                 Regulatory Alerts
                 {alertUnreadCount > 0 && (
-                  <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-medium text-destructive-foreground">
+                  <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
                     {alertUnreadCount}
                   </span>
                 )}
@@ -808,7 +808,7 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
         </Sheet>
 
         {/* Help */}
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" asChild className="text-[var(--portal-text-secondary)] hover:text-[var(--portal-text-primary)] hover:bg-[var(--portal-surface-solid)]">
           <Link href="/support">
             <HelpCircle className="h-5 w-5" />
             <span className="sr-only">Help</span>
@@ -818,20 +818,20 @@ export function DashboardHeader({ userType }: DashboardHeaderProps) {
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 px-2">
+            <Button variant="ghost" className="gap-2 px-2 hover:bg-[var(--portal-surface-solid)]">
               <UserAvatar user={{ name: user.name, avatar: avatarUrl }} size="sm" />
               <div className="hidden text-left lg:block">
-                <p className="text-sm font-medium text-foreground">{user.name}</p>
-                <p className="text-xs text-muted-foreground">{user.organization}</p>
+                <p className="text-sm font-medium text-[var(--portal-text-primary)] leading-tight">{user.name}</p>
+                <p className="text-xs text-[var(--portal-text-muted)] leading-tight">{user.organization}</p>
               </div>
-              <ChevronDown className="hidden h-4 w-4 text-muted-foreground lg:block" />
+              <ChevronDown className="hidden h-4 w-4 text-[var(--portal-text-muted)] lg:block" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56 bg-white border border-[var(--portal-border)] shadow-lg">
             <DropdownMenuLabel>
               <div className="flex flex-col gap-1">
-                <p className="font-medium text-foreground">{user.name}</p>
-                <p className="text-xs font-normal text-muted-foreground">{user.email}</p>
+                <p className="font-medium text-[var(--portal-text-primary)]">{user.name}</p>
+                <p className="text-xs font-normal text-[var(--portal-text-muted)]">{user.email}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

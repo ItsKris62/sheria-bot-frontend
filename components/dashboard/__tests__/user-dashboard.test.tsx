@@ -8,7 +8,9 @@ import {
   UpcomingDeadlinesCard,
   DashboardQuickActions,
   RecentComplianceQueries,
+  DashboardMetricCard,
 } from "../index"
+import { ShieldCheck, Calendar } from "lucide-react"
 import type { DashboardData, AlertItem, DeadlineItem, QueryItem } from "../dashboard-types"
 
 // Mock Plan Context so FeatureGate evaluates correctly in tests
@@ -61,7 +63,7 @@ describe("Redesigned User Dashboard Components (Phase 2)", () => {
 
     it("renders score trend badge text", () => {
       render(<ComplianceOverview data={mockData} />)
-      expect(screen.getByText("+5 pts vs 30d ago")).toBeInTheDocument()
+      expect(screen.getByText("+5 pts vs 30+ days ago")).toBeInTheDocument()
     })
 
     it("renders error state when isError is true", () => {
@@ -100,6 +102,20 @@ describe("Redesigned User Dashboard Components (Phase 2)", () => {
       expect(screen.getByText("Priority Attention Required")).toBeInTheDocument()
       expect(screen.getByText("CBK Annual Compliance Return")).toBeInTheDocument()
       expect(screen.getByText("ODPC New Penalty Guideline")).toBeInTheDocument()
+    })
+    it("filters out non-urgent deadlines (> 3 days left)", () => {
+      const nonUrgentDeadline: DeadlineItem = {
+        id: "d2",
+        title: "Future Data Audit",
+        dueDate: new Date(Date.now() + 5 * 86400000).toISOString(), // 5 days left
+        priority: "MEDIUM",
+        status: "PENDING",
+        category: "ODPC",
+      }
+
+      render(<PriorityAttention deadlines={[nonUrgentDeadline]} alerts={[]} />)
+      expect(screen.getByText("No urgent items requiring immediate action")).toBeInTheDocument()
+      expect(screen.queryByText("Future Data Audit")).not.toBeInTheDocument()
     })
   })
 
@@ -153,6 +169,40 @@ describe("Redesigned User Dashboard Components (Phase 2)", () => {
     it("renders empty state message when no queries exist", () => {
       render(<RecentComplianceQueries queries={[]} />)
       expect(screen.getByText("No queries yet. Ask your first question!")).toBeInTheDocument()
+    })
+  })
+
+  describe("DashboardMetricCard", () => {
+    it("renders metric title, value, and subtitle", () => {
+      render(
+        <DashboardMetricCard
+          title="Compliance Score"
+          value="82%"
+          subtitle="+5 pts vs 30+ days ago"
+          icon={ShieldCheck}
+          variant="emphasized"
+        />
+      )
+
+      expect(screen.getByText("Compliance Score")).toBeInTheDocument()
+      expect(screen.getByText("82%")).toBeInTheDocument()
+      expect(screen.getByText("+5 pts vs 30+ days ago")).toBeInTheDocument()
+    })
+
+    it("renders as clickable link when href is provided", () => {
+      render(
+        <DashboardMetricCard
+          title="Upcoming Deadlines"
+          value={3}
+          subtitle="3 urgent (≤3 days)"
+          icon={Calendar}
+          href="/startup/calendar"
+        />
+      )
+
+      const link = screen.getByRole("link")
+      expect(link).toHaveAttribute("href", "/startup/calendar")
+      expect(screen.getByText("Upcoming Deadlines")).toBeInTheDocument()
     })
   })
 })

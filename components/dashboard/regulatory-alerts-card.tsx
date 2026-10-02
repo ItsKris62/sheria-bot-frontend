@@ -20,6 +20,7 @@ export function RegulatoryAlertsCard({ alerts = [], isLoading, isError }: Regula
       status: "viewed",
     })
   }, [])
+
   return (
     <PortalSurface variant="raised" className="p-6">
       <PortalSectionHeader
@@ -27,7 +28,12 @@ export function RegulatoryAlertsCard({ alerts = [], isLoading, isError }: Regula
         description="Recent regulatory changes affecting your business"
         icon={Bell}
         action={
-          <Button variant="ghost" size="sm" asChild className="text-xs text-[var(--portal-text-secondary)] hover:text-white">
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className="text-xs text-[var(--portal-text-secondary,#53615A)] hover:bg-[var(--portal-surface-hover,#F0F4F2)] hover:text-[var(--portal-text-primary,#101814)] transition-colors"
+          >
             <Link href="/dashboard/alerts">
               View all
               <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
@@ -45,60 +51,90 @@ export function RegulatoryAlertsCard({ alerts = [], isLoading, isError }: Regula
           </>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
-            <AlertCircle className="h-6 w-6 text-red-400" aria-hidden="true" />
-            <p className="text-sm text-[var(--portal-text-secondary)]">We could not load regulatory alerts right now.</p>
+            <AlertCircle className="h-6 w-6 text-red-600" aria-hidden="true" />
+            <p className="text-sm text-[var(--portal-text-secondary,#53615A)]">
+              We could not load regulatory alerts right now.
+            </p>
           </div>
         ) : alerts.length === 0 ? (
-          <p className="py-8 text-center text-sm text-[var(--portal-text-muted)]">
+          <p className="py-8 text-center text-sm text-[var(--portal-text-muted,#64766D)]">
             No active regulatory alerts for your current plan window.
           </p>
         ) : (
           alerts.map((alert) => {
             const severity = alert.severity?.toLowerCase() ?? "low"
             const publishedAt = alert.publishedAt ? new Date(alert.publishedAt) : null
-            const statusType = severity === "critical" || severity === "high" ? "danger" : severity === "medium" ? "warning" : "info"
+            const statusType =
+              severity === "critical" || severity === "high"
+                ? "danger"
+                : severity === "medium"
+                ? "warning"
+                : "neutral"
 
             return (
               <Link
                 key={alert.id}
                 href={`/dashboard/alerts/${alert.id}`}
-                className={`flex items-start gap-3.5 rounded-lg border p-3.5 transition-colors ${
+                className={`group flex items-start justify-between gap-3.5 rounded-lg border p-3.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--portal-focus,#0A5C36)] ${
                   !alert.isRead
-                    ? "border-[var(--portal-accent-border)] bg-[var(--portal-accent-muted)]/30"
-                    : "border-[var(--portal-border)] bg-[var(--portal-surface-solid)]"
+                    ? "border-[var(--portal-accent-border,#A3D9BE)] bg-[var(--portal-accent-muted,#E8F5EE)]/30 hover:bg-[var(--portal-accent-muted,#E8F5EE)]/50"
+                    : "border-[var(--portal-border,#E2E8E5)] bg-[var(--portal-surface,#FFFFFF)] hover:bg-[var(--portal-surface-hover,#F0F4F2)] hover:border-[var(--portal-border-strong,#B8C7C0)]"
                 }`}
               >
-                <div
-                  className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                    statusType === "danger"
-                      ? "bg-red-500/10 text-red-400"
-                      : statusType === "warning"
-                      ? "bg-amber-500/10 text-amber-400"
-                      : "bg-blue-500/10 text-blue-400"
-                  }`}
-                >
-                  <AlertCircle className="h-4 w-4" aria-hidden="true" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-semibold text-[var(--portal-text-primary)] truncate">
-                      {alert.title}
-                    </p>
-                    {!alert.isRead && (
-                      <span className="h-2 w-2 shrink-0 rounded-full bg-[var(--portal-accent)]" title="Unread" />
-                    )}
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  {/* Left severity indicator dot */}
+                  <div
+                    className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${
+                      statusType === "danger"
+                        ? "border border-red-200 bg-red-50 text-red-700"
+                        : statusType === "warning"
+                        ? "border border-amber-200 bg-amber-50 text-amber-700"
+                        : "border border-gray-200 bg-gray-50 text-gray-700"
+                    }`}
+                  >
+                    <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
                   </div>
-                  <p className="mt-1 line-clamp-2 text-xs text-[var(--portal-text-secondary)]">
-                    {alert.summary}
-                  </p>
-                  <p className="mt-1.5 text-[11px] text-[var(--portal-text-muted)]">
-                    {alert.regulatoryBody}
-                    {publishedAt ? ` · ${formatDistanceToNow(publishedAt, { addSuffix: true })}` : ""}
-                  </p>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="truncate text-xs font-semibold text-[var(--portal-text-primary,#101814)] group-hover:text-[var(--portal-accent,#0A5C36)]">
+                        {alert.title}
+                      </p>
+                      {!alert.isRead && (
+                        <span
+                          className="h-2 w-2 shrink-0 rounded-full bg-[var(--portal-accent,#0A5C36)]"
+                          title="Unread"
+                        />
+                      )}
+                    </div>
+
+                    <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--portal-text-secondary,#53615A)]">
+                      {alert.summary}
+                    </p>
+
+                    <div className="mt-1.5 flex items-center gap-2 font-mono text-[11px] text-[var(--portal-text-muted,#64766D)]">
+                      <span className="font-semibold text-[var(--portal-text-secondary,#53615A)]">
+                        {alert.regulatoryBody}
+                      </span>
+                      {publishedAt && (
+                        <>
+                          <span>·</span>
+                          <span>{formatDistanceToNow(publishedAt, { addSuffix: true })}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <PortalStatusBadge status={statusType} className="shrink-0 text-[10px]">
-                  {severity}
-                </PortalStatusBadge>
+
+                <div className="flex items-center gap-2 shrink-0 self-center">
+                  <PortalStatusBadge status={statusType} className="capitalize text-[10px]">
+                    {severity}
+                  </PortalStatusBadge>
+                  <ArrowRight
+                    className="h-4 w-4 text-[var(--portal-text-muted,#64766D)] transition-transform group-hover:translate-x-0.5 group-hover:text-[var(--portal-accent,#0A5C36)]"
+                    aria-hidden="true"
+                  />
+                </div>
               </Link>
             )
           })

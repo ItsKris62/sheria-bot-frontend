@@ -382,73 +382,123 @@ html {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
- * Authenticated Portal Design Tokens & Glass Surface System (Phase 1)
- * Strictly scoped under .portal-shell / [data-portal-shell="true"]
+ * Authenticated Portal Design Tokens (Batch 1A Redesign)
+ * Strictly scoped under .portal-shell / [data-portal-shell="true"] / [data-portal-theme="light"]
  * Public pages (app/(public)) DO NOT inherit these tokens or overrides.
  * ───────────────────────────────────────────────────────────────────────── */
 
 .portal-shell,
-[data-portal-shell="true"] {
-  --portal-background: #000000;
-  --portal-background-elevated: #0A0A0A;
+[data-portal-shell="true"],
+body[data-portal-theme="light"] {
+  /* ── Canvas & Workspace Hierarchy (White Workspace Requirement) */
+  --portal-canvas: #FFFFFF;
+  --portal-canvas-subtle: #F7F9F8;
 
-  --portal-surface: rgba(12, 12, 12, 0.95);
-  --portal-surface-raised: #0A0A0A;
-  --portal-surface-solid: #121212;
-  --portal-surface-hover: #1A1A1A;
+  --portal-surface: #FFFFFF;
+  --portal-surface-raised: #FFFFFF;
+  --portal-surface-solid: #F7F9F8;
+  --portal-surface-hover: #F1F5F3;
 
-  --portal-border: rgba(255, 255, 255, 0.08);
-  --portal-border-strong: rgba(255, 255, 255, 0.16);
-  --portal-divider: rgba(255, 255, 255, 0.06);
+  --portal-border: #E4E9E6;
+  --portal-border-strong: #CBD5E1;
+  --portal-divider: #EDF1EE;
 
-  --portal-text-primary: #F9FAFB;
-  --portal-text-secondary: #9CA3AF;
-  --portal-text-muted: #6B7280;
+  --portal-text-primary: #101814;
+  --portal-text-secondary: #53615A;
+  --portal-text-muted: #64766D;
 
-  --portal-accent: #22C55E;
-  --portal-accent-muted: rgba(34, 197, 94, 0.15);
-  --portal-accent-border: rgba(34, 197, 94, 0.3);
+  /* ── Sidebar Visual System (Solid Dark Forest) */
+  --portal-sidebar: #081C13;
+  --portal-sidebar-raised: #0D281A;
+  --portal-sidebar-active: #153D26;
+  --portal-sidebar-text: #F4F7F5;
+  --portal-sidebar-muted: #9EADA5;
+  --portal-sidebar-border: rgba(255, 255, 255, 0.08);
 
-  --portal-success: #22C55E;
-  --portal-warning: #F59E0B;
-  --portal-danger: #EF4444;
-  --portal-info: #3B82F6;
+  /* ── Brand & Accent Semantics */
+  --portal-accent: #16A34A;
+  --portal-accent-hover: #15803D;
+  --portal-accent-subtle: #F0FDF4;
+  --portal-accent-border: #BBF7D0;
 
-  --portal-focus-ring: #22C55E;
+  /* ── Feedback Semantics (Restrained Solid Values for Light Canvas) */
+  --portal-success: #16A34A;
+  --portal-success-subtle: #F0FDF4;
+  --portal-warning: #D97706;
+  --portal-warning-subtle: #FEF3C7;
+  --portal-danger: #DC2626;
+  --portal-danger-subtle: #FEE2E2;
+  --portal-info: #2563EB;
+  --portal-info-subtle: #EFF6FF;
 
-  --portal-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.6);
-  --portal-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.7), 0 2px 4px -2px rgba(0, 0, 0, 0.7);
-  --portal-glow-subtle: 0 0 0 1px rgba(34, 197, 94, 0.2), 0 4px 16px -2px rgba(34, 197, 94, 0.15);
+  --portal-focus-ring: #16A34A;
+
+  /* ── Minimal Subtle Shadow Philosophy (No Glow, No Heavy Shadows) */
+  --portal-shadow-sm: 0 1px 2px 0 rgba(16, 24, 20, 0.04);
+  --portal-shadow-card: 0 1px 3px 0 rgba(16, 24, 20, 0.04), 0 1px 2px -1px rgba(16, 24, 20, 0.04);
+  --portal-shadow-elevated: 0 4px 6px -1px rgba(16, 24, 20, 0.05), 0 2px 4px -2px rgba(16, 24, 20, 0.05);
 
   --portal-radius-sm: 0.375rem;
   --portal-radius-md: 0.5rem;
   --portal-radius-lg: 0.75rem;
 
-  background-color: var(--portal-background);
+  /* ── Tailwind / shadcn Overrides Scoped Strictly to Authenticated Portal */
+  --bg-base: #FFFFFF;
+  --bg-raised: #FFFFFF;
+  --bg-overlay: #F7F9F8;
+  --bg-input: #FFFFFF;
+
+  --fg-primary: #101814;
+  --fg-secondary: #53615A;
+  --fg-muted: #64766D;
+  --fg-disabled: #9EADA5;
+
+  --border-subtle: #E4E9E6;
+  --border-strong: #CBD5E1;
+
+  /* HSL shadcn tokens consumed by UI components inside portal */
+  --background: 0 0% 100%;           /* #FFFFFF */
+  --foreground: 147 20% 8%;          /* #101814 */
+  --card: 0 0% 100%;                /* #FFFFFF */
+  --card-foreground: 147 20% 8%;     /* #101814 */
+  --popover: 0 0% 100%;             /* #FFFFFF */
+  --popover-foreground: 147 20% 8%;  /* #101814 */
+  --muted: 140 10% 96%;             /* #F1F5F3 */
+  --muted-foreground: 148 7% 35%;    /* #53615A */
+  --border: 140 8% 90%;             /* #E4E9E6 */
+  --input: 140 8% 90%;              /* #E4E9E6 */
+  --accent: 140 10% 96%;            /* #F1F5F3 */
+  --accent-foreground: 147 20% 8%;   /* #101814 */
+  --secondary: 140 10% 96%;
+  --secondary-foreground: 147 20% 8%;
+  --ring: 142 71% 36%;              /* #16A34A */
+
+  background-color: var(--portal-canvas);
   color: var(--portal-text-primary);
 }
 
 /* ── Surface Level 1: Shell Glass (Top Header, Expanded Sidebar, Mobile Sheet) */
 .portal-shell .portal-surface-shell,
-[data-portal-shell="true"] .portal-surface-shell {
-  background-color: rgba(10, 10, 10, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+[data-portal-shell="true"] .portal-surface-shell,
+body[data-portal-theme="light"] .portal-surface-shell {
+  background-color: var(--portal-surface);
   border-color: var(--portal-border);
 }
 
 /* ── Surface Level 2: Raised Portal Surface (Primary Containers, Dashboard Cards) */
 .portal-shell .portal-surface-raised,
-[data-portal-shell="true"] .portal-surface-raised {
+[data-portal-shell="true"] .portal-surface-raised,
+body[data-portal-theme="light"] .portal-surface-raised {
   background-color: var(--portal-surface-raised);
   border: 1px solid var(--portal-border);
-  box-shadow: var(--portal-shadow-sm);
+  box-shadow: var(--portal-shadow-card);
   border-radius: var(--portal-radius-lg);
 }
 
 /* ── Surface Level 3: Solid Nested Surface (List Rows, Sub-cards, Tables, Form Controls) */
 .portal-shell .portal-surface-solid,
-[data-portal-shell="true"] .portal-surface-solid {
+[data-portal-shell="true"] .portal-surface-solid,
+body[data-portal-theme="light"] .portal-surface-solid {
   background-color: var(--portal-surface-solid);
   border: 1px solid var(--portal-border);
   border-radius: var(--portal-radius-md);
@@ -456,20 +506,11 @@ html {
 
 /* ── Focus Ring Styling inside Portal Shell */
 .portal-shell *:focus-visible,
-[data-portal-shell="true"] *:focus-visible {
+[data-portal-shell="true"] *:focus-visible,
+body[data-portal-theme="light"] *:focus-visible {
   outline: none;
   ring: 2px;
   ring-color: var(--portal-focus-ring);
   ring-offset: 2px;
-}
-
-/* ── Accessibility & Performance Fallbacks */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .portal-shell .portal-surface-shell,
-  [data-portal-shell="true"] .portal-surface-shell {
-    background-color: var(--portal-background-elevated);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
 }
 
