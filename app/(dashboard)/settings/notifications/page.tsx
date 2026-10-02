@@ -154,7 +154,7 @@ function AlertSubscriptionSection() {
 
   if (!orgId) {
     return (
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Megaphone className="h-5 w-5 text-primary" />
@@ -169,7 +169,7 @@ function AlertSubscriptionSection() {
   }
 
   return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Megaphone className="h-5 w-5 text-primary" />
@@ -415,13 +415,13 @@ export default function NotificationSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Notification Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage how you receive notifications and alerts</p>
+        <h1 className="text-xl font-semibold text-foreground">Notification Settings</h1>
+        <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Manage how you receive notifications and alerts</p>
       </div>
 
       <div className="grid gap-6">
         {/* General Email Notifications */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-primary" />
@@ -488,7 +488,7 @@ export default function NotificationSettingsPage() {
         </Card>
 
         {/* Specific Email Alerts (DB-backed - unchanged) */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-primary" />
@@ -555,7 +555,7 @@ export default function NotificationSettingsPage() {
         </Card>
 
         {/* In-App Notifications */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-primary" />
@@ -604,7 +604,7 @@ export default function NotificationSettingsPage() {
         </Card>
 
         {/* Email Digest */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-primary" />
@@ -663,7 +663,7 @@ export default function NotificationSettingsPage() {
           </CardContent>
         </Card>
         {/* In-App Notifications by Category */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-primary" />
@@ -720,7 +720,7 @@ export default function NotificationSettingsPage() {
         </Card>
 
         {/* Email Notifications by Category */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-primary" />

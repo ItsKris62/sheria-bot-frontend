@@ -227,8 +227,8 @@ export default function ProfileSettingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Profile Settings</h1>
-        <p className="text-muted-foreground">Manage your personal information and preferences</p>
+        <h1 className="text-xl font-semibold text-foreground">Profile Settings</h1>
+        <p className="text-sm text-[var(--portal-text-secondary)]">Manage your personal information and preferences</p>
       </div>
 
       {/* ── Avatar + summary ─────────────────────────────────────────────── */}

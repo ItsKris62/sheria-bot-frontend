@@ -504,6 +504,42 @@ body[data-portal-theme="light"] .portal-surface-solid {
   border-radius: var(--portal-radius-md);
 }
 
+/* Settings is a secondary workspace inside the authenticated portal shell. */
+[data-settings-workspace="true"] [data-slot="card"] {
+  background-color: var(--portal-surface);
+  border-color: var(--portal-border);
+  border-radius: var(--portal-radius-lg);
+  box-shadow: var(--portal-shadow-card);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+[data-settings-workspace="true"] [data-slot="card-title"] {
+  color: var(--portal-text-primary);
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+}
+
+[data-settings-workspace="true"] [data-slot="card-description"] {
+  color: var(--portal-text-secondary);
+  line-height: 1.4;
+}
+
+[data-settings-workspace="true"] input:not([type="checkbox"]):not([type="radio"]):not([disabled]),
+[data-settings-workspace="true"] textarea:not([disabled]) {
+  background-color: var(--portal-surface);
+  border-color: var(--portal-border-strong);
+  color: var(--portal-text-primary);
+}
+
+[data-settings-workspace="true"] input:disabled,
+[data-settings-workspace="true"] textarea:disabled,
+[data-settings-workspace="true"] button:disabled {
+  background-color: var(--portal-surface-solid);
+  color: var(--portal-text-muted);
+}
+
 /* ── Focus Ring Styling inside Portal Shell */
 .portal-shell *:focus-visible,
 [data-portal-shell="true"] *:focus-visible,

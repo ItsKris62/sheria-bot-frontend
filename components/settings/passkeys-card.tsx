@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useSyncExternalStore } from "react"
 import { toast } from "sonner"
 import { format, formatDistanceToNow } from "date-fns"
 import { startRegistration } from "@simplewebauthn/browser"
@@ -53,6 +53,9 @@ import {
 import { trpc, getErrorMessage } from "@/lib/trpc"
 import { isWebAuthnSupported, translateWebAuthnError } from "@/lib/webauthn"
 
+const subscribeToWebAuthnSupport = () => () => undefined
+const getServerWebAuthnSupport = () => false
+
 function getDefaultDeviceName(): string {
   if (typeof navigator === "undefined") return "My Passkey"
   const ua = navigator.userAgent
@@ -74,7 +77,11 @@ function getDefaultDeviceName(): string {
 }
 
 export function PasskeysCard() {
-  const [isSupported, setIsSupported] = useState<boolean>(true)
+  const isSupported = useSyncExternalStore(
+    subscribeToWebAuthnSupport,
+    isWebAuthnSupported,
+    getServerWebAuthnSupport
+  )
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [deviceNameInput, setDeviceNameInput] = useState("")
   const [isRegistering, setIsRegistering] = useState(false)
@@ -89,10 +96,6 @@ export function PasskeysCard() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const utils = trpc.useUtils()
-
-  useEffect(() => {
-    setIsSupported(isWebAuthnSupported())
-  }, [])
 
   // Queries & Mutations
   const listQuery = trpc.passkey.listUserPasskeys.useQuery(undefined, {
@@ -184,7 +187,7 @@ export function PasskeysCard() {
   const passkeys = listQuery.data ?? []
 
   return (
-    <Card id="passkeys" className="border-border/50 bg-card/50 backdrop-blur">
+    <Card id="passkeys" className="portal-surface-raised">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -213,7 +216,7 @@ export function PasskeysCard() {
 
       <CardContent className="space-y-4">
         {!isSupported && (
-          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400">
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
             Passkeys are not supported in this browser or environment. Use a modern browser with WebAuthn enabled.
           </div>
         )}
@@ -326,7 +329,7 @@ export function PasskeysCard() {
         <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground flex items-start gap-2">
           <ShieldCheck className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
           <span>
-            Passkeys satisfy your organization's MFA requirements and provide cryptographic protection against phishing attacks.
+            Passkeys satisfy your organization&apos;s MFA requirements and provide cryptographic protection against phishing attacks.
           </span>
         </div>
       </CardContent>

@@ -150,7 +150,7 @@ export default function CalendarPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Calendar grid */}
         <div className="lg:col-span-2">
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
@@ -230,7 +230,7 @@ export default function CalendarPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Upcoming deadlines */}
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Bell className="h-4 w-4 text-primary" />
@@ -282,7 +282,7 @@ export default function CalendarPage() {
 
           {/* Reminder card — only shown when there are high-priority items */}
           {highPriorityCount > 0 && (
-            <Card className="border-border/50 bg-card/50 backdrop-blur border-l-4 border-l-warning">
+            <Card className="portal-surface-raised border-l-4 border-l-warning">
               <CardContent className="pt-4">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />

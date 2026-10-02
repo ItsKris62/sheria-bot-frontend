@@ -122,7 +122,7 @@ export default function ApplicationsPage() {
       </div>
 
       {formOpen ? (
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
           <CardHeader>
             <CardTitle>Create Application Record</CardTitle>
             <CardDescription>Start tracking a real regulatory application for your organization.</CardDescription>
@@ -156,7 +156,7 @@ export default function ApplicationsPage() {
 
       <div className="grid gap-4 md:grid-cols-4">
         {statCards.map(({ label, value, Icon }) => (
-          <Card key={label} className="border-border/50 bg-card/50 backdrop-blur">
+          <Card key={label} className="portal-surface-raised">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-lg bg-primary/10">
@@ -172,7 +172,7 @@ export default function ApplicationsPage() {
         ))}
       </div>
 
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>

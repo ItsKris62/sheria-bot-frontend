@@ -219,7 +219,7 @@ export default function LicenseDetailPage() {
       </div>
 
       {editing ? (
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
           <CardHeader>
             <CardTitle>Edit License</CardTitle>
             <CardDescription>Updating renewal or expiry dates updates linked calendar events.</CardDescription>
@@ -246,7 +246,7 @@ export default function LicenseDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <CardTitle>Timeline Events</CardTitle>
               <CardDescription>Renewal preparation, submissions, inspections, evidence tasks, and regulator follow-ups.</CardDescription>
@@ -287,7 +287,7 @@ export default function LicenseDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <CardTitle>Evidence Documents</CardTitle>
               <CardDescription>Link existing organization vault documents to this license.</CardDescription>
@@ -319,7 +319,7 @@ export default function LicenseDetailPage() {
         </div>
 
         <div className="space-y-6">
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader><CardTitle className="text-base">Deadline State</CardTitle></CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Renewal due</span><span>{formatDate(license.renewalDueDate)}</span></div>
@@ -332,7 +332,7 @@ export default function LicenseDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader><CardTitle className="text-base">Metadata</CardTitle></CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div><span className="text-muted-foreground">Owner</span><p className="text-foreground">{license.assignedOwner?.fullName ?? "Unassigned"}</p></div>
@@ -344,7 +344,7 @@ export default function LicenseDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader><CardTitle className="text-base">Fees</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <div className="grid gap-2">
@@ -375,7 +375,7 @@ export default function LicenseDetailPage() {
           </Card>
 
           {license.notes ? (
-            <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
               <CardHeader><CardTitle className="text-base">Notes</CardTitle></CardHeader>
               <CardContent><p className="whitespace-pre-wrap text-sm text-muted-foreground">{license.notes}</p></CardContent>
             </Card>

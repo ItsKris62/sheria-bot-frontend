@@ -45,6 +45,7 @@ import {
 import { LoadingScreen } from "@/components/loading-screen"
 import { useAuthStore } from "@/lib/auth-store"
 import { trackEvent, trackFeatureUsage, recordAccountActivation } from "@/lib/analytics"
+import { buildGapAnalysisInput, type GapAnalysisDepth } from "@/lib/gap-analysis-input"
 
 // Local Types
 
@@ -1053,7 +1054,7 @@ export default function GapAnalysisPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([])
   const [selectedBenchmarkDocumentIds, setSelectedBenchmarkDocumentIds] = useState<string[]>([])
-  const [analysisDepth, setAnalysisDepth] = useState<"quick" | "standard" | "deep">("standard")
+  const [analysisDepth, setAnalysisDepth] = useState<GapAnalysisDepth>("standard")
   const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>([])
   const [focusAreasOpen, setFocusAreasOpen] = useState(false)
   const [consentChecked, setConsentChecked] = useState(false)
@@ -1232,15 +1233,15 @@ export default function GapAnalysisPage() {
         status: "started",
       })
 
-      runMutation.mutate({
+      runMutation.mutate(buildGapAnalysisInput({
         fileName: selectedFile.name,
         fileType: ext as "pdf" | "docx" | "doc" | "txt",
         fileContent: base64,
         regulatoryFrameworks: selectedFrameworks,
-        benchmarkDocumentIds: selectedBenchmarkDocumentIds.length > 0 ? selectedBenchmarkDocumentIds : undefined,
+        benchmarkDocumentIds: selectedBenchmarkDocumentIds,
         analysisDepth,
-        focusAreas: selectedFocusAreas.length > 0 ? selectedFocusAreas : undefined,
-      })
+        focusAreas: selectedFocusAreas,
+      }))
     }
     reader.onerror = () => {
       toast.error("File read error", { description: "Could not read the file. Please try again." })
@@ -1325,8 +1326,8 @@ export default function GapAnalysisPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-foreground">Policy Gap Analysis</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-[28px] font-semibold tracking-tight text-[var(--portal-text-primary)]">Policy Gap Analysis</h1>
+          <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">
               Upload your policy documents and compare them against applicable regulatory requirements using AI.
           </p>
         </div>
@@ -1341,13 +1342,13 @@ export default function GapAnalysisPage() {
         {/* ─── Left Column: Document Context + Target ─── */}
         <div className="flex flex-col gap-6">
           {/* Section 1: Source Material — Document Context */}
-          <Card className="border-border/50">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Upload className="h-5 w-5 text-primary" />
                 Document Context
               </CardTitle>
-              <CardDescription className="text-sm text-slate-400">
+              <CardDescription className="text-sm text-[var(--portal-text-secondary)]">
                 Upload your internal compliance policy, procedure, or framework document.
               </CardDescription>
             </CardHeader>
@@ -1365,13 +1366,13 @@ export default function GapAnalysisPage() {
           </Card>
 
           {/* Section 2: Target — Framework & Regional Focus */}
-          <Card className="border-border/50">
+          <Card className="portal-surface-raised">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Shield className="h-5 w-5 text-primary" />
                 Target Framework
               </CardTitle>
-              <CardDescription className="text-sm text-slate-400">
+              <CardDescription className="text-sm text-[var(--portal-text-secondary)]">
                 Select the regulatory framework(s) to compare against.
               </CardDescription>
             </CardHeader>
@@ -1387,7 +1388,7 @@ export default function GapAnalysisPage() {
                 <div className="space-y-5">
                   {groupedFrameworks.map(([category, fws]) => (
                     <div key={category} className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{category}</p>
+                      <p className="text-xs font-medium uppercase tracking-wide text-[var(--portal-text-muted)]">{category}</p>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {fws.map((fw: FrameworkOption) => {
                           const isSelected = selectedFrameworks.includes(fw.slug)
@@ -1429,22 +1430,22 @@ export default function GapAnalysisPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-slate-400">No frameworks available.</p>
+                <p className="text-sm text-[var(--portal-text-secondary)]">No frameworks available.</p>
               )}
               {selectedFrameworks.length === 0 && !frameworksLoading && (
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[var(--portal-text-muted)]">
                   Select at least one framework to analyse against.
                 </p>
               )}
 
               {/* Subtle divider */}
-              <div className="border-b border-slate-700/50" />
+              <div className="border-b border-[var(--portal-divider)]" />
 
               {/* Regional Focus — Focus Areas */}
               <div className="space-y-2">
                 <div>
-                  <Label className="text-sm font-medium text-foreground">Benchmark Documents <span className="text-slate-400 text-xs font-normal">(optional)</span></Label>
-                  <p className="mt-1 text-sm text-slate-400">Select the legal or regulatory documents SheriaBot should use as benchmarks for this analysis.</p>
+                  <Label className="text-sm font-medium text-foreground">Benchmark Documents <span className="text-xs font-normal text-[var(--portal-text-muted)]">(optional)</span></Label>
+                  <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Select the legal or regulatory documents SheriaBot should use as benchmarks for this analysis.</p>
                 </div>
                 <MultiSelect
                   options={legalDocumentOptions}
@@ -1453,16 +1454,16 @@ export default function GapAnalysisPage() {
                   placeholder={benchmarkDocumentsLoading ? "Loading benchmark documents..." : "Select benchmark documents"}
                   emptyText="No benchmark documents available."
                   disabled={benchmarkDocumentsLoading || legalDocumentOptions.length === 0}
-                  className="bg-slate-900 text-left"
+                  className="border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-left text-[var(--portal-text-primary)] hover:bg-[var(--portal-surface-hover)] hover:text-[var(--portal-text-primary)] disabled:bg-[var(--portal-surface-solid)]"
                 />
                 {selectedBenchmarkDocumentIds.length > 0 ? (
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-[var(--portal-text-muted)]">
                     {selectedBenchmarkDocumentIds.length} benchmark document{selectedBenchmarkDocumentIds.length > 1 ? "s" : ""} selected.
                   </p>
                 ) : null}
               </div>
 
-              <div className="border-b border-slate-700/50" />
+              <div className="border-b border-[var(--portal-divider)]" />
 
               <div>
                 <button
@@ -1471,8 +1472,8 @@ export default function GapAnalysisPage() {
                   className="flex w-full items-center justify-between gap-3"
                 >
                   <div>
-                    <Label className="cursor-pointer text-sm font-medium text-foreground">Regional Focus <span className="text-slate-400 text-xs font-normal">(optional)</span></Label>
-                    <p className="mt-1 text-sm text-slate-400">Narrow the review to specific regulatory areas.</p>
+                    <Label className="cursor-pointer text-sm font-medium text-foreground">Regional Focus <span className="text-xs font-normal text-[var(--portal-text-muted)]">(optional)</span></Label>
+                    <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Narrow the review to specific regulatory areas.</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {selectedFocusAreas.length > 0 && (
@@ -1516,13 +1517,13 @@ export default function GapAnalysisPage() {
         </div>
 
         {/* ─── Right Column: Parameters + CTA ─── */}
-        <Card className="border-border/50 flex flex-col">
+        <Card className="portal-surface-raised flex flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <BarChart3 className="h-5 w-5 text-primary" />
               Analysis Parameters
             </CardTitle>
-            <CardDescription className="text-sm text-slate-400">
+            <CardDescription className="text-sm text-[var(--portal-text-secondary)]">
               Configure the depth, scope, and output preferences.
             </CardDescription>
           </CardHeader>
@@ -1531,55 +1532,56 @@ export default function GapAnalysisPage() {
             <div className="space-y-3">
               <div>
                 <Label className="text-sm font-medium text-foreground">Analysis Depth</Label>
-                <p className="mt-1 text-sm text-slate-400">Choose how detailed the AI review should be.</p>
+                <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Choose how detailed the AI review should be.</p>
               </div>
-              <div className="flex rounded-lg bg-slate-900 p-1">
+              <div className="grid grid-cols-3 gap-1 rounded-lg border border-[var(--portal-border)] bg-[var(--portal-surface-solid)] p-1" role="group" aria-label="Analysis depth">
                 {ANALYSIS_DEPTHS.map((d) => (
                   <button
                     key={d.value}
                     type="button"
-                    onClick={() => setAnalysisDepth(d.value as "quick" | "standard" | "deep")}
+                    onClick={() => setAnalysisDepth(d.value as GapAnalysisDepth)}
+                    aria-pressed={analysisDepth === d.value}
                     className={cn(
-                      "flex-1 rounded-md px-3 py-2.5 text-center text-sm font-medium transition-all duration-200",
+                      "rounded-md border px-2 py-2.5 text-center text-sm font-medium transition-colors sm:px-3",
                       analysisDepth === d.value
-                        ? "bg-slate-700 text-foreground shadow-sm"
-                        : "text-slate-400 hover:text-slate-300"
+                        ? "border-[var(--portal-accent-border)] bg-[var(--portal-surface)] text-[#0A5C36] shadow-[var(--portal-shadow-sm)]"
+                        : "border-transparent text-[var(--portal-text-secondary)] hover:bg-[var(--portal-surface-hover)] hover:text-[var(--portal-text-primary)]"
                     )}
                   >
                     {d.label}
                   </button>
                 ))}
               </div>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-[var(--portal-text-secondary)]">
                 {ANALYSIS_DEPTHS.find((d) => d.value === analysisDepth)?.description}
               </p>
             </div>
 
             {/* Subtle divider */}
-            <div className="border-b border-slate-700/50" />
+            <div className="border-b border-[var(--portal-divider)]" />
 
             {/* Scope Summary */}
             <div className="space-y-3">
               <Label className="text-sm font-medium text-foreground">Scope</Label>
-              <div className="rounded-lg bg-slate-800/30 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">Frameworks</span>
+              <div className="overflow-hidden rounded-lg border border-[var(--portal-border)] bg-[var(--portal-canvas-subtle)] px-4">
+                <div className="flex items-center justify-between gap-4 border-b border-[var(--portal-divider)] py-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Frameworks</span>
                   <span className="text-sm font-medium text-foreground">
                     {selectedFrameworks.length > 0 ? `${selectedFrameworks.length} selected` : "None"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">Depth</span>
+                <div className="flex items-center justify-between gap-4 border-b border-[var(--portal-divider)] py-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Depth</span>
                   <span className="text-sm font-medium text-foreground">{selectedDepthLabel}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">Focus Areas</span>
+                <div className="flex items-center justify-between gap-4 border-b border-[var(--portal-divider)] py-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Focus Areas</span>
                   <span className="text-sm font-medium text-foreground">
                     {selectedFocusAreas.length > 0 ? `${selectedFocusAreas.length} areas` : "All areas"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">Benchmark Docs</span>
+                <div className="flex items-center justify-between gap-4 py-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Benchmark Documents</span>
                   <span className="text-sm font-medium text-foreground">
                     {selectedBenchmarkDocumentIds.length > 0 ? `${selectedBenchmarkDocumentIds.length} selected` : "All corpus"}
                   </span>
@@ -1587,46 +1589,11 @@ export default function GapAnalysisPage() {
               </div>
             </div>
 
-            {/* Subtle divider */}
-            <div className="border-b border-slate-700/50" />
-
-            {/* Include Industry Benchmarks toggle */}
-            <div className="flex items-center justify-between w-full">
-              <div>
-                <Label className="text-sm font-medium text-foreground">Include Industry Benchmarks</Label>
-                <p className="mt-0.5 text-sm text-slate-400">Compare against sector-specific best practices.</p>
-              </div>
-              {/* Toggle switch */}
-              <button
-                type="button"
-                role="switch"
-                aria-checked={selectedFocusAreas.length > 0}
-                onClick={() => {
-                  if (selectedFocusAreas.length > 0) {
-                    setSelectedFocusAreas([])
-                  } else {
-                    setFocusAreasOpen(true)
-                  }
-                }}
-                className={cn(
-                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200",
-                  selectedFocusAreas.length > 0 ? "bg-primary" : "bg-slate-700"
-                )}
-              >
-                <span
-                  className={cn(
-                    "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200",
-                    selectedFocusAreas.length > 0 ? "translate-x-6" : "translate-x-1"
-                  )}
-                />
-              </button>
-            </div>
-
             {/* Spacer to push CTA to bottom */}
             <div className="flex-1" />
 
             {/* Subtle divider before CTA */}
-            <div className="border-b border-slate-700/50" />
+            <div className="border-b border-[var(--portal-divider)]" />
 
             {/* Cross-border data processing consent — inline */}
             <label className="flex items-start gap-3 cursor-pointer">
@@ -1636,7 +1603,7 @@ export default function GapAnalysisPage() {
                 onChange={(e) => setConsentChecked(e.target.checked)}
                 className="mt-0.5 h-4 w-4 shrink-0 rounded border-input accent-primary cursor-pointer"
               />
-              <span className="text-sm text-slate-400 leading-relaxed">
+              <span className="text-sm leading-relaxed text-[var(--portal-text-secondary)]">
                 I understand that my document may be processed using AI services hosted outside my home jurisdiction,
                 in accordance with SheriaBot&apos;s Privacy Policy and applicable data-protection law.
               </span>
@@ -1644,7 +1611,7 @@ export default function GapAnalysisPage() {
 
             {/* Status messaging */}
             {!canRun && (
-              <div className="flex items-center gap-2 text-sm text-slate-400">
+              <div className="flex items-center gap-2 text-sm text-[var(--portal-text-secondary)]">
                 <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
                 {!selectedFile
                   ? "Upload a document to continue"

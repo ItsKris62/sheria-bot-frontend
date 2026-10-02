@@ -255,8 +255,8 @@ export default function TeamSettingsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Team</h1>
-          <p className="mt-1 text-muted-foreground">
+          <h1 className="text-xl font-semibold text-foreground">Team</h1>
+          <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">
             {data?.organization.name} shares one Business compliance workspace.
           </p>
         </div>
@@ -268,7 +268,7 @@ export default function TeamSettingsPage() {
         )}
       </div>
 
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader className="pb-2">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -310,7 +310,7 @@ export default function TeamSettingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
@@ -430,7 +430,7 @@ export default function TeamSettingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary" />

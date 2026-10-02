@@ -2662,7 +2662,7 @@ export default function ChecklistsPage() {
         <>
           {/* Summary bar */}
           <div className="grid grid-cols-3 gap-4">
-            <Card className="border-border/50 bg-card/50">
+          <Card className="portal-surface-raised">
               <CardContent className="pt-4 pb-4">
                 <p className="text-xs text-muted-foreground">Total Checklists</p>
                 <p className="text-2xl font-bold text-foreground">{checklists.length}</p>
@@ -2672,13 +2672,13 @@ export default function ChecklistsPage() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="border-border/50 bg-card/50">
+          <Card className="portal-surface-raised">
               <CardContent className="pt-4 pb-4">
                 <p className="text-xs text-muted-foreground">Fully Compliant</p>
                 <p className="text-2xl font-bold text-green-600">{fullyDoneCount}</p>
               </CardContent>
             </Card>
-            <Card className="border-border/50 bg-card/50">
+          <Card className="portal-surface-raised">
               <CardContent className="pt-4 pb-4">
                 <p className="text-xs text-muted-foreground">Critical Items Pending</p>
                 <p className="text-2xl font-bold text-red-600">{totalCriticalPending}</p>

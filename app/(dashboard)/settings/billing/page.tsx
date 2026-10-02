@@ -238,7 +238,7 @@ function CompactAnimatedPrice({ value }: { value: number | null }) {
       }`}
       aria-live="polite"
     >
-      <span className="text-[0.45em] font-semibold uppercase tracking-[0.12em] text-[#7F8A85]">
+      <span className="text-[0.45em] font-semibold uppercase tracking-[0.12em] text-[var(--portal-text-muted)]">
         KES
       </span>
       <span>{displayValue.toLocaleString("en-KE")}</span>
@@ -256,17 +256,17 @@ function CompactBillingToggle({
   const isYearly = cycle === "yearly"
 
   return (
-    <div className="relative inline-grid h-11 w-[244px] grid-cols-2 items-center rounded-full border border-[#1D2925] bg-[#0A100D]/90 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_14px_40px_rgba(0,0,0,0.24)] sm:w-[286px]">
+    <div className="relative inline-grid h-11 w-[244px] grid-cols-2 items-center rounded-lg border border-[var(--portal-border)] bg-[var(--portal-surface-solid)] p-1 sm:w-[286px]">
       <span
-        className={`absolute left-1 top-1 h-9 w-[calc(50%-4px)] rounded-full bg-[#1ED760] shadow-[0_8px_22px_rgba(30,215,96,0.18)] transition duration-500 ease-out ${
+        className={`absolute left-1 top-1 h-9 w-[calc(50%-4px)] rounded-md border border-[var(--portal-accent-border)] bg-[var(--portal-surface)] shadow-[var(--portal-shadow-sm)] transition duration-300 ease-out ${
           isYearly ? "translate-x-full" : "translate-x-0"
         }`}
         aria-hidden="true"
       />
       <button
         type="button"
-        className={`relative z-10 h-9 rounded-full text-xs font-semibold transition duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1ED760]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-sm ${
-          !isYearly ? "text-[#06110A]" : "text-[#B8C0BC] hover:text-[#F5F7F6]"
+        className={`relative z-10 h-9 rounded-md text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--portal-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-sm ${
+          !isYearly ? "text-[#0A5C36]" : "text-[var(--portal-text-secondary)] hover:text-[var(--portal-text-primary)]"
         }`}
         onClick={() => onChange("monthly")}
         aria-pressed={!isYearly}
@@ -278,8 +278,8 @@ function CompactBillingToggle({
         role="switch"
         aria-checked={isYearly}
         aria-label="Use yearly billing"
-        className={`relative z-10 flex h-9 items-center justify-center gap-1.5 rounded-full text-xs font-semibold transition duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1ED760]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-sm ${
-          isYearly ? "text-[#06110A]" : "text-[#B8C0BC] hover:text-[#F5F7F6]"
+        className={`relative z-10 flex h-9 items-center justify-center gap-1.5 rounded-md text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--portal-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-sm ${
+          isYearly ? "text-[#0A5C36]" : "text-[var(--portal-text-secondary)] hover:text-[var(--portal-text-primary)]"
         }`}
         onClick={() => onChange("yearly")}
       >
@@ -287,8 +287,8 @@ function CompactBillingToggle({
         <span
           className={`hidden rounded-full border px-1.5 py-0.5 text-[10px] font-bold transition duration-500 sm:inline-flex ${
             isYearly
-              ? "border-[#06110A]/20 bg-[#06110A]/10 text-[#06110A]"
-              : "border-[#1D2925] bg-[#101814] text-[#7F8A85]"
+              ? "border-[var(--portal-accent-border)] bg-[var(--portal-accent-subtle)] text-[#0A5C36]"
+              : "border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-[var(--portal-text-muted)]"
           }`}
         >
           Save 17%
@@ -300,14 +300,14 @@ function CompactBillingToggle({
 
 function getCompactCardClasses(planId: PlanId) {
   if (planId === "BUSINESS") {
-    return "border-[#1ED760]/40 bg-[radial-gradient(circle_at_top,rgba(30,215,96,0.14),transparent_42%),linear-gradient(180deg,#12251B_0%,#07100C_100%)] shadow-[0_18px_60px_rgba(30,215,96,0.09),0_1px_0_rgba(255,255,255,0.06)_inset]"
+    return "border-[var(--portal-accent-border)] bg-[var(--portal-accent-subtle)]"
   }
 
   if (planId === "ENTERPRISE") {
-    return "border-[#C6A15B]/30 bg-[linear-gradient(180deg,rgba(198,161,91,0.08),transparent_35%),linear-gradient(180deg,#111411_0%,#070A09_100%)] shadow-[0_18px_54px_rgba(0,0,0,0.25),0_1px_0_rgba(255,255,255,0.04)_inset]"
+    return "border-[var(--portal-border-strong)] bg-[var(--portal-surface)]"
   }
 
-  return "border-[#1D2925] bg-[linear-gradient(180deg,#0D1411_0%,#080D0B_100%)] shadow-[0_18px_50px_rgba(0,0,0,0.22),0_1px_0_rgba(255,255,255,0.04)_inset]"
+  return "border-[var(--portal-border)] bg-[var(--portal-surface)]"
 }
 
 export default function BillingSettingsPage() {
@@ -443,8 +443,8 @@ export default function BillingSettingsPage() {
     <div className="space-y-8">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Billing &amp; Subscription</h1>
-        <p className="text-muted-foreground mt-1">Manage your subscription and payment methods</p>
+        <h1 className="text-xl font-semibold text-foreground">Billing &amp; Subscription</h1>
+        <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Manage your subscription and payment methods</p>
       </div>
 
       {/* -- Status alerts -- */}
@@ -569,48 +569,44 @@ export default function BillingSettingsPage() {
             return (
               <article
                 key={planId}
-                className={`group relative flex min-h-[25rem] flex-col overflow-hidden rounded-[22px] border p-5 transition duration-500 ease-out hover:-translate-y-0.5 hover:border-[#1ED760]/45 ${getCompactCardClasses(planId)} ${isLowerTier ? "opacity-60" : ""}`}
+                className={`group relative flex min-h-[25rem] flex-col overflow-hidden rounded-xl border p-5 shadow-[var(--portal-shadow-card)] transition-colors hover:border-[var(--portal-border-strong)] ${getCompactCardClasses(planId)} ${isLowerTier ? "opacity-60" : ""}`}
               >
-                <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                {isBusinessPlan && (
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_50%_0%,rgba(30,215,96,0.18),transparent_62%)] opacity-90 transition duration-500 group-hover:opacity-100" />
-                )}
                 {isCurrent && (
                   <div className="absolute right-4 top-4 z-20">
-                    <Badge className="border border-[#1ED760]/25 bg-[#1ED760] text-xs text-[#06110A] whitespace-nowrap">
+                    <Badge className="border border-[var(--portal-accent)] bg-[var(--portal-accent)] text-xs text-white whitespace-nowrap">
                       Current Plan
                     </Badge>
                   </div>
                 )}
                 {!isCurrent && planConfig.badge === "Most Popular" && (
                   <div className="absolute right-4 top-4 z-20">
-                    <Badge className="border border-[#1ED760]/25 bg-[#1ED760]/10 text-xs text-[#1ED760] whitespace-nowrap">
+                    <Badge className="border border-[var(--portal-accent-border)] bg-[var(--portal-surface)] text-xs text-[#0A5C36] whitespace-nowrap">
                       Most Popular
                     </Badge>
                   </div>
                 )}
 
                 <div className="relative z-10 pt-3">
-                  <h3 className="text-xl font-bold leading-tight text-[#F5F7F6]">
+                  <h3 className="text-xl font-semibold leading-tight text-[var(--portal-text-primary)]">
                     {planConfig.name}
                   </h3>
-                  <p className="mt-3 min-h-[3.5rem] text-sm leading-6 text-[#B8C0BC]">
+                  <p className="mt-3 min-h-[3.5rem] text-sm leading-6 text-[var(--portal-text-secondary)]">
                     {planConfig.tagline}
                   </p>
                 </div>
 
-                <div className="relative z-10 mt-5 border-y border-[#1D2925]/80 py-5">
+                <div className="relative z-10 mt-5 border-y border-[var(--portal-divider)] py-5">
                   <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
-                    <div className="font-numeric text-[32px] font-extrabold leading-none text-[#F5F7F6]">
+                    <div className="font-numeric text-[32px] font-bold leading-none text-[var(--portal-text-primary)]">
                       <CompactAnimatedPrice value={displayPrice} />
                     </div>
                     {displayPrice !== null && displayPrice > 0 && (
-                      <span className="pb-1 text-xs font-medium text-[#7F8A85]">
+                      <span className="pb-1 text-xs font-medium text-[var(--portal-text-muted)]">
                         /{billingCycle === "yearly" ? "year" : "month"}
                       </span>
                     )}
                   </div>
-                  <p className="mt-3 text-xs leading-5 text-[#7F8A85]">
+                  <p className="mt-3 text-xs leading-5 text-[var(--portal-text-muted)]">
                     {billingCycle === "yearly" && displayPrice !== null
                       ? "Annual billing with two months of budget returned."
                       : isEnterprisePlan
@@ -621,10 +617,10 @@ export default function BillingSettingsPage() {
 
                 <ul className="relative z-10 mt-5 flex-1 space-y-3">
                   {planConfig.features.filter((feature) => feature.included).slice(0, 5).map((feature) => (
-                    <li key={feature.text} className="flex gap-2.5 text-xs leading-5 text-[#DDE3E0]">
+                    <li key={feature.text} className="flex gap-2.5 text-xs leading-5 text-[var(--portal-text-secondary)]">
                       <CheckCircle2
                         className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
-                          isEnterprisePlan ? "text-[#D8B76E]" : "text-[#1ED760]"
+                          "text-[var(--portal-accent)]"
                         }`}
                         aria-hidden="true"
                       />
@@ -635,11 +631,11 @@ export default function BillingSettingsPage() {
 
                 <div className="relative z-10 mt-6">
                   {isCurrent ? (
-                    <Button size="sm" disabled className="w-full border border-[#1D2925] bg-[#101814] text-xs text-[#7F8A85] hover:bg-[#101814]">
+                    <Button size="sm" disabled className="w-full border border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-xs text-[var(--portal-text-muted)]">
                       Current Plan
                     </Button>
                   ) : isLowerTier ? (
-                    <Button size="sm" disabled className="w-full border border-[#1D2925] bg-[#101814] text-xs text-[#7F8A85] opacity-70 hover:bg-[#101814]">
+                    <Button size="sm" disabled className="w-full border border-[var(--portal-border)] bg-[var(--portal-surface-solid)] text-xs text-[var(--portal-text-muted)] opacity-70">
                       <Lock className="mr-1 h-3 w-3" />
                       Downgrade via Portal
                     </Button>
@@ -648,8 +644,8 @@ export default function BillingSettingsPage() {
                       size="sm"
                       className={`w-full text-xs font-bold ${
                         isBusinessPlan
-                          ? "bg-[#1ED760] text-[#06110A] hover:bg-[#33E875]"
-                          : "border border-[#27342F] bg-[#101814] text-[#F5F7F6] hover:border-[#1ED760]/50 hover:bg-[#122018]"
+                          ? "bg-[var(--portal-accent)] text-white hover:bg-[var(--portal-accent-hover)]"
+                          : "border border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-[var(--portal-text-primary)] hover:bg-[var(--portal-surface-hover)] hover:text-[var(--portal-text-primary)]"
                       }`}
                       onClick={() => {
                         const preferredMethod = billing?.preferredPaymentMethod ?? null
@@ -672,7 +668,7 @@ export default function BillingSettingsPage() {
                   ) : planConfig.cta.type === "contact-sales" ? (
                     <Button
                       size="sm"
-                      className="w-full border border-[#C6A15B]/34 bg-[#0B0D0C] text-xs font-bold text-[#F5F7F6] hover:border-[#D8B76E]/70 hover:bg-[#14120C]"
+                      className="w-full border border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-xs font-semibold text-[var(--portal-text-primary)] hover:bg-[var(--portal-surface-hover)] hover:text-[var(--portal-text-primary)]"
                       onClick={() => {
                         setEnterpriseSuccess(false)
                         setEnterpriseForm({ name: "", email: "", message: "" })
@@ -697,7 +693,7 @@ export default function BillingSettingsPage() {
       {usageCompareOpen && <UsageComparison />}
 
       {/* -- Feature comparison (collapsible) -- */}
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader
           className="cursor-pointer select-none"
           onClick={() => setShowComparison((v) => !v)}
@@ -757,7 +753,7 @@ export default function BillingSettingsPage() {
       </Card>
 
       {/* -- Payment methods -- */}
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <CreditCard className="h-4 w-4 text-primary" />
@@ -946,7 +942,7 @@ export default function BillingSettingsPage() {
       </Card>
 
       {/* -- Subscription management -- */}
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <CardTitle className="text-base">Subscription Management</CardTitle>
           <CardDescription>Manage your current subscription</CardDescription>
@@ -1025,7 +1021,7 @@ export default function BillingSettingsPage() {
       </Card>
 
       {/* -- Payment history -- */}
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Receipt className="h-4 w-4 text-primary" />

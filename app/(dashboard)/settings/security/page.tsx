@@ -150,7 +150,7 @@ function ChangePasswordCard() {
   }
 
   return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur">
+    <Card className="portal-surface-raised">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Key className="h-5 w-5 text-primary" />
@@ -171,7 +171,7 @@ function ChangePasswordCard() {
           <div className="relative">
             <Input
               type={showCurrent ? "text" : "password"}
-              className="bg-muted/50 pr-10"
+              className="bg-background pr-10"
               value={form.current}
               onChange={(e) => setForm({ ...form, current: e.target.value })}
               autoComplete="current-password"
@@ -203,7 +203,7 @@ function ChangePasswordCard() {
           <div className="relative">
             <Input
               type={showNew ? "text" : "password"}
-              className="bg-muted/50 pr-10"
+              className="bg-background pr-10"
               value={form.newPass}
               onChange={(e) => {
                 setForm({ ...form, newPass: e.target.value })
@@ -255,7 +255,7 @@ function ChangePasswordCard() {
           <div className="relative">
             <Input
               type={showConfirm ? "text" : "password"}
-              className={`bg-muted/50 pr-10 ${
+              className={`bg-background pr-10 ${
                 form.confirm.length > 0 && form.newPass !== form.confirm
                   ? "border-destructive focus-visible:ring-destructive"
                   : ""
@@ -378,7 +378,7 @@ function TwoFactorCard() {
 
   if (isLoadingStatus) {
     return (
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <Skeleton className="h-6 w-48" />
         </CardHeader>
@@ -391,7 +391,7 @@ function TwoFactorCard() {
 
   return (
     <>
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="h-5 w-5 text-primary" />
@@ -685,7 +685,7 @@ function ActiveSessionsCard() {
 
   return (
     <>
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -893,7 +893,7 @@ function OrganizationSecurityCenter() {
 
   if (securityQuery.isLoading) {
     return (
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <Skeleton className="h-6 w-56" />
           <Skeleton className="h-4 w-80" />
@@ -914,7 +914,7 @@ function OrganizationSecurityCenter() {
   const currentUserCanEnable = Boolean(data?.currentUserMfaEnabled)
 
   return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur">
+    <Card className="portal-surface-raised">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-primary" />
@@ -1064,7 +1064,7 @@ export default function SecuritySettingsPage() {
   if (isMfaMissing && policy?.mfaPolicyEnabledAt) {
     const graceHours = policy.mfaPolicyGraceHours ?? 48
     const deadline = new Date(policy.mfaPolicyEnabledAt).getTime() + graceHours * 3600 * 1000
-    const remainingMs = deadline - Date.now()
+    const remainingMs = deadline - securityCenterQuery.dataUpdatedAt
     if (remainingMs > 0) {
       graceHoursRemaining = Math.ceil(remainingMs / (3600 * 1000))
     }
@@ -1073,18 +1073,18 @@ export default function SecuritySettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Security Settings</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-xl font-semibold text-foreground">Security Settings</h1>
+        <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">
           Manage your account security and authentication
         </p>
       </div>
 
       {(isEnforced || (isMfaMissing && graceHoursRemaining === null)) && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-amber-600 dark:text-amber-400 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-950">
+          <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-700" />
           <div>
             <h3 className="text-sm font-semibold">MFA Enrollment Required</h3>
-            <p className="text-sm mt-0.5 opacity-90">
+            <p className="mt-1 text-sm leading-relaxed text-amber-900">
               Your organization enforces mandatory Multi-Factor Authentication. Enable an authenticator app or register a passkey to comply with your organization&apos;s security policy.
             </p>
           </div>
@@ -1092,11 +1092,11 @@ export default function SecuritySettingsPage() {
       )}
 
       {!isEnforced && isMfaMissing && graceHoursRemaining !== null && (
-        <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 text-blue-600 dark:text-blue-400 flex items-start gap-3">
-          <Clock className="h-5 w-5 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-950">
+          <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-700" />
           <div>
             <h3 className="text-sm font-semibold">MFA Grace Period Active</h3>
-            <p className="text-sm mt-0.5 opacity-90">
+            <p className="mt-1 text-sm leading-relaxed text-amber-900">
               Your organization has enabled mandatory Multi-Factor Authentication. You have{" "}
               <span className="font-bold">{graceHoursRemaining} hour(s)</span> remaining in your grace period to enable an authenticator app or register a passkey before organization access is restricted.
             </p>
@@ -1112,7 +1112,7 @@ export default function SecuritySettingsPage() {
         <ActiveSessionsCard />
 
         {/* Delete Account */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur border-l-4 border-l-warning">
+        <Card className="portal-surface-raised border-l-4 border-l-destructive">
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
               <AlertTriangle className="h-6 w-6 text-warning flex-shrink-0" />

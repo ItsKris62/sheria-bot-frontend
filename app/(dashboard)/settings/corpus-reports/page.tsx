@@ -117,11 +117,11 @@ export default function CorpusReportsSettingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Corpus Reports</h1>
-        <p className="mt-1 text-muted-foreground">Track missing document reports submitted by your organization.</p>
+        <h1 className="text-xl font-semibold text-foreground">Corpus Reports</h1>
+        <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Track missing document reports submitted by your organization.</p>
       </div>
 
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>

@@ -154,7 +154,7 @@ export default function LicensesPage() {
         </div>
 
         {formOpen ? (
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <CardTitle>Create License Record</CardTitle>
               <CardDescription>License dates will create linked compliance calendar events.</CardDescription>
@@ -184,7 +184,7 @@ export default function LicensesPage() {
             { label: "Renewal Due Soon", value: stats.renewalDueSoon, Icon: Clock },
             { label: "Expired / Overdue", value: stats.expired, Icon: AlertTriangle },
           ].map(({ label, value, Icon }) => (
-            <Card key={label} className="border-border/50 bg-card/50 backdrop-blur">
+            <Card key={label} className="portal-surface-raised">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
                   <div className="rounded-lg bg-primary/10 p-3">
@@ -200,7 +200,7 @@ export default function LicensesPage() {
           ))}
         </div>
 
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
           <CardHeader>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>

@@ -167,7 +167,7 @@ function DocumentRowSkeleton() {
 
 function StatCardSkeleton() {
   return (
-    <Card className="border-border/50 bg-card/50">
+    <Card className="portal-surface-raised">
       <CardContent className="pt-6">
         <div className="flex items-center gap-3">
           <Skeleton className="h-11 w-11 rounded-lg" />
@@ -431,7 +431,7 @@ export default function DocumentsPage() {
               return (
                 <Card
                   key={key}
-                  className={`border-border/50 bg-card/50 backdrop-blur cursor-pointer transition-colors select-none
+                  className={`portal-surface-raised cursor-pointer transition-colors select-none
                     ${isActive ? "ring-2 ring-primary bg-primary/5" : "hover:bg-muted/50"}`}
                   onClick={() => handleCategoryCardClick(key)}
                 >
@@ -452,7 +452,7 @@ export default function DocumentsPage() {
       </div>
 
       {/* ── Document list ── */}
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between flex-wrap gap-3">

@@ -105,7 +105,7 @@ export default function ApplicationDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <CardTitle>Application Timeline</CardTitle>
               <CardDescription>Track events, requests, submissions, and decisions.</CardDescription>
@@ -139,7 +139,7 @@ export default function ApplicationDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <CardTitle>Required Documents</CardTitle>
               <CardDescription>Track document requirements and review status.</CardDescription>
@@ -170,7 +170,7 @@ export default function ApplicationDetailPage() {
         </div>
 
         <div className="space-y-6">
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader><CardTitle className="text-base">Application Status</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Status</span><Badge>{statusLabel[app.status] ?? app.status}</Badge></div>
@@ -187,7 +187,7 @@ export default function ApplicationDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader><CardTitle className="text-base">Fees & Payments</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <div className="flex gap-2">
@@ -206,7 +206,7 @@ export default function ApplicationDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader><CardTitle className="text-base">Regulator Feedback</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <Textarea placeholder="Log regulator feedback or action required" value={feedbackMessage} onChange={(e) => setFeedbackMessage(e.target.value)} />
@@ -223,7 +223,7 @@ export default function ApplicationDetailPage() {
           </Card>
 
           {app.regulatorFeedback.some((item) => item.actionRequired) ? (
-            <Card className="border-border/50 bg-card/50 backdrop-blur border-l-4 border-l-warning">
+            <Card className="portal-surface-raised border-l-4 border-l-warning">
               <CardContent className="pt-4">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-warning" />

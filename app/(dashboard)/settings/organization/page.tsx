@@ -167,7 +167,7 @@ export default function OrganizationSettingsPage() {
           <Skeleton className="h-8 w-64 mb-2" />
           <Skeleton className="h-4 w-80" />
         </div>
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
           <CardHeader>
             <Skeleton className="h-6 w-48" />
           </CardHeader>
@@ -177,7 +177,7 @@ export default function OrganizationSettingsPage() {
             ))}
           </CardContent>
         </Card>
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
           <CardHeader>
             <Skeleton className="h-6 w-48" />
           </CardHeader>
@@ -194,8 +194,8 @@ export default function OrganizationSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Organization Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your organization profile and details</p>
+        <h1 className="text-xl font-semibold text-foreground">Organization Settings</h1>
+        <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Manage your organization profile and details</p>
       </div>
 
       {isRegulator && (
@@ -207,7 +207,7 @@ export default function OrganizationSettingsPage() {
 
       <div className="grid gap-6">
         {!isRegulator && (
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
             <CardHeader>
               <div className="flex items-center gap-4">
                 <Avatar className="h-12 w-12">
@@ -289,7 +289,7 @@ export default function OrganizationSettingsPage() {
         )}
 
         {seatUsage && (
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
             <CardHeader>
               <div className="flex items-center gap-4">
                 <Avatar className="h-12 w-12">
@@ -334,7 +334,7 @@ export default function OrganizationSettingsPage() {
         )}
 
         {teamOverview && (
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
             <CardHeader>
               <CardTitle>Business Overview</CardTitle>
               <CardDescription>Organization plan, ownership, and team capacity</CardDescription>
@@ -368,7 +368,7 @@ export default function OrganizationSettingsPage() {
           </Card>
         )}
 
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
           <CardHeader>
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
@@ -416,7 +416,7 @@ export default function OrganizationSettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
           <CardHeader>
             <CardTitle>Contact Information</CardTitle>
             <CardDescription>Primary contact for regulatory matters</CardDescription>

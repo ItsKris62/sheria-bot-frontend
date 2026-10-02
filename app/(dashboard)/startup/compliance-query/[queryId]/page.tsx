@@ -63,7 +63,7 @@ function QueryDetailSkeleton() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           {/* Question card skeleton */}
-          <Card className="border-border/50 bg-card/50">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <Skeleton className="h-6 w-40 mb-2" />
               <Skeleton className="h-5 w-full" />
@@ -72,7 +72,7 @@ function QueryDetailSkeleton() {
           </Card>
 
           {/* Response card skeleton */}
-          <Card className="border-border/50 bg-card/50">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <Skeleton className="h-6 w-32 mb-2" />
               <Skeleton className="h-4 w-24" />
@@ -98,7 +98,7 @@ function QueryDetailSkeleton() {
           </Card>
 
           {/* Follow-up card skeleton */}
-          <Card className="border-border/50 bg-card/50">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <Skeleton className="h-6 w-44 mb-2" />
               <Skeleton className="h-4 w-64" />
@@ -112,7 +112,7 @@ function QueryDetailSkeleton() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card className="border-border/50 bg-card/50">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <Skeleton className="h-5 w-40 mb-1" />
             </CardHeader>
@@ -123,7 +123,7 @@ function QueryDetailSkeleton() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <Skeleton className="h-5 w-32 mb-1" />
             </CardHeader>
@@ -137,7 +137,7 @@ function QueryDetailSkeleton() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50">
+          <Card className="portal-surface-raised">
             <CardContent className="pt-4">
               <Skeleton className="h-4 w-full mb-1" />
               <Skeleton className="h-4 w-5/6 mb-1" />
@@ -520,7 +520,7 @@ export default function QueryDetailPage() {
         {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Question card */}
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
@@ -552,7 +552,7 @@ export default function QueryDetailPage() {
           </Card>
 
           {/* Response card */}
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
@@ -702,7 +702,7 @@ export default function QueryDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <CardTitle className="text-lg font-medium text-foreground">
                 Follow-up on {queryCountry}
@@ -742,7 +742,7 @@ export default function QueryDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
@@ -770,7 +770,7 @@ export default function QueryDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur">
+          <Card className="portal-surface-raised">
             <CardHeader>
               <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
                 <FileText className="h-4 w-4 text-primary" />
@@ -783,7 +783,7 @@ export default function QueryDetailPage() {
           </Card>
 
           {/* Legal Disclaimer */}
-          <Card className="border-border/50 bg-card/50 backdrop-blur border-l-4 border-l-warning">
+          <Card className="portal-surface-raised border-l-4 border-l-warning">
             <CardContent className="pt-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />

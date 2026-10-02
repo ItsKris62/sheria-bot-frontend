@@ -29,11 +29,11 @@ export default function APIKeysSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">API Keys</h1>
-        <p className="text-muted-foreground mt-1">Manage API keys for integrating with SheriaBot</p>
+        <h1 className="text-xl font-semibold text-foreground">API Keys</h1>
+        <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Manage API keys for integrating with SheriaBot</p>
       </div>
 
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -73,7 +73,7 @@ export default function APIKeysSettingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-border/50 bg-card/50 backdrop-blur">
+      <Card className="portal-surface-raised">
         <CardHeader>
           <CardTitle>API Usage</CardTitle>
           <CardDescription>Your current API usage this billing period</CardDescription>
