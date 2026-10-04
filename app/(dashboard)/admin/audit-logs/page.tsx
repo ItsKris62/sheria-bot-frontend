@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { keepPreviousData } from "@tanstack/react-query"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +17,7 @@ import {
   AdminPageHeader,
 } from "@/components/admin/portal"
 import { PortalSurface } from "@/components/portal"
+import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator"
 
 type TypeConfigEntry = { label: string; icon: React.ElementType; color: string }
 const typeConfig: Record<string, TypeConfigEntry> = {
@@ -65,8 +67,7 @@ export default function AuditLogsPage() {
   const [dateTo, setDateTo] = useState("")
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const limit = 200
-
-  const { data, isLoading } = trpc.admin.getLogs.useQuery({
+  const queryInput = {
     page,
     limit,
     ...(entityTypeFilter !== "all" ? { entityType: entityTypeFilter } : {}),
@@ -76,7 +77,23 @@ export default function AuditLogsPage() {
     ...(searchFilter ? { search: searchFilter } : {}),
     ...(dateFrom ? { dateFrom: new Date(`${dateFrom}T00:00:00.000Z`).toISOString() } : {}),
     ...(dateTo ? { dateTo: new Date(`${dateTo}T23:59:59.999Z`).toISOString() } : {}),
-  })
+  }
+
+  const { data, isLoading, isError, isPlaceholderData } = trpc.admin.getLogs.useQuery(
+    queryInput,
+    {
+      placeholderData: (previousData, previousQuery) => {
+        const previousKeyOptions = previousQuery?.queryKey[1] as {
+          input?: { dateFrom?: string; dateTo?: string }
+        } | undefined
+        const previousInput = previousKeyOptions?.input
+        const hasCompatibleDateRange =
+          previousInput?.dateFrom === queryInput.dateFrom && previousInput?.dateTo === queryInput.dateTo
+
+        return hasCompatibleDateRange ? keepPreviousData(previousData) : undefined
+      },
+    },
+  )
 
   const exportMutation = trpc.admin.exportAuditLogs.useMutation({
     onSuccess: (result, variables) => {
@@ -225,8 +242,13 @@ export default function AuditLogsPage() {
             </div>
           </AdminFilterBar>
 
+          <DataUpdatingIndicator active={isPlaceholderData} className="mb-3" />
+          {isError && data ? (
+            <p className="mb-3 text-sm text-destructive">Could not update the audit log. Showing the previous results.</p>
+          ) : null}
+
           {/* Entries */}
-          <div className="space-y-2">
+          <div className="space-y-2" aria-busy={isPlaceholderData}>
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <PortalSurface key={i} variant="solid" className="flex items-center gap-4 p-3">
@@ -235,6 +257,12 @@ export default function AuditLogsPage() {
                   <Skeleton className="h-5 w-16" />
                 </PortalSurface>
               ))
+            ) : isError && !data ? (
+              <AdminEmptyState
+                title="Unable to load audit events"
+                description="Retry by adjusting a filter or refreshing the page."
+                icon={Activity}
+              />
             ) : logs.length === 0 ? (
               <AdminEmptyState
                 title="No audit events were found for the selected period"
@@ -303,8 +331,8 @@ export default function AuditLogsPage() {
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
               <p className="text-sm text-[var(--portal-text-secondary)]">Page {page} of {totalPages} ({total.toLocaleString()} total)</p>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}><ChevronLeft className="h-4 w-4" /></Button>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || isPlaceholderData}><ChevronLeft className="h-4 w-4" /></Button>
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || isPlaceholderData}><ChevronRight className="h-4 w-4" /></Button>
               </div>
             </div>
           )}

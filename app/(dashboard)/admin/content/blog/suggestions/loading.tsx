@@ -1,9 +1,10 @@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { PortalLoadingRegion } from "@/components/portal/portal-page-skeleton"
 
 export default function BlogSuggestionsLoading() {
   return (
-    <div className="p-4 md:p-6 space-y-6" data-testid="suggestions-loading-skeleton">
+    <PortalLoadingRegion className="p-4 md:p-6" data-testid="suggestions-loading-skeleton">
       {/* Header Skeleton */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-sm">
@@ -21,7 +22,7 @@ export default function BlogSuggestionsLoading() {
       </div>
 
       {/* Filter Bar & Table Skeleton */}
-      <Card className="border-border">
+      <Card className="border-[var(--portal-border)] bg-[var(--portal-surface)]">
         <CardHeader className="pb-3 border-b">
           <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center justify-between">
             <Skeleton className="h-6 w-36" />
@@ -51,6 +52,6 @@ export default function BlogSuggestionsLoading() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PortalLoadingRegion>
   )
 }

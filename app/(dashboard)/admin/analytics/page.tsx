@@ -80,6 +80,10 @@ function getDateFilter(days: RangeValue): DateFilter {
   }
 }
 
+function getRangeLabel(range: RangeValue) {
+  return RANGE_OPTIONS.find((option) => option.value === range)?.label.toLowerCase() ?? "selected range"
+}
+
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-KE", { month: "short", day: "numeric" })
 }
@@ -110,11 +114,12 @@ interface StatCardProps {
   sub?: string
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
   loading: boolean
+  error?: boolean
   trend?: "up" | "down" | "neutral"
   color?: string
 }
 
-function StatCard({ title, value, sub, icon: Icon, loading, trend, color = CHART_COLORS[0] }: StatCardProps) {
+function StatCard({ title, value, sub, icon: Icon, loading, error = false, trend, color = CHART_COLORS[0] }: StatCardProps) {
   return (
     <Card className="overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow-green-sm">
       <CardContent className="pt-5 pb-4">
@@ -123,6 +128,8 @@ function StatCard({ title, value, sub, icon: Icon, loading, trend, color = CHART
             <p className="text-xs font-medium uppercase text-muted-foreground">{title}</p>
             {loading ? (
               <Skeleton className="mt-2 h-8 w-24" />
+            ) : error ? (
+              <p className="mt-2 text-sm font-medium text-destructive">Unavailable</p>
             ) : (
               <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{value ?? "0"}</p>
             )}
@@ -162,7 +169,7 @@ function ChartLoading() {
         {[42, 68, 50, 82, 60, 74, 92, 56, 78].map((height, index) => (
           <div key={index} className="flex flex-1 items-end">
             <div
-              className="w-full animate-pulse rounded-t-md"
+              className="w-full rounded-t-md motion-safe:animate-pulse"
               style={{
                 height: `${height}%`,
                 backgroundColor: `${CHART_COLORS[index % CHART_COLORS.length]}40`,
@@ -174,6 +181,19 @@ function ChartLoading() {
       </div>
     </div>
   )
+}
+
+function AnalyticsError({ message }: { message: string }) {
+  return (
+    <div className="flex h-64 items-center justify-center rounded-md border border-destructive/20 bg-destructive/5 p-6 text-center">
+      <p className="text-sm text-destructive">{message}</p>
+    </div>
+  )
+}
+
+function AnalyticsLoadingStatus({ loading, range }: { loading: boolean; range: RangeValue }) {
+  if (!loading) return null
+  return <p className="sr-only" role="status">Updating analytics for {getRangeLabel(range)}</p>
 }
 
 interface AnalyticsFiltersProps {
@@ -213,12 +233,20 @@ function AnalyticsFilters({ range, setRange, period, setPeriod }: AnalyticsFilte
 }
 
 function UserGrowthTab({ filters, period, range }: { filters: DateFilter; period: PeriodValue; range: RangeValue }) {
-  const { data: stats, isLoading: statsLoading } = trpc.admin.getStats.useQuery()
-  const { data: growth, isLoading: growthLoading } = trpc.admin.getUserGrowth.useQuery({ period, ...filters })
+  const statsQuery = trpc.admin.getStats.useQuery()
+  const growthQuery = trpc.admin.getUserGrowth.useQuery({ period, ...filters })
 
   const dauRange: 'last7d' | 'last30d' | 'last90d' =
     range === '7' ? 'last7d' : range === '30' ? 'last30d' : 'last90d'
-  const { data: dauData, isLoading: dauLoading } = trpc.analytics.getDailyActiveUsers.useQuery({ range: dauRange })
+  const dauQuery = trpc.analytics.getDailyActiveUsers.useQuery({ range: dauRange })
+
+  const statsLoading = statsQuery.isLoading || statsQuery.isPlaceholderData
+  const growthLoading = growthQuery.isLoading || growthQuery.isPlaceholderData
+  const dauLoading = dauQuery.isLoading || dauQuery.isPlaceholderData
+  const stats = statsQuery.isPlaceholderData ? undefined : statsQuery.data
+  const growth = growthQuery.isPlaceholderData ? undefined : growthQuery.data
+  const dauData = dauQuery.isPlaceholderData ? undefined : dauQuery.data
+  const rangeLoading = growthLoading || dauLoading
 
   const series = growth?.series ?? []
   const dauSeries = (dauData as { today: number; series: Array<{ date: string; dau: number }> } | undefined)?.series ?? []
@@ -227,12 +255,13 @@ function UserGrowthTab({ filters, period, range }: { filters: DateFilter; period
   const organizations = stats?.organizations
 
   return (
-    <div className="space-y-4 animate-fade-slide-up">
+    <div className="space-y-4 animate-fade-slide-up" aria-busy={rangeLoading}>
+      <AnalyticsLoadingStatus loading={rangeLoading} range={range} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Users" value={users?.total.toLocaleString()} icon={Users} loading={statsLoading} trend="up" color={CHART_COLORS[0]} />
-        <StatCard title="Active Users" value={users?.active.toLocaleString()} icon={Activity} loading={statsLoading} sub="Logged in recently" color={CHART_COLORS[1]} />
-        <StatCard title="Organizations" value={organizations?.total.toLocaleString()} icon={Building2} loading={statsLoading} color={CHART_COLORS[3]} />
-        <StatCard title="Today's DAU" value={dauToday.toLocaleString()} icon={Bot} loading={dauLoading} sub="Distinct query users today" color={CHART_COLORS[2]} />
+        <StatCard title="Total Users" value={users?.total.toLocaleString()} icon={Users} loading={statsLoading} error={statsQuery.isError} trend="up" color={CHART_COLORS[0]} />
+        <StatCard title="Active Users" value={users?.active.toLocaleString()} icon={Activity} loading={statsLoading} error={statsQuery.isError} sub="Logged in recently" color={CHART_COLORS[1]} />
+        <StatCard title="Organizations" value={organizations?.total.toLocaleString()} icon={Building2} loading={statsLoading} error={statsQuery.isError} color={CHART_COLORS[3]} />
+        <StatCard title="Today's DAU" value={dauToday.toLocaleString()} icon={Bot} loading={dauLoading} error={dauQuery.isError} sub="Distinct query users today" color={CHART_COLORS[2]} />
       </div>
 
       <Card>
@@ -243,6 +272,8 @@ function UserGrowthTab({ filters, period, range }: { filters: DateFilter; period
         <CardContent>
           {growthLoading ? (
             <ChartLoading />
+          ) : growthQuery.isError ? (
+            <AnalyticsError message="Could not load user growth for this range." />
           ) : series.length === 0 ? (
             <EmptyChart icon={Users} message="No signups found for this range." />
           ) : (
@@ -277,12 +308,14 @@ function UserGrowthTab({ filters, period, range }: { filters: DateFilter; period
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Daily Active Users</CardTitle>
-          <p className="text-xs text-muted-foreground">Last 90 days</p>
+          <p className="text-xs text-muted-foreground">{dauRange === "last7d" ? "Last 7 days" : dauRange === "last30d" ? "Last 30 days" : "Last 90 days"}</p>
           <CardDescription>Distinct users who submitted at least one compliance query per day (Nairobi time).</CardDescription>
         </CardHeader>
         <CardContent>
           {dauLoading ? (
             <ChartLoading />
+          ) : dauQuery.isError ? (
+            <AnalyticsError message="Could not load daily active users for this range." />
           ) : dauSeries.length === 0 ? (
             <EmptyChart icon={Bot} message="No query activity found for this range." />
           ) : (
@@ -317,8 +350,10 @@ function UserGrowthTab({ filters, period, range }: { filters: DateFilter; period
   )
 }
 
-function AIUsageTab({ filters }: { filters: DateFilter }) {
-  const { data: ai, isLoading } = trpc.admin.getAIUsageMetrics.useQuery(filters)
+function AIUsageTab({ filters, range }: { filters: DateFilter; range: RangeValue }) {
+  const aiQuery = trpc.admin.getAIUsageMetrics.useQuery(filters)
+  const isLoading = aiQuery.isLoading || aiQuery.isPlaceholderData
+  const ai = aiQuery.isPlaceholderData ? undefined : aiQuery.data
   const series = ai?.series ?? []
 
   const workloadData = [
@@ -329,12 +364,13 @@ function AIUsageTab({ filters }: { filters: DateFilter }) {
   ].filter((item) => item.value > 0)
 
   return (
-    <div className="space-y-4 animate-fade-slide-up">
+    <div className="space-y-4 animate-fade-slide-up" aria-busy={isLoading}>
+      <AnalyticsLoadingStatus loading={isLoading} range={range} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Queries" value={ai?.totalQueries.toLocaleString()} icon={Bot} loading={isLoading} color={CHART_COLORS[1]} />
-        <StatCard title="Total Policies" value={ai?.totalPolicies.toLocaleString()} icon={FileText} loading={isLoading} color={CHART_COLORS[3]} />
-        <StatCard title="Queries This Month" value={ai?.queriesThisMonth.toLocaleString()} icon={Activity} loading={isLoading} trend="up" color={CHART_COLORS[0]} />
-        <StatCard title="Policies This Month" value={ai?.policiesThisMonth.toLocaleString()} icon={TrendingUp} loading={isLoading} color={CHART_COLORS[4]} />
+        <StatCard title="Total Queries" value={ai?.totalQueries.toLocaleString()} icon={Bot} loading={isLoading} error={aiQuery.isError} color={CHART_COLORS[1]} />
+        <StatCard title="Total Policies" value={ai?.totalPolicies.toLocaleString()} icon={FileText} loading={isLoading} error={aiQuery.isError} color={CHART_COLORS[3]} />
+        <StatCard title="Queries This Month" value={ai?.queriesThisMonth.toLocaleString()} icon={Activity} loading={isLoading} error={aiQuery.isError} trend="up" color={CHART_COLORS[0]} />
+        <StatCard title="Policies This Month" value={ai?.policiesThisMonth.toLocaleString()} icon={TrendingUp} loading={isLoading} error={aiQuery.isError} color={CHART_COLORS[4]} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -346,6 +382,8 @@ function AIUsageTab({ filters }: { filters: DateFilter }) {
           <CardContent>
             {isLoading ? (
               <ChartLoading />
+            ) : aiQuery.isError ? (
+              <AnalyticsError message="Could not load AI query volume for this range." />
             ) : series.length === 0 ? (
               <EmptyChart icon={Bot} message="No AI query activity found for this range." />
             ) : (
@@ -370,6 +408,8 @@ function AIUsageTab({ filters }: { filters: DateFilter }) {
           <CardContent>
             {isLoading ? (
               <ChartLoading />
+            ) : aiQuery.isError ? (
+              <AnalyticsError message="Could not load AI workload data for this range." />
             ) : workloadData.length === 0 ? (
               <EmptyChart icon={BarChart2} message="No AI workload data found." />
             ) : (
@@ -405,8 +445,10 @@ function AIUsageTab({ filters }: { filters: DateFilter }) {
   )
 }
 
-function RevenueTab({ filters }: { filters: DateFilter }) {
-  const { data: revenue, isLoading } = trpc.admin.getRevenueMetrics.useQuery(filters)
+function RevenueTab({ filters, range }: { filters: DateFilter; range: RangeValue }) {
+  const revenueQuery = trpc.admin.getRevenueMetrics.useQuery(filters)
+  const isLoading = revenueQuery.isLoading || revenueQuery.isPlaceholderData
+  const revenue = revenueQuery.isPlaceholderData ? undefined : revenueQuery.data
 
   const series = revenue?.series ?? []
   const providerData = [
@@ -415,12 +457,13 @@ function RevenueTab({ filters }: { filters: DateFilter }) {
   ].filter((item) => item.value > 0)
 
   return (
-    <div className="space-y-4 animate-fade-slide-up">
+    <div className="space-y-4 animate-fade-slide-up" aria-busy={isLoading}>
+      <AnalyticsLoadingStatus loading={isLoading} range={range} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Revenue" value={revenue ? fmtKES(revenue.totalRevenue) : undefined} icon={DollarSign} loading={isLoading} trend="up" color={CHART_COLORS[0]} />
-        <StatCard title="This Month" value={revenue ? fmtKES(revenue.currentMonthRevenue) : undefined} icon={CreditCard} loading={isLoading} color={CHART_COLORS[1]} />
-        <StatCard title="Last Month" value={revenue ? fmtKES(revenue.lastMonthRevenue) : undefined} icon={CreditCard} loading={isLoading} color={CHART_COLORS[2]} />
-        <StatCard title="Success Rate" value={revenue ? `${revenue.successRate.toFixed(1)}%` : undefined} icon={TrendingUp} loading={isLoading} trend={revenue && revenue.successRate >= 90 ? "up" : "down"} color={CHART_COLORS[5]} />
+        <StatCard title="Total Revenue" value={revenue ? fmtKES(revenue.totalRevenue) : undefined} icon={DollarSign} loading={isLoading} error={revenueQuery.isError} trend="up" color={CHART_COLORS[0]} />
+        <StatCard title="This Month" value={revenue ? fmtKES(revenue.currentMonthRevenue) : undefined} icon={CreditCard} loading={isLoading} error={revenueQuery.isError} color={CHART_COLORS[1]} />
+        <StatCard title="Last Month" value={revenue ? fmtKES(revenue.lastMonthRevenue) : undefined} icon={CreditCard} loading={isLoading} error={revenueQuery.isError} color={CHART_COLORS[2]} />
+        <StatCard title="Success Rate" value={revenue ? `${revenue.successRate.toFixed(1)}%` : undefined} icon={TrendingUp} loading={isLoading} error={revenueQuery.isError} trend={revenue && revenue.successRate >= 90 ? "up" : "down"} color={CHART_COLORS[5]} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -432,6 +475,8 @@ function RevenueTab({ filters }: { filters: DateFilter }) {
           <CardContent>
             {isLoading ? (
               <ChartLoading />
+            ) : revenueQuery.isError ? (
+              <AnalyticsError message="Could not load revenue for this range." />
             ) : series.length === 0 ? (
               <EmptyChart icon={DollarSign} message="No completed payments found for this range." />
             ) : (
@@ -465,6 +510,8 @@ function RevenueTab({ filters }: { filters: DateFilter }) {
           <CardContent>
             {isLoading ? (
               <ChartLoading />
+            ) : revenueQuery.isError ? (
+              <AnalyticsError message="Could not load provider revenue for this range." />
             ) : providerData.length === 0 ? (
               <EmptyChart icon={CreditCard} message="No provider revenue found." />
             ) : (
@@ -500,8 +547,10 @@ function RevenueTab({ filters }: { filters: DateFilter }) {
   )
 }
 
-function SubscriptionsTab({ filters }: { filters: DateFilter }) {
-  const { data: subs, isLoading } = trpc.admin.getSubscriptionBreakdown.useQuery(filters)
+function SubscriptionsTab({ filters, range }: { filters: DateFilter; range: RangeValue }) {
+  const subscriptionsQuery = trpc.admin.getSubscriptionBreakdown.useQuery(filters)
+  const isLoading = subscriptionsQuery.isLoading || subscriptionsQuery.isPlaceholderData
+  const subs = subscriptionsQuery.isPlaceholderData ? undefined : subscriptionsQuery.data
 
   const planData = Object.entries(subs?.byPlan ?? {})
     .map(([name, value]) => ({ name: formatLabel(name), value: Number(value ?? 0) }))
@@ -514,11 +563,12 @@ function SubscriptionsTab({ filters }: { filters: DateFilter }) {
   const planTotal = sumValues(planData)
 
   return (
-    <div className="space-y-4 animate-fade-slide-up">
+    <div className="space-y-4 animate-fade-slide-up" aria-busy={isLoading}>
+      <AnalyticsLoadingStatus loading={isLoading} range={range} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard title="Total Subscriptions" value={subs?.total.toLocaleString()} icon={CreditCard} loading={isLoading} color={CHART_COLORS[1]} />
-        <StatCard title="Active Plans" value={planData.length > 0 ? planData.length : undefined} icon={BarChart2} loading={isLoading} sub="Distinct plan types" color={CHART_COLORS[3]} />
-        <StatCard title="Plan Coverage" value={planTotal.toLocaleString()} icon={Building2} loading={isLoading} sub="Organizations in range" color={CHART_COLORS[5]} />
+        <StatCard title="Total Subscriptions" value={subs?.total.toLocaleString()} icon={CreditCard} loading={isLoading} error={subscriptionsQuery.isError} color={CHART_COLORS[1]} />
+        <StatCard title="Active Plans" value={planData.length > 0 ? planData.length : undefined} icon={BarChart2} loading={isLoading} error={subscriptionsQuery.isError} sub="Distinct plan types" color={CHART_COLORS[3]} />
+        <StatCard title="Plan Coverage" value={planTotal.toLocaleString()} icon={Building2} loading={isLoading} error={subscriptionsQuery.isError} sub="Organizations in range" color={CHART_COLORS[5]} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -530,6 +580,8 @@ function SubscriptionsTab({ filters }: { filters: DateFilter }) {
           <CardContent>
             {isLoading ? (
               <ChartLoading />
+            ) : subscriptionsQuery.isError ? (
+              <AnalyticsError message="Could not load subscription plans for this range." />
             ) : planData.length === 0 ? (
               <EmptyChart icon={CreditCard} message="No subscription plan data found for this range." />
             ) : (
@@ -568,6 +620,8 @@ function SubscriptionsTab({ filters }: { filters: DateFilter }) {
           <CardContent>
             {isLoading ? (
               <ChartLoading />
+            ) : subscriptionsQuery.isError ? (
+              <AnalyticsError message="Could not load subscription statuses for this range." />
             ) : statusData.length === 0 ? (
               <EmptyChart icon={BarChart2} message="No subscription status data found for this range." />
             ) : (
@@ -636,13 +690,13 @@ export default function AnalyticsPage() {
           <UserGrowthTab filters={filters} period={period} range={range} />
         </TabsContent>
         <TabsContent value="ai">
-          <AIUsageTab filters={filters} />
+          <AIUsageTab filters={filters} range={range} />
         </TabsContent>
         <TabsContent value="revenue">
-          <RevenueTab filters={filters} />
+          <RevenueTab filters={filters} range={range} />
         </TabsContent>
         <TabsContent value="subscriptions">
-          <SubscriptionsTab filters={filters} />
+          <SubscriptionsTab filters={filters} range={range} />
         </TabsContent>
       </Tabs>
     </div>

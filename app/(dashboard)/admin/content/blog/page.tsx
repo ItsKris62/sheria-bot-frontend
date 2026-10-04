@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { keepPreviousData } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -58,14 +60,17 @@ export default function BlogPage() {
   const router = useRouter()
   const utils = trpc.useUtils()
 
-  const { data, isLoading, isError } = trpc.blog.adminList.useQuery({
-    status: statusFilter !== "all"
-      ? (statusFilter as "DRAFT" | "PUBLISHED" | "ARCHIVED" | "IN_REVIEW")
-      : undefined,
-    search: search || undefined,
-    page,
-    limit: 20,
-  })
+  const { data, isLoading, isError, isPlaceholderData } = trpc.blog.adminList.useQuery(
+    {
+      status: statusFilter !== "all"
+        ? (statusFilter as "DRAFT" | "PUBLISHED" | "ARCHIVED" | "IN_REVIEW")
+        : undefined,
+      search: search || undefined,
+      page,
+      limit: 20,
+    },
+    { placeholderData: keepPreviousData },
+  )
 
   const updateStatusMutation = trpc.blog.adminSetStatus.useMutation({
     onSuccess: () => { toast.success("Status updated"); void utils.blog.adminList.invalidate() },
@@ -107,8 +112,9 @@ export default function BlogPage() {
           <CardTitle className="text-base flex items-center gap-2">
             <Newspaper className="w-4 h-4" /> Posts ({data?.pagination.total ?? "—"})
           </CardTitle>
+          <DataUpdatingIndicator active={isPlaceholderData} />
         </CardHeader>
-        <CardContent>
+        <CardContent aria-busy={isPlaceholderData}>
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <div className="flex gap-2 flex-1">
               <Input placeholder="Search posts..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (setSearch(searchInput), setPage(1))} className="max-w-xs" />
@@ -126,9 +132,13 @@ export default function BlogPage() {
             </Select>
           </div>
 
+          {isError && data ? (
+            <p className="mb-3 text-sm text-destructive">Could not update blog posts. Showing the previous results.</p>
+          ) : null}
+
           {isLoading ? (
             <div className="space-y-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}</div>
-          ) : isError ? (
+          ) : isError && !data ? (
             <div className="text-center py-12 text-red-500">Failed to load posts.</div>
           ) : !data?.posts.length ? (
             <div className="text-center py-12 text-gray-400">
@@ -171,7 +181,7 @@ export default function BlogPage() {
                       <td className="px-4 py-3">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isPlaceholderData}><MoreVertical className="w-4 h-4" /></Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => router.push(`/admin/content/blog/${item.id}`)}><FileText className="w-4 h-4 mr-2" /> Edit Post</DropdownMenuItem>
@@ -193,8 +203,8 @@ export default function BlogPage() {
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm text-gray-500">Page {page} of {totalPages}</p>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}><ChevronLeft className="w-4 h-4" /></Button>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}><ChevronRight className="w-4 h-4" /></Button>
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || isPlaceholderData}><ChevronLeft className="w-4 h-4" /></Button>
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || isPlaceholderData}><ChevronRight className="w-4 h-4" /></Button>
               </div>
             </div>
           )}

@@ -20,6 +20,7 @@ import { SidebarProvider, useSidebar } from "@/lib/sidebar-context"
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/admin/users",
+  useRouter: () => ({ prefetch: vi.fn() }),
 }))
 
 vi.mock("next/image", () => ({

@@ -7,6 +7,7 @@ import { useIdleTimeout } from "@/hooks/use-idle-timeout"
 import { SessionTimeoutWarning } from "@/components/session-timeout-warning"
 import { AlertSSEProvider } from "@/components/alerts/AlertSSEProvider"
 import { NotificationSoundProvider } from "@/components/notifications/NotificationSoundProvider"
+import { AuthenticatedPortalShell } from "@/components/layout/authenticated-portal-shell"
 
 function IdleTimeoutWrapper({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
@@ -48,7 +49,7 @@ export default function DashboardLayout({
         <NotificationSoundProvider />
         <AlertSSEProvider />
         <div data-portal-shell="true" className="portal-shell min-h-screen bg-background text-foreground">
-          {children}
+          <AuthenticatedPortalShell>{children}</AuthenticatedPortalShell>
         </div>
       </IdleTimeoutWrapper>
     </AuthGuard>

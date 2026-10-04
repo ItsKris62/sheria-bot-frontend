@@ -9,8 +9,10 @@
  */
 
 import { useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -120,12 +122,15 @@ export default function AdminMarketingLeadReviewQueuePage() {
   const [researchNotes, setResearchNotes] = useState("");
 
   // Queries
-  const { data, isLoading } = trpc.adminMarketing.leads.listReviewQueue.useQuery({
-    leadStatus: leadStatusFilter as any,
-    icpTier: icpTierFilter !== "ALL" ? (icpTierFilter as any) : undefined,
-    take: pageSize,
-    skip: page * pageSize,
-  });
+  const { data, isLoading, isError, isPlaceholderData } = trpc.adminMarketing.leads.listReviewQueue.useQuery(
+    {
+      leadStatus: leadStatusFilter as any,
+      icpTier: icpTierFilter !== "ALL" ? (icpTierFilter as any) : undefined,
+      take: pageSize,
+      skip: page * pageSize,
+    },
+    { placeholderData: keepPreviousData },
+  );
 
   const { data: detail, isLoading: isDetailLoading } = trpc.adminMarketing.leads.getReviewDetail.useQuery(
     { companyId: selectedCompanyId || "" },
@@ -250,12 +255,15 @@ export default function AdminMarketingLeadReviewQueuePage() {
         </Select>
 
         <div className="flex items-center justify-end text-sm text-muted-foreground">
-          {data ? `${data.total} prospects in queue` : "Loading..."}
+          {isPlaceholderData ? <DataUpdatingIndicator active label="Updating lead queue" /> : data ? `${data.total} prospects in queue` : "Loading..."}
         </div>
       </div>
 
       {/* Queue Table */}
-      <div className="rounded-xl border bg-card overflow-hidden">
+      <div className="rounded-xl border bg-card overflow-hidden" aria-busy={isPlaceholderData}>
+        {isError && data ? (
+          <p className="border-b px-4 py-2 text-sm text-destructive">Could not update the lead queue. Showing the previous results.</p>
+        ) : null}
         <Table>
           <TableHeader>
             <TableRow>
@@ -272,6 +280,12 @@ export default function AdminMarketingLeadReviewQueuePage() {
               <TableRow>
                 <TableCell colSpan={6} className="h-32 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+                </TableCell>
+              </TableRow>
+            ) : isError && !data ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-32 text-center text-destructive">
+                  Unable to load the lead review queue.
                 </TableCell>
               </TableRow>
             ) : data?.items.length === 0 ? (
@@ -310,6 +324,7 @@ export default function AdminMarketingLeadReviewQueuePage() {
                         size="sm"
                         className="h-8 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white gap-1 text-xs"
                         onClick={() => setApproveDialogId(company.id)}
+                        disabled={isPlaceholderData}
                       >
                         <Check className="h-3.5 w-3.5" /> Approve
                       </Button>
@@ -318,6 +333,7 @@ export default function AdminMarketingLeadReviewQueuePage() {
                         variant="outline"
                         className="h-8 px-2.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 text-xs"
                         onClick={() => setRejectDialogId(company.id)}
+                        disabled={isPlaceholderData}
                       >
                         Reject
                       </Button>
@@ -340,13 +356,13 @@ export default function AdminMarketingLeadReviewQueuePage() {
         {/* Pagination Footer */}
         <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
           <div>
-            Page {page + 1} of {data ? Math.max(1, Math.ceil(data.total / pageSize)) : 1}
+            {isPlaceholderData ? `Updating page ${page + 1}` : `Page ${page + 1} of ${data ? Math.max(1, Math.ceil(data.total / pageSize)) : 1}`}
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              disabled={page === 0}
+              disabled={page === 0 || isPlaceholderData}
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               className="h-7 px-2"
             >
@@ -355,7 +371,7 @@ export default function AdminMarketingLeadReviewQueuePage() {
             <Button
               variant="outline"
               size="sm"
-              disabled={!data || (page + 1) * pageSize >= data.total}
+              disabled={!data || (page + 1) * pageSize >= data.total || isPlaceholderData}
               onClick={() => setPage((p) => p + 1)}
               className="h-7 px-2"
             >

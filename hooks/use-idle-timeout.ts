@@ -3,14 +3,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { trpc, setAccessToken } from "@/lib/trpc";
-import { useAuthStore } from "@/lib/auth-store";
+import { trpc } from "@/lib/trpc";
 import { supabase } from "@/lib/supabase-client";
 import {
   SESSION_TIMEOUTS,
   LOGOUT_SIGNAL_KEY,
   SESSION_EXPIRED_FLAG,
 } from "@/lib/session-timeouts";
+import { clearAuthenticatedClientState } from "@/lib/auth-client-teardown";
 
 export interface UseIdleTimeoutReturn {
   /** Whether the warning modal should be shown */
@@ -97,9 +97,7 @@ export function useIdleTimeout(): UseIdleTimeoutReturn {
       // Clean up locally regardless of server errors
     }
 
-    queryClient.clear();
-    setAccessToken(null);
-    useAuthStore.getState().clearAuth();
+    clearAuthenticatedClientState(queryClient);
     router.push("/login?reason=session_expired");
   }, [clearAllTimers, logoutMutation, queryClient, router]);
 
@@ -248,9 +246,7 @@ export function useIdleTimeout(): UseIdleTimeoutReturn {
       if (e.key === LOGOUT_SIGNAL_KEY && e.newValue) {
         // Another tab logged out — mirror the logout here without re-writing the key
         clearAllTimers();
-        setAccessToken(null);
-        useAuthStore.getState().clearAuth();
-        queryClient.clear();
+        clearAuthenticatedClientState(queryClient);
         router.replace("/login?reason=session_expired");
       }
     };

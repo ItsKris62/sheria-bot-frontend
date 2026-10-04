@@ -10,6 +10,7 @@ import type { AuthUser, UserRole } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase-client";
 import { trackEvent, clearAnalyticsUser } from "@/lib/analytics";
 import { startAuthentication } from "@simplewebauthn/browser";
+import { clearAuthenticatedClientState } from "@/lib/auth-client-teardown";
 
 type AuthenticationResponseJSON = Awaited<ReturnType<typeof startAuthentication>>;
 
@@ -31,7 +32,7 @@ function getDashboardPath(role: UserRole): string {
 export function useAuth() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { setAuth, clearAuth, isAuthenticated, user, isLoading, isInitialized } = useAuthStore();
+  const { setAuth, isAuthenticated, user, isLoading, isInitialized } = useAuthStore();
 
   const loginMutation = trpc.auth.login.useMutation();
   const verifyTotpLoginMutation = (trpc.auth as any).verifyTotpLogin.useMutation();
@@ -208,16 +209,18 @@ export function useAuth() {
   const logout = useCallback(async () => {
     try {
       await logoutMutation.mutateAsync();
+    } catch {
+      // Continue with provider and local teardown if the backend is unavailable.
+    }
+    try {
       await supabase.auth.signOut();
     } catch {
-      // Even if server calls fail, clear local state
+      // Local teardown remains mandatory even if provider sign-out fails.
     }
     clearAnalyticsUser();
-    queryClient.clear();
-    clearAuth();
-    setAccessToken(null);
+    clearAuthenticatedClientState(queryClient);
     router.push("/login");
-  }, [logoutMutation, queryClient, clearAuth, router]);
+  }, [logoutMutation, queryClient, router]);
 
   const refreshSession = useCallback(async () => {
     try {
@@ -230,9 +233,9 @@ export function useAuth() {
     } catch {
       // fall through
     }
-    clearAuth();
+    clearAuthenticatedClientState(queryClient);
     return false;
-  }, [clearAuth]);
+  }, [queryClient]);
 
   return {
     login,

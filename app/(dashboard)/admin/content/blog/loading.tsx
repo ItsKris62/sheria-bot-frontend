@@ -1,8 +1,9 @@
 import { Skeleton } from "@/components/ui/skeleton"
+import { PortalLoadingRegion } from "@/components/portal/portal-page-skeleton"
 
 export default function GenericBlogLoading() {
   return (
-    <div className="space-y-6 animate-pulse p-4 md:p-6" data-testid="generic-blog-loading">
+    <PortalLoadingRegion className="p-4 md:p-6" data-testid="generic-blog-loading">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-2">
           <Skeleton className="h-7 w-48" />
@@ -10,7 +11,7 @@ export default function GenericBlogLoading() {
         </div>
         <Skeleton className="h-9 w-32" />
       </div>
-      <div className="border rounded-lg p-6 space-y-4">
+      <div className="space-y-4 rounded-lg border border-[var(--portal-border)] bg-[var(--portal-surface)] p-6">
         <div className="flex gap-3">
           <Skeleton className="h-9 w-40" />
           <Skeleton className="h-9 w-40" />
@@ -22,6 +23,6 @@ export default function GenericBlogLoading() {
           <Skeleton className="h-12 w-full" />
         </div>
       </div>
-    </div>
+    </PortalLoadingRegion>
   )
 }

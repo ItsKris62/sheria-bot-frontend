@@ -1,5 +1,6 @@
 "use client";
 
+import { keepPreviousData } from "@tanstack/react-query";
 import { trpc, getErrorMessage } from "@/lib/trpc";
 
 /** Hook for admin dashboard stats */
@@ -15,13 +16,16 @@ export function useAdminUsers(options?: {
   status?: string;
   search?: string;
 }) {
-  return trpc.admin.listUsers.useQuery({
-    page: options?.page ?? 1,
-    limit: options?.limit ?? 20,
-    role: options?.role as "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined,
-    status: options?.status as "active" | "inactive" | undefined,
-    search: options?.search,
-  });
+  return trpc.admin.listUsers.useQuery(
+    {
+      page: options?.page ?? 1,
+      limit: options?.limit ?? 20,
+      role: options?.role as "REGULATOR" | "STARTUP" | "ENTERPRISE" | "ADMIN" | undefined,
+      status: options?.status as "active" | "inactive" | undefined,
+      search: options?.search,
+    },
+    { placeholderData: keepPreviousData },
+  );
 }
 
 /** Hook for admin user actions */

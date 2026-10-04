@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator"
 import {
   Select,
   SelectContent,
@@ -133,7 +134,7 @@ export default function UsersPage() {
   const [bulkConfirmAction, setBulkConfirmAction] = useState<BulkAction | null>(null)
   const [bulkTier, setBulkTier] = useState<TierValue>("STARTUP")
 
-  const { data, isLoading } = useAdminUsers({
+  const { data, isLoading, isError, isPlaceholderData } = useAdminUsers({
     page,
     limit,
     role: roleFilter === "all" ? undefined : roleFilter,
@@ -203,6 +204,7 @@ export default function UsersPage() {
 
   const allPageIds = users.map((u) => u.id)
   const allPageSelected = allPageIds.length > 0 && allPageIds.every((id) => selectedIds.has(id))
+
   const organizations = organizationOptions ?? []
   const createUserDisabled =
     !createForm.email ||
@@ -317,10 +319,10 @@ export default function UsersPage() {
         <PortalSurface variant="solid" className="flex flex-col gap-3 border-[var(--portal-accent-border)] bg-[var(--portal-accent-muted)]/30 p-3 sm:flex-row sm:items-center">
           <span className="text-sm font-medium text-[var(--portal-text-primary)]">{selectedIds.size} user{selectedIds.size !== 1 ? "s" : ""} selected</span>
           <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-            <Button size="sm" variant="outline" onClick={() => setBulkConfirmAction("activate")} disabled={bulkIsPending}>
+            <Button size="sm" variant="outline" onClick={() => setBulkConfirmAction("activate")} disabled={bulkIsPending || isPlaceholderData}>
               <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />Activate
             </Button>
-            <Button size="sm" variant="outline" className="text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => setBulkConfirmAction("suspend")} disabled={bulkIsPending}>
+            <Button size="sm" variant="outline" className="text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => setBulkConfirmAction("suspend")} disabled={bulkIsPending || isPlaceholderData}>
               <Ban className="h-3.5 w-3.5 mr-1.5" />Suspend
             </Button>
             <div className="flex items-center gap-1.5">
@@ -333,7 +335,7 @@ export default function UsersPage() {
                   <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
                 </SelectContent>
               </Select>
-              <Button size="sm" variant="outline" onClick={() => setBulkConfirmAction("tier")} disabled={bulkIsPending}>
+              <Button size="sm" variant="outline" onClick={() => setBulkConfirmAction("tier")} disabled={bulkIsPending || isPlaceholderData}>
                 Change Tier
               </Button>
             </div>
@@ -358,11 +360,11 @@ export default function UsersPage() {
               id="admin-users-search"
               placeholder="Search users..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); setSelectedIds(new Set()) }}
               className="w-full bg-[var(--portal-surface)] pl-9"
             />
           </div>
-          <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setPage(1) }}>
+          <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setPage(1); setSelectedIds(new Set()) }}>
             <SelectTrigger aria-label="Filter users by role" className="w-full bg-[var(--portal-surface)] lg:w-[150px]"><SelectValue placeholder="Role" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Roles</SelectItem>
@@ -372,7 +374,7 @@ export default function UsersPage() {
               <SelectItem value="ADMIN">Admin</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1) }}>
+          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); setSelectedIds(new Set()) }}>
             <SelectTrigger aria-label="Filter users by status" className="w-full bg-[var(--portal-surface)] lg:w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
@@ -382,6 +384,8 @@ export default function UsersPage() {
           </Select>
         </AdminFilterBar>
 
+        <DataUpdatingIndicator active={isPlaceholderData} className="mb-3" />
+
         {!isLoading && users.length > 0 && (
           <div className="mb-3 flex items-center gap-3 border-b border-[var(--portal-border)] px-1 pb-2">
             <input
@@ -389,15 +393,22 @@ export default function UsersPage() {
               className="h-4 w-4 cursor-pointer rounded border-border accent-primary"
               checked={allPageSelected}
               onChange={toggleSelectAll}
+              disabled={isPlaceholderData}
               aria-label="Select all users on this page"
             />
             <span className="text-xs text-[var(--portal-text-secondary)]">Select all on this page</span>
           </div>
         )}
 
-        <div className="space-y-3">
+        <div className="space-y-3" aria-busy={isPlaceholderData}>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => <UserRowSkeleton key={i} />)
+          ) : isError ? (
+            <AdminEmptyState
+              title="Unable to load users"
+              description="The requested user view could not be loaded. Adjust a filter or try again."
+              icon={Users}
+            />
           ) : users.length === 0 ? (
             <AdminEmptyState
               title={search || roleFilter !== "all" || statusFilter !== "all" ? "No users match the current filters" : "No users are currently available"}
@@ -423,6 +434,7 @@ export default function UsersPage() {
                       className="h-4 w-4 flex-shrink-0 cursor-pointer rounded border-border accent-primary"
                       checked={isSelected}
                       onChange={() => toggleSelect(user.id)}
+                      disabled={isPlaceholderData}
                       aria-label={`Select ${user.fullName ?? user.email}`}
                     />
                     <Avatar>
@@ -457,7 +469,7 @@ export default function UsersPage() {
                     ) : (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label={`Open actions for ${user.fullName ?? user.email}`}><MoreVertical className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" disabled={isPlaceholderData} aria-label={`Open actions for ${user.fullName ?? user.email}`}><MoreVertical className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
@@ -492,10 +504,10 @@ export default function UsersPage() {
           <div className="mt-6 flex items-center justify-between border-t border-[var(--portal-border)] pt-4">
             <p className="text-sm text-[var(--portal-text-secondary)]">Page {page} of {totalPages} - {total} users</p>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} aria-label="Previous users page">
+              <Button variant="outline" size="sm" onClick={() => { setSelectedIds(new Set()); setPage((p) => Math.max(1, p - 1)) }} disabled={page === 1 || isPlaceholderData} aria-label="Previous users page">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} aria-label="Next users page">
+              <Button variant="outline" size="sm" onClick={() => { setSelectedIds(new Set()); setPage((p) => Math.min(totalPages, p + 1)) }} disabled={page === totalPages || isPlaceholderData} aria-label="Next users page">
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>

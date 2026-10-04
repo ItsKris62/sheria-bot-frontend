@@ -224,9 +224,11 @@ export default function BlogSourcesPage() {
           <Button
             variant="outline"
             className="gap-1.5 text-xs sm:text-sm"
-            onClick={() => window.location.href = "/admin/content/blog/source-items"}
+            asChild
           >
-            <Eye className="w-4 h-4 text-blue-600" /> Discovered Items
+            <Link href="/admin/content/blog/source-items">
+              <Eye className="w-4 h-4 text-blue-600" /> Discovered Items
+            </Link>
           </Button>
           <Button className="bg-secondary hover:bg-[#007a50] text-white gap-2 text-xs sm:text-sm" onClick={() => setCreateOpen(true)}>
             <Plus className="w-4 h-4" /> New Monitor
@@ -428,8 +430,10 @@ export default function BlogSourcesPage() {
                             <DropdownMenuItem onClick={() => setHistoryTarget(item)}>
                               <History className="w-4 h-4 mr-2 text-purple-600" /> View Run History
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => window.location.href = `/admin/content/blog/source-items?monitorId=${item.id}`}>
-                              <Eye className="w-4 h-4 mr-2 text-gray-600" /> View Items
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/content/blog/source-items?monitorId=${encodeURIComponent(item.id)}`}>
+                                <Eye className="w-4 h-4 mr-2 text-gray-600" /> View Items
+                              </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-red-600" onClick={() => setDeleteTarget({ id: item.id, name: item.name })}>
                               <Trash2 className="w-4 h-4 mr-2" /> Delete

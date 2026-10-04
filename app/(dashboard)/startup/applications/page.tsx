@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { keepPreviousData } from "@tanstack/react-query"
+import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -68,13 +70,16 @@ export default function ApplicationsPage() {
     dueDate: "",
   })
 
-  const { data, isLoading, isError } = trpc.application.list.useQuery({
-    page: 1,
-    limit: 50,
-    jurisdictionCode: jurisdictionFilter === "all" ? undefined : jurisdictionFilter,
-    status: statusFilter === "all" ? undefined : statusFilter,
-    search: searchQuery.trim() || undefined,
-  })
+  const { data, isLoading, isError, isPlaceholderData } = trpc.application.list.useQuery(
+    {
+      page: 1,
+      limit: 50,
+      jurisdictionCode: jurisdictionFilter === "all" ? undefined : jurisdictionFilter,
+      status: statusFilter === "all" ? undefined : statusFilter,
+      search: searchQuery.trim() || undefined,
+    },
+    { placeholderData: keepPreviousData },
+  )
   const createMutation = trpc.application.create.useMutation({
     onSuccess: () => {
       setForm({ title: "", jurisdictionCode: "KE", regulator: "", licenseType: "", referenceNumber: "", nextAction: "", dueDate: "" })
@@ -178,6 +183,7 @@ export default function ApplicationsPage() {
             <div>
               <CardTitle>All Applications</CardTitle>
               <CardDescription>Organization-scoped application tracking records</CardDescription>
+              <DataUpdatingIndicator active={isPlaceholderData} className="mt-2" />
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="relative">
@@ -212,15 +218,18 @@ export default function ApplicationsPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent aria-busy={isPlaceholderData}>
           <div className="space-y-4">
+            {isError && data ? (
+              <p className="text-sm text-destructive">Could not update application records. Showing the previous results.</p>
+            ) : null}
             {isLoading ? (
               <>
                 <Skeleton className="h-[112px] rounded-lg" />
                 <Skeleton className="h-[112px] rounded-lg" />
                 <Skeleton className="h-[112px] rounded-lg" />
               </>
-            ) : isError ? (
+            ) : isError && !data ? (
               <p className="py-8 text-center text-sm text-muted-foreground">Could not load application records.</p>
             ) : applications.length === 0 ? (
               <div className="py-12 text-center">

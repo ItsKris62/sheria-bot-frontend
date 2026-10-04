@@ -1,5 +1,6 @@
 "use client";
 
+import { keepPreviousData } from "@tanstack/react-query";
 import { trpc, getErrorMessage } from "@/lib/trpc";
 
 export type EnterprisePolicyStatus =
@@ -25,12 +26,15 @@ export function useEnterprisePolicies(options?: {
   status?: EnterprisePolicyStatus;
   policyType?: EnterprisePolicyType;
 }) {
-  return trpc.enterprisePolicy.listPolicies.useQuery({
-    limit: options?.limit ?? 20,
-    cursor: options?.cursor,
-    status: options?.status,
-    policyType: options?.policyType,
-  });
+  return trpc.enterprisePolicy.listPolicies.useQuery(
+    {
+      limit: options?.limit ?? 20,
+      cursor: options?.cursor,
+      status: options?.status,
+      policyType: options?.policyType,
+    },
+    { placeholderData: keepPreviousData },
+  );
 }
 
 export function useEnterprisePolicy(policyId: string) {

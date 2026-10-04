@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { keepPreviousData } from "@tanstack/react-query"
 import { trpc } from "@/lib/trpc"
+import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -80,14 +81,17 @@ export default function AdminSupportPage() {
   const { data: statsData, isLoading: statsLoading } = trpc.adminSupport.stats.useQuery()
   const stats = statsData as any
 
-  const { data, isLoading } = trpc.adminSupport.list.useQuery({
-    status: statusFilter === "ALL" ? undefined : (statusFilter as TicketStatus),
-    priority: priorityFilter === "ALL" ? undefined : (priorityFilter as TicketPriority),
-    category: categoryFilter === "ALL" ? undefined : (categoryFilter as any),
-    search: debouncedSearch || undefined,
-    page,
-    limit: 20,
-  })
+  const { data, isLoading, isError, isPlaceholderData } = trpc.adminSupport.list.useQuery(
+    {
+      status: statusFilter === "ALL" ? undefined : (statusFilter as TicketStatus),
+      priority: priorityFilter === "ALL" ? undefined : (priorityFilter as TicketPriority),
+      category: categoryFilter === "ALL" ? undefined : (categoryFilter as any),
+      search: debouncedSearch || undefined,
+      page,
+      limit: 20,
+    },
+    { placeholderData: keepPreviousData },
+  )
 
   const tickets = (data as any)?.tickets ?? []
   const total = (data as any)?.total ?? 0
@@ -219,7 +223,7 @@ export default function AdminSupportPage() {
             <SelectItem value="OTHER">Other</SelectItem>
           </SelectContent>
         </Select>
-        {total > 0 && (
+        {total > 0 && !isPlaceholderData && (
           <span className="text-sm text-muted-foreground">
             {total} ticket{total !== 1 ? "s" : ""}
           </span>
@@ -228,7 +232,11 @@ export default function AdminSupportPage() {
 
       {/* Ticket List */}
       <Card className="border-border/50 bg-card">
-        <CardContent className="p-0">
+        <CardContent className="p-0" aria-busy={isPlaceholderData}>
+          <DataUpdatingIndicator active={isPlaceholderData} className="px-4 pt-3" />
+          {isError && data ? (
+            <p className="px-4 pt-3 text-sm text-destructive">Could not update support tickets. Showing the previous results.</p>
+          ) : null}
           {isLoading ? (
             <div className="divide-y divide-border/50">
               {[...Array(5)].map((_, i) => (
@@ -242,6 +250,8 @@ export default function AdminSupportPage() {
                 </div>
               ))}
             </div>
+          ) : isError && !data ? (
+            <p className="py-12 text-center text-sm text-destructive">Unable to load support tickets.</p>
           ) : tickets.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Ticket className="h-12 w-12 text-muted-foreground/40" />
@@ -322,7 +332,7 @@ export default function AdminSupportPage() {
             <Button
               variant="outline"
               size="sm"
-              disabled={page <= 1}
+              disabled={page <= 1 || isPlaceholderData}
               onClick={() => setPage((p) => p - 1)}
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
@@ -331,7 +341,7 @@ export default function AdminSupportPage() {
             <Button
               variant="outline"
               size="sm"
-              disabled={page >= totalPages}
+              disabled={page >= totalPages || isPlaceholderData}
               onClick={() => setPage((p) => p + 1)}
             >
               Next

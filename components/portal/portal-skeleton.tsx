@@ -23,7 +23,7 @@ export function PortalSkeleton({
   return (
     <Skeleton
       className={cn(
-        "bg-[var(--portal-surface-solid)]/60 animate-pulse border border-[var(--portal-border)]/40",
+        "border border-[var(--portal-border)]/40 bg-[var(--portal-surface-solid)]/60",
         variantDimensions[variant],
         className
       )}

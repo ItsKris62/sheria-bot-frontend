@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 
 export interface SidebarContextValue {
   collapsed: boolean
@@ -41,17 +41,22 @@ export function SidebarProvider({
     }
   }, [])
 
-  const setCollapsed = (v: boolean) => {
+  const setCollapsed = useCallback((v: boolean) => {
     setCollapsedState(v)
     try {
       localStorage.setItem(SIDEBAR_STORAGE_KEY, String(v))
     } catch {
       // Storage unavailable / blocked
     }
-  }
+  }, [])
+
+  const value = useMemo(
+    () => ({ collapsed, setCollapsed, mobileOpen, setMobileOpen }),
+    [collapsed, setCollapsed, mobileOpen],
+  )
 
   return (
-    <SidebarContext.Provider value={{ collapsed, setCollapsed, mobileOpen, setMobileOpen }}>
+    <SidebarContext.Provider value={value}>
       {children}
     </SidebarContext.Provider>
   )
@@ -61,3 +66,10 @@ export function useSidebar() {
   return useContext(SidebarContext)
 }
 
+export function useCloseMobileSidebarOnNavigation(pathname: string) {
+  const { setMobileOpen } = useSidebar()
+
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname, setMobileOpen])
+}

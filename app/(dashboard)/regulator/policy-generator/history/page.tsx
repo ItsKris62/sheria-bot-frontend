@@ -6,6 +6,7 @@ import { FeatureGate, LockedFeatureCard } from "@/components/plan/feature-gate"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -66,7 +67,7 @@ function PolicyHistoryContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<EnterprisePolicyStatus | "all">("all")
   const queryStatus = statusFilter === "all" ? undefined : statusFilter
-  const { data, isLoading, isError, error } = useEnterprisePolicies({ limit: 50, status: queryStatus })
+  const { data, isLoading, isError, error, isPlaceholderData } = useEnterprisePolicies({ limit: 50, status: queryStatus })
   const { deletePolicy, isDeleting } = useEnterprisePolicyActions()
   const policies = useMemo(() => (data?.items ?? []) as PolicyHistoryItem[], [data?.items])
 
@@ -148,14 +149,18 @@ function PolicyHistoryContent() {
             <FileText className="h-4 w-4 text-primary" />
             Generated Policies ({filteredHistory.length})
           </CardTitle>
+          <DataUpdatingIndicator active={isPlaceholderData} />
         </CardHeader>
-        <CardContent>
+        <CardContent aria-busy={isPlaceholderData}>
+          {isError && data ? (
+            <p className="mb-3 text-sm text-destructive">Could not update policy history. Showing the previous results.</p>
+          ) : null}
           {isLoading ? (
             <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               Loading generated policies...
             </div>
-          ) : isError ? (
+          ) : isError && !data ? (
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
               {getErrorMessage(error)}
             </div>
@@ -233,7 +238,7 @@ function PolicyHistoryContent() {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-destructive hover:text-destructive"
-                              disabled={isDeleting}
+                              disabled={isDeleting || isPlaceholderData}
                               onClick={() => void handleDelete(policy.id)}
                             >
                               <Trash2 className="h-4 w-4" />

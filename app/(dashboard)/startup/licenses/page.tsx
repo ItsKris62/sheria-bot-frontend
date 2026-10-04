@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { keepPreviousData } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { AlertTriangle, BadgeCheck, Building2, Calendar, Clock, FileText, Plus, Search } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { FeatureGate, LockedFeatureCard } from "@/components/plan/feature-gate"
+import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator"
 import { usePlan } from "@/lib/plan-context"
 import { getErrorMessage, trpc } from "@/lib/trpc"
 
@@ -84,14 +86,14 @@ export default function LicensesPage() {
     notes: "",
   })
 
-  const { data, isLoading, isError } = trpc.license.list.useQuery(
+  const { data, isLoading, isError, isPlaceholderData } = trpc.license.list.useQuery(
     {
       page: 1,
       limit: 50,
       status: status === "all" ? undefined : status as never,
       search: search.trim() || undefined,
     },
-    { enabled },
+    { enabled, placeholderData: keepPreviousData },
   )
   const { data: summary } = trpc.license.getDashboardSummary.useQuery(undefined, { enabled })
 
@@ -206,6 +208,7 @@ export default function LicensesPage() {
               <div>
                 <CardTitle>Organization Licenses</CardTitle>
                 <CardDescription>Tenant-scoped license records with renewal and expiry intelligence.</CardDescription>
+                <DataUpdatingIndicator active={isPlaceholderData} className="mt-2" />
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <div className="relative">
@@ -226,15 +229,18 @@ export default function LicensesPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent aria-busy={isPlaceholderData}>
             <div className="space-y-4">
+              {isError && data ? (
+                <p className="text-sm text-destructive">Could not update license records. Showing the previous results.</p>
+              ) : null}
               {isLoading ? (
                 <>
                   <Skeleton className="h-[112px] rounded-lg" />
                   <Skeleton className="h-[112px] rounded-lg" />
                   <Skeleton className="h-[112px] rounded-lg" />
                 </>
-              ) : isError ? (
+              ) : isError && !data ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">Could not load license records.</p>
               ) : licenses.length === 0 ? (
                 <div className="py-12 text-center">

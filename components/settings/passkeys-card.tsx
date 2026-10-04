@@ -3,9 +3,9 @@
 import { useState, useSyncExternalStore } from "react"
 import { toast } from "sonner"
 import { format, formatDistanceToNow } from "date-fns"
-import { startRegistration } from "@simplewebauthn/browser"
 
-type RegistrationResponseJSON = Awaited<ReturnType<typeof startRegistration>>
+type StartRegistration = typeof import("@simplewebauthn/browser")["startRegistration"]
+type RegistrationResponseJSON = Awaited<ReturnType<StartRegistration>>
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -119,6 +119,7 @@ export function PasskeysCard() {
       const options = await generateOptionsMutation.mutateAsync()
 
       // 2. Perform browser ceremony
+      const { startRegistration } = await import("@simplewebauthn/browser")
       const registrationResponse: RegistrationResponseJSON = await startRegistration({
         optionsJSON: options as any,
       })

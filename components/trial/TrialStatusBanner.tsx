@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Clock, AlertCircle, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -91,10 +92,10 @@ export function TrialStatusBanner() {
         {/* Right: upgrade CTA */}
         <div className="shrink-0 flex items-center gap-2">
           <Button size="sm" asChild>
-            <a href="/settings/billing">
+            <Link href="/settings/billing">
               <Zap className="mr-1.5 h-3.5 w-3.5" />
               Upgrade
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

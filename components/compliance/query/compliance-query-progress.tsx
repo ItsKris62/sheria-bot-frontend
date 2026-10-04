@@ -1,9 +1,10 @@
 import React from "react"
+import dynamic from "next/dynamic"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import { AlertCircle, Loader2 } from "lucide-react"
-import { ComplianceFeedback } from "@/components/compliance/compliance-feedback"
 import { SheriaBotThinkingDroid } from "@/components/compliance/sheriabot-thinking-droid"
 import { AbstainCard } from "@/components/compliance/abstain-card"
 import { UngroundedBanner } from "@/components/compliance/ungrounded-banner"
@@ -18,6 +19,19 @@ import type {
   SuggestionSource,
 } from "./compliance-query-types"
 import { jurisdictionLabel, type QueryableJurisdictionCode } from "@/lib/jurisdictions"
+
+const ComplianceFeedback = dynamic(
+  () => import("@/components/compliance/compliance-feedback").then((module) => module.ComplianceFeedback),
+  {
+    loading: () => (
+      <div className="space-y-3" role="status" aria-label="Loading formatted response">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-11/12" />
+        <Skeleton className="h-4 w-4/5" />
+      </div>
+    ),
+  },
+)
 
 export interface ComplianceQueryProgressProps {
   messages: Message[]

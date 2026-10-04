@@ -155,6 +155,7 @@ function createTRPCError(message: string, code: string) {
 
   it('proves hard-fail behavior on second attempt and prevents infinite retry loop without duplicate toasts', async () => {
     const queryClient = makeQueryClient();
+    queryClient.setQueryData(['sensitive-example'], { organization: 'Org A' });
     const mutationCache = queryClient.getMutationCache();
     const onErrorHandler = (mutationCache as any).config.onError;
     expect(onErrorHandler).toBeDefined();
@@ -179,6 +180,8 @@ function createTRPCError(message: string, code: string) {
     await act(async () => {
       onErrorHandler(mfaError, { someVar: 'val' }, {}, mockMutation);
     });
+
+    expect(queryClient.getQueryData(['sensitive-example'])).toEqual({ organization: 'Org A' });
 
     // Modal should be open
     expect(await screen.findByText('Step-Up Authentication Required')).toBeDefined();

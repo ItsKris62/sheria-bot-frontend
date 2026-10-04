@@ -1,7 +1,6 @@
 "use client"
 
 import type { ComponentType, ReactNode } from "react"
-import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   Bell,
@@ -13,14 +12,9 @@ import {
   User,
   Users,
 } from "lucide-react"
-import { AdminSidebar } from "@/components/layout/admin-sidebar"
-import { DashboardHeader } from "@/components/layout/dashboard-header"
-import { DashboardShell } from "@/components/layout/dashboard-shell"
-import { DashboardSidebar } from "@/components/layout/dashboard-sidebar"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { useAuthStore, type UserRole } from "@/lib/auth-store"
-import { SidebarProvider } from "@/lib/sidebar-context"
 import { cn } from "@/lib/utils"
+import { PendingNavigationLink } from "@/components/navigation/pending-navigation-link"
 
 type SettingsNavItem = {
   title: string
@@ -50,9 +44,12 @@ function SettingsNavigation({ pathname, mobile = false }: { pathname: string; mo
     const isActive = isSettingsRouteActive(pathname, item.href)
 
     return (
-      <Link
+      <PendingNavigationLink
         key={item.href}
         href={item.href}
+        pendingLabel={item.title}
+        pendingTone="surface"
+        prefetchStrategy="intent"
         aria-current={isActive ? "page" : undefined}
         className={cn(
           "group relative flex items-center gap-2.5 rounded-lg text-sm font-medium transition-colors",
@@ -73,7 +70,7 @@ function SettingsNavigation({ pathname, mobile = false }: { pathname: string; mo
           aria-hidden="true"
         />
         <span className="whitespace-nowrap">{item.title}</span>
-      </Link>
+      </PendingNavigationLink>
     )
   })
 
@@ -100,51 +97,24 @@ function SettingsNavigation({ pathname, mobile = false }: { pathname: string; mo
   )
 }
 
-function getRoleShell(role: UserRole | undefined) {
-  if (role === "ADMIN") {
-    return {
-      sidebar: <AdminSidebar />,
-      header: <DashboardHeader userType="admin" />,
-    }
-  }
-
-  if (role === "REGULATOR") {
-    return {
-      sidebar: <DashboardSidebar userType="regulator" />,
-      header: <DashboardHeader userType="regulator" />,
-    }
-  }
-
-  return {
-    sidebar: <DashboardSidebar userType="startup" />,
-    header: <DashboardHeader userType="startup" />,
-  }
-}
-
 export default function SettingsLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
-  const role = useAuthStore((state) => state.user?.role)
-  const shell = getRoleShell(role)
 
   return (
-    <SidebarProvider>
-      <DashboardShell sidebar={shell.sidebar} header={shell.header}>
-        <div data-settings-workspace="true" className="mx-auto w-full max-w-[1400px]">
-          <header className="mb-6 border-b border-[var(--portal-divider)] pb-5 md:mb-8">
-            <h1 className="text-[28px] font-semibold tracking-tight text-[var(--portal-text-primary)]">Settings</h1>
-            <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">
-              Manage your account, organization, and preferences.
-            </p>
-          </header>
+    <div data-settings-workspace="true" className="mx-auto w-full max-w-[1400px]">
+      <header className="mb-6 border-b border-[var(--portal-divider)] pb-5 md:mb-8">
+        <h1 className="text-[28px] font-semibold tracking-tight text-[var(--portal-text-primary)]">Settings</h1>
+        <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">
+          Manage your account, organization, and preferences.
+        </p>
+      </header>
 
-          <SettingsNavigation pathname={pathname} mobile />
+      <SettingsNavigation pathname={pathname} mobile />
 
-          <div className="grid min-w-0 gap-6 xl:grid-cols-[220px_minmax(0,1fr)] xl:gap-8">
-            <SettingsNavigation pathname={pathname} />
-            <div className="min-w-0 max-w-[1000px]">{children}</div>
-          </div>
-        </div>
-      </DashboardShell>
-    </SidebarProvider>
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[220px_minmax(0,1fr)] xl:gap-8">
+        <SettingsNavigation pathname={pathname} />
+        <div className="min-w-0 max-w-[1000px]">{children}</div>
+      </div>
+    </div>
   )
 }

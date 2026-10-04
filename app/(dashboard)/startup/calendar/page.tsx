@@ -81,10 +81,12 @@ export default function CalendarPage() {
 
   // ── Data fetching ──────────────────────────────────────────────────────────
 
-  const { data: monthEvents = [], isLoading: eventsLoading } = trpc.calendar.list.useQuery(
+  const monthEventsQuery = trpc.calendar.list.useQuery(
     { month: currentDate.getMonth() + 1, year: currentDate.getFullYear() },
     { enabled: calendarEnabled },
   )
+  const monthEvents = monthEventsQuery.isPlaceholderData ? [] : (monthEventsQuery.data ?? [])
+  const eventsLoading = monthEventsQuery.isLoading || monthEventsQuery.isPlaceholderData
 
   const { data: upcomingEvents = [], isLoading: upcomingLoading } = trpc.calendar.upcoming.useQuery(
     { daysAhead: 30 },
@@ -94,12 +96,16 @@ export default function CalendarPage() {
   // ── Navigation ─────────────────────────────────────────────────────────────
 
   function prevMonth() {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
+    setCurrentDate((date) => new Date(date.getFullYear(), date.getMonth() - 1, 1))
   }
 
   function nextMonth() {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
+    setCurrentDate((date) => new Date(date.getFullYear(), date.getMonth() + 1, 1))
   }
+
+  const monthLabel = `${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`
+  const calendarCellCount = Math.ceil((firstDay + daysInMonth) / 7) * 7
+  const trailingCellCount = calendarCellCount - firstDay - daysInMonth
 
   // ── High-priority count for reminder card ──────────────────────────────────
 
@@ -154,13 +160,13 @@ export default function CalendarPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
-                  {months[currentDate.getMonth()]} {currentDate.getFullYear()}
+                  {monthLabel}
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" onClick={prevMonth}>
+                  <Button variant="outline" size="icon" onClick={prevMonth} aria-label="Previous month">
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon" onClick={nextMonth}>
+                  <Button variant="outline" size="icon" onClick={nextMonth} aria-label="Next month">
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -176,53 +182,78 @@ export default function CalendarPage() {
                 ))}
               </div>
 
-              {eventsLoading ? (
-                <div className="grid grid-cols-7 gap-1">
-                  {Array.from({ length: 35 }).map((_, i) => (
-                    <Skeleton key={i} className="aspect-square rounded-lg" />
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-7 gap-1">
-                  {Array.from({ length: firstDay }).map((_, i) => (
-                    <div key={`empty-${i}`} className="aspect-square" />
-                  ))}
-                  {Array.from({ length: daysInMonth }).map((_, i) => {
-                    const day       = i + 1
-                    const dayEvents = getEventsForDay(monthEvents, currentDate.getFullYear(), currentDate.getMonth(), day)
-                    return (
-                      <div
-                        key={day}
-                        className={`aspect-square p-1 rounded-lg border border-transparent hover:border-border cursor-pointer transition-colors ${
-                          dayEvents.length > 0 ? "bg-muted/50" : ""
-                        }`}
-                      >
-                        <div className="text-sm font-medium text-foreground">{day}</div>
-                        {dayEvents.length > 0 && (
-                          <div className="mt-1 space-y-0.5">
-                            {dayEvents.slice(0, 2).map((event) => {
-                              const cfg = CATEGORY_CONFIG[event.category] ?? CATEGORY_CONFIG["CUSTOM"]
-                              return (
-                                <div
-                                  key={event.id}
-                                  className={`text-[10px] px-1 py-0.5 rounded truncate ${cfg.color}`}
-                                >
-                                  {event.title}
-                                </div>
-                              )
-                        })}
-                            {dayEvents.length > 2 && (
-                              <div className="text-[10px] text-muted-foreground">
-                                +{dayEvents.length - 2} more
+              <div
+                aria-busy={eventsLoading}
+                aria-label={`${monthLabel} calendar`}
+                className="min-h-[20rem]"
+              >
+                {eventsLoading ? (
+                  <>
+                    <p className="sr-only" role="status">Loading {monthLabel} calendar</p>
+                    <div className="grid grid-cols-7 gap-1">
+                      {Array.from({ length: calendarCellCount }).map((_, i) => (
+                        <Skeleton key={i} className="aspect-square rounded-lg" />
+                      ))}
+                    </div>
+                  </>
+                ) : monthEventsQuery.isError ? (
+                  <div className="flex min-h-[20rem] flex-col items-center justify-center gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center">
+                    <AlertTriangle className="h-8 w-8 text-destructive" />
+                    <div>
+                      <p className="font-medium text-foreground">Could not load {monthLabel}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">Try again or choose another month.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {monthEvents.length === 0 ? (
+                      <p className="mb-2 text-sm text-muted-foreground">No events scheduled for {monthLabel}.</p>
+                    ) : null}
+                    <div className="grid grid-cols-7 gap-1">
+                      {Array.from({ length: firstDay }).map((_, i) => (
+                        <div key={`empty-${i}`} className="aspect-square" />
+                      ))}
+                      {Array.from({ length: daysInMonth }).map((_, i) => {
+                        const day       = i + 1
+                        const dayEvents = getEventsForDay(monthEvents, currentDate.getFullYear(), currentDate.getMonth(), day)
+                        return (
+                          <div
+                            key={day}
+                            className={`aspect-square p-1 rounded-lg border border-transparent hover:border-border cursor-pointer transition-colors ${
+                              dayEvents.length > 0 ? "bg-muted/50" : ""
+                            }`}
+                          >
+                            <div className="text-sm font-medium text-foreground">{day}</div>
+                            {dayEvents.length > 0 && (
+                              <div className="mt-1 space-y-0.5">
+                                {dayEvents.slice(0, 2).map((event) => {
+                                  const cfg = CATEGORY_CONFIG[event.category] ?? CATEGORY_CONFIG["CUSTOM"]
+                                  return (
+                                    <div
+                                      key={event.id}
+                                      className={`text-[10px] px-1 py-0.5 rounded truncate ${cfg.color}`}
+                                    >
+                                      {event.title}
+                                    </div>
+                                  )
+                                })}
+                                {dayEvents.length > 2 && (
+                                  <div className="text-[10px] text-muted-foreground">
+                                    +{dayEvents.length - 2} more
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+                        )
+                      })}
+                      {Array.from({ length: trailingCellCount }).map((_, i) => (
+                        <div key={`trailing-${i}`} className="aspect-square" />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

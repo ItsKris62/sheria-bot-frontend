@@ -1,6 +1,8 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import dynamic from "next/dynamic"
+import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
@@ -9,20 +11,16 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts"
-import {
   DollarSign, TrendingUp, CreditCard, CheckCircle2, AlertCircle, XCircle,
   Save, Loader2, Package, AlertTriangle, Activity, Users, ShieldAlert,
 } from "lucide-react"
 import { trpc, getErrorMessage } from "@/lib/trpc"
 import { toast } from "sonner"
+
+const RevenueChart = dynamic(
+  () => import("@/components/admin/billing/revenue-chart").then((module) => module.RevenueChart),
+  { loading: () => <Skeleton className="h-52 w-full rounded-lg" /> },
+)
 
 function formatKES(amount: number) {
   if (amount >= 1_000_000) return `KES ${(amount / 1_000_000).toFixed(1)}M`
@@ -401,15 +399,7 @@ export default function AdminBillingPage() {
                       </div>
                     </div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={210}>
-                      <BarChart data={revenue.series} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={(v: string) => new Date(v + "-01").toLocaleDateString("en-KE", { month: "short" })} />
-                        <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`} />
-                        <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(value: number) => [formatKES(value), "Revenue"]} />
-                        <Bar dataKey="amount" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <RevenueChart data={revenue.series} />
                   )}
                 </CardContent>
               </Card>
@@ -911,7 +901,7 @@ export default function AdminBillingPage() {
                         </div>
                         {account.actionHref && (
                           <Button variant="outline" size="sm" asChild>
-                            <a href={account.actionHref}>View</a>
+                            <Link href={account.actionHref}>View</Link>
                           </Button>
                         )}
                       </div>

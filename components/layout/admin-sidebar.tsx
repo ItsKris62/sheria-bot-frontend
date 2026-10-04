@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React, { useCallback } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -43,7 +43,11 @@ import {
   Lightbulb,
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
-import { useSidebar } from "@/lib/sidebar-context"
+import { useCloseMobileSidebarOnNavigation, useSidebar } from "@/lib/sidebar-context"
+import {
+  PendingNavigationLink,
+  type NavigationPrefetchStrategy,
+} from "@/components/navigation/pending-navigation-link"
 
 import {
   Tooltip,
@@ -60,6 +64,7 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>
   badgeQuery?: "supportOpen"
   exact?: boolean
+  prefetchStrategy?: NavigationPrefetchStrategy
 }
 
 export interface AdminNavGroup {
@@ -73,78 +78,84 @@ export const adminNav: AdminNavGroup[] = [
     items: [
       { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
       { title: "Analytics", href: "/admin/analytics", icon: BarChart2, exact: true },
-      { title: "Feedback", href: "/admin/analytics/feedback", icon: ThumbsUp },
+      { title: "Feedback", href: "/admin/analytics/feedback", icon: ThumbsUp, prefetchStrategy: "none" },
     ],
   },
   {
     title: "Users",
     items: [
-      { title: "User Management",  href: "/admin/users",         icon: Users },
-      { title: "Organizations",    href: "/admin/organizations",  icon: Building2 },
-      { title: "Pilot Programme",  href: "/admin/pilot",         icon: Rocket },
+      { title: "User Management",  href: "/admin/users",         icon: Users, prefetchStrategy: "intent" },
+      { title: "Organizations",    href: "/admin/organizations",  icon: Building2, prefetchStrategy: "intent" },
+      { title: "Pilot Programme",  href: "/admin/pilot",         icon: Rocket, prefetchStrategy: "none" },
     ],
   },
   {
     title: "Support",
     items: [
-      { title: "Support Tickets", href: "/admin/support", icon: MessageSquare, badgeQuery: "supportOpen" },
-      { title: "Licenses", href: "/admin/licenses", icon: BadgeCheck },
+      { title: "Support Tickets", href: "/admin/support", icon: MessageSquare, badgeQuery: "supportOpen", prefetchStrategy: "intent" },
+      { title: "Licenses", href: "/admin/licenses", icon: BadgeCheck, prefetchStrategy: "none" },
     ],
   },
   {
     title: "Content",
     items: [
-      { title: "Knowledge Base", href: "/admin/content/knowledge-base", icon: BookOpen },
-      { title: "Blog", href: "/admin/content/blog", icon: Newspaper, exact: true },
-      { title: "Blog Sources", href: "/admin/content/blog/sources", icon: Database },
-      { title: "Source Items", href: "/admin/content/blog/source-items", icon: ListOrdered },
-      { title: "Blog Suggestions", href: "/admin/content/blog/suggestions", icon: Lightbulb },
-      { title: "Blog Digests", href: "/admin/content/blog/digests", icon: Activity },
-      { title: "Editorial Triage", href: "/admin/content/editorial/triage", icon: FileSearch },
-      { title: "Research Packs", href: "/admin/content/editorial/research", icon: BookOpen },
-      { title: "Freshness Reviews", href: "/admin/content/editorial/freshness", icon: ClipboardCheck },
-      { title: "Revision Requests", href: "/admin/content/editorial/revisions", icon: FileText },
-      { title: "Content Ops Alerts", href: "/admin/content/editorial/alerts", icon: Shield },
+      { title: "Knowledge Base", href: "/admin/content/knowledge-base", icon: BookOpen, prefetchStrategy: "intent" },
+      { title: "Blog", href: "/admin/content/blog", icon: Newspaper, exact: true, prefetchStrategy: "intent" },
+      { title: "Blog Sources", href: "/admin/content/blog/sources", icon: Database, prefetchStrategy: "none" },
+      { title: "Source Items", href: "/admin/content/blog/source-items", icon: ListOrdered, prefetchStrategy: "none" },
+      { title: "Blog Suggestions", href: "/admin/content/blog/suggestions", icon: Lightbulb, prefetchStrategy: "none" },
+      { title: "Blog Digests", href: "/admin/content/blog/digests", icon: Activity, prefetchStrategy: "none" },
+      { title: "Editorial Triage", href: "/admin/content/editorial/triage", icon: FileSearch, prefetchStrategy: "none" },
+      { title: "Research Packs", href: "/admin/content/editorial/research", icon: BookOpen, prefetchStrategy: "none" },
+      { title: "Freshness Reviews", href: "/admin/content/editorial/freshness", icon: ClipboardCheck, prefetchStrategy: "none" },
+      { title: "Revision Requests", href: "/admin/content/editorial/revisions", icon: FileText, prefetchStrategy: "none" },
+      { title: "Content Ops Alerts", href: "/admin/content/editorial/alerts", icon: Shield, prefetchStrategy: "none" },
       { title: "Regulatory Alerts", href: "/admin/alerts", icon: Megaphone },
-      { title: "Corpus Gap Reports", href: "/admin/corpus-gap-reports", icon: FileQuestion },
+      { title: "Corpus Gap Reports", href: "/admin/corpus-gap-reports", icon: FileQuestion, prefetchStrategy: "none" },
     ],
   },
   {
     title: "Marketing & Leads",
     items: [
-      { title: "Lead Queue",  href: "/admin/marketing/leads",       icon: Sparkles   },
-      { title: "Companies",   href: "/admin/marketing/companies",   icon: Building2  },
-      { title: "Contacts",    href: "/admin/marketing/contacts",    icon: Users      },
-      { title: "Campaigns",   href: "/admin/marketing/campaigns",   icon: Mail       },
-      { title: "Lists",       href: "/admin/marketing/lists",       icon: ListFilter },
-      { title: "Suppression", href: "/admin/marketing/suppression", icon: Ban        },
+      { title: "Lead Queue",  href: "/admin/marketing/leads",       icon: Sparkles, prefetchStrategy: "none"   },
+      { title: "Companies",   href: "/admin/marketing/companies",   icon: Building2, prefetchStrategy: "none"  },
+      { title: "Contacts",    href: "/admin/marketing/contacts",    icon: Users, prefetchStrategy: "none"      },
+      { title: "Campaigns",   href: "/admin/marketing/campaigns",   icon: Mail, prefetchStrategy: "none"       },
+      { title: "Lists",       href: "/admin/marketing/lists",       icon: ListFilter, prefetchStrategy: "none" },
+      { title: "Suppression", href: "/admin/marketing/suppression", icon: Ban, prefetchStrategy: "none"        },
     ],
   },
   {
     title: "Automation",
     items: [
-      { title: "Approvals", href: "/admin/automation/approvals", icon: ClipboardCheck },
+      { title: "Approvals", href: "/admin/automation/approvals", icon: ClipboardCheck, prefetchStrategy: "none" },
     ],
   },
   {
     title: "System",
     items: [
-      { title: "AI Configuration", href: "/admin/ai-config", icon: Bot },
-      { title: "AI Jobs", href: "/admin/ai-jobs", icon: Activity },
-      { title: "Billing & Plans", href: "/admin/billing", icon: CreditCard },
-      { title: "Enterprise Contracts", href: "/admin/enterprise-contracts", icon: CreditCard },
-      { title: "Audit Logs", href: "/admin/audit-logs", icon: Activity },
-      { title: "Security", href: "/admin/security", icon: Lock },
-      { title: "System Settings", href: "/admin/system", icon: Settings },
+      { title: "AI Configuration", href: "/admin/ai-config", icon: Bot, prefetchStrategy: "none" },
+      { title: "AI Jobs", href: "/admin/ai-jobs", icon: Activity, prefetchStrategy: "none" },
+      { title: "Billing & Plans", href: "/admin/billing", icon: CreditCard, prefetchStrategy: "none" },
+      { title: "Enterprise Contracts", href: "/admin/enterprise-contracts", icon: CreditCard, prefetchStrategy: "none" },
+      { title: "Audit Logs", href: "/admin/audit-logs", icon: Activity, prefetchStrategy: "intent" },
+      { title: "Security", href: "/admin/security", icon: Lock, prefetchStrategy: "none" },
+      { title: "System Settings", href: "/admin/system", icon: Settings, prefetchStrategy: "none" },
     ],
   },
 ]
+
+export function isAdminRouteActive(pathname: string, href: string, exact = false): boolean {
+  if (href === "/admin" || exact) return pathname === href
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
 
 // --- Component ----------------------------------------------------------------
 
 export function AdminSidebar() {
   const pathname = usePathname()
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar()
+  const closeMobileSidebar = useCallback(() => setMobileOpen(false), [setMobileOpen])
 
   // Live count of open tickets for the badge
   const { data: statsData } = trpc.adminSupport.stats.useQuery(undefined, {
@@ -152,13 +163,10 @@ export function AdminSidebar() {
   })
   const openCount = (statsData as { open?: number } | undefined)?.open ?? 0
 
-  // Auto-close mobile drawer on navigation
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [pathname, setMobileOpen])
+  useCloseMobileSidebarOnNavigation(pathname)
 
   // -- Shared nav groups renderer ------------------------------------------
-  function renderGroups(opts: { showCollapsed: boolean }) {
+  function renderGroups(opts: { showCollapsed: boolean; mobile?: boolean }) {
     return adminNav.map((group) => (
       <div key={group.title}>
         {!opts.showCollapsed && (
@@ -168,12 +176,7 @@ export function AdminSidebar() {
         )}
         <div className="flex flex-col gap-1">
           {group.items.map((item) => {
-            const isActive =
-              item.href === "/admin"
-                ? pathname === "/admin"
-                : item.exact
-                  ? pathname === item.href
-                  : pathname === item.href || pathname.startsWith(item.href + "/")
+            const isActive = isAdminRouteActive(pathname, item.href, item.exact)
 
             const badgeValue =
               item.badgeQuery === "supportOpen" && openCount > 0
@@ -181,9 +184,12 @@ export function AdminSidebar() {
                 : null
 
             const navLink = (
-              <Link
+              <PendingNavigationLink
                 key={item.href + item.title}
                 href={item.href}
+                pendingLabel={item.title}
+                prefetchStrategy={item.prefetchStrategy}
+                onNavigate={opts.mobile ? closeMobileSidebar : undefined}
                 aria-current={isActive ? "page" : undefined}
                 aria-label={item.title}
                 className={cn(
@@ -220,7 +226,7 @@ export function AdminSidebar() {
                 {opts.showCollapsed && badgeValue !== null && (
                   <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#22C55E]" />
                 )}
-              </Link>
+              </PendingNavigationLink>
             )
 
             if (opts.showCollapsed) {
@@ -325,12 +331,12 @@ export function AdminSidebar() {
 
       {/* -- Mobile drawer (below md) ---------------------------------------- */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="flex w-72 flex-col p-0 bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] border-r border-[#0D281A]">
+        <SheetContent aria-describedby={undefined} side="left" className="flex w-72 flex-col p-0 bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] border-r border-[#0D281A]">
           <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
 
           {/* Logo */}
           <div className="flex h-16 items-center border-b border-[#0D281A] px-4">
-            <Link href="/admin" className="group flex items-center gap-3 rounded-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]">
+            <Link href="/admin" onNavigate={closeMobileSidebar} className="group flex items-center gap-3 rounded-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]">
               <Image
                 src={LOGOS.hero}
                 alt="SheriaBot"
@@ -354,7 +360,7 @@ export function AdminSidebar() {
           {/* Navigation */}
           <ScrollArea className="flex-1 px-3 py-4">
             <nav className="flex flex-col gap-6">
-              {renderGroups({ showCollapsed: false })}
+              {renderGroups({ showCollapsed: false, mobile: true })}
             </nav>
           </ScrollArea>
         </SheetContent>

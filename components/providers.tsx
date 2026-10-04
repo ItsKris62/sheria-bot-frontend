@@ -12,19 +12,19 @@ import type { AuthUser, UserRole } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase-client";
 import { PlanProvider } from "@/lib/plan-context";
 import { StepUpModal, requestStepUpChallenge } from "@/components/auth/step-up-modal";
+import { clearAuthenticatedClientState } from "@/lib/auth-client-teardown";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 /** Clears local auth state when the backend returns UNAUTHORIZED.
  *  Called from both QueryCache and MutationCache onError handlers.
  *  Sets a sessionStorage flag so the login page can show the "session expired" banner.
  *  AuthGuard picks up the cleared isAuthenticated state and redirects to /login. */
-function handleUnauthorized() {
-  // Guard: don't fire if the user is already logged out
-  if (!useAuthStore.getState().isAuthenticated) return;
+function handleUnauthorized(queryClient: QueryClient) {
+  const wasAuthenticated = useAuthStore.getState().isAuthenticated;
 
-  setAccessToken(null);
-  useAuthStore.getState().clearAuth();
+  clearAuthenticatedClientState(queryClient);
 
-  if (typeof window !== "undefined") {
+  if (wasAuthenticated && typeof window !== "undefined") {
     sessionStorage.setItem(SESSION_EXPIRED_FLAG, "1");
   }
 }
@@ -69,11 +69,13 @@ function handleMfaRequired() {
 const stepUpRetriesInFlight = new WeakSet<object>();
 
 export function makeQueryClient() {
-  return new QueryClient({
+  let queryClient: QueryClient;
+
+  queryClient = new QueryClient({
     queryCache: new QueryCache({
       onError: (error) => {
         if (isUnauthorizedError(error)) {
-          handleUnauthorized();
+          handleUnauthorized(queryClient);
           // AuthGuard handles redirect; toast shown on login page via sessionStorage flag
           return;
         }
@@ -86,7 +88,7 @@ export function makeQueryClient() {
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) => {
         if (isUnauthorizedError(error)) {
-          handleUnauthorized();
+          handleUnauthorized(queryClient);
           return;
         }
         if (isMfaStepUpError(error)) {
@@ -146,26 +148,48 @@ export function makeQueryClient() {
       },
     },
   });
+
+  return queryClient;
 }
 
-function AuthInitializer({ children }: { children: React.ReactNode }) {
+export function handleSupabaseAuthStateChange(
+  queryClient: QueryClient,
+  event: AuthChangeEvent,
+  session: Session | null,
+): void {
+  if (event === "SIGNED_OUT") {
+    clearAuthenticatedClientState(queryClient);
+    return;
+  }
+
+  if (session?.access_token) {
+    setAccessToken(session.access_token);
+    useAuthStore.getState().updateToken(session.access_token);
+    return;
+  }
+
+  if (event !== "INITIAL_SESSION") {
+    clearAuthenticatedClientState(queryClient);
+  }
+}
+
+function AuthInitializer({
+  children,
+  queryClient,
+}: {
+  children: React.ReactNode;
+  queryClient: QueryClient;
+}) {
   const { setAuth, clearAuth, setInitialized, isInitialized } = useAuthStore();
   const authClient = React.useMemo(() => createTRPCClient(), []);
 
   // Subscribe to Supabase auth state changes — handles automatic token refresh
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.access_token) {
-        setAccessToken(session.access_token);
-        useAuthStore.getState().updateToken(session.access_token);
-      } else {
-        // SIGNED_OUT or session expired externally (admin revocation, refresh token expired)
-        setAccessToken(null);
-        useAuthStore.getState().clearAuth();
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      handleSupabaseAuthStateChange(queryClient, event, session);
     });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [queryClient]);
 
   // Restore session on page load using Supabase's persisted session
   useEffect(() => {
@@ -197,14 +221,14 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
           session.access_token,
         );
       } catch {
-        clearAuth();
+        clearAuthenticatedClientState(queryClient);
       } finally {
         setInitialized();
       }
     }
 
     initSession();
-  }, [isInitialized, setAuth, clearAuth, setInitialized, authClient]);
+  }, [isInitialized, setAuth, clearAuth, setInitialized, authClient, queryClient]);
 
   return <>{children}</>;
 }
@@ -216,7 +240,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <AuthInitializer>
+        <AuthInitializer queryClient={queryClient}>
           <PlanProvider>
             {children}
             <StepUpModal />

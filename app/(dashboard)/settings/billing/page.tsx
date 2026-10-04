@@ -1,16 +1,16 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
-import { useQueryClient } from "@tanstack/react-query"
+import { keepPreviousData, useQueryClient } from "@tanstack/react-query"
 import { getQueryKey } from "@trpc/react-query"
 import { trpc, setIdempotencyKey } from "@/lib/trpc"
 import { usePlan } from "@/lib/plan-context"
 import type { SubscriptionStatusValue } from "@/lib/plan-context"
 import { UsageCard } from "@/components/usage/usage-card"
 import { UsageComparison } from "@/components/usage/usage-comparison"
-import { InvoiceModal } from "@/components/billing/InvoiceModal"
-import { MpesaPaymentFlow } from "@/components/billing/MpesaPaymentFlow"
+import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -55,6 +55,32 @@ import {
   type PlanId,
 } from "@/lib/config/plans"
 import { trackEvent, trackBeginCheckout } from "@/lib/analytics"
+
+function BillingModalFallback({ label }: { label: string }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="status" aria-label={label}>
+      <div className="w-full max-w-lg space-y-4 rounded-xl border bg-background p-6 shadow-lg">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-4 w-64 max-w-full" />
+        <Skeleton className="h-32 w-full" />
+        <div className="flex justify-end gap-2">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-28" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const InvoiceModal = dynamic(
+  () => import("@/components/billing/InvoiceModal").then((module) => module.InvoiceModal),
+  { loading: () => <BillingModalFallback label="Loading invoice" /> },
+)
+
+const MpesaPaymentFlow = dynamic(
+  () => import("@/components/billing/MpesaPaymentFlow").then((module) => module.MpesaPaymentFlow),
+  { loading: () => <BillingModalFallback label="Loading M-Pesa payment" /> },
+)
 
 // -- Local type helpers -----------------------------------------------------
 
@@ -383,7 +409,7 @@ export default function BillingSettingsPage() {
 
   const paymentHistoryQuery = trpc.payment.list.useQuery(
     { page: paymentPage, limit: 10 },
-    { staleTime: 5 * 60 * 1000 },
+    { staleTime: 5 * 60 * 1000, placeholderData: keepPreviousData },
   )
 
   function startCheckout(selectedPlan: "STARTUP" | "BUSINESS", paymentPurpose: MpesaPaymentPurpose = "INITIAL_PURCHASE") {
@@ -1028,13 +1054,17 @@ export default function BillingSettingsPage() {
             Payment History
           </CardTitle>
           <CardDescription>Your billing history and invoices</CardDescription>
+          <DataUpdatingIndicator active={paymentHistoryQuery.isPlaceholderData} label="Updating payment history" />
         </CardHeader>
-        <CardContent>
+        <CardContent aria-busy={paymentHistoryQuery.isPlaceholderData}>
+          {paymentHistoryQuery.isError && paymentHistoryQuery.data ? (
+            <p className="mb-3 text-sm text-destructive">Could not update payment history. Showing the previous page.</p>
+          ) : null}
           {paymentHistoryQuery.isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
             </div>
-          ) : paymentHistoryQuery.isError ? (
+          ) : paymentHistoryQuery.isError && !paymentHistoryQuery.data ? (
             <p className="text-sm text-muted-foreground">Unable to load payment history.</p>
           ) : !paymentHistoryQuery.data?.payments.length ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">

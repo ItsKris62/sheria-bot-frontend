@@ -6,6 +6,9 @@ import {
   PortalSectionHeader,
   PortalStatusBadge,
   PortalSkeleton,
+  PortalLoadingRegion,
+  PortalPageHeaderSkeleton,
+  PortalTableSkeleton,
 } from "../index"
 
 describe("Portal Primitives (Phase 1)", () => {
@@ -118,7 +121,24 @@ describe("Portal Primitives (Phase 1)", () => {
       render(<PortalSkeleton data-testid="skeleton" variant="card" />)
       const element = screen.getByTestId("skeleton")
       expect(element).toHaveClass("animate-pulse")
+      expect(element).toHaveClass("motion-reduce:animate-none")
       expect(element).toHaveClass("h-32")
+    })
+  })
+
+  describe("Portal loading primitives", () => {
+    it("exposes one quiet loading status for the whole busy region", () => {
+      render(
+        <PortalLoadingRegion>
+          <PortalPageHeaderSkeleton />
+          <PortalTableSkeleton rows={3} />
+        </PortalLoadingRegion>
+      )
+
+      const region = screen.getByRole("region", { name: "Loading page content" })
+      expect(region).toHaveAttribute("aria-busy", "true")
+      expect(screen.getAllByRole("status")).toHaveLength(1)
+      expect(screen.getByRole("status")).toHaveTextContent("Loading page content")
     })
   })
 })

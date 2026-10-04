@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Lock, Zap, TrendingUp, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -377,7 +378,7 @@ export function UpgradeBanner({
           </span>
         </div>
         <Button size="sm" variant="default" asChild onClick={() => trackEvent("feature_gate_upgrade_clicked", { target_plan: requiredPlan })}>
-          <a href="/settings/billing">Upgrade</a>
+          <Link href="/settings/billing">Upgrade</Link>
         </Button>
       </div>
     );
@@ -408,10 +409,10 @@ export function UpgradeBanner({
 
         <div className="flex gap-2">
           <Button size="sm" className="flex-1" asChild onClick={() => trackEvent("feature_gate_upgrade_clicked", { target_plan: requiredPlan })}>
-            <a href="/settings/billing">
+            <Link href="/settings/billing">
               <Zap className="mr-1.5 h-3.5 w-3.5" />
               Upgrade Plan
-            </a>
+            </Link>
           </Button>
           <Button size="sm" variant="outline" asChild>
             <a href="/pricing" target="_blank" rel="noopener noreferrer">

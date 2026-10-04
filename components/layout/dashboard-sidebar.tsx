@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -33,9 +33,13 @@ import {
 } from "lucide-react"
 import { usePlan } from "@/lib/plan-context"
 import type { FeatureKey } from "@/lib/plan-context"
-import { useSidebar } from "@/lib/sidebar-context"
+import { useCloseMobileSidebarOnNavigation, useSidebar } from "@/lib/sidebar-context"
 import { useAlertNotifications } from "@/hooks/use-alert-notifications"
 import { ReportMissingDocumentDialog } from "@/components/corpus-gap-report/report-missing-document-dialog"
+import {
+  PendingNavigationLink,
+  type NavigationPrefetchStrategy,
+} from "@/components/navigation/pending-navigation-link"
 
 import {
   Tooltip,
@@ -83,6 +87,7 @@ type BaseNavItem = {
   title: string
   icon: React.ComponentType<{ className?: string }>
   badge?: string | number
+  prefetchStrategy?: NavigationPrefetchStrategy
   /** When set, the item is visually locked when the user's plan lacks this feature. */
   lockedFeature?: FeatureKey
 }
@@ -107,15 +112,15 @@ export const regulatorNav: NavGroup[] = [
   {
     title: "Policy Tools",
     items: [
-      { title: "Policy Generator", href: "/regulator/policy-generator", icon: SlidersHorizontal, badge: "AI", lockedFeature: "policyGeneration" },
-      { title: "Legal Corpus", href: "/regulator/legal-corpus", icon: BookOpen },
-      { title: "Frameworks", href: "/regulator/frameworks", icon: FileText },
+      { title: "Policy Generator", href: "/regulator/policy-generator", icon: SlidersHorizontal, badge: "AI", lockedFeature: "policyGeneration", prefetchStrategy: "intent" },
+      { title: "Legal Corpus", href: "/regulator/legal-corpus", icon: BookOpen, prefetchStrategy: "intent" },
+      { title: "Frameworks", href: "/regulator/frameworks", icon: FileText, prefetchStrategy: "none" },
     ],
   },
   {
     title: "Collaboration",
     items: [
-      { title: "Team", href: "/regulator/collaboration", icon: Users },
+      { title: "Team", href: "/regulator/collaboration", icon: Users, prefetchStrategy: "none" },
       { title: "Analytics", href: "/regulator/analytics", icon: BarChart3 },
       { title: "Intelligence Feed", href: "/regulator/intelligence-feed", icon: Newspaper },
     ],
@@ -144,10 +149,10 @@ export const startupNav: NavGroup[] = [
   {
     title: "Compliance",
     items: [
-      { title: "Compliance Query", href: "/startup/compliance-query", icon: ComplianceQueryIcon, badge: "AI" },
-      { title: "Checklists", href: "/startup/checklists", icon: ComplianceChecklistIcon },
-      { title: "Gap Analysis", href: "/startup/gap-analysis", icon: GapAnalysisIcon, lockedFeature: "gapAnalysis" },
-      { title: "Custom Frameworks", href: "/startup/custom-frameworks", icon: CustomFrameworkIcon, lockedFeature: "customFrameworks" },
+      { title: "Compliance Query", href: "/startup/compliance-query", icon: ComplianceQueryIcon, badge: "AI", prefetchStrategy: "intent" },
+      { title: "Checklists", href: "/startup/checklists", icon: ComplianceChecklistIcon, prefetchStrategy: "intent" },
+      { title: "Gap Analysis", href: "/startup/gap-analysis", icon: GapAnalysisIcon, lockedFeature: "gapAnalysis", prefetchStrategy: "intent" },
+      { title: "Custom Frameworks", href: "/startup/custom-frameworks", icon: CustomFrameworkIcon, lockedFeature: "customFrameworks", prefetchStrategy: "none" },
     ],
   },
   {
@@ -156,7 +161,7 @@ export const startupNav: NavGroup[] = [
       { title: "Applications", href: "/startup/applications", icon: RegulatoryApplicationsIcon },
       { title: "Licenses", href: "/startup/licenses", icon: RegulatoryLicensesIcon, lockedFeature: "licenseManagement" },
       { title: "Calendar", href: "/startup/calendar", icon: Calendar },
-      { title: "Documents", href: "/startup/documents", icon: Folder, lockedFeature: "documentRepository" },
+      { title: "Documents", href: "/startup/documents", icon: Folder, lockedFeature: "documentRepository", prefetchStrategy: "intent" },
       { title: "Regulatory Alerts", href: "/dashboard/alerts", icon: Megaphone },
     ],
   },
@@ -172,12 +177,20 @@ interface DashboardSidebarProps {
   userType: "regulator" | "startup"
 }
 
+export function isDashboardRouteActive(pathname: string, href: string): boolean {
+  const isRootPath = href === "/startup" || href === "/regulator"
+  return isRootPath
+    ? pathname === href
+    : pathname === href || pathname.startsWith(`${href}/`)
+}
+
 export function DashboardSidebar({ userType }: DashboardSidebarProps) {
   const pathname = usePathname()
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar()
   const { hasFeature } = usePlan()
   const { alertUnreadCount } = useAlertNotifications()
   const [reportDialogOpen, setReportDialogOpen] = useState(false)
+  const closeMobileSidebar = useCallback(() => setMobileOpen(false), [setMobileOpen])
 
   const baseNavGroups = userType === "regulator" ? regulatorNav : startupNav
 
@@ -195,13 +208,10 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
     }))
   }, [baseNavGroups, userType, alertUnreadCount])
 
-  // Auto-close mobile drawer on navigation
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [pathname, setMobileOpen])
+  useCloseMobileSidebarOnNavigation(pathname)
 
   // ── Shared nav groups renderer ────────────────────────────────────────────
-  function renderGroups(opts: { showCollapsed: boolean }) {
+  function renderGroups(opts: { showCollapsed: boolean; mobile?: boolean }) {
     return navGroups.map((group) => (
       <div key={group.title}>
         {!opts.showCollapsed && (
@@ -213,11 +223,8 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
           {group.items.map((item) => {
             const isAction = item.action === "reportMissingDocument"
             const itemKey = item.href ?? item.action
-            const isRootPath = item.href === "/startup" || item.href === "/regulator"
             const isActive = item.href
-              ? isRootPath
-                ? pathname === item.href
-                : pathname === item.href || pathname.startsWith(item.href + "/")
+              ? isDashboardRouteActive(pathname, item.href)
               : false
             const isLocked = item.lockedFeature ? !hasFeature(item.lockedFeature) : false
 
@@ -258,9 +265,12 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
             }
 
             const navLink = (
-              <Link
+              <PendingNavigationLink
                 key={itemKey}
                 href={item.href}
+                pendingLabel={item.title}
+                prefetchStrategy={isLocked ? "none" : item.prefetchStrategy}
+                onNavigate={opts.mobile ? closeMobileSidebar : undefined}
                 aria-current={isActive ? "page" : undefined}
                 aria-label={item.title}
                 className={cn(
@@ -304,7 +314,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 {opts.showCollapsed && item.badge && (
                   <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#22C55E]" />
                 )}
-              </Link>
+              </PendingNavigationLink>
             )
 
             if (opts.showCollapsed) {
@@ -387,8 +397,10 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
             {collapsed ? (
               <Tooltip delayDuration={150}>
                 <TooltipTrigger asChild>
-                  <Link
+                  <PendingNavigationLink
                     href="/settings"
+                    pendingLabel="Settings"
+                    prefetchStrategy="intent"
                     aria-label="Settings"
                     className={cn(
                       "group flex h-10 w-10 mx-auto items-center justify-center rounded-lg text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
@@ -396,15 +408,17 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                     )}
                   >
                     <Settings className="h-5 w-5 shrink-0" />
-                  </Link>
+                  </PendingNavigationLink>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={12} className="bg-[#0D281A] text-[#F4F7F5] border-[#153D26] text-xs py-1 px-2.5 shadow-lg">
                   Settings
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <Link
+              <PendingNavigationLink
                 href="/settings"
+                pendingLabel="Settings"
+                prefetchStrategy="intent"
                 className={cn(
                   "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
                   pathname.startsWith("/settings") && "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)] font-semibold"
@@ -415,14 +429,16 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                   pathname.startsWith("/settings") ? "text-[#22C55E]" : "group-hover:text-[var(--portal-sidebar-text)]"
                 )} />
                 <span className="truncate">Settings</span>
-              </Link>
+              </PendingNavigationLink>
             )}
 
             {collapsed ? (
               <Tooltip delayDuration={150}>
                 <TooltipTrigger asChild>
-                  <Link
+                  <PendingNavigationLink
                     href="/support"
+                    pendingLabel="Support"
+                    prefetchStrategy="intent"
                     aria-label="Support"
                     className={cn(
                       "group flex h-10 w-10 mx-auto items-center justify-center rounded-lg text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
@@ -430,15 +446,17 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                     )}
                   >
                     <HelpCircle className="h-5 w-5 shrink-0" />
-                  </Link>
+                  </PendingNavigationLink>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={12} className="bg-[#0D281A] text-[#F4F7F5] border-[#153D26] text-xs py-1 px-2.5 shadow-lg">
                   Support
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <Link
+              <PendingNavigationLink
                 href="/support"
+                pendingLabel="Support"
+                prefetchStrategy="intent"
                 className={cn(
                   "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
                   pathname.startsWith("/support") && "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)] font-semibold"
@@ -449,7 +467,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                   pathname.startsWith("/support") ? "text-[#22C55E]" : "group-hover:text-[var(--portal-sidebar-text)]"
                 )} />
                 <span className="truncate">Support</span>
-              </Link>
+              </PendingNavigationLink>
             )}
           </div>
 
@@ -476,12 +494,12 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
 
       {/* ── Mobile drawer (below md) ──────────────────────────────────────── */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-72 p-0 flex flex-col bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] border-r border-[#0D281A]">
+        <SheetContent aria-describedby={undefined} side="left" className="w-72 p-0 flex flex-col bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] border-r border-[#0D281A]">
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
 
           {/* Logo */}
           <div className="flex h-16 items-center border-b border-[#0D281A] px-4">
-            <Link href="/" className="group flex items-center gap-3 rounded-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]">
+            <Link href="/" onNavigate={closeMobileSidebar} className="group flex items-center gap-3 rounded-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]">
               <Image
                 src={LOGOS.hero}
                 alt="SheriaBot"
@@ -504,15 +522,18 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
           {/* Navigation */}
           <ScrollArea className="flex-1 px-3 py-4">
             <nav className="flex flex-col gap-6">
-              {renderGroups({ showCollapsed: false })}
+              {renderGroups({ showCollapsed: false, mobile: true })}
             </nav>
           </ScrollArea>
 
           {/* Footer */}
           <div className="border-t border-[#0D281A] p-3">
             <div className="flex flex-col gap-1">
-              <Link
+              <PendingNavigationLink
                 href="/settings"
+                pendingLabel="Settings"
+                prefetchStrategy="intent"
+                onNavigate={closeMobileSidebar}
                 className={cn(
                   "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]",
                   pathname.startsWith("/settings") && "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)]"
@@ -523,9 +544,12 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                   pathname.startsWith("/settings") ? "text-[#22C55E]" : "group-hover:text-[var(--portal-sidebar-text)]"
                 )} />
                 <span>Settings</span>
-              </Link>
-              <Link
+              </PendingNavigationLink>
+              <PendingNavigationLink
                 href="/support"
+                pendingLabel="Support"
+                prefetchStrategy="intent"
+                onNavigate={closeMobileSidebar}
                 className={cn(
                   "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]",
                   pathname.startsWith("/support") && "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)]"
@@ -536,7 +560,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                   pathname.startsWith("/support") ? "text-[#22C55E]" : "group-hover:text-[var(--portal-sidebar-text)]"
                 )} />
                 <span>Support</span>
-              </Link>
+              </PendingNavigationLink>
             </div>
           </div>
         </SheetContent>

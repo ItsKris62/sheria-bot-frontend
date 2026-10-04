@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { trpc } from "@/lib/trpc"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -152,7 +153,7 @@ function CategoryRow({ category }: CategoryRowProps) {
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground/60">Unavailable</span>
           <Button variant="ghost" size="sm" className="h-5 px-1.5 py-0 text-xs text-primary" asChild>
-            <a href="/settings/billing">Upgrade</a>
+            <Link href="/settings/billing">Upgrade</Link>
           </Button>
         </div>
       </div>

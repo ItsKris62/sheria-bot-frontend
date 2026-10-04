@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
+import dynamic from "next/dynamic"
 import { useRouter, useSearchParams } from "next/navigation"
-import { QRCodeSVG } from "qrcode.react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -63,6 +63,11 @@ import { PasswordStrengthIndicator, checkPasswordStrength } from "@/components/a
 import { generateStrongPassword } from "@/lib/password"
 import { getErrorMessage, trpc } from "@/lib/trpc"
 import { PasskeysCard } from "@/components/settings/passkeys-card"
+
+const QRCodeSVG = dynamic(
+  () => import("qrcode.react").then((module) => module.QRCodeSVG),
+  { loading: () => <Skeleton className="h-[180px] w-[180px]" /> },
+)
 
 // ─── Change Password ───────────────────────────────────────────────────────────
 
@@ -304,6 +309,7 @@ function ChangePasswordCard() {
 
 function TwoFactorCard() {
   const { totpEnabled, isLoadingStatus, setupTotp, isSettingUp, setupData, confirmTotpSetup, isConfirming, confirmError, disableTotp, isDisabling, disableError } = useTotp()
+  const { logout } = useAuth()
 
   const [setupDialogOpen, setSetupDialogOpen] = useState(false)
   const [disableDialogOpen, setDisableDialogOpen] = useState(false)
@@ -364,6 +370,7 @@ function TwoFactorCard() {
       setDisablePassword("")
       setDisableCode("")
       setIsDisableBackupCode(false)
+      await logout()
     } catch {
       // Error shown via disableError
     }

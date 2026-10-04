@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -42,10 +43,21 @@ import {
   BarChart3,
   Lock,
 } from "lucide-react"
-import { LoadingScreen } from "@/components/loading-screen"
 import { useAuthStore } from "@/lib/auth-store"
 import { trackEvent, trackFeatureUsage, recordAccountActivation } from "@/lib/analytics"
 import { buildGapAnalysisInput, type GapAnalysisDepth } from "@/lib/gap-analysis-input"
+
+const LoadingScreen = dynamic(
+  () => import("@/components/loading-screen").then((module) => module.LoadingScreen),
+  {
+    loading: () => (
+      <div className="flex min-h-48 flex-col items-center justify-center gap-4" role="status" aria-label="Loading analysis progress">
+        <Skeleton className="h-16 w-16 rounded-full" />
+        <Skeleton className="h-4 w-44" />
+      </div>
+    ),
+  },
+)
 
 // Local Types
 

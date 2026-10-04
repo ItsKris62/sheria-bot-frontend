@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { keepPreviousData } from "@tanstack/react-query"
+import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -157,7 +159,7 @@ export default function AdminOrganizationsPage() {
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   })
 
-  const { data, isLoading, isError, error, isFetching, refetch } = trpc.admin.getAllOrganizations.useQuery(
+  const { data, isLoading, isError, error, isFetching, isPlaceholderData, refetch } = trpc.admin.getAllOrganizations.useQuery(
     {
       page,
       limit: PAGE_SIZE,
@@ -170,6 +172,7 @@ export default function AdminOrganizationsPage() {
       refetchInterval: REFRESH_INTERVAL_MS,
       retry: 3,
       retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+      placeholderData: keepPreviousData,
     }
   )
 
@@ -242,6 +245,7 @@ export default function AdminOrganizationsPage() {
         <button
           type="button"
           onClick={() => toggleSort(field)}
+          disabled={isPlaceholderData}
           className="inline-flex items-center gap-2 font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <span>{label}</span>
@@ -300,6 +304,7 @@ export default function AdminOrganizationsPage() {
             <p className="mt-1 text-sm text-muted-foreground">
               Search, sort, and filter organizations from the server in real time.
             </p>
+            <DataUpdatingIndicator active={isPlaceholderData} className="mt-2" />
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -334,14 +339,17 @@ export default function AdminOrganizationsPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4" aria-busy={isPlaceholderData}>
+          {isError && data ? (
+            <p className="text-sm text-destructive">Could not update organizations. Showing the previous results.</p>
+          ) : null}
           {isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 8 }).map((_, index) => (
                 <Skeleton key={index} className="h-14 w-full rounded-xl" />
               ))}
             </div>
-          ) : isError ? (
+          ) : isError && !data ? (
             <AdminErrorState
               title="Failed to load organizations"
               description={error instanceof TRPCClientError ? error.message : "An error occurred while fetching organizations."}
@@ -423,7 +431,7 @@ export default function AdminOrganizationsPage() {
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isPlaceholderData}>
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -461,7 +469,9 @@ export default function AdminOrganizationsPage() {
 
               <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Showing page {page} of {totalPages} · {data.total.toLocaleString()} organizations · Sorted by {formatLabel(sorting.field)} ({sorting.order})
+                  {isPlaceholderData
+                    ? `Updating page ${page}`
+                    : `Showing page ${page} of ${totalPages} · ${data.total.toLocaleString()} organizations · Sorted by ${formatLabel(sorting.field)} (${sorting.order})`}
                 </p>
 
                 <div className="flex items-center gap-2">
@@ -469,7 +479,7 @@ export default function AdminOrganizationsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setPage((current) => Math.max(1, current - 1))}
-                    disabled={page === 1}
+                    disabled={page === 1 || isPlaceholderData}
                   >
                     <ChevronLeft className="mr-1 h-4 w-4" /> Previous
                   </Button>
@@ -477,7 +487,7 @@ export default function AdminOrganizationsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                    disabled={page === totalPages}
+                    disabled={page === totalPages || isPlaceholderData}
                   >
                     Next <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
