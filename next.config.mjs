@@ -29,6 +29,18 @@ const scriptSrc = [
 const devConnectSrc = isDevelopment
   ? " http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*"
   : "";
+const apiConnectSrc = (process.env.NEXT_PUBLIC_API_URL || "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean)
+  .flatMap((value) => {
+    try {
+      return [new URL(value).origin];
+    } catch {
+      return [];
+    }
+  })
+  .join(" ");
 
 const cspDirectives = [
   "default-src 'self'",
@@ -36,7 +48,7 @@ const cspDirectives = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' https://fonts.gstatic.com",
-  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https:${devConnectSrc}`,
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https: ${apiConnectSrc}${devConnectSrc}`,
   `worker-src 'self'${isDevelopment ? " blob:" : ""}`,
   // Allow audio files served from the Cloudflare R2 public bucket
   "media-src 'self' https://*.r2.dev",
