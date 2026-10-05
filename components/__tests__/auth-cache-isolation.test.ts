@@ -98,6 +98,26 @@ describe("authenticated cache isolation", () => {
     },
   );
 
+  it("preserves authenticated state and caches after a recoverable BAD_REQUEST mutation", () => {
+    const queryClient = makeQueryClient();
+    authenticate();
+    const mutation = seedSensitiveState(queryClient);
+    const error = createTRPCError("Unable to verify your credentials.", "BAD_REQUEST");
+
+    queryClient.getMutationCache().config.onError?.(
+      error,
+      undefined,
+      undefined,
+      mutation as never,
+      { client: queryClient, meta: undefined, mutationKey: ["sensitive-mutation"] },
+    );
+
+    expect(useAuthStore.getState().isAuthenticated).toBe(true);
+    expect(queryClient.getQueryData(sensitiveQueryKey)).toEqual({ organization: "Org A" });
+    expect(queryClient.getMutationCache().getAll()).toHaveLength(1);
+    expect(sessionStorage.getItem(SESSION_EXPIRED_FLAG)).toBeNull();
+  });
+
   it("clears authenticated state and both caches on Supabase SIGNED_OUT", () => {
     const queryClient = makeQueryClient();
     authenticate();

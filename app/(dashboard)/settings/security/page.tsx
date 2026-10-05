@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { toast } from "sonner"
 import dynamic from "next/dynamic"
+import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
@@ -307,8 +308,29 @@ function ChangePasswordCard() {
 
 // ─── TOTP / 2FA ───────────────────────────────────────────────────────────────
 
-function TwoFactorCard() {
-  const { totpEnabled, isLoadingStatus, setupTotp, isSettingUp, setupData, confirmTotpSetup, isConfirming, confirmError, disableTotp, isDisabling, disableError } = useTotp()
+const SHERIABOT_AUTHENTICATOR_ICON = "https://assets.sheriabot.com/branding/sheriabot-2fa-authenticator-icon.png"
+
+export function TwoFactorCard() {
+  const {
+    totpEnabled,
+    isLoadingStatus,
+    isStatusError,
+    refreshStatus,
+    issuer,
+    accountEmail,
+    recoveryCodesAvailable,
+    setupTotp,
+    isSettingUp,
+    setupData,
+    setupError,
+    resetSetup,
+    confirmTotpSetup,
+    isConfirming,
+    confirmError,
+    disableTotp,
+    isDisabling,
+    disableError,
+  } = useTotp()
   const { logout } = useAuth()
 
   const [setupDialogOpen, setSetupDialogOpen] = useState(false)
@@ -319,6 +341,17 @@ function TwoFactorCard() {
   const [isDisableBackupCode, setIsDisableBackupCode] = useState(false)
   const [step, setStep] = useState<"qr" | "backupCodes">("qr")
   const [generatedBackupCodes, setGeneratedBackupCodes] = useState<string[]>([])
+  const setupInProgress = setupDialogOpen && (isSettingUp || Boolean(setupData)) && step === "qr"
+
+  const handleSetupDialogChange = (open: boolean) => {
+    setSetupDialogOpen(open)
+    if (!open) {
+      setVerifyCode("")
+      setGeneratedBackupCodes([])
+      setStep("qr")
+      resetSetup()
+    }
+  }
 
   const handleStartSetup = async () => {
     setStep("qr")
@@ -328,19 +361,20 @@ function TwoFactorCard() {
     try {
       await setupTotp({})
     } catch {
-      setSetupDialogOpen(false)
+      // Keep the dialog open so the authoritative backend error is recoverable.
     }
   }
 
   const handleConfirm = async () => {
     try {
       const result = await confirmTotpSetup({ code: verifyCode })
+      resetSetup()
       toast.success("Two-factor authentication enabled")
       if (result && Array.isArray((result as any).backupCodes) && (result as any).backupCodes.length > 0) {
         setGeneratedBackupCodes((result as any).backupCodes)
         setStep("backupCodes")
       } else {
-        setSetupDialogOpen(false)
+        handleSetupDialogChange(false)
       }
       setVerifyCode("")
     } catch {
@@ -396,39 +430,69 @@ function TwoFactorCard() {
     )
   }
 
+  if (isStatusError) {
+    return (
+      <Card className="portal-surface-raised" aria-live="polite">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Smartphone className="h-5 w-5 text-primary" />
+            Authenticator App
+          </CardTitle>
+          <CardDescription>We could not securely confirm your authenticator status.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" onClick={() => void refreshStatus()}>Try again</Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <>
       <Card className="portal-surface-raised">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex flex-wrap items-center gap-2">
             <Smartphone className="h-5 w-5 text-primary" />
-            Two-Factor Authentication
+            Authenticator App
+            <Badge variant={totpEnabled ? "default" : "outline"}>
+              {totpEnabled ? "Enabled" : setupInProgress ? "Setup in progress" : "Not enabled"}
+            </Badge>
           </CardTitle>
-          <CardDescription>Add an extra layer of security to your account</CardDescription>
+          <CardDescription>
+            {totpEnabled
+              ? "Use verification codes from your authenticator app when signing in."
+              : "Add an extra layer of security using time-based one-time codes."}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Authenticator App */}
-          <div className="flex items-center justify-between rounded-lg bg-muted/30 p-4">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-4 rounded-lg bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
               {totpEnabled ? (
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
               ) : (
                 <Shield className="h-5 w-5 text-muted-foreground" />
               )}
-              <div>
-                <p className="font-medium text-foreground">Authenticator App</p>
-                <p className="text-sm text-muted-foreground">
-                  {totpEnabled
-                    ? "Enabled — your account is protected with TOTP and backup codes"
-                    : "Use Google Authenticator, Authy, or any TOTP app"}
+              <div className="min-w-0">
+                <p className="font-medium text-foreground">
+                  Status: {totpEnabled ? "Enabled" : setupInProgress ? "Setup in progress" : "Not enabled"}
                 </p>
+                {totpEnabled ? (
+                  <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                    <dt>Account:</dt><dd className="min-w-0 break-all text-foreground">{accountEmail}</dd>
+                    <dt>Issuer:</dt><dd className="text-foreground">{issuer}</dd>
+                    {recoveryCodesAvailable && <><dt>Recovery:</dt><dd className="text-foreground">Backup codes available</dd></>}
+                  </dl>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Works with standards-compatible TOTP authenticator apps.</p>
+                )}
               </div>
             </div>
             {totpEnabled ? (
               <Button
                 variant="outline"
                 size="sm"
-                className="text-destructive border-destructive/30 bg-transparent"
+                className="w-full border-destructive/30 bg-transparent text-destructive sm:w-auto"
                 onClick={() => setDisableDialogOpen(true)}
               >
                 Disable
@@ -437,8 +501,9 @@ function TwoFactorCard() {
               <Button
                 variant="outline"
                 size="sm"
+                className="w-full sm:w-auto"
                 onClick={handleStartSetup}
-                disabled={isSettingUp}
+                disabled={isSettingUp || setupInProgress}
               >
                 {isSettingUp ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enable"}
               </Button>
@@ -448,18 +513,40 @@ function TwoFactorCard() {
       </Card>
 
       {/* Setup Dialog */}
-      <Dialog open={setupDialogOpen} onOpenChange={setSetupDialogOpen}>
-        <DialogContent className="max-w-md">
+      <Dialog open={setupDialogOpen} onOpenChange={handleSetupDialogChange}>
+        <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto" data-sentry-mask data-ph-no-capture>
           {step === "qr" ? (
             <>
               <DialogHeader>
-                <DialogTitle>Set Up Two-Factor Authentication</DialogTitle>
+                <div className="flex items-center gap-3">
+                  <Image
+                    src={SHERIABOT_AUTHENTICATOR_ICON}
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="h-12 w-12 rounded-xl object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">SheriaBot</p>
+                    <DialogTitle>Set up Authenticator App</DialogTitle>
+                  </div>
+                </div>
                 <DialogDescription>
                   Scan the QR code with your authenticator app, then enter the 6-digit code to confirm.
                 </DialogDescription>
               </DialogHeader>
 
-              {isSettingUp || !setupData ? (
+              {isSettingUp ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : setupError ? (
+                <div role="alert" className="space-y-3 rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                  <p>{setupError}</p>
+                  <Button variant="outline" onClick={handleStartSetup}>Try again</Button>
+                </div>
+              ) : !setupData ? (
                 <div className="flex justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
@@ -467,8 +554,8 @@ function TwoFactorCard() {
                 <div className="space-y-6">
                   {/* QR Code */}
                   <div className="flex flex-col items-center gap-4">
-                    <div className="rounded-lg border-2 border-border p-4 bg-white">
-                      <QRCodeSVG value={setupData.otpauth} size={180} />
+                    <div className="max-w-full rounded-lg border-2 border-border bg-white p-4" aria-label="SheriaBot authenticator setup QR code">
+                      <QRCodeSVG value={setupData.otpauth} size={180} className="h-auto max-w-full" />
                     </div>
                     <p className="text-sm text-center text-muted-foreground">
                       Scan with Google Authenticator, Authy, or any TOTP-compatible app
@@ -480,13 +567,11 @@ function TwoFactorCard() {
                     <Label className="text-sm text-muted-foreground">
                       Can&apos;t scan? Enter this key manually:
                     </Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={setupData.secret}
-                        readOnly
-                        className="font-mono text-xs bg-muted/50"
-                      />
-                      <Button variant="outline" size="icon" onClick={copySecret}>
+                    <div className="flex min-w-0 items-stretch gap-2">
+                      <code className="min-w-0 flex-1 break-all rounded-md border bg-muted/50 px-3 py-2 font-mono text-xs" aria-label="Manual setup key">
+                        {setupData.secret}
+                      </code>
+                      <Button variant="outline" size="icon" onClick={copySecret} aria-label="Copy manual setup key">
                         <Copy className="h-4 w-4" />
                       </Button>
                     </div>
@@ -494,23 +579,31 @@ function TwoFactorCard() {
 
                   {/* Verification */}
                   <div className="space-y-2">
-                    <Label>Enter the 6-digit code from your app</Label>
+                    <Label htmlFor="totp-verification-code">Enter the 6-digit code from your app</Label>
                     <Input
+                      id="totp-verification-code"
+                      name="totp-verification-code"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      autoComplete="one-time-code"
                       value={verifyCode}
                       onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                       placeholder="000000"
                       maxLength={6}
                       className="text-center text-xl tracking-widest font-mono bg-background"
+                      aria-invalid={Boolean(confirmError)}
+                      aria-describedby={confirmError ? "totp-confirm-error" : undefined}
                     />
                     {confirmError && (
-                      <p className="text-sm text-destructive">{confirmError}</p>
+                      <p id="totp-confirm-error" role="alert" className="text-sm text-destructive">{confirmError}</p>
                     )}
                   </div>
                 </div>
               )}
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => setSetupDialogOpen(false)}>
+                <Button variant="outline" onClick={() => handleSetupDialogChange(false)}>
                   Cancel
                 </Button>
                 <Button
@@ -560,7 +653,7 @@ function TwoFactorCard() {
               </div>
 
               <DialogFooter>
-                <Button onClick={() => setSetupDialogOpen(false)} className="w-full">
+                <Button onClick={() => handleSetupDialogChange(false)} className="w-full">
                   I have saved my backup codes
                 </Button>
               </DialogFooter>
@@ -580,19 +673,22 @@ function TwoFactorCard() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Current Password</Label>
+              <Label htmlFor="disable-totp-password">Current Password</Label>
               <Input
+                id="disable-totp-password"
                 type="password"
                 value={disablePassword}
                 onChange={(e) => setDisablePassword(e.target.value)}
                 className="bg-background"
                 placeholder="Enter your password"
+                aria-invalid={Boolean(disableError)}
+                aria-describedby={disableError ? "disable-totp-error" : undefined}
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>{isDisableBackupCode ? "Emergency Backup Code" : "Authenticator Code"}</Label>
+                <Label htmlFor="disable-totp-code">{isDisableBackupCode ? "Emergency Backup Code" : "Authenticator Code"}</Label>
                 <button
                   type="button"
                   onClick={() => {
@@ -605,16 +701,22 @@ function TwoFactorCard() {
                 </button>
               </div>
               <Input
+                id="disable-totp-code"
                 type="text"
+                inputMode={isDisableBackupCode ? "text" : "numeric"}
+                pattern={isDisableBackupCode ? undefined : "[0-9]*"}
+                autoComplete="one-time-code"
                 value={disableCode}
-                onChange={(e) => setDisableCode(e.target.value)}
+                onChange={(e) => setDisableCode(isDisableBackupCode ? e.target.value : e.target.value.replace(/\D/g, "").slice(0, 6))}
                 className="bg-background font-mono"
                 placeholder={isDisableBackupCode ? "XXXX-XXXX" : "123456"}
                 maxLength={isDisableBackupCode ? 9 : 6}
+                aria-invalid={Boolean(disableError)}
+                aria-describedby={disableError ? "disable-totp-error" : undefined}
               />
             </div>
 
-            {disableError && <p className="text-sm text-destructive">{disableError}</p>}
+            {disableError && <p id="disable-totp-error" role="alert" className="text-sm text-destructive">{disableError}</p>}
           </div>
           <DialogFooter>
             <Button

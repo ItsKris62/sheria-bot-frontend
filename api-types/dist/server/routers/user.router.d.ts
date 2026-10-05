@@ -164,6 +164,10 @@ export declare const userRouter: import("@trpc/server").TRPCBuiltRouter<{
         input: void;
         output: {
             enabled: boolean;
+            issuer: string;
+            accountEmail: string;
+            accountLabel: string;
+            recoveryCodesAvailable: boolean;
         };
         meta: object;
     }>;

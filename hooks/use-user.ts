@@ -108,26 +108,37 @@ export function useTotp() {
   const setupMutation = trpc.user.setupTotp.useMutation();
 
   const confirmMutation = trpc.user.confirmTotpSetup.useMutation({
-    onSuccess: () => {
-      utils.user.getTotpStatus.invalidate();
-      utils.user.getProfile.invalidate();
+    onSuccess: async () => {
+      await Promise.all([
+        utils.user.getTotpStatus.invalidate(),
+        utils.user.getProfile.invalidate(),
+      ]);
     },
   });
 
   const disableMutation = trpc.user.disableTotp.useMutation({
-    onSuccess: () => {
-      utils.user.getTotpStatus.invalidate();
-      utils.user.getProfile.invalidate();
+    onSuccess: async () => {
+      await Promise.all([
+        utils.user.getTotpStatus.invalidate(),
+        utils.user.getProfile.invalidate(),
+      ]);
     },
   });
 
   return {
     totpEnabled: statusQuery.data?.enabled ?? false,
     isLoadingStatus: statusQuery.isLoading,
+    isStatusError: statusQuery.isError,
+    refreshStatus: statusQuery.refetch,
+    issuer: statusQuery.data?.issuer,
+    accountEmail: statusQuery.data?.accountEmail,
+    accountLabel: statusQuery.data?.accountLabel,
+    recoveryCodesAvailable: statusQuery.data?.recoveryCodesAvailable ?? false,
 
     setupTotp: setupMutation.mutateAsync,
     isSettingUp: setupMutation.isPending,
     setupData: setupMutation.data,
+    resetSetup: setupMutation.reset,
     setupError: setupMutation.error ? getErrorMessage(setupMutation.error) : null,
 
     confirmTotpSetup: confirmMutation.mutateAsync,

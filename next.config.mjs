@@ -84,6 +84,13 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "assets.sheriabot.com",
+        pathname: "/branding/sheriabot-2fa-authenticator-icon.png",
+      },
+    ],
   },
   async headers() {
     return [
