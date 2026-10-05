@@ -166,9 +166,7 @@ export function MpesaPaymentFlow({
         initialMembers.push(member.userId)
       }
     }
-    setSelectedMemberUserIds(initialMembers)
 
-    // Auto-select home jurisdiction and available jurisdictions up to limit
     const homeCode = previewData.organization?.homeJurisdictionCode || "KE"
     const countriesLimit = previewData.target?.countriesLimit ?? 1
     const initialCountries = [homeCode]
@@ -179,7 +177,11 @@ export function MpesaPaymentFlow({
         initialCountries.push(code)
       }
     }
-    setSelectedJurisdictions(initialCountries)
+
+    queueMicrotask(() => {
+      setSelectedMemberUserIds(initialMembers)
+      setSelectedJurisdictions(initialCountries)
+    })
   }, [previewData])
 
   // Handle 90-second timeout

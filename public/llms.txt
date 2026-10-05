@@ -1,0 +1,42 @@
+# SheriaBot
+
+> SheriaBot is an AI-assisted regulatory intelligence and compliance platform for fintech teams operating in Kenya.
+
+SheriaBot helps startups, established financial-services businesses, and regulators find public compliance guidance, track regulatory change, and understand the platform's available workflows. Public information is educational and operational guidance, not legal advice. Authenticated dashboards, administration, customer data, and private APIs are intentionally excluded from this index.
+
+## Product
+
+- [SheriaBot](https://sheriabot.com/): Product overview and primary capabilities.
+- [Solutions](https://sheriabot.com/solutions): Public overview of SheriaBot solutions.
+- [For Startups](https://sheriabot.com/solutions/startups): Compliance workflows for fintech startups.
+- [For Enterprise](https://sheriabot.com/solutions/enterprise): Compliance operations for established organizations.
+- [For Regulators](https://sheriabot.com/solutions/regulators): Public overview of regulator-focused capabilities.
+- [Pricing](https://sheriabot.com/pricing): Current public plan information.
+
+## Kenya Regulatory Intelligence
+
+- [Kenya Fintech Compliance Requirements](https://sheriabot.com/kenya/fintech-compliance-requirements): Overview of core Kenyan fintech obligations.
+- [CBK Digital Credit Provider Compliance](https://sheriabot.com/kenya/cbk-digital-credit-provider-compliance): Public guide to DCP licensing and ongoing compliance.
+- [ODPC Data Protection Compliance](https://sheriabot.com/kenya/odpc-data-protection-compliance): Public guide to Kenyan data-protection requirements.
+- [AML and CFT Compliance](https://sheriabot.com/kenya/aml-cft-fintech-compliance): Public guide to AML/CFT obligations for fintechs.
+- [Regulatory Sandbox Guide](https://sheriabot.com/kenya/regulatory-sandbox-guide): Public overview of the Kenyan regulatory sandbox path.
+- [Regulatory Change Tracker](https://sheriabot.com/kenya/regulatory-change-tracker): Public regulatory-change reference.
+
+## Resources
+
+- [Knowledge Base](https://sheriabot.com/knowledge-base): Public operational compliance guides.
+- [Blog](https://sheriabot.com/blog): Regulatory and product education articles.
+
+## Legal and Privacy
+
+- [Privacy Policy](https://sheriabot.com/privacy): Personal-data processing and privacy controls.
+- [Cookie Policy](https://sheriabot.com/cookie-policy): Browser storage, consent, and analytics controls.
+- [Terms of Service](https://sheriabot.com/terms): Terms governing use of SheriaBot.
+- [Data Protection Policy](https://sheriabot.com/data-protection): Data-protection governance framework.
+- [Security Policy](https://sheriabot.com/security): Public security practices.
+
+## Company
+
+- [About](https://sheriabot.com/about): Company and mission.
+- [Contact](https://sheriabot.com/contact): Public contact options.
+- [Careers](https://sheriabot.com/careers): Current company careers page.

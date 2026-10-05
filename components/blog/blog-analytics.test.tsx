@@ -8,6 +8,7 @@ import { trackEvent } from "@/lib/analytics"
 
 vi.mock("@/lib/analytics", () => ({
   trackEvent: vi.fn(),
+  isAnalyticsAllowed: vi.fn(() => true),
 }))
 
 vi.mock("next/link", () => {

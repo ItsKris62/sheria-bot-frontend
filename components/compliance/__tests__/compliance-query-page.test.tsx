@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
 import ComplianceQueryPage from "@/app/(dashboard)/startup/compliance-query/page"
 import type { StreamState } from "@/hooks/use-compliance"
+import { createConsentRecord, writeConsentRecord } from "@/lib/cookie-consent"
 
 const mocks = vi.hoisted(() => ({
   submit: vi.fn(),
@@ -150,6 +151,7 @@ vi.mock("@/lib/trpc", () => ({
 beforeEach(() => {
   vi.clearAllMocks()
   window.localStorage.clear()
+  writeConsentRecord(createConsentRecord({ functional: true, analytics: false }))
   if (!Element.prototype.hasPointerCapture) {
     Element.prototype.hasPointerCapture = vi.fn(() => false)
   }

@@ -1,6 +1,6 @@
 "use client"
 
-import { trackEvent } from "@/lib/analytics"
+import { isAnalyticsAllowed, trackEvent } from "@/lib/analytics"
 
 export const BLOG_ANALYTICS_EVENTS = {
   listingViewed: "blog_listing_viewed",
@@ -97,7 +97,7 @@ function makeId(): string {
 }
 
 export function getBlogReadingSessionId(): string | undefined {
-  if (typeof window === "undefined") return undefined
+  if (typeof window === "undefined" || !isAnalyticsAllowed()) return undefined
 
   try {
     const existing = window.sessionStorage.getItem(SESSION_KEY)

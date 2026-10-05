@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import posthog from "posthog-js";
 import { trackEvent } from "@/lib/analytics";
 import { useAuthStore } from "@/lib/auth-store";
+import { createConsentRecord, writeConsentRecord } from "@/lib/cookie-consent";
 
 vi.mock("posthog-js", () => {
   const mockPosthog = {
@@ -20,6 +21,7 @@ describe("PostHog / Client Analytics Section 34 Restriction Propagation", () => 
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    writeConsentRecord(createConsentRecord({ functional: false, analytics: true }));
     useAuthStore.setState({
       user: null,
       isAuthenticated: false,

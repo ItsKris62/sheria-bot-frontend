@@ -5,7 +5,6 @@
  */
 
 import { useState } from "react";
-import Link from "next/link";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Eye, Edit2, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ContactListItem {
   id: string;
@@ -230,7 +229,6 @@ export default function ListsPage() {
                 <TableCell className="text-sm text-muted-foreground">{new Date(l.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="sm" asChild><Link href={`/admin/marketing/lists/${l.id}`}><Eye className="h-4 w-4" /></Link></Button>
                     <Button variant="ghost" size="sm" onClick={() => setDeleteId(l.id)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
                   </div>
                 </TableCell>

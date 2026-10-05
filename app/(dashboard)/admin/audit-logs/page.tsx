@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { keepPreviousData } from "@tanstack/react-query"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -17,7 +17,6 @@ import {
   AdminPageHeader,
 } from "@/components/admin/portal"
 import { PortalSurface } from "@/components/portal"
-import { DataUpdatingIndicator } from "@/components/portal/data-updating-indicator"
 
 type TypeConfigEntry = { label: string; icon: React.ElementType; color: string }
 const typeConfig: Record<string, TypeConfigEntry> = {
@@ -66,7 +65,7 @@ export default function AuditLogsPage() {
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const limit = 200
+  const limit = 50
   const queryInput = {
     page,
     limit,
@@ -79,21 +78,14 @@ export default function AuditLogsPage() {
     ...(dateTo ? { dateTo: new Date(`${dateTo}T23:59:59.999Z`).toISOString() } : {}),
   }
 
-  const { data, isLoading, isError, isPlaceholderData } = trpc.admin.getLogs.useQuery(
-    queryInput,
-    {
-      placeholderData: (previousData, previousQuery) => {
-        const previousKeyOptions = previousQuery?.queryKey[1] as {
-          input?: { dateFrom?: string; dateTo?: string }
-        } | undefined
-        const previousInput = previousKeyOptions?.input
-        const hasCompatibleDateRange =
-          previousInput?.dateFrom === queryInput.dateFrom && previousInput?.dateTo === queryInput.dateTo
-
-        return hasCompatibleDateRange ? keepPreviousData(previousData) : undefined
-      },
+  const { data, isLoading, isError } = trpc.admin.getLogs.useQuery(queryInput, {
+    placeholderData: (previousData, previousQuery) => {
+      const previousInput = previousQuery?.state.data ? (previousQuery as any).queryKey?.[1]?.input : undefined
+      const hasCompatibleDateRange =
+        previousInput?.dateFrom === queryInput.dateFrom && previousInput?.dateTo === queryInput.dateTo
+      return hasCompatibleDateRange ? keepPreviousData(previousData) : undefined
     },
-  )
+  })
 
   const exportMutation = trpc.admin.exportAuditLogs.useMutation({
     onSuccess: (result, variables) => {
@@ -111,7 +103,14 @@ export default function AuditLogsPage() {
 
   const logs: LogEntry[] = (data as unknown as { items?: LogEntry[] })?.items ?? []
   const total: number = (data as { total?: number })?.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / limit))
+  const totalPages = (data as { totalPages?: number })?.totalPages ?? Math.max(1, Math.ceil(total / limit))
+
+  useEffect(() => {
+    const resolvedPage = (data as { page?: number } | undefined)?.page
+    // Reconcile the control with the server-clamped page after filters shrink the result set.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (resolvedPage && resolvedPage !== page) setPage(resolvedPage)
+  }, [data, page])
 
   function triggerExport(format: "csv" | "docx") {
     exportMutation.mutate({
@@ -242,13 +241,8 @@ export default function AuditLogsPage() {
             </div>
           </AdminFilterBar>
 
-          <DataUpdatingIndicator active={isPlaceholderData} className="mb-3" />
-          {isError && data ? (
-            <p className="mb-3 text-sm text-destructive">Could not update the audit log. Showing the previous results.</p>
-          ) : null}
-
           {/* Entries */}
-          <div className="space-y-2" aria-busy={isPlaceholderData}>
+          <div className="space-y-2" aria-busy={isLoading}>
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <PortalSurface key={i} variant="solid" className="flex items-center gap-4 p-3">
@@ -331,8 +325,8 @@ export default function AuditLogsPage() {
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
               <p className="text-sm text-[var(--portal-text-secondary)]">Page {page} of {totalPages} ({total.toLocaleString()} total)</p>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || isPlaceholderData}><ChevronLeft className="h-4 w-4" /></Button>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || isPlaceholderData}><ChevronRight className="h-4 w-4" /></Button>
+                <Button aria-label="Previous audit-log page" variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}><ChevronLeft className="h-4 w-4" /></Button>
+                <Button aria-label="Next audit-log page" variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}><ChevronRight className="h-4 w-4" /></Button>
               </div>
             </div>
           )}

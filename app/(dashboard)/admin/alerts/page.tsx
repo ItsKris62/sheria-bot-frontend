@@ -48,6 +48,7 @@ import {
 import { AdminEmptyState, AdminErrorState, AdminPageHeader } from "@/components/admin/portal"
 import { PortalSurface } from "@/components/portal"
 import { AUDITED_JURISDICTIONS, jurisdictionLabel, type AuditedJurisdictionCode } from "@/lib/jurisdictions"
+import { hasConsent } from "@/lib/cookie-consent"
 
 // --- Constants ----------------------------------------------------------------
 
@@ -160,7 +161,7 @@ const EMPTY_FORM = {
 }
 
 function readSavedDraft() {
-  if (typeof window === "undefined") {
+  if (typeof window === "undefined" || !hasConsent("functional")) {
     return { form: EMPTY_FORM, showForm: false }
   }
 
@@ -206,6 +207,7 @@ export default function AdminAlertsPage() {
 
   // Save draft on form changes
   useEffect(() => {
+    if (!hasConsent("functional")) return
     if (form === EMPTY_FORM) {
       localStorage.removeItem("admin-alert-draft")
     } else {

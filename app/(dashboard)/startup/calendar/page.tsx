@@ -215,15 +215,33 @@ export default function CalendarPage() {
                       ))}
                       {Array.from({ length: daysInMonth }).map((_, i) => {
                         const day       = i + 1
+                        const isToday   =
+                          today.getFullYear() === currentDate.getFullYear() &&
+                          today.getMonth() === currentDate.getMonth() &&
+                          today.getDate() === day
                         const dayEvents = getEventsForDay(monthEvents, currentDate.getFullYear(), currentDate.getMonth(), day)
                         return (
                           <div
                             key={day}
-                            className={`aspect-square p-1 rounded-lg border border-transparent hover:border-border cursor-pointer transition-colors ${
-                              dayEvents.length > 0 ? "bg-muted/50" : ""
+                            aria-label={isToday ? `Day ${day}, Today` : `Day ${day}`}
+                            className={`aspect-square p-1.5 rounded-lg border cursor-pointer transition-colors ${
+                              isToday
+                                ? "border-primary bg-primary/10 shadow-sm ring-1 ring-primary/30"
+                                : dayEvents.length > 0
+                                ? "border-transparent hover:border-border bg-muted/50"
+                                : "border-transparent hover:border-border"
                             }`}
                           >
-                            <div className="text-sm font-medium text-foreground">{day}</div>
+                            <div className="flex items-center justify-between">
+                              <span className={`text-sm font-medium ${isToday ? "font-bold text-primary" : "text-foreground"}`}>
+                                {day}
+                              </span>
+                              {isToday && (
+                                <span className="text-[10px] font-semibold text-primary bg-primary/20 px-1.5 py-0.5 rounded leading-none">
+                                  Today
+                                </span>
+                              )}
+                            </div>
                             {dayEvents.length > 0 && (
                               <div className="mt-1 space-y-0.5">
                                 {dayEvents.slice(0, 2).map((event) => {

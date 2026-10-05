@@ -52,6 +52,7 @@ import { useAlertNotifications } from "@/hooks/use-alert-notifications"
 import { useProfile } from "@/hooks/use-user"
 import { useSidebar } from "@/lib/sidebar-context"
 import { trpc } from "@/lib/trpc"
+import { hasConsent } from "@/lib/cookie-consent"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { startupNav, regulatorNav } from "@/components/layout/dashboard-sidebar"
 import { adminNav } from "@/components/layout/admin-sidebar"
@@ -93,7 +94,7 @@ const RECENT_SEARCHES_KEY = "sheria-recent-searches"
 const MAX_RECENT = 5
 
 function getRecentSearches(): string[] {
-  if (typeof window === "undefined") return []
+  if (typeof window === "undefined" || !hasConsent("functional")) return []
   try {
     const stored = localStorage.getItem(RECENT_SEARCHES_KEY)
     if (!stored) return []
@@ -110,7 +111,7 @@ function getRecentSearches(): string[] {
 }
 
 function saveRecentSearch(query: string) {
-  if (typeof window === "undefined" || !query.trim()) return
+  if (typeof window === "undefined" || !query.trim() || !hasConsent("functional")) return
   try {
     const existing = getRecentSearches()
     const filtered = existing.filter((s) => s.toLowerCase() !== query.toLowerCase())

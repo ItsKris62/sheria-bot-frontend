@@ -191,11 +191,6 @@ function SuccessState({ role }: { role: string }) {
       <Button
         className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11 font-semibold"
         onClick={() => {
-          const authUser = useAuthStore.getState().user;
-          if (!authUser?.organizationId) {
-            router.push("/onboarding");
-            return;
-          }
           if (role === "REGULATOR") {
             router.push("/regulator");
           } else if (role === "ADMIN") {

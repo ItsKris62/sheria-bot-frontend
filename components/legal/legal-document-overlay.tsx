@@ -18,6 +18,7 @@ import { TermsOfServiceContent } from "./terms-of-service-content"
 import { DataProtectionContent } from "./data-protection-content"
 import { SecurityPolicyContent } from "./security-policy-content"
 import { cn } from "@/lib/utils"
+import { LEGAL_REVISIONS, formatLegalDate } from "@/lib/legal-revisions"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,8 +33,6 @@ interface DocMeta {
   title: string
   subtitle: string
   icon: React.ElementType
-  effectiveDate: string
-  lastUpdated: string
   toc: TocEntry[]
 }
 
@@ -44,8 +43,6 @@ const META: Record<LegalDocType, DocMeta> = {
     title: "Privacy Policy",
     subtitle: "SheriaBot Technologies Limited",
     icon: Shield,
-    effectiveDate: "25 August 2026",
-    lastUpdated: "25 August 2026",
     toc: [
       { id: "data-controller", label: "Data Controller & Processor Identity" },
       { id: "definitions", label: "Definitions & Statutory Interpretation" },
@@ -65,8 +62,6 @@ const META: Record<LegalDocType, DocMeta> = {
     title: "Terms of Service",
     subtitle: "SheriaBot Technologies Limited",
     icon: FileText,
-    effectiveDate: "25 August 2026",
-    lastUpdated: "25 August 2026",
     toc: [
       { id: "definitions", label: "Definitions" },
       { id: "account", label: "Account Registration" },
@@ -89,8 +84,6 @@ const META: Record<LegalDocType, DocMeta> = {
     title: "Data Protection Policy",
     subtitle: "SheriaBot Technologies Limited",
     icon: Database,
-    effectiveDate: "25 August 2026",
-    lastUpdated: "25 August 2026",
     toc: [
       { id: "framework-scope", label: "Governance Framework Scope" },
       { id: "data-protection-principles", label: "Principles (Section 25)" },
@@ -107,8 +100,6 @@ const META: Record<LegalDocType, DocMeta> = {
     title: "Security Policy",
     subtitle: "SheriaBot Technologies Limited",
     icon: Lock,
-    effectiveDate: "5 March 2026",
-    lastUpdated: "5 March 2026",
     toc: [
       { id: "commitment", label: "Security Commitment" },
       { id: "infrastructure", label: "Infrastructure Security" },
@@ -187,6 +178,7 @@ export function LegalDocumentOverlay({
 }: LegalDocumentOverlayProps) {
   const router = useRouter()
   const meta = META[type]
+  const revision = LEGAL_REVISIONS[type]
   const Icon = meta.icon
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -324,11 +316,11 @@ export function LegalDocumentOverlay({
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
             <span className="text-xs text-muted-foreground">
               Effective:{" "}
-              <span className="text-foreground font-medium">{meta.effectiveDate}</span>
+              <time className="text-foreground font-medium" dateTime={revision.effective}>{formatLegalDate(revision.effective)}</time>
             </span>
             <span className="text-xs text-muted-foreground">
               Last updated:{" "}
-              <span className="text-foreground font-medium">{meta.lastUpdated}</span>
+              <time className="text-foreground font-medium" dateTime={revision.updated}>{formatLegalDate(revision.updated)}</time>
             </span>
             <span className="text-xs text-muted-foreground">
               Governed by:{" "}

@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react"
+import { Facebook, Instagram, Linkedin } from "lucide-react"
 import { LOGOS } from "@/lib/constants/logos"
 import {
   Tooltip,
@@ -8,13 +8,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { CookieSettingsButton } from "@/components/privacy/cookie-settings-button"
 
 const footerLinks = {
   product: [
     { name: "Features", href: "/#features" },
     { name: "Pricing", href: "/pricing" },
     { name: "Knowledge Base", href: "/knowledge-base" },
-    { name: "API Documentation", href: "/docs" },
   ],
   solutions: [
     { name: "For Regulators", href: "/solutions/regulators" },
@@ -32,11 +32,11 @@ const footerLinks = {
     { name: "Terms of Service", href: "/terms" },
     { name: "Data Protection", href: "/data-protection" },
     { name: "Security", href: "/security" },
+    { name: "Cookie Policy", href: "/cookie-policy" },
   ],
 }
 
 const socialLinks = [
-  { name: "X (formerly Twitter)", href: "#", icon: Twitter },
   { name: "Facebook", href: "https://www.facebook.com/share/17FPcrXGjo/?mibextid=wwXIfr", icon: Facebook },
   { name: "LinkedIn", href: "https://www.linkedin.com/company/sheriabot-ai/", icon: Linkedin },
   { name: "Instagram", href: "https://www.instagram.com/sheriabot_ai?igsh=MXJ0aXp6aWFzMDdmcQ%3D%3D&utm_source=qr", icon: Instagram },
@@ -197,6 +197,7 @@ export function Footer() {
               Built for Kenya&apos;s digital economy
             </p>
           </div>
+          <CookieSettingsButton compact />
         </div>
       </div>
     </footer>

@@ -1,11 +1,9 @@
 import React from "react"
 import type { Metadata, Viewport } from 'next'
-import Script from 'next/script'
 import localFont from 'next/font/local'
-import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Providers } from '@/components/providers'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
+import { CookieConsentProvider } from '@/components/privacy/cookie-consent-provider'
 import { JsonLd } from '@/components/seo/json-ld'
 
 import './globals.css'
@@ -160,6 +158,9 @@ export default function RootLayout({
       className={`${satoshi.variable} ${cabinetGrotesk.variable} ${generalSans.variable} ${basicaline.variable} ${jetbrainsMono.variable} dark bg-background`}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="describedby" href="/llms.txt" />
+      </head>
       <body
         className="font-sans antialiased"
         suppressHydrationWarning
@@ -167,36 +168,12 @@ export default function RootLayout({
         {/* Global JSON-LD: WebSite + Organization schema */}
         <JsonLd />
 
-        <PostHogProvider>
-          <Providers>{children}</Providers>
-        </PostHogProvider>
+        <CookieConsentProvider>
+          <Providers>
+            <PostHogProvider>{children}</PostHogProvider>
+          </Providers>
+        </CookieConsentProvider>
 
-        {/* Google Analytics (gtag.js) — loaded only when NEXT_PUBLIC_GA_MEASUREMENT_ID is configured */}
-        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-
-                gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
-                  send_page_view: false
-                });
-              `}
-            </Script>
-          </>
-        ) : null}
-
-        {/* Vercel Analytics — tracks page views and custom events */}
-        <Analytics />
-
-        {/* Vercel Speed Insights — tracks Core Web Vitals */}
-        <SpeedInsights />
       </body>
     </html>
   )

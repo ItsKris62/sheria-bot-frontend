@@ -1,4 +1,5 @@
 import posthog from "posthog-js";
+import { hasConsent } from "@/lib/cookie-consent";
 import { useAuthStore } from "./auth-store";
 
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
@@ -350,7 +351,7 @@ const DEDUP_STORAGE_KEYS = {
 
 function isDurableKeyPresent(storageKey: string, inMemorySet: Set<string>, key: string): boolean {
   if (inMemorySet.has(key)) return true;
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined" || !hasConsent("analytics")) return false;
   try {
     const raw = localStorage.getItem(storageKey);
     if (!raw) return false;
@@ -367,7 +368,7 @@ function isDurableKeyPresent(storageKey: string, inMemorySet: Set<string>, key: 
 
 function markDurableKey(storageKey: string, inMemorySet: Set<string>, key: string): void {
   inMemorySet.add(key);
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !hasConsent("analytics")) return;
   try {
     const raw = localStorage.getItem(storageKey);
     const list: string[] = raw ? JSON.parse(raw) : [];
@@ -423,15 +424,10 @@ export function isAnalyticsAllowed(): boolean {
     // Ignore store access errors in SSR/test
   }
 
-  // Check Cookie Consent
-  try {
-    const consent = localStorage.getItem("sheriabot:cookie_consent:analytics");
-    if (consent === "denied") {
-      syncGaDisable(true);
-      return false;
-    }
-  } catch {
-    // Ignore localStorage errors
+  // Analytics is opt-in. Missing, expired, or invalid consent is a denial.
+  if (!hasConsent("analytics")) {
+    syncGaDisable(true);
+    return false;
   }
 
   syncGaDisable(false);

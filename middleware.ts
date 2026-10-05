@@ -32,7 +32,9 @@ const PUBLIC_ROUTES = [
   '/blog',
   '/careers',
   '/contact',
+  '/cookie-policy',
   '/data-protection',
+  '/kenya',
   '/knowledge-base',
   '/pricing',
   '/privacy',
@@ -41,6 +43,11 @@ const PUBLIC_ROUTES = [
   '/terms',
   '/pilot',
   '/unsubscribe',
+  // Public machine-discovery and ownership-verification resources
+  '/robots.txt',
+  '/sitemap.xml',
+  '/llms.txt',
+  '/googlea6a9ffe54ccb0d58.html',
 ];
 
 function isPublicRoute(pathname: string): boolean {

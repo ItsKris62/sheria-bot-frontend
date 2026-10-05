@@ -9,6 +9,7 @@ import {
 } from "@/hooks/use-compliance"
 import { isRegulatoryArea, REGULATORY_AREA_NAMES } from "@/lib/compliance/compliance.types"
 import { trpc } from "@/lib/trpc"
+import { hasConsent } from "@/lib/cookie-consent"
 import { toast } from "sonner"
 import { trackEvent, trackFeatureUsage, recordAccountActivation } from "@/lib/analytics"
 import {
@@ -35,7 +36,7 @@ import { JurisdictionSetupModal } from "@/components/jurisdiction/jurisdiction-s
 const JURISDICTION_STORAGE_KEY = "sheriabot:compliance-query:selected-jurisdiction"
 
 function readStoredJurisdictions(): QueryableJurisdictionCode[] {
-  if (typeof window === "undefined") return [DEFAULT_JURISDICTION]
+  if (typeof window === "undefined" || !hasConsent("functional")) return [DEFAULT_JURISDICTION]
   const stored = window.localStorage.getItem(JURISDICTION_STORAGE_KEY)
   if (!stored) return [DEFAULT_JURISDICTION]
   try {
@@ -167,7 +168,7 @@ export default function ComplianceQueryPage() {
   }, [effectiveSelectedJurisdictions, router, topic])
 
   useEffect(() => {
-    if (typeof window === "undefined") return
+    if (typeof window === "undefined" || !hasConsent("functional")) return
     window.localStorage.setItem(JURISDICTION_STORAGE_KEY, JSON.stringify(effectiveSelectedJurisdictions))
   }, [effectiveSelectedJurisdictions])
 

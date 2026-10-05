@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { hasConsent } from "@/lib/cookie-consent"
 
 export interface SidebarContextValue {
   collapsed: boolean
@@ -31,7 +32,7 @@ export function SidebarProvider({
   // Hydration-safe initial sync from localStorage without triggering cascading render
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY)
+      const stored = hasConsent("functional") ? localStorage.getItem(SIDEBAR_STORAGE_KEY) : null
       if (stored !== null) {
         const val = stored === "true"
         queueMicrotask(() => setCollapsedState(val))
@@ -44,7 +45,7 @@ export function SidebarProvider({
   const setCollapsed = useCallback((v: boolean) => {
     setCollapsedState(v)
     try {
-      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(v))
+      if (hasConsent("functional")) localStorage.setItem(SIDEBAR_STORAGE_KEY, String(v))
     } catch {
       // Storage unavailable / blocked
     }

@@ -623,7 +623,7 @@ export default function AdminMarketingCompaniesPage() {
                 </div>
                 <div className="space-y-1">
                   <Label>Lead Status</Label>
-                  <Select defaultValue={editCompany.leadStatus} onValueChange={(val) => { editCompany.leadStatus = val; }}>
+                  <Select defaultValue={editCompany.leadStatus} onValueChange={(val) => { setEditCompany((prev: any) => prev ? { ...prev, leadStatus: val } : null); }}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="UNASSESSED">UNASSESSED</SelectItem>

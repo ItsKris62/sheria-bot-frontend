@@ -47,7 +47,7 @@ export function FinalCta() {
         <Reveal delay={0.16}>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href="/signup"
+              href="/register"
               className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand-green px-7 text-sm font-semibold text-black shadow-[0_10px_40px_-8px_rgba(34,197,94,0.65)] transition-all hover:shadow-[0_14px_50px_-8px_rgba(34,197,94,0.85)]"
             >
               Start free

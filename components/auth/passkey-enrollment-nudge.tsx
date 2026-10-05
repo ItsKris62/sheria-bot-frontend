@@ -6,6 +6,7 @@ import { Fingerprint, X } from "lucide-react"
 import { isWebAuthnSupported } from "@/lib/webauthn"
 import { useAuth } from "@/hooks/use-auth"
 import { trpc } from "@/lib/trpc"
+import { hasConsent } from "@/lib/cookie-consent"
 
 export function PasskeyEnrollmentNudge() {
   const { user } = useAuth()
@@ -20,10 +21,12 @@ export function PasskeyEnrollmentNudge() {
   useEffect(() => {
     if (!user?.id) return
     const isSupp = isWebAuthnSupported()
+    // WebAuthn support and dismissal state only exist in the hydrated browser environment.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSupported(isSupp)
 
     const key = `sheriabot_passkey_nudge_dismissed_${user.id}`
-    const isDismissed = localStorage.getItem(key) === "true"
+    const isDismissed = hasConsent("functional") && localStorage.getItem(key) === "true"
     setDismissed(isDismissed)
   }, [user?.id])
 
@@ -32,7 +35,7 @@ export function PasskeyEnrollmentNudge() {
   }
 
   const handleDismiss = () => {
-    if (user?.id) {
+    if (user?.id && hasConsent("functional")) {
       localStorage.setItem(`sheriabot_passkey_nudge_dismissed_${user.id}`, "true")
     }
     setDismissed(true)

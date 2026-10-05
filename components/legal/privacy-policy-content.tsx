@@ -403,32 +403,35 @@ export function PrivacyPolicyContent() {
             [
               "Supabase Auth Cookie",
               "Essential authentication and session maintenance",
-              "Encrypted JWT session identifier (HTTP-only, Secure, SameSite=Lax)",
+              "Refreshable session tokens in first-party cookies (Secure in production, SameSite=Lax, JavaScript-accessible)",
               "Strictly Necessary (Exempt from opt-in consent)",
             ],
             [
               "Sidebar & UI State",
               "Remembers user navigation preferences",
               "Sidebar open/closed boolean state (Max age: 7 days)",
-              "Strictly Necessary for UI functionality",
+              "Optional functional storage; controlled in Cookie Settings",
             ],
             [
               "PostHog Product Analytics",
               "Feature engagement and funnel conversion tracking",
               "Pseudonymous user ID, role, plan tier, sanitized event names",
-              "Legitimate Interests / Session recording disabled",
+              "Optional analytics; blocked until consent and session recording disabled",
             ],
             [
               "Browser LocalStorage",
               "Local caching for active compliance query jurisdiction selection",
               "Selected jurisdiction code (e.g. 'KE', 'NG') and draft form state",
-              "Client-Side Functional Storage (Cleared on logout)",
+              "Optional functional storage; removed when functional consent is withdrawn",
             ],
           ]}
         />
         <Callout>
           <strong className="text-foreground">Privacy Protection Guarantee:</strong> SheriaBot does not use third-party advertising tracking networks, does not engage in cross-site behavioural profiling, and has <strong className="text-foreground">explicitly disabled session replay video recordings</strong> in our PostHog telemetry setup.
         </Callout>
+        <p>
+          The complete browser-storage inventory, retention information, and consent controls are available in the <a href="/cookie-policy" className="text-primary underline underline-offset-4">Cookie Policy</a>.
+        </p>
       </DocSection>
 
       {/* Section 9 */}

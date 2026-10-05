@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/analytics", () => ({
   trackEvent: vi.fn(),
+  isAnalyticsAllowed: vi.fn(() => true),
 }))
 
 vi.mock("@/lib/trpc", () => ({

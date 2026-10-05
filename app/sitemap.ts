@@ -8,6 +8,7 @@
 
 import type { MetadataRoute } from 'next'
 import { getSiteUrl, absoluteUrl } from '@/lib/site-url'
+import { LEGAL_REVISIONS } from '@/lib/legal-revisions'
 
 import { getTrpcUrl } from '@/lib/trpc-url'
 
@@ -103,26 +104,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: absoluteUrl('/security'),
-      lastModified: now,
+      lastModified: new Date(`${LEGAL_REVISIONS.security.updated}T00:00:00.000Z`),
       changeFrequency: 'monthly',
       priority: 0.6,
     },
     {
       url: absoluteUrl('/data-protection'),
-      lastModified: now,
+      lastModified: new Date(`${LEGAL_REVISIONS['data-protection'].updated}T00:00:00.000Z`),
       changeFrequency: 'monthly',
       priority: 0.6,
     },
     {
       url: absoluteUrl('/privacy'),
-      lastModified: now,
+      lastModified: new Date(`${LEGAL_REVISIONS.privacy.updated}T00:00:00.000Z`),
       changeFrequency: 'monthly',
       priority: 0.5,
     },
     {
       url: absoluteUrl('/terms'),
-      lastModified: now,
+      lastModified: new Date(`${LEGAL_REVISIONS.terms.updated}T00:00:00.000Z`),
       changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: absoluteUrl('/cookie-policy'),
+      lastModified: new Date(`${LEGAL_REVISIONS['cookie-policy'].updated}T00:00:00.000Z`),
+      changeFrequency: 'yearly',
       priority: 0.5,
     },
     {

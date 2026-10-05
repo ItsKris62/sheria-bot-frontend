@@ -17,6 +17,7 @@ import {
 } from "../analytics";
 import { useAuthStore } from "../auth-store";
 import posthog from "posthog-js";
+import { createConsentRecord, writeConsentRecord, COOKIE_CONSENT_STORAGE_KEY } from "../cookie-consent";
 
 // Mock posthog
 vi.mock("posthog-js", () => {
@@ -36,6 +37,7 @@ describe("Analytics Instrumentation & Privacy Suite", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    writeConsentRecord(createConsentRecord({ functional: false, analytics: true }));
     resetAnalyticsDedupForTests();
     useAuthStore.setState({
       user: null,
@@ -129,7 +131,7 @@ describe("Analytics Instrumentation & Privacy Suite", () => {
   });
 
   describe("3. Section 34 Statutory Restrictions & Consent Gating", () => {
-    it("permits analytics when user is unrestricted and consent is not denied", () => {
+    it("permits analytics when an unrestricted user has opted in", () => {
       expect(isAnalyticsAllowed()).toBe(true);
     });
 
@@ -163,6 +165,7 @@ describe("Analytics Instrumentation & Privacy Suite", () => {
     });
 
     it("blocks analytics when user has explicitly denied cookie consent", () => {
+      localStorage.removeItem(COOKIE_CONSENT_STORAGE_KEY);
       localStorage.setItem("sheriabot:cookie_consent:analytics", "denied");
 
       expect(isAnalyticsAllowed()).toBe(false);
@@ -369,6 +372,7 @@ describe("Analytics Instrumentation & Privacy Suite", () => {
 
       // 2. Device 2 / Incognito session (empty local storage) attempts to claim same payment
       localStorage.clear();
+      writeConsentRecord(createConsentRecord({ functional: false, analytics: true }));
       resetAnalyticsDedupForTests();
 
       // Backend authoritative record returns firstPurchaseTelemetry=false because Device 1 already claimed it
@@ -391,6 +395,7 @@ describe("Analytics Instrumentation & Privacy Suite", () => {
       };
 
       localStorage.clear();
+      writeConsentRecord(createConsentRecord({ functional: false, analytics: true }));
       resetAnalyticsDedupForTests();
 
       const results = await Promise.all([

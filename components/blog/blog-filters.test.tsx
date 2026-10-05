@@ -16,6 +16,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/analytics", () => ({
   trackEvent: vi.fn(),
+  isAnalyticsAllowed: vi.fn(() => true),
 }))
 
 beforeEach(() => {

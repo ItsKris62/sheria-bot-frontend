@@ -37,6 +37,7 @@ describe("sitemap metadata contract", () => {
       "https://sheriabot.com/data-protection",
       "https://sheriabot.com/privacy",
       "https://sheriabot.com/terms",
+      "https://sheriabot.com/cookie-policy",
       "https://sheriabot.com/careers",
       "https://sheriabot.com/blog",
       "https://sheriabot.com/knowledge-base",

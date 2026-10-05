@@ -11,6 +11,7 @@ import { trackEvent } from "@/lib/analytics"
 
 vi.mock("@/lib/analytics", () => ({
   trackEvent: vi.fn(),
+  isAnalyticsAllowed: vi.fn(() => true),
 }))
 
 describe("Blog analytics events", () => {
