@@ -28,7 +28,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Eye, CheckCircle2, XCircle, Search, AlertTriangle, Sparkles } from 'lucide-react';
+import { ExternalLink, Eye, CheckCircle2, XCircle, Search, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -173,7 +173,7 @@ export default function BlogSourceItemsPage() {
             onClick={() => batchScoreMutation.mutate({ limit: 50, minScore: 45 })}
             disabled={batchScoreMutation.isPending}
           >
-            <Sparkles className="h-4 w-4" />
+            <Search className="h-4 w-4" />
             {batchScoreMutation.isPending ? 'Scoring...' : 'Score Pending Items'}
           </Button>
         </div>

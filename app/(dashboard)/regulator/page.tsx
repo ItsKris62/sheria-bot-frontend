@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   Clock,
   FileText,
-  Sparkles,
+  Search,
   TrendingUp,
   Users,
 } from "lucide-react"
@@ -57,7 +57,7 @@ export default function RegulatorDashboard() {
 
   const stats = [
     { title: "Policies", value: policiesData?.pagination?.total ?? 0, icon: FileText },
-    { title: "Queries", value: historyData?.pagination?.total ?? 0, icon: Sparkles },
+    { title: "Queries", value: historyData?.pagination?.total ?? 0, icon: Search },
     { title: "Completed Policies", value: policies.filter((p) => p.status === "COMPLETED").length, icon: CheckCircle2 },
     { title: "Generating", value: policies.filter((p) => p.status === "GENERATING").length, icon: Clock },
   ]
@@ -71,7 +71,7 @@ export default function RegulatorDashboard() {
         </div>
         <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Link href="/regulator/policy-generator">
-            <Sparkles className="mr-2 h-4 w-4" />
+            <FileText className="mr-2 h-4 w-4" />
             Generate Policy
           </Link>
         </Button>
@@ -186,7 +186,7 @@ export default function RegulatorDashboard() {
               ) : queries.map((query) => (
                 <Link key={query.id} href={`/startup/compliance-query/${query.id}`} className="flex items-start gap-3 rounded-lg p-2 hover:bg-muted/50">
                   <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <Sparkles className="h-4 w-4" />
+                    <Search className="h-4 w-4" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="line-clamp-1 text-sm text-foreground">
@@ -211,7 +211,7 @@ export default function RegulatorDashboard() {
             <div className="flex flex-col gap-2">
               <Button asChild variant="outline" className="justify-start bg-transparent">
                 <Link href="/regulator/policy-generator">
-                  <Sparkles className="mr-2 h-4 w-4 text-primary" />
+                  <FileText className="mr-2 h-4 w-4 text-primary" />
                   Generate New Policy
                 </Link>
               </Button>

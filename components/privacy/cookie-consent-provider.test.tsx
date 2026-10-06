@@ -1,11 +1,37 @@
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { CookieConsentProvider } from "./cookie-consent-provider"
+import { CookieSettingsButton } from "./cookie-settings-button"
 import { COOKIE_CONSENT_STORAGE_KEY, readConsentRecord } from "@/lib/cookie-consent"
 
+let pathname = "/pricing"
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => pathname,
+}))
+
 describe("CookieConsentProvider", () => {
-  beforeEach(() => localStorage.clear())
+  beforeEach(() => {
+    localStorage.clear()
+    pathname = "/pricing"
+  })
+
+  it("keeps the homepage hero unobstructed while retaining explicit cookie settings", async () => {
+    const user = userEvent.setup()
+    pathname = "/"
+
+    render(
+      <CookieConsentProvider>
+        <main>Homepage</main>
+        <CookieSettingsButton />
+      </CookieConsentProvider>,
+    )
+
+    expect(screen.queryByRole("region", { name: "Cookie consent" })).not.toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Cookie Settings" }))
+    expect(screen.getByRole("dialog", { name: "Cookie preferences" })).toBeInTheDocument()
+  })
 
   it("shows balanced first-visit choices and persists rejection", async () => {
     const user = userEvent.setup()

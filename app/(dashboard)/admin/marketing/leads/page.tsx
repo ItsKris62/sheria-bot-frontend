@@ -47,7 +47,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Sparkles,
   CheckCircle2,
   XCircle,
   Clock,
@@ -217,7 +216,7 @@ export default function AdminMarketingLeadReviewQueuePage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" /> Lead Review Queue
+            <FileSearch className="h-6 w-6 text-primary" /> Lead Review Queue
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Review, verify, and qualify AI-discovered prospect accounts prior to outreach.

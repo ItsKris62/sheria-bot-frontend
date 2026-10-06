@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import {
-  Sparkles,
+  MessageSquareText,
   FileText,
   ListChecks,
   Bookmark,
@@ -62,7 +62,7 @@ export function ProductDemo() {
         <LiquidGlassCard className="mx-auto max-w-3xl p-5 sm:p-7">
           {/* query */}
           <div className="flex items-start gap-3 rounded-2xl border border-white/[0.08] bg-background/50 p-4">
-            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand-green" />
+            <MessageSquareText className="mt-0.5 h-4 w-4 shrink-0 text-brand-green" />
             <p className="text-sm leading-snug text-foreground sm:text-base">
               What should a payment service provider consider when handling
               customer data?

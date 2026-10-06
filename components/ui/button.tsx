@@ -10,15 +10,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground shadow-sm hover:bg-brand-green-hover hover:text-primary-foreground hover:shadow-glow-green-sm active:scale-[0.98]',
+          'bg-primary text-primary-foreground shadow-sm hover:bg-brand-green-hover hover:text-primary-foreground hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
         destructive:
-          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:text-destructive-foreground hover:shadow-md active:scale-[0.98]',
+          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:text-destructive-foreground hover:shadow-md motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
         outline:
-          'border border-border/50 bg-background/60 text-foreground hover:bg-white/[0.06] hover:text-white hover:border-white/20 hover:shadow-sm active:scale-[0.98]',
+          'border border-border bg-background text-foreground hover:border-border-strong hover:bg-accent hover:text-accent-foreground hover:shadow-sm motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
         secondary:
-          'bg-surface text-foreground hover:bg-surface-overlay hover:text-white hover:shadow-sm active:scale-[0.98]',
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:text-secondary-foreground hover:shadow-sm motion-safe:hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
         ghost:
-          'text-muted-foreground hover:bg-white/[0.08] hover:text-white active:scale-[0.98]',
+          'text-muted-foreground hover:bg-accent hover:text-accent-foreground active:scale-[0.98]',
         link: 'text-primary underline-offset-4 hover:underline hover:text-brand-green-hover',
       },
       size: {

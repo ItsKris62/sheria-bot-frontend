@@ -23,7 +23,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import {
   Search, MoreVertical, FileText, CheckCircle2, XCircle, FileSearch,
-  RefreshCw, AlertTriangle, ExternalLink, Globe, Sparkles,
+  RefreshCw, AlertTriangle, ExternalLink, Globe,
   ArrowUpDown, FilterX, Eye, Clock, ShieldCheck, ShieldAlert,
   AlertOctagon, Cpu, Coins, Zap, Check, ArrowRight
 } from "lucide-react"
@@ -421,7 +421,7 @@ export default function BlogSuggestionsPage() {
                   }}
                 >
                   <SelectTrigger className="w-[155px] h-9 text-xs">
-                    <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-500" />
+                    <Cpu className="w-3.5 h-3.5 mr-1 text-amber-500" />
                     <SelectValue placeholder="Score Tier" />
                   </SelectTrigger>
                   <SelectContent>
@@ -675,7 +675,7 @@ export default function BlogSuggestionsPage() {
                                   {isGeneratingThis ? (
                                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                                   ) : (
-                                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                                    <Cpu className="w-3.5 h-3.5 text-amber-300" />
                                   )}
                                   Approve & Draft
                                 </Button>
@@ -691,7 +691,7 @@ export default function BlogSuggestionsPage() {
                                   {isGeneratingThis ? (
                                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                                   ) : (
-                                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                                    <Cpu className="w-3.5 h-3.5 text-amber-300" />
                                   )}
                                   Generate AI Draft
                                 </Button>
@@ -733,7 +733,7 @@ export default function BlogSuggestionsPage() {
                                   {suggestion.status === "PENDING_REVIEW" && (
                                     <>
                                       <DropdownMenuItem onClick={() => handleApproveAndGenerateDraft(suggestion.id, suggestion.title, suggestion.blogPostId)}>
-                                        <Sparkles className="mr-2 h-4 w-4 text-emerald-600" /> Approve & Generate Draft
+                                        <Cpu className="mr-2 h-4 w-4 text-emerald-600" /> Approve & Generate Draft
                                       </DropdownMenuItem>
                                       <DropdownMenuItem onClick={() => approveMutation.mutate({ id: suggestion.id })}>
                                         <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" /> Approve Only
@@ -760,7 +760,7 @@ export default function BlogSuggestionsPage() {
                                       <DropdownMenuItem
                                         onClick={() => handleApproveAndGenerateDraft(suggestion.id, suggestion.title, suggestion.blogPostId)}
                                       >
-                                        <Sparkles className="mr-2 h-4 w-4 text-purple-600" /> Generate AI Draft
+                                        <Cpu className="mr-2 h-4 w-4 text-purple-600" /> Generate AI Draft
                                       </DropdownMenuItem>
                                       {!suggestion.blogPostId && (
                                         <DropdownMenuItem
@@ -933,7 +933,7 @@ export default function BlogSuggestionsPage() {
                 {/* Suggested Next Action */}
                 <div className="space-y-2">
                   <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-blue-600" /> Recommended Action
+                    <ArrowRight className="w-4 h-4 text-blue-600" /> Recommended Action
                   </h4>
                   <div className="text-sm bg-blue-50/60 text-blue-950 p-3.5 rounded-md border border-blue-200">
                     {detailSuggestion.suggestedNextAction || "Review source material and approve for draft generation."}
@@ -1074,7 +1074,7 @@ export default function BlogSuggestionsPage() {
                       }}
                       disabled={generateAiDraftMutation.isPending}
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Approve & Generate Draft
+                      <Cpu className="w-3.5 h-3.5 text-amber-300" /> Approve & Generate Draft
                     </Button>
                   </>
                 )}
@@ -1089,7 +1089,7 @@ export default function BlogSuggestionsPage() {
                     }}
                     disabled={generateAiDraftMutation.isPending}
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Generate AI Draft
+                    <Cpu className="w-3.5 h-3.5 text-amber-300" /> Generate AI Draft
                   </Button>
                 )}
 
@@ -1176,7 +1176,7 @@ export default function BlogSuggestionsPage() {
               )}
             </div>
             <SheetTitle className="text-lg font-bold text-foreground text-left flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-600 shrink-0" />
+              <Cpu className="w-5 h-5 text-purple-600 shrink-0" />
               Draft Generation & Citation Verification
             </SheetTitle>
             <SheetDescription className="text-xs text-muted-foreground text-left line-clamp-1">
@@ -1190,7 +1190,7 @@ export default function BlogSuggestionsPage() {
               <div className="py-12 flex flex-col items-center justify-center space-y-4 text-center">
                 <div className="relative">
                   <div className="w-14 h-14 rounded-full border-4 border-purple-200 border-t-purple-600 animate-spin flex items-center justify-center" />
-                  <Sparkles className="w-6 h-6 text-purple-600 absolute inset-0 m-auto" />
+                  <Cpu className="w-6 h-6 text-purple-600 absolute inset-0 m-auto" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-base font-semibold text-foreground">
@@ -1275,7 +1275,7 @@ export default function BlogSuggestionsPage() {
                 {(generationLiveResult?.reviewerNotes || activeGenerationRun?.reviewerNotes) && (
                   <div className="space-y-2">
                     <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-purple-600" /> AI Reviewer Notes
+                      <Cpu className="w-4 h-4 text-purple-600" /> AI Reviewer Notes
                     </h4>
                     <div className="text-xs bg-purple-50/60 text-purple-950 p-3.5 rounded-md border border-purple-200 leading-relaxed">
                       {generationLiveResult?.reviewerNotes || activeGenerationRun?.reviewerNotes}

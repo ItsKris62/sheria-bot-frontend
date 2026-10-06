@@ -35,7 +35,6 @@ import {
   HardDrive,
   Check,
   AlertTriangle,
-  Sparkles,
 } from "lucide-react"
 import { toast } from "sonner"
 import { trackBeginCheckout, trackPurchase } from "@/lib/analytics"
@@ -441,7 +440,7 @@ export function MpesaPaymentFlow({
               {previewData && (
                 <div className="space-y-3 rounded-lg border border-border/60 bg-card p-4 text-xs">
                   <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                    <Sparkles className="h-3.5 w-3.5 text-green-600" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
                     <span>Plan Comparison & Allowances</span>
                   </div>
 

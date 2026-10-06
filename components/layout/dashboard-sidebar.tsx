@@ -235,7 +235,8 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                   type="button"
                   aria-label={item.title}
                   className={cn(
-                    "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                    "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-[var(--portal-sidebar-muted)] transition-[background-color,color,transform] duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                    !opts.showCollapsed && "motion-safe:hover:translate-x-0.5",
                     opts.showCollapsed && "justify-center px-0 w-10 h-10 mx-auto"
                   )}
                   onClick={() => {
@@ -274,7 +275,8 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 aria-current={isActive ? "page" : undefined}
                 aria-label={item.title}
                 className={cn(
-                  "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                  "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-[background-color,color,transform,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                  !opts.showCollapsed && "motion-safe:hover:translate-x-0.5",
                   isLocked
                     ? "opacity-50 cursor-pointer text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)]"
                     : isActive
@@ -345,12 +347,12 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
       <aside
         aria-label="Sidebar navigation"
         className={cn(
-          "fixed left-0 top-0 z-40 hidden md:flex h-screen flex-col border-r border-[#0D281A] bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] transition-[width] duration-200 ease-out",
+          "fixed inset-y-0 left-0 z-40 hidden h-dvh min-h-screen max-h-dvh flex-col border-r border-[#0D281A] bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] transition-[width] duration-200 ease-out md:flex",
           collapsed ? "w-[72px]" : "w-64"
         )}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b border-[#0D281A] px-4">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#0D281A] px-4">
           {!collapsed && (
             <Link href="/" className="group flex items-center gap-3 rounded-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]">
               <Image
@@ -385,14 +387,14 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
         </div>
 
         {/* Navigation */}
-        <ScrollArea className="flex-1 px-3 py-4">
+        <ScrollArea className="min-h-0 flex-1 px-3 py-4">
           <nav className="flex flex-col gap-6" aria-label="Main Navigation">
             {renderGroups({ showCollapsed: collapsed })}
           </nav>
         </ScrollArea>
 
         {/* Footer */}
-        <div className="border-t border-[#0D281A] p-3">
+        <div className="shrink-0 border-t border-[#0D281A] p-3">
           <div className="flex flex-col gap-1">
             {collapsed ? (
               <Tooltip delayDuration={150}>
@@ -403,7 +405,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                     prefetchStrategy="intent"
                     aria-label="Settings"
                     className={cn(
-                      "group flex h-10 w-10 mx-auto items-center justify-center rounded-lg text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                      "group mx-auto flex h-10 w-10 items-center justify-center rounded-lg text-[var(--portal-sidebar-muted)] transition-[background-color,color,transform] duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] motion-safe:hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
                       pathname.startsWith("/settings") && "bg-[var(--portal-sidebar-active)] text-[#22C55E]"
                     )}
                   >
@@ -420,7 +422,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 pendingLabel="Settings"
                 prefetchStrategy="intent"
                 className={cn(
-                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-[background-color,color,transform] duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] motion-safe:hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
                   pathname.startsWith("/settings") && "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)] font-semibold"
                 )}
               >
@@ -441,7 +443,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                     prefetchStrategy="intent"
                     aria-label="Support"
                     className={cn(
-                      "group flex h-10 w-10 mx-auto items-center justify-center rounded-lg text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                      "group mx-auto flex h-10 w-10 items-center justify-center rounded-lg text-[var(--portal-sidebar-muted)] transition-[background-color,color,transform] duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] motion-safe:hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
                       pathname.startsWith("/support") && "bg-[var(--portal-sidebar-active)] text-[#22C55E]"
                     )}
                   >
@@ -458,7 +460,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 pendingLabel="Support"
                 prefetchStrategy="intent"
                 className={cn(
-                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-colors duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--portal-sidebar-muted)] transition-[background-color,color,transform] duration-150 hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] motion-safe:hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
                   pathname.startsWith("/support") && "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)] font-semibold"
                 )}
               >
@@ -478,7 +480,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-expanded={!collapsed}
             className={cn(
-              "mt-3 w-full rounded-lg text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+              "mt-3 w-full rounded-lg text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
               collapsed && "mx-auto"
             )}
           >
@@ -494,11 +496,11 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
 
       {/* ── Mobile drawer (below md) ──────────────────────────────────────── */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent aria-describedby={undefined} side="left" className="w-72 p-0 flex flex-col bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] border-r border-[#0D281A]">
+        <SheetContent aria-describedby={undefined} side="left" className="flex h-dvh max-h-dvh w-72 flex-col border-r border-[#0D281A] bg-[var(--portal-sidebar)] p-0 text-[var(--portal-sidebar-text)]">
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
 
           {/* Logo */}
-          <div className="flex h-16 items-center border-b border-[#0D281A] px-4">
+          <div className="flex h-16 shrink-0 items-center border-b border-[#0D281A] px-4">
             <Link href="/" onNavigate={closeMobileSidebar} className="group flex items-center gap-3 rounded-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]">
               <Image
                 src={LOGOS.hero}
@@ -520,14 +522,14 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
           </div>
 
           {/* Navigation */}
-          <ScrollArea className="flex-1 px-3 py-4">
+          <ScrollArea className="min-h-0 flex-1 px-3 py-4">
             <nav className="flex flex-col gap-6">
               {renderGroups({ showCollapsed: false, mobile: true })}
             </nav>
           </ScrollArea>
 
           {/* Footer */}
-          <div className="border-t border-[#0D281A] p-3">
+          <div className="shrink-0 border-t border-[#0D281A] p-3">
             <div className="flex flex-col gap-1">
               <PendingNavigationLink
                 href="/settings"

@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, CheckCircle2, XCircle, Sparkles, Shield, ShieldCheck, ShieldAlert } from "lucide-react"
+import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, CheckCircle2, XCircle, Bot, Shield, ShieldCheck, ShieldAlert } from "lucide-react"
 
 type BlogEditorForm = {
   title: string
@@ -366,7 +366,7 @@ export default function BlogEditorPage() {
             <Card className="border-purple-200 bg-purple-50/30">
               <CardHeader>
                 <CardTitle className="text-purple-800 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" /> AI Assisted Drafting
+                  <Bot className="w-4 h-4" /> AI Assisted Drafting
                 </CardTitle>
                 <CardDescription>
                   Generate markdown content automatically using attached sources. Existing content will be overwritten.
@@ -498,7 +498,7 @@ export default function BlogEditorPage() {
             <Card className="border-blue-200 bg-blue-50/30">
               <CardHeader>
                 <CardTitle className="text-blue-800 text-sm flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" /> Automation Origin
+                  <Bot className="w-4 h-4" /> Automation Origin
                 </CardTitle>
                 <CardDescription className="text-xs">
                   This draft was created from an automated suggestion.

@@ -36,7 +36,6 @@ import {
   FileQuestion,
   Database,
   ListOrdered,
-  Sparkles,
   ClipboardCheck,
   FileSearch,
   FileText,
@@ -117,7 +116,7 @@ export const adminNav: AdminNavGroup[] = [
   {
     title: "Marketing & Leads",
     items: [
-      { title: "Lead Queue",  href: "/admin/marketing/leads",       icon: Sparkles, prefetchStrategy: "none"   },
+      { title: "Lead Queue",  href: "/admin/marketing/leads",       icon: ListOrdered, prefetchStrategy: "none"   },
       { title: "Companies",   href: "/admin/marketing/companies",   icon: Building2, prefetchStrategy: "none"  },
       { title: "Contacts",    href: "/admin/marketing/contacts",    icon: Users, prefetchStrategy: "none"      },
       { title: "Campaigns",   href: "/admin/marketing/campaigns",   icon: Mail, prefetchStrategy: "none"       },
@@ -193,7 +192,8 @@ export function AdminSidebar() {
                 aria-current={isActive ? "page" : undefined}
                 aria-label={item.title}
                 className={cn(
-                  "group relative flex min-w-0 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                  "group relative flex min-w-0 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-[background-color,color,transform,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+                  !opts.showCollapsed && "motion-safe:hover:translate-x-0.5",
                   isActive
                     ? "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)] font-semibold shadow-sm"
                     : "text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)]",
@@ -256,12 +256,12 @@ export function AdminSidebar() {
       <aside
         aria-label="Admin sidebar navigation"
         className={cn(
-          "fixed left-0 top-0 z-40 hidden md:flex h-screen flex-col border-r border-[#0D281A] bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] transition-[width] duration-200 ease-out",
+          "fixed inset-y-0 left-0 z-40 hidden h-dvh min-h-screen max-h-dvh flex-col border-r border-[#0D281A] bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] transition-[width] duration-200 ease-out md:flex",
           collapsed ? "w-[72px]" : "w-64"
         )}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b border-[#0D281A] px-4">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#0D281A] px-4">
           {!collapsed && (
             <Link
               href="/admin"
@@ -300,20 +300,20 @@ export function AdminSidebar() {
         </div>
 
         {/* Navigation */}
-        <ScrollArea className="flex-1 px-3 py-4">
+        <ScrollArea className="min-h-0 flex-1 px-3 py-4">
           <nav className="flex flex-col gap-6" aria-label="Admin Navigation">
             {renderGroups({ showCollapsed: collapsed })}
           </nav>
         </ScrollArea>
 
         {/* Footer */}
-        <div className="border-t border-[#0D281A] p-3">
+        <div className="shrink-0 border-t border-[#0D281A] p-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
-              "w-full rounded-lg text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
+              "w-full rounded-lg text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)] focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
               collapsed && "mx-auto"
             )}
             aria-label={collapsed ? "Expand admin sidebar" : "Collapse admin sidebar"}
@@ -331,11 +331,11 @@ export function AdminSidebar() {
 
       {/* -- Mobile drawer (below md) ---------------------------------------- */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent aria-describedby={undefined} side="left" className="flex w-72 flex-col p-0 bg-[var(--portal-sidebar)] text-[var(--portal-sidebar-text)] border-r border-[#0D281A]">
+        <SheetContent aria-describedby={undefined} side="left" className="flex h-dvh max-h-dvh w-72 flex-col border-r border-[#0D281A] bg-[var(--portal-sidebar)] p-0 text-[var(--portal-sidebar-text)]">
           <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
 
           {/* Logo */}
-          <div className="flex h-16 items-center border-b border-[#0D281A] px-4">
+          <div className="flex h-16 shrink-0 items-center border-b border-[#0D281A] px-4">
             <Link href="/admin" onNavigate={closeMobileSidebar} className="group flex items-center gap-3 rounded-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]">
               <Image
                 src={LOGOS.hero}
@@ -358,7 +358,7 @@ export function AdminSidebar() {
           </div>
 
           {/* Navigation */}
-          <ScrollArea className="flex-1 px-3 py-4">
+          <ScrollArea className="min-h-0 flex-1 px-3 py-4">
             <nav className="flex flex-col gap-6">
               {renderGroups({ showCollapsed: false, mobile: true })}
             </nav>

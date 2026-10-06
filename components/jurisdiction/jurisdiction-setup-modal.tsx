@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Globe2, CheckCircle2, Loader2, ShieldCheck, Sparkles, Building2 } from "lucide-react"
+import { Globe2, CheckCircle2, Loader2, ShieldCheck, Building2 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { usePlan } from "@/lib/plan-context"
 import {
@@ -120,7 +120,7 @@ export function JurisdictionSetupModal({
 
         {isMultiCountryPlan ? (
           <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground flex items-start gap-2.5">
-            <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold text-foreground">Multi-Country Access ({plan}):</span>{" "}
               This selection sets your organization&apos;s <strong className="text-foreground">Primary Home Jurisdiction</strong>. You can enable additional cross-border markets in Organization Settings.

@@ -9,7 +9,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { Menu, ChevronDown, Sparkles } from "lucide-react"
+import { Menu, ChevronDown, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import {
   DropdownMenu,
@@ -386,7 +386,7 @@ export function Header() {
                       className="w-full rounded-xl bg-[#00875A] text-white hover:bg-[#00875A]/90 shadow-[0_0_20px_rgba(0,135,90,0.3)] hover:shadow-[0_0_25px_rgba(0,135,90,0.45)] transition-all duration-200 h-11 font-semibold"
                     >
                       <Link href="/register" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5" />
+                        <ArrowRight className="h-3.5 w-3.5" />
                         Get Started
                       </Link>
                     </Button>

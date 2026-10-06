@@ -2,6 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
@@ -30,6 +31,7 @@ export function useCookieConsent() {
 }
 
 export function CookieConsentProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
   const [consent, setConsent] = useState<CookieConsentRecord | null | undefined>(undefined)
   const [preferencesOpen, setPreferencesOpen] = useState(false)
   const [functional, setFunctional] = useState(false)
@@ -71,7 +73,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
     <CookieConsentContext.Provider value={value}>
       {children}
 
-      {consent === null ? (
+      {consent === null && pathname !== "/" ? (
         <section
           aria-label="Cookie consent"
           className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-4xl rounded-2xl border border-border bg-card p-4 shadow-2xl sm:p-5"

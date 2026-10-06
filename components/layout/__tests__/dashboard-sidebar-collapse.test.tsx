@@ -58,6 +58,9 @@ describe("DashboardSidebar — Batch 1B Sidebar & Accessibility", () => {
     const collapseBtn = screen.getByRole("button", { name: /Collapse sidebar/i })
     expect(collapseBtn).toBeInTheDocument()
     expect(collapseBtn).toHaveAttribute("aria-expanded", "true")
+
+    const desktopSidebar = screen.getByRole("complementary", { name: "Sidebar navigation" })
+    expect(desktopSidebar).toHaveClass("h-dvh", "max-h-dvh")
   })
 
   it("toggles collapse state and updates aria-expanded attribute", () => {
@@ -128,4 +131,3 @@ describe("DashboardSidebar — Batch 1B Sidebar & Accessibility", () => {
     expect(screen.getAllByRole("link", { name: "Support" }).length).toBeGreaterThan(0)
   })
 })
-

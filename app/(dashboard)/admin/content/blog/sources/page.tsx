@@ -28,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   Search, MoreVertical, Database, CheckCircle2,
   Trash2, ChevronLeft, ChevronRight, Plus, Eye, Activity, ShieldCheck, AlertTriangle, Play,
-  History, Sparkles, Layers, FileText, Radio, Clock
+  History, Layers, FileText, Radio, Clock
 } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
@@ -218,7 +218,7 @@ export default function BlogSourcesPage() {
             onClick={() => scoreBatchMutation.mutate({ limit: 50, minScore: 45 })}
             disabled={scoreBatchMutation.isPending}
           >
-            <Sparkles className="w-4 h-4 text-purple-600" />
+            <Layers className="w-4 h-4 text-purple-600" />
             {scoreBatchMutation.isPending ? "Scoring..." : "Score Pending Items"}
           </Button>
           <Button
@@ -291,7 +291,7 @@ export default function BlogSourcesPage() {
                 <span className="text-xs text-muted-foreground">awaiting review</span>
               </div>
               <Link href="/admin/content/blog/suggestions" className="text-[11px] text-purple-600 font-medium hover:underline flex items-center gap-1">
-                <Sparkles className="w-3 h-3 inline" /> Review Triage Queue &rarr;
+                <Layers className="w-3 h-3 inline" /> Review Triage Queue &rarr;
               </Link>
             </div>
             <div className="h-10 w-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">

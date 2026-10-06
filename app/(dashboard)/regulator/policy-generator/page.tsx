@@ -23,7 +23,6 @@ import {
   FileText,
   Loader2,
   RefreshCw,
-  Sparkles,
 } from "lucide-react"
 import {
   type EnterprisePolicyType,
@@ -129,7 +128,7 @@ function PolicyGeneratorContent() {
             <Card className="border-border/50 bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground">
-                  <Sparkles className="h-5 w-5 text-primary" />
+                  <FileText className="h-5 w-5 text-primary" />
                   Enterprise Policy Draft
                 </CardTitle>
                 <CardDescription>Choose the policy type and scope for the generated draft.</CardDescription>
@@ -208,7 +207,7 @@ function PolicyGeneratorContent() {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="mr-2 h-4 w-4" />
+                      <FileText className="mr-2 h-4 w-4" />
                       Generate Enterprise Policy
                     </>
                   )}

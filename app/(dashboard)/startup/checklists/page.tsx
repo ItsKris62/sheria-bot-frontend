@@ -46,7 +46,6 @@ import {
   ClipboardCheck,
   Plus,
   Download,
-  Sparkles,
   Loader2,
   ChevronDown,
   ChevronRight,
@@ -418,7 +417,7 @@ function GenerateChecklistDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <ClipboardCheck className="h-5 w-5 text-primary" />
             Generate AI Compliance Checklist
           </DialogTitle>
           <DialogDescription>
@@ -523,7 +522,7 @@ function GenerateChecklistDialog({
           {/* Info box */}
           <div className="rounded-lg bg-muted/50 p-4 border border-border/50">
             <div className="flex items-start gap-2">
-              <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <ShieldCheck className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <p className="text-sm text-muted-foreground">
                 Our AI retrieves relevant passages from Kenyan regulatory documents (CBK, DPA, POCAMLA,
                 etc.) to ground your checklist in actual law   not generic guidance. Generation runs in
@@ -544,7 +543,7 @@ function GenerateChecklistDialog({
               </>
             ) : (
               <>
-                <Sparkles className="mr-2 h-4 w-4" />
+                <ClipboardCheck className="mr-2 h-4 w-4" />
                 Generate Checklist
               </>
             )}

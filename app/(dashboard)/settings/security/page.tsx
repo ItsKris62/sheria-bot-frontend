@@ -55,7 +55,6 @@ import {
   LogOut,
   Laptop,
   Trash2,
-  Sparkles,
 } from "lucide-react"
 import { useUserActions, useSessions, useTotp, type SessionInfo } from "@/hooks/use-user"
 import { useAuth } from "@/hooks/use-auth"
@@ -202,7 +201,7 @@ function ChangePasswordCard() {
               onClick={handleSuggestPassword}
               className="flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Key className="h-3.5 w-3.5" />
               Suggest strong password
             </button>
           </div>

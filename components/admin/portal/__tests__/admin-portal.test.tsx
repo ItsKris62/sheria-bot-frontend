@@ -139,8 +139,13 @@ describe("Admin portal presentation components", () => {
 
     const desktopNav = screen.getAllByRole("navigation")[0]
     expect(within(desktopNav).getByRole("link", { name: "User Management" })).toHaveAttribute("aria-current", "page")
+    expect(screen.getByRole("complementary", { name: "Admin sidebar navigation" })).toHaveClass("h-dvh", "max-h-dvh")
     expect(screen.getByRole("button", { name: "Collapse admin sidebar" })).toBeInTheDocument()
-    await waitFor(() => expect(screen.getByRole("dialog")).toHaveTextContent("Admin Navigation"))
+    await waitFor(() => {
+      const mobileSidebar = screen.getByRole("dialog")
+      expect(mobileSidebar).toHaveTextContent("Admin Navigation")
+      expect(mobileSidebar).toHaveClass("h-dvh", "max-h-dvh")
+    })
   })
 
   it("does not introduce functional emoji into admin navigation labels", () => {

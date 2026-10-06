@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { AlertCircle, ArrowRight, Layers3, Plus, RefreshCw, Sparkles } from "lucide-react"
+import { AlertCircle, ArrowRight, Layers3, Plus, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -155,7 +155,7 @@ export default function CustomFrameworksPage() {
                 disabled={generate.isPending || intent.trim().length < 20}
                 onClick={() => generate.mutate({ intent })}
               >
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Layers3 className="mr-2 h-4 w-4" />
                 Generate Home-Country Framework
               </Button>
               <div className="border-t border-border/50 pt-4 text-xs text-muted-foreground">

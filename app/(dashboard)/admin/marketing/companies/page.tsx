@@ -68,7 +68,6 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   FileCheck,
   AlertTriangle,
 } from "lucide-react";
@@ -345,7 +344,7 @@ export default function AdminMarketingCompaniesPage() {
                       )}
                       {company.origin === "AI_DISCOVERY" && (
                         <span className="inline-flex items-center gap-0.5 text-[10px] bg-purple-50 text-purple-700 px-1.5 py-0.2 rounded border border-purple-200">
-                          <Sparkles className="h-2.5 w-2.5" /> AI
+                          <FileCheck className="h-2.5 w-2.5" /> AI
                         </span>
                       )}
                     </div>
