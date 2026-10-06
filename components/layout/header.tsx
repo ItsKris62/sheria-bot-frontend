@@ -56,11 +56,22 @@ const solutions = [
 
 function subscribeToScroll(onStoreChange: () => void) {
   window.addEventListener("scroll", onStoreChange, { passive: true })
-  return () => window.removeEventListener("scroll", onStoreChange)
+  window.addEventListener("resize", onStoreChange, { passive: true })
+  return () => {
+    window.removeEventListener("scroll", onStoreChange)
+    window.removeEventListener("resize", onStoreChange)
+  }
 }
 
 function getScrolledSnapshot() {
-  return window.scrollY > 20
+  if (typeof window === "undefined") return false
+  const hero = document.getElementById("hero")
+  if (hero) {
+    // Triggers when user scrolls past the hero section into the other sections
+    const heroRect = hero.getBoundingClientRect()
+    return heroRect.bottom <= 80
+  }
+  return window.scrollY > 40
 }
 
 function getServerScrolledSnapshot() {
@@ -146,7 +157,7 @@ export function Header() {
         className={cn(
           "pointer-events-auto mx-auto flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]",
           scrolled
-            ? "h-14 sm:h-16 max-w-6xl rounded-2xl px-4 sm:px-6 bg-[#09090B]/80 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 shadow-[0_16px_48px_rgba(0,0,0,0.5),0_0_0_1px_rgba(0,135,90,0.15)]"
+            ? "h-14 sm:h-16 max-w-6xl rounded-2xl px-4 sm:px-6 bg-[#09090B]/65 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 shadow-[0_16px_48px_rgba(0,0,0,0.5),0_0_0_1px_rgba(0,135,90,0.15)]"
             : "h-16 w-full rounded-none px-4 sm:px-6 lg:px-8 bg-black border-b border-zinc-800/80 shadow-none"
         )}
       >

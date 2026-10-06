@@ -11,7 +11,7 @@ export function Hero() {
   const reduce = useReducedMotion()
 
   return (
-    <section className="relative z-10 w-full overflow-hidden">
+    <section id="hero" className="relative z-10 w-full overflow-hidden">
       {/* ──────────────────────────────────────────────────────────
           1. Hero Canvas: Stark White (#FFFFFF) with #09090B Typography
           ────────────────────────────────────────────────────────── */}
