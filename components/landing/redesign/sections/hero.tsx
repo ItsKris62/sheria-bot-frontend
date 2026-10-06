@@ -81,7 +81,7 @@ export function Hero() {
       </div>
 
       <div className="relative w-full bg-gradient-to-b from-white via-zinc-950 to-[#09090B] pb-20 pt-2 sm:pb-24 lg:pb-28">
-        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1120px] px-3 sm:px-6 lg:px-8">
           <div className="motion-safe:animate-fade-slide-up">
             <ComplianceQueryPreview />
           </div>

@@ -35,7 +35,7 @@ const previewCitations = [
 export function ComplianceQueryPreview() {
   return (
     <div
-      className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-[#050706] text-foreground shadow-[0_32px_90px_-28px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.04)] sm:rounded-3xl"
+      className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-[#050706] text-foreground shadow-[0_22px_55px_-30px_rgba(9,9,11,0.65),0_10px_28px_-24px_rgba(0,135,90,0.35),0_0_0_1px_rgba(255,255,255,0.05)] sm:rounded-3xl"
       aria-label="Illustrative preview of the SheriaBot Compliance Query workspace"
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-green-400/35 to-transparent" />
