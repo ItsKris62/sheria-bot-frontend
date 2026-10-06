@@ -3,15 +3,9 @@
 import Image from "next/image"
 import Link from "next/link"
 import { motion, useReducedMotion } from "motion/react"
-import { ArrowRight, ShieldCheck, FileText, CheckCircle2 } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Eyebrow, Reveal } from "@/components/landing/redesign/kit"
-
-const sources = [
-  { name: "Data Protection Act", ref: "Part IV — Data Processing" },
-  { name: "CBK Prudential Guidelines", ref: "Digital Credit Providers" },
-  { name: "NPS Regulations", ref: "Licensing & Authorisation" },
-]
 
 export function Hero() {
   const reduce = useReducedMotion()
@@ -97,63 +91,6 @@ export function Hero() {
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-          </motion.div>
-
-          {/* Floating query panel */}
-          <motion.div
-            initial={reduce ? false : { opacity: 0, y: 26 }}
-            animate={reduce ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
-            className={reduce ? "" : "animate-float"}
-            style={{ animationDelay: "0.4s" }}
-          >
-            <div className="absolute -left-4 top-8 w-[70%] max-w-xs rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] sm:-left-8">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground-muted/70">
-                Compliance query
-              </p>
-              <p className="mt-2 text-sm leading-snug text-foreground">
-                What licensing obligations apply before launching a digital
-                lending product?
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Floating evidence panel */}
-          <motion.div
-            initial={reduce ? false : { opacity: 0, y: 30 }}
-            animate={reduce ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
-          >
-            <div className="absolute -right-3 bottom-6 w-[76%] max-w-[19rem] rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] sm:-right-8">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-green/30 bg-brand-green/10 px-2.5 py-1 text-[10px] font-medium text-brand-green">
-                  <ShieldCheck className="h-3 w-3" />
-                  Source verified
-                </span>
-              </div>
-              <p className="mt-3 text-[11px] font-medium uppercase tracking-wide text-foreground-muted/70">
-                Based on applicable regulatory sources
-              </p>
-              <ul className="mt-2.5 space-y-2">
-                {sources.map((s) => (
-                  <li key={s.name} className="flex items-start gap-2">
-                    <FileText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-green/80" />
-                    <span className="text-xs leading-tight text-foreground">
-                      {s.name}
-                      <span className="block text-[11px] text-foreground-muted/70">
-                        {s.ref}
-                      </span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-3 flex items-center gap-1.5 border-t border-white/10 pt-2.5 text-[11px] text-foreground-muted/80">
-                <CheckCircle2 className="h-3.5 w-3.5 text-brand-green" />
-                Regulatory evidence attached
-              </div>
-            </div>
           </motion.div>
         </div>
       </div>
