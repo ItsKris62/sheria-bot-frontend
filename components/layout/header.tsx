@@ -136,16 +136,22 @@ export function Header() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 pt-3 sm:pt-4 pointer-events-none">
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]",
+        scrolled ? "px-3 sm:px-4 pt-3 sm:pt-4" : "px-0 pt-0"
+      )}
+    >
       <nav
         className={cn(
-          "pointer-events-auto mx-auto flex h-14 sm:h-16 max-w-6xl items-center justify-between rounded-2xl px-4 sm:px-6 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]",
+          "pointer-events-auto mx-auto flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]",
           scrolled
-            ? "bg-[#09090B]/90 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(0,135,90,0.15)] translate-y-0"
-            : "bg-[#09090B]/85 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.25)] translate-y-0"
+            ? "h-14 sm:h-16 max-w-6xl rounded-2xl px-4 sm:px-6 bg-[#09090B]/80 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 shadow-[0_16px_48px_rgba(0,0,0,0.5),0_0_0_1px_rgba(0,135,90,0.15)]"
+            : "h-16 w-full rounded-none px-4 sm:px-6 lg:px-8 bg-black border-b border-zinc-800/80 shadow-none"
         )}
       >
-        {/* Logo */}
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
+          {/* Logo */}
         <Link
           href="/"
           className="group flex items-center gap-2.5 transition-all duration-300 hover:opacity-90"
@@ -379,7 +385,9 @@ export function Header() {
             </div>
           </SheetContent>
         </Sheet>
+        </div>
       </nav>
     </header>
   )
 }
+
