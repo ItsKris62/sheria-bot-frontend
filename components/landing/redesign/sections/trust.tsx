@@ -22,7 +22,7 @@ const PILLARS = [
   {
     icon: ServerCog,
     title: "Audit-ready logs",
-    body: "Who asked what, which sources answered, and when — captured as an immutable trail your examiners can actually follow.",
+    body: "Who asked what, which sources answered, and when captured as an immutable trail your examiners can actually follow.",
   },
 ]
 
@@ -31,7 +31,7 @@ export function TrustSection() {
     <SectionShell id="trust" atmosphere="center" className="py-24 sm:py-28">
       <div className="max-w-2xl">
         <Reveal>
-          <Eyebrow>16 — Trust &amp; governance</Eyebrow>
+          <Eyebrow>Trust &amp; governance</Eyebrow>
         </Reveal>
         <Reveal delay={0.05}>
           <h2 className="mt-5 text-balance font-heading text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">

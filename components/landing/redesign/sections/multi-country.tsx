@@ -25,7 +25,7 @@ const detail: Record<
     capital: "Nairobi",
     status: "Live",
     regulators: ["CBK", "ODPC", "CA", "FRC", "CMA"],
-    note: "Deepest regulatory coverage — SheriaBot originates here.",
+    note: "Deepest regulatory coverage SheriaBot originates here.",
   },
   Nigeria: {
     capital: "Abuja",
@@ -74,8 +74,16 @@ export function MultiCountry() {
         {/* Map */}
         <Reveal>
           <div className="relative mx-auto w-full max-w-lg">
-            <svg viewBox="0 0 620 620" className="h-auto w-full" role="img" aria-label="Map of Africa highlighting SheriaBot markets">
-              <g>
+            <svg viewBox="0 0 620 620" className="h-auto w-full filter drop-shadow-[0_0_20px_rgba(255,255,255,0.08)]" role="img" aria-label="Map of Africa highlighting SheriaBot markets">
+              {/* Solid white outline base layer for maximum silhouette clarity */}
+              <g stroke="#FFFFFF" strokeWidth={1.2} strokeLinejoin="round" strokeLinecap="round" fill="none" opacity={0.75}>
+                {AFRICA_COUNTRY_PATHS.map((c) => (
+                  <path key={`outline-${c.iso}`} d={c.d} />
+                ))}
+              </g>
+
+              {/* Interactive countries layer */}
+              <g strokeLinejoin="round">
                 {AFRICA_COUNTRY_PATHS.map((c) => {
                   const highlight = AFRICA_HIGHLIGHT_COUNTRIES.has(c.name)
                   const isActive = c.name === active
@@ -84,20 +92,19 @@ export function MultiCountry() {
                       key={c.iso}
                       d={c.d}
                       className={cn(
-                        "transition-all duration-500",
+                        "transition-all duration-300",
                         highlight ? "cursor-pointer" : "",
                       )}
                       fill={
                         isActive
-                          ? "rgba(34,197,94,0.28)"
+                          ? "rgba(34,197,94,0.32)"
                           : highlight
-                            ? "rgba(34,197,94,0.12)"
-                            : "rgba(255,255,255,0.03)"
+                            ? "rgba(34,197,94,0.18)"
+                            : "rgba(255,255,255,0.04)"
                       }
-                      stroke={
-                        highlight ? "rgba(34,197,94,0.5)" : "rgba(255,255,255,0.06)"
-                      }
-                      strokeWidth={highlight ? 0.8 : 0.5}
+                      stroke="#FFFFFF"
+                      strokeOpacity={isActive ? 1 : highlight ? 0.95 : 0.65}
+                      strokeWidth={isActive ? 2 : highlight ? 1.4 : 0.85}
                       onClick={
                         highlight ? () => setActive(c.name as CountryKey) : undefined
                       }
@@ -115,22 +122,30 @@ export function MultiCountry() {
                     onClick={() => setActive(m.country as CountryKey)}
                   >
                     {isActive && (
-                      <circle cx={m.x} cy={m.y} r={10} fill="rgba(34,197,94,0.18)" />
+                      <circle
+                        cx={m.x}
+                        cy={m.y}
+                        r={12}
+                        fill="rgba(34,197,94,0.25)"
+                        stroke="#FFFFFF"
+                        strokeWidth={1.2}
+                        className="animate-pulse"
+                      />
                     )}
                     <circle
                       cx={m.x}
                       cy={m.y}
-                      r={isActive ? 4.5 : 3.5}
-                      fill={isLive ? "#22C55E" : "rgba(34,197,94,0.7)"}
-                      stroke="#050706"
-                      strokeWidth={1.2}
+                      r={isActive ? 5 : 4}
+                      fill={isLive ? "#22C55E" : "rgba(34,197,94,0.85)"}
+                      stroke="#FFFFFF"
+                      strokeWidth={1.5}
                     />
                     <text
                       x={m.labelX}
                       y={m.labelY}
                       textAnchor={m.labelX < m.x ? "end" : "start"}
-                      className="fill-foreground font-mono"
-                      style={{ fontSize: 12, fontWeight: 500 }}
+                      className="fill-white font-mono drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+                      style={{ fontSize: 12, fontWeight: 600 }}
                     >
                       {m.country}
                     </text>

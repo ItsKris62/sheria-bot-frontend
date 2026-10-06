@@ -44,7 +44,7 @@ export function ComparisonSection() {
     <SectionShell id="comparison" atmosphere="right" className="py-24 sm:py-28">
       <div className="max-w-2xl">
         <Reveal>
-          <Eyebrow>17 — Why Sheria</Eyebrow>
+          <Eyebrow> Why Sheria</Eyebrow>
         </Reveal>
         <Reveal delay={0.05}>
           <h2 className="mt-5 text-balance font-heading text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">

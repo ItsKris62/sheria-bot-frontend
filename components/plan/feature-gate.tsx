@@ -158,7 +158,7 @@ const FEATURE_DESCRIPTIONS: Partial<Record<FeatureKey, string>> = {
 };
 
 /**
- * A card displayed in place of a locked feature — shows the feature name,
+ * A card displayed in place of a locked feature shows the feature name,
  * description, required plan badge, and an upgrade CTA.
  */
 export function LockedFeatureCard({

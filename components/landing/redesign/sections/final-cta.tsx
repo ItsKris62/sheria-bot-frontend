@@ -30,7 +30,7 @@ export function FinalCta() {
 
       <div className="relative mx-auto w-full max-w-3xl px-4 text-center sm:px-6">
         <Reveal>
-          <Eyebrow className="justify-center">18 — Get started</Eyebrow>
+          <Eyebrow className="justify-center"> Get started</Eyebrow>
         </Reveal>
         <Reveal delay={0.05}>
           <h2 className="mx-auto mt-6 max-w-2xl text-balance font-heading text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl">

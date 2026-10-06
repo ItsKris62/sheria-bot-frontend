@@ -25,7 +25,7 @@ type Tab = (typeof TABS)[number]
 const answer = [
   "A payment service provider handling customer data should treat personal data as a regulated asset from day one.",
   "Establish a lawful basis for processing, minimise what you collect, and document how long each category is retained.",
-  "Define access controls, breach-response procedures and a clear escalation path — and keep evidence of each decision.",
+  "Define access controls, breach-response procedures and a clear escalation path and keep evidence of each decision.",
 ]
 
 const sources = [
@@ -124,7 +124,7 @@ export function ProductDemo() {
                       </motion.p>
                     ))}
                     <p className="pt-1 text-xs text-foreground-muted/60">
-                      SheriaBot supports compliance research — it does not
+                      SheriaBot supports compliance research it does not
                       replace professional legal advice.
                     </p>
                   </div>

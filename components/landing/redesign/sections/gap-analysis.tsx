@@ -55,7 +55,7 @@ export function GapAnalysis() {
           <Reveal delay={0.12}>
             <p className="mt-6 max-w-md text-lg leading-relaxed text-foreground-muted">
               Upload an existing compliance policy and SheriaBot reviews it
-              against the regulatory frameworks you select — highlighting what is
+              against the regulatory frameworks you select highlighting what is
               covered and what still needs attention.
             </p>
           </Reveal>
@@ -131,7 +131,7 @@ export function GapAnalysis() {
                 <div className="h-full w-[72%] rounded-full bg-brand-green" />
               </div>
               <p className="mt-2 text-[11px] leading-snug text-foreground-muted/60">
-                A product assessment to guide review — not an official regulatory
+                A product assessment to guide review not an official regulatory
                 certification.
               </p>
             </div>
