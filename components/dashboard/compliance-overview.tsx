@@ -6,12 +6,18 @@ import { ComplianceScoreGauge } from "./compliance-score-gauge"
 import type { DashboardData } from "./dashboard-types"
 
 export interface ComplianceOverviewProps {
-  data?: DashboardData | null
+  data?: any | null
   isLoading?: boolean
   isError?: boolean
+  onReviewCategory?: (categoryKey: string) => void
 }
 
-export function ComplianceOverview({ data, isLoading, isError }: ComplianceOverviewProps) {
+export function ComplianceOverview({
+  data,
+  isLoading,
+  isError,
+  onReviewCategory,
+}: ComplianceOverviewProps) {
   if (isLoading) {
     return (
       <PortalSurface variant="raised" className="p-6">
@@ -88,8 +94,20 @@ export function ComplianceOverview({ data, isLoading, isError }: ComplianceOverv
 
           {data.categories.length > 0 ? (
             <div className="space-y-1">
-              {data.categories.map((category) => (
-                <ComplianceCategoryItem key={category.key} category={category} />
+              {data.categories.map((category: any) => (
+                <ComplianceCategoryItem
+                  key={category.key || category.category}
+                  category={{
+                    key: category.key || category.category,
+                    label: category.label || category.categoryName,
+                    score: category.score,
+                    completedItems: category.completedItems || category.compliantItems || 0,
+                    totalItems: category.totalItems || 0,
+                    assessedItems: category.assessedItems,
+                    reviewStatus: category.reviewStatus,
+                  }}
+                  onReview={onReviewCategory}
+                />
               ))}
             </div>
           ) : (

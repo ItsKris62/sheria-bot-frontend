@@ -47,7 +47,7 @@ export function PriorityAttention({
             No urgent items requiring immediate action
           </p>
           <p className="text-xs text-[var(--portal-text-secondary,#53615A)]">
-            All critical regulatory alerts and upcoming deadlines are up to date.
+            No critical regulatory alerts or imminent deadlines within the active window.
           </p>
         </div>
       </PortalSurface>

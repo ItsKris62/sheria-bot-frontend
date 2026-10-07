@@ -1,7 +1,21 @@
 import * as React from "react"
-import { getComplianceScoreTheme, type ComplianceScoreIcon } from "@/lib/utils/compliance"
-import { ShieldCheck, CheckCircle2, Info, AlertCircle, AlertTriangle } from "lucide-react"
-import type { DashboardCategory } from "./dashboard-types"
+import {
+  getComplianceScoreTheme,
+  getUnassessedScoreTheme,
+  type ComplianceScoreIcon,
+} from "@/lib/utils/compliance"
+import { ShieldCheck, CheckCircle2, Info, AlertCircle, AlertTriangle, ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+export interface CategoryItemData {
+  key: string
+  label: string
+  score: number | null
+  completedItems: number
+  totalItems: number
+  assessedItems?: number
+  reviewStatus?: string
+}
 
 export function ScoreIcon({
   icon,
@@ -27,12 +41,19 @@ export function ScoreIcon({
   }
 }
 
-export function ComplianceCategoryItem({ category }: { category: DashboardCategory }) {
-  const theme = getComplianceScoreTheme(category.score)
-  const score = Math.max(0, Math.min(100, Math.round(category.score)))
+export function ComplianceCategoryItem({
+  category,
+  onReview,
+}: {
+  category: CategoryItemData
+  onReview?: (categoryKey: string) => void
+}) {
+  const isUnassessed = category.score === null || category.score === undefined
+  const theme = isUnassessed ? getUnassessedScoreTheme() : getComplianceScoreTheme(category.score!)
+  const score = isUnassessed ? 0 : Math.max(0, Math.min(100, Math.round(category.score!)))
 
   return (
-    <div className="group border-b border-[var(--portal-border,#E2E8E5)] py-3.5 last:border-b-0 first:pt-0 sm:grid sm:grid-cols-[minmax(180px,1.1fr)_minmax(180px,1.5fr)_auto] sm:items-center sm:gap-6">
+    <div className="group border-b border-[var(--portal-border,#E2E8E5)] py-3.5 last:border-b-0 first:pt-0 sm:grid sm:grid-cols-[minmax(180px,1.1fr)_minmax(180px,1.3fr)_auto] sm:items-center sm:gap-6">
       {/* Category Name & Met Count */}
       <div className="flex min-w-0 items-center gap-3">
         <span
@@ -47,6 +68,11 @@ export function ComplianceCategoryItem({ category }: { category: DashboardCatego
           </p>
           <p className="text-xs text-[var(--portal-text-secondary,#53615A)]">
             {category.completedItems} of {category.totalItems} requirements complete
+            {category.assessedItems !== undefined && (
+              <span className="ml-1 text-[var(--portal-text-muted,#64766D)]">
+                ({category.assessedItems} reviewed)
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -56,34 +82,45 @@ export function ComplianceCategoryItem({ category }: { category: DashboardCatego
         <div className="mb-1.5 flex items-center justify-between sm:hidden">
           <span className="text-xs text-[var(--portal-text-muted,#64766D)]">Compliance Score</span>
           <span className="font-mono text-xs font-semibold text-[var(--portal-text-primary,#101814)]">
-            {score}%
+            {isUnassessed ? "—" : `${score}%`}
           </span>
         </div>
         <div
           className="h-2 w-full overflow-hidden rounded-full bg-[var(--portal-border,#E2E8E5)]"
           role="progressbar"
-          aria-label={`${category.label} compliance score ${score} out of 100`}
+          aria-label={`${category.label} compliance score ${isUnassessed ? "unassessed" : `${score} out of 100`}`}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={score}
         >
           <div
             className="h-full origin-left rounded-full transition-[width] duration-700 ease-out motion-reduce:transition-none"
-            style={{ width: `${score}%`, backgroundColor: theme.color }}
+            style={{ width: `${isUnassessed ? 0 : score}%`, backgroundColor: theme.color }}
           />
         </div>
       </div>
 
-      {/* Score and Status Pill (Desktop) */}
+      {/* Score, Status Pill & Review Action (Desktop) */}
       <div className="hidden items-center justify-end gap-2.5 sm:flex">
         <span className="font-mono text-sm font-semibold text-[var(--portal-text-primary,#101814)]">
-          {score}%
+          {isUnassessed ? "—" : `${score}%`}
         </span>
         <span
           className="rounded-md border border-[var(--portal-border,#E2E8E5)] bg-[var(--portal-surface-hover,#F0F4F2)] px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--portal-text-secondary,#53615A)]"
         >
-          {theme.label}
+          {isUnassessed ? "Not Reviewed" : theme.label}
         </span>
+        {onReview && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-[var(--portal-primary,#1B4D3E)] hover:bg-[var(--portal-surface-hover,#F0F4F2)]"
+            onClick={() => onReview(category.key)}
+          >
+            Review <ArrowRight className="ml-1 size-3" />
+          </Button>
+        )}
       </div>
     </div>
   )

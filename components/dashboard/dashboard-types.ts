@@ -45,3 +45,96 @@ export type QueryItem = {
   query: string
   createdAt: string | Date
 }
+
+// ============================================================================
+// V2 Jurisdiction-First Compliance Dashboard Types
+// ============================================================================
+
+export type DashboardAvailabilityStatus =
+  | 'READY'
+  | 'BASELINE_UNAVAILABLE'
+  | 'JURISDICTION_NOT_ENTITLED'
+  | 'JURISDICTION_NOT_CONFIGURED'
+  | 'JURISDICTION_UNSUPPORTED'
+
+export type DashboardAssessmentStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'ASSESSED'
+
+export type ComplianceRiskBand = 'CRITICAL' | 'POOR' | 'MODERATE' | 'GOOD' | 'EXCELLENT'
+
+export type RequirementItemDTO = {
+  id: string
+  requirementKey: string
+  jurisdictionCode: string
+  category: string
+  title: string
+  description: string
+  reviewStatus: 'NOT_REVIEWED' | 'MEETS_REQUIREMENT' | 'DOES_NOT_MEET_REQUIREMENT'
+  isCompleted: boolean
+  assessedAt: string | null
+  updatedAt: string
+}
+
+export type CategoryPostureDTO = {
+  category: string
+  categoryName: string
+  weight: number
+  totalItems: number
+  assessedItems: number
+  compliantItems: number
+  coveragePercent: number
+  score: number | null
+  reviewStatus: 'NOT_REVIEWED' | 'IN_PROGRESS' | 'COMPLETED'
+}
+
+export type ActiveDashboardData = {
+  jurisdictionCode: string
+  jurisdictionName: string
+  assessmentStatus: DashboardAssessmentStatus
+  scoreType: 'PROVISIONAL' | 'FINAL' | null
+  overallScore: number | null
+  riskBand: ComplianceRiskBand | null
+  coveragePercent: number
+  totalRequirements: number
+  assessedRequirements: number
+  compliantRequirements: number
+  categories: CategoryPostureDTO[]
+  requirements: RequirementItemDTO[]
+  trend: {
+    direction: 'UP' | 'DOWN' | 'STABLE' | 'NONE'
+    delta: number | null
+    historicalScores: Array<{ calculatedAt: string; overallScore: number }>
+  }
+}
+
+export type InactiveDashboardData = {
+  jurisdictionCode: string | null
+  reasonCode: Exclude<DashboardAvailabilityStatus, 'READY'>
+  message: string
+  entitlement: {
+    maxEnabledCountries: number
+    enabledCount: number
+    enabledJurisdictions: string[];
+  }
+}
+
+export type ComplianceDashboardV2Response =
+  | {
+      availabilityStatus: 'READY'
+      context: {
+        selectedJurisdiction: string
+        homeJurisdiction: string
+        enabledJurisdictions: string[]
+        maxEnabledCountries: number
+      }
+      dashboard: ActiveDashboardData
+    }
+  | {
+      availabilityStatus: Exclude<DashboardAvailabilityStatus, 'READY'>
+      context: {
+        selectedJurisdiction: string | null
+        homeJurisdiction: string | null
+        enabledJurisdictions: string[]
+        maxEnabledCountries: number
+      }
+      dashboard: InactiveDashboardData
+    }

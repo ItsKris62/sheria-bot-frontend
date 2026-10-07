@@ -96,3 +96,26 @@ export function getComplianceScoreTheme(score: number): ComplianceScoreTheme {
     label: 'Critical',
   };
 }
+
+export function getProvisionalScoreTheme(): ComplianceScoreTheme {
+  return {
+    color: '#3B82F6',
+    tailwindText: 'text-blue-500',
+    tailwindBg: 'bg-blue-500',
+    tailwindBgMuted: 'bg-blue-500/15',
+    icon: 'info',
+    label: 'Provisional',
+  };
+}
+
+export function getUnassessedScoreTheme(): ComplianceScoreTheme {
+  return {
+    color: '#94A3B8',
+    tailwindText: 'text-slate-400',
+    tailwindBg: 'bg-slate-400',
+    tailwindBgMuted: 'bg-slate-400/15',
+    icon: 'info',
+    label: 'Not Reviewed',
+  };
+}
+
