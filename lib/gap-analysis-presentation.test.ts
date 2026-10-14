@@ -29,30 +29,40 @@ describe("Gap Analysis presentation contract", () => {
     ])
   })
 
-  it("lists every missing pre-run requirement including jurisdiction validation", () => {
+  it("lists every missing pre-run requirement including jurisdiction and framework pilot readiness", () => {
     expect(getGapAnalysisRunRequirements({
       hasDocument: false,
       frameworkCount: 0,
       hasAllowedDepth: false,
       acknowledgementAccepted: false,
-      jurisdictionValidated: false,
+      jurisdictionPilotEnabled: false,
+      frameworksPilotEnabled: false,
     })).toEqual([
       "Upload a policy document",
       "Select at least one framework",
       "Select an allowed analysis method",
       "Accept the processing acknowledgement",
-      "Select a pilot-validated jurisdiction (Kenya)",
+      "Select a pilot-enabled jurisdiction",
+      "Selected frameworks must be pilot-enabled",
     ])
   })
 
-  it("validates pilot jurisdictions and surfaces notice for in-progress corpora", () => {
-    expect(isPilotJurisdictionValidated("KE")).toBe(true)
+  it("evaluates release-driven pilot jurisdiction availability without client hardcoding", () => {
+    // Unconfigured baseline: no jurisdiction is automatically assumed validated
+    expect(isPilotJurisdictionValidated("KE")).toBe(false)
     expect(isPilotJurisdictionValidated("RW")).toBe(false)
-    expect(isPilotJurisdictionValidated("MW")).toBe(false)
-    expect(isPilotJurisdictionValidated("NG")).toBe(false)
-
-    expect(getPilotJurisdictionNotice("KE")).toBeNull()
+    expect(getPilotJurisdictionNotice("KE")).toContain("Corpus validation in progress")
     expect(getPilotJurisdictionNotice("RW")).toContain("Corpus validation in progress")
+
+    // Release-configured partial pilot availability
+    const partialKE = { jurisdiction: "KE", pilotEnabled: true, readiness: "INDEXED_PARTIAL" as const }
+    expect(isPilotJurisdictionValidated("KE", partialKE)).toBe(false)
+    expect(getPilotJurisdictionNotice("KE", partialKE)).toContain("partial coverage")
+
+    // Release-configured fully validated pilot availability
+    const validatedKE = { jurisdiction: "KE", pilotEnabled: true, readiness: "VALIDATED_FOR_GAP_ANALYSIS" as const }
+    expect(isPilotJurisdictionValidated("KE", validatedKE)).toBe(true)
+    expect(getPilotJurisdictionNotice("KE", validatedKE)).toBeNull()
   })
 
   it("maps failure classes truthfully without internal leaks", () => {

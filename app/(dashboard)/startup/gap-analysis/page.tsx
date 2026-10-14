@@ -74,9 +74,11 @@ import {
   getGapAnalysisRunRequirements,
   getPilotJurisdictionNotice,
   groupGapAnalysisFrameworks,
+  isPilotJurisdictionEnabled,
   isPilotJurisdictionValidated,
   safeGapAnalysisFailureMessage,
   GAP_ANALYSIS_STATUS_LABELS,
+  type GapAnalysisPilotAvailability,
 } from "@/lib/gap-analysis-presentation"
 
 const LoadingScreen = dynamic(
@@ -103,6 +105,8 @@ type FrameworkOption = {
   scope?: string
   jurisdictions?: string[]
   applicable?: boolean
+  pilotEnabled?: boolean
+  readiness?: string
 }
 
 // Constants
@@ -390,7 +394,6 @@ function PilotFeedbackWidget({ analysisId }: { analysisId: string }) {
   const [feedbackSent, setFeedbackSent] = useState(false)
   const [rating, setRating] = useState<"helpful" | "unhelpful" | null>(null)
   const [selectedChips, setSelectedChips] = useState<string[]>([])
-  const [comment, setComment] = useState("")
 
   const chips = [
     "Accurate findings",
@@ -407,17 +410,16 @@ function PilotFeedbackWidget({ analysisId }: { analysisId: string }) {
       analysis_id: analysisId,
       rating: rating ?? "unspecified",
       tags: selectedChips.join(","),
-      has_comment: comment.trim().length > 0,
     })
     setFeedbackSent(true)
-    toast.success("Feedback submitted", { description: "Thank you for helping improve the pilot!" })
+    toast.success("Feedback submitted", { description: "Thank you for helping calibrate the pilot!" })
   }
 
   if (feedbackSent) {
     return (
       <div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-center text-xs text-muted-foreground">
         <CheckCircle2 className="h-4 w-4 text-primary mx-auto mb-1" />
-        Thank you for your pilot feedback. Your input directly guides regulatory corpus and model improvements.
+        Thank you for your pilot feedback. Your rating and structured feedback tags directly guide regulatory corpus calibration.
       </div>
     )
   }
@@ -428,7 +430,7 @@ function PilotFeedbackWidget({ analysisId }: { analysisId: string }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <p className="text-xs font-semibold text-foreground">Pilot Feedback</p>
-            <p className="text-[11px] text-muted-foreground">Help us calibrate SheriaBot for your organization.</p>
+            <p className="text-[11px] text-muted-foreground">Help calibrate SheriaBot for your organization.</p>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -453,7 +455,8 @@ function PilotFeedbackWidget({ analysisId }: { analysisId: string }) {
         </div>
 
         {rating && (
-          <form onSubmit={handleSubmit} className="space-y-2 pt-1 border-t border-border/40">
+          <form onSubmit={handleSubmit} className="space-y-3 pt-2 border-t border-border/40">
+            <p className="text-[11px] font-medium text-foreground">Select feedback tags that apply:</p>
             <div className="flex flex-wrap gap-1.5">
               {chips.map((chip) => {
                 const active = selectedChips.includes(chip)
@@ -467,7 +470,7 @@ function PilotFeedbackWidget({ analysisId }: { analysisId: string }) {
                       )
                     }
                     className={cn(
-                      "rounded-full border px-2 py-0.5 text-[10px] transition-colors",
+                      "rounded-full border px-2.5 py-1 text-[11px] transition-colors",
                       active
                         ? "border-primary bg-primary/10 text-primary font-medium"
                         : "border-border bg-background text-muted-foreground hover:bg-muted/50"
@@ -478,15 +481,8 @@ function PilotFeedbackWidget({ analysisId }: { analysisId: string }) {
                 )
               })}
             </div>
-            <div className="flex gap-2">
-              <Input
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Optional notes or missed regulatory clauses..."
-                className="h-8 text-xs bg-background"
-                maxLength={300}
-              />
-              <Button type="submit" size="sm" className="h-8 text-xs shrink-0">
+            <div className="flex justify-end pt-1">
+              <Button type="submit" size="sm" className="h-7 text-xs">
                 Submit Feedback
               </Button>
             </div>
@@ -1597,9 +1593,6 @@ export default function GapAnalysisPage() {
     ? selectedJurisdiction
     : (entitledJurisdictions[0] ?? "KE")
 
-  const isJurisdictionPilotValidated = isPilotJurisdictionValidated(activeJurisdiction)
-  const pilotJurisdictionNotice = getPilotJurisdictionNotice(activeJurisdiction)
-
   const [activeView, setActiveView] = useState<{ id: string; name: string } | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([])
@@ -1674,6 +1667,15 @@ export default function GapAnalysisPage() {
     undefined,
     { enabled: !!user }
   )
+  const pilotAvailability = (gapLimits as any)?.pilotAvailability as GapAnalysisPilotAvailability | undefined
+  const activeJurisdictionAvailability = pilotAvailability?.jurisdictions?.[activeJurisdiction]
+  const isJurisdictionPilotEnabled = isPilotJurisdictionEnabled(activeJurisdiction, activeJurisdictionAvailability)
+  const isJurisdictionPilotValidated = isPilotJurisdictionValidated(activeJurisdiction, activeJurisdictionAvailability)
+  const pilotJurisdictionNotice = getPilotJurisdictionNotice(activeJurisdiction, activeJurisdictionAvailability)
+  const areSelectedFrameworksPilotEnabled = selectedFrameworksForRun.length > 0 && selectedFrameworksForRun.every((slug) => {
+    const fw = applicableFrameworks.find((f) => f.slug === slug)
+    return fw?.pilotEnabled !== false
+  })
   const { data: benchmarkDocumentsData, isLoading: benchmarkDocumentsLoading } = trpc.document.listBenchmarkDocuments.useQuery(
     undefined,
     { enabled: !!user && gapLimits?.benchmarkDocuments === true }
@@ -1856,9 +1858,15 @@ export default function GapAnalysisPage() {
       toast.error("Document is empty", { description: "Please upload a valid, non-empty policy document." })
       return
     }
-    if (!isJurisdictionPilotValidated) {
+    if (!isJurisdictionPilotEnabled) {
       toast.error("Jurisdiction not pilot-enabled", {
-        description: `Gap Analysis is currently enabled for Kenya during the pilot phase.`,
+        description: pilotJurisdictionNotice ?? `Gap Analysis is not enabled for ${jurisdictionLabel(activeJurisdiction)} during the pilot phase.`,
+      })
+      return
+    }
+    if (!areSelectedFrameworksPilotEnabled) {
+      toast.error("Framework not pilot-enabled", {
+        description: "One or more selected frameworks are not currently enabled for Gap Analysis pilot testing.",
       })
       return
     }
@@ -1950,8 +1958,9 @@ export default function GapAnalysisPage() {
 
   const canRun = selectedFile !== null
     && selectedFile.size > 0
-    && isJurisdictionPilotValidated
+    && isJurisdictionPilotEnabled
     && selectedFrameworksForRun.length > 0
+    && areSelectedFrameworksPilotEnabled
     && analysisDepth !== null
     && allowedAnalysisDepths.includes(analysisDepth)
     && consentChecked
@@ -2020,7 +2029,8 @@ export default function GapAnalysisPage() {
     frameworkCount: selectedFrameworksForRun.length,
     hasAllowedDepth: analysisDepth !== null && allowedAnalysisDepths.includes(analysisDepth),
     acknowledgementAccepted: consentChecked,
-    jurisdictionValidated: isJurisdictionPilotValidated,
+    jurisdictionPilotEnabled: isJurisdictionPilotEnabled,
+    frameworksPilotEnabled: areSelectedFrameworksPilotEnabled,
   })
   const filteredHistory = analysisHistory.filter((analysis) =>
     (historyStatus === "ALL" || analysis.status === historyStatus)
@@ -2176,12 +2186,11 @@ export default function GapAnalysisPage() {
                 ) : null}
               </div>
 
-              {/* Frameworks list */}
-              {!isJurisdictionPilotValidated ? (
+              {!isJurisdictionPilotEnabled ? (
                 <div className="rounded-lg border border-dashed border-border bg-muted/20 p-6 text-center text-sm text-muted-foreground">
-                  <p className="font-medium text-foreground">Frameworks Pending Validation</p>
+                  <p className="font-medium text-foreground">Jurisdiction Not Pilot-Enabled</p>
                   <p className="text-xs mt-1 max-w-md mx-auto">
-                    Regulatory frameworks for {jurisdictionLabel(activeJurisdiction)} are currently undergoing pilot validation. Please select Kenya (KE) to assess against currently approved pilot frameworks.
+                    {pilotJurisdictionNotice || `Regulatory frameworks for ${jurisdictionLabel(activeJurisdiction)} are currently undergoing pilot validation.`}
                   </p>
                 </div>
               ) : frameworksLoading ? (
@@ -2209,6 +2218,23 @@ export default function GapAnalysisPage() {
                               >
                                 <span className="leading-snug">{fw.name}</span>
                                 <Lock className="h-3.5 w-3.5 shrink-0" />
+                              </div>
+                            )
+                          }
+                          if (fw.pilotEnabled === false) {
+                            return (
+                              <div
+                                key={fw.slug}
+                                title="This framework is catalogued but not enabled for Gap Analysis pilot testing"
+                                className="flex min-h-12 items-center justify-between gap-3 rounded-lg bg-muted/20 px-3 py-2 text-left text-sm text-muted-foreground cursor-not-allowed select-none border border-dashed border-border/50"
+                              >
+                                <span className="leading-snug">
+                                  {fw.name}
+                                  <span className="mt-0.5 block text-[10px] text-muted-foreground/80">Pilot validation pending</span>
+                                </span>
+                                <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                                  Pilot pending
+                                </Badge>
                               </div>
                             )
                           }

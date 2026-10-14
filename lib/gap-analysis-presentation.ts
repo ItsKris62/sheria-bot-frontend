@@ -8,15 +8,66 @@ export type FrameworkPresentation = {
   tier?: string
 }
 
-export const PILOT_VALIDATED_JURISDICTIONS: readonly string[] = ["KE"] as const
+export type PilotCorpusReadiness =
+  | "UNAVAILABLE"
+  | "INDEXED_PARTIAL"
+  | "VALIDATED_FOR_GAP_ANALYSIS"
+  | "STALE_OR_UNKNOWN"
 
-export function isPilotJurisdictionValidated(jurisdiction: string): boolean {
-  return PILOT_VALIDATED_JURISDICTIONS.includes(jurisdiction)
+export interface PilotJurisdictionAvailability {
+  jurisdiction: string
+  pilotEnabled: boolean
+  readiness: PilotCorpusReadiness
+  message?: string
 }
 
-export function getPilotJurisdictionNotice(jurisdiction: string): string | null {
-  if (isPilotJurisdictionValidated(jurisdiction)) return null
-  return "Corpus validation in progress. Regulatory sources for this jurisdiction are undergoing validation. Gap Analysis is currently enabled for Kenya (KE) during the pilot phase."
+export interface PilotFrameworkAvailability {
+  slug: string
+  pilotEnabled: boolean
+  readiness: PilotCorpusReadiness
+}
+
+export interface GapAnalysisPilotAvailability {
+  jurisdictions: Record<string, PilotJurisdictionAvailability>
+}
+
+export function isPilotJurisdictionEnabled(
+  jurisdiction: string,
+  availability?: PilotJurisdictionAvailability | null,
+): boolean {
+  if (!availability) return false
+  return Boolean(availability.pilotEnabled)
+}
+
+export function isPilotJurisdictionValidated(
+  jurisdiction: string,
+  availability?: PilotJurisdictionAvailability | null,
+): boolean {
+  if (!availability) return false
+  return Boolean(availability.pilotEnabled && availability.readiness === "VALIDATED_FOR_GAP_ANALYSIS")
+}
+
+export function getPilotJurisdictionNotice(
+  jurisdiction: string,
+  availability?: PilotJurisdictionAvailability | null,
+): string | null {
+  if (availability) {
+    if (availability.pilotEnabled && availability.readiness === "VALIDATED_FOR_GAP_ANALYSIS") {
+      return null
+    }
+    if (availability.pilotEnabled && availability.readiness === "INDEXED_PARTIAL") {
+      return (
+        availability.message ??
+        `Corpus validation in progress for ${jurisdiction}. Enabled for controlled pilot testing with partial coverage.`
+      )
+    }
+    return (
+      availability.message ??
+      `Corpus validation in progress. Regulatory sources for this jurisdiction are undergoing validation. Gap Analysis is not currently enabled for ${jurisdiction} during the pilot phase.`
+    )
+  }
+  // Safe unconfigured fallback: never assume any jurisdiction is validated from client source.
+  return `Corpus validation in progress. Regulatory sources for ${jurisdiction} are undergoing release validation. Gap Analysis pilot testing is pending formal release validation.`
 }
 
 export function filterGapAnalysisFrameworks<T extends FrameworkPresentation>(
@@ -47,6 +98,8 @@ export function getGapAnalysisRunRequirements(input: {
   frameworkCount: number
   hasAllowedDepth: boolean
   acknowledgementAccepted: boolean
+  jurisdictionPilotEnabled?: boolean
+  frameworksPilotEnabled?: boolean
   jurisdictionValidated?: boolean
 }): string[] {
   const requirements: string[] = []
@@ -54,7 +107,9 @@ export function getGapAnalysisRunRequirements(input: {
   if (input.frameworkCount === 0) requirements.push("Select at least one framework")
   if (!input.hasAllowedDepth) requirements.push("Select an allowed analysis method")
   if (!input.acknowledgementAccepted) requirements.push("Accept the processing acknowledgement")
-  if (input.jurisdictionValidated === false) requirements.push("Select a pilot-validated jurisdiction (Kenya)")
+  const jurisdictionOk = input.jurisdictionPilotEnabled ?? input.jurisdictionValidated
+  if (jurisdictionOk === false) requirements.push("Select a pilot-enabled jurisdiction")
+  if (input.frameworksPilotEnabled === false) requirements.push("Selected frameworks must be pilot-enabled")
   return requirements
 }
 
