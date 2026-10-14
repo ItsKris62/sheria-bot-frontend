@@ -22,6 +22,36 @@ export interface GapAnalysisReportGap {
   regulatoryDeadline?: string;
   verificationStatus?: 'verified' | 'unverified' | 'not_checked';
   citationVerified?: boolean;
+  requirement?: string;
+  status?: string;
+  severityRationale?: string;
+  regulatoryEvidence?: Array<{
+    evidenceId: string;
+    vectorId: string;
+    documentTitle: string;
+    section?: string;
+    excerpt: string;
+    jurisdiction: string;
+    frameworkSlug: string;
+    sourceAuthority?: string;
+  }>;
+  policyEvidence?: Array<{
+    policyEvidenceId: string;
+    chunkIndex?: number;
+    excerpt: string;
+    page?: number;
+    sectionHeading?: string;
+  }>;
+  verification?: {
+    verdict: 'SUPPORTED' | 'PARTIALLY_SUPPORTED' | 'UNSUPPORTED' | 'NOT_VERIFIABLE';
+    confidence?: number;
+    unsupportedClaims?: string[];
+  };
+  coverage?: {
+    regulatoryEvidenceAvailable: boolean;
+    policySectionAssessed: boolean;
+    extractionComplete: boolean;
+  };
 }
 
 export interface GapAnalysisReportFramework {
@@ -46,6 +76,26 @@ export interface GapAnalysisReportActionItem {
 
 export interface GapAnalysisReportResult {
   overallScore: number;
+  complianceAlignmentScore?: number;
+  assessmentCoverageScore?: number;
+  assessmentCoverage?: number;
+  coverageStatus?: string;
+  scoringVersion?: 'v1.0-legacy' | 'v2.0-evidence-backed' | string;
+  documentCoverage?: {
+    totalChunks: number;
+    processedChunks: number;
+    failedChunks: number;
+    skippedChunks: number;
+    extractionComplete: boolean;
+  };
+  frameworkCoverage?: Record<string, {
+    frameworkSlug: string;
+    evidenceStatus: 'COMPLETE' | 'PARTIAL' | 'INSUFFICIENT' | 'UNAVAILABLE';
+    assessedRequirementCount: number;
+    totalKnownRequirementCount?: number;
+    unassessedRequirementCount?: number;
+    notes?: string[];
+  }>;
   executiveSummary: string;
   frameworks: GapAnalysisReportFramework[];
   crossCuttingStrengths?: string[];
@@ -58,6 +108,19 @@ export interface GapAnalysisReportResult {
     lowGaps?: number;
     chunksProcessed?: number;
     analysisDate?: string;
+    scoringVersion?: string;
+    complianceAlignmentScore?: number;
+    assessmentCoverageScore?: number;
+    coverageStatus?: 'COMPLETE' | 'PARTIAL' | 'INSUFFICIENT';
+    documentCoverage?: {
+      totalChunks: number;
+      processedChunks: number;
+      failedChunks: number;
+      skippedChunks: number;
+      extractionComplete: boolean;
+    };
+    executionProfileVersion?: string;
+    executionLimitations?: string[];
     selectedBenchmarkDocuments?: Array<{
       id: string;
       title: string;
@@ -78,6 +141,7 @@ export interface GapAnalysisReportData {
   createdAt: string;
   organizationName?: string;
   userName?: string;
+  jurisdictionCode?: string | null;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -141,15 +205,21 @@ function formatDepth(depth: string): string {
   }
 }
 
-function verificationLabel(status: GapAnalysisReportGap['verificationStatus']): string {
+function verificationLabel(status?: string, verdict?: string): string {
+  if (verdict === 'SUPPORTED') return 'Verified';
+  if (verdict === 'PARTIALLY_SUPPORTED') return 'Partially Verified';
+  if (verdict === 'UNSUPPORTED') return 'Unsupported (Quarantined)';
+  if (verdict === 'NOT_VERIFIABLE') return 'Evidence Limitation';
   if (status === 'verified') return 'Verified';
   if (status === 'unverified') return 'Unverified';
   return 'Not checked';
 }
 
-function verificationColor(status: GapAnalysisReportGap['verificationStatus']): string {
-  if (status === 'verified') return '#00875A';
-  if (status === 'unverified') return '#D97706';
+function verificationColor(status?: string, verdict?: string): string {
+  if (verdict === 'SUPPORTED' || status === 'verified') return '#00875A';
+  if (verdict === 'PARTIALLY_SUPPORTED' || status === 'unverified') return '#D97706';
+  if (verdict === 'UNSUPPORTED') return '#DC2626';
+  if (verdict === 'NOT_VERIFIABLE') return '#6B7280';
   return '#718096';
 }
 
@@ -345,6 +415,14 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
     }
   `;
 
+  // ─── Scoring & Coverage (v2 vs legacy) ────────────────────────────────────
+
+  const isV2 = metadata.scoringVersion === 'v2.0-evidence-backed' || metadata.complianceAlignmentScore !== undefined || result.complianceAlignmentScore !== undefined;
+  const alignmentScore = metadata.complianceAlignmentScore ?? result.complianceAlignmentScore ?? overallScore;
+  const coverageScore = metadata.assessmentCoverageScore ?? result.assessmentCoverageScore ?? result.assessmentCoverage ?? 0;
+  const coverageStatus = metadata.coverageStatus ?? result.coverageStatus ?? 'INSUFFICIENT';
+  const docCoverage = metadata.documentCoverage ?? result.documentCoverage;
+
   // ─── HTML sections ───────────────────────────────────────────────────────
 
   const coverHtml = `
@@ -357,19 +435,22 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
 
     <div class="conf-banner">CONFIDENTIAL</div>
 
-    <p class="cover-title">Regulatory Compliance Gap Analysis Report</p>
+    <p class="cover-title">Policy Gap Analysis</p>
     <p class="cover-sub">Prepared for ${escapeHtml(displayName)}</p>
     <span class="depth-tag">${escapeHtml(formatDepth(analysisDepth))}</span>
 
     <div class="score-wrap">
       <div class="score-circle">
-        <span class="score-num">${overallScore}</span>
-        <span class="score-lbl">${getScoreLabel(overallScore)}</span>
+        <span class="score-num">${alignmentScore}</span>
+        <span class="score-lbl">${getScoreLabel(alignmentScore)}</span>
       </div>
-      <div>
-        <p style="font-size:11pt;color:#4A5568;margin-bottom:6px;">Overall Compliance Score</p>
+        <p style="font-size:11pt;color:#4A5568;margin-bottom:4px;">${isV2 ? 'Compliance Alignment' : 'Compliance Alignment (Legacy scoring)'}</p>
+        <p style="font-size:10pt;color:#4A5568;margin-bottom:4px;">Document Processing: <strong>${docCoverage ? `${docCoverage.processedChunks} of ${docCoverage.totalChunks} chunks analyzed` : `${chunksProcessed ?? 1} chunks analyzed`}</strong></p>
+        ${isV2 ? `<p style="font-size:10pt;color:#4A5568;margin-bottom:4px;">Assessment Coverage: <strong>Partial — ${frameworks.reduce((acc, f) => acc + f.gaps.length, 0)} evidence-backed obligations evaluated</strong></p>` : ''}
+        <p style="font-size:9pt;color:#718096;margin-bottom:4px;">Scoring Methodology: <strong>${isV2 ? 'Evidence-backed v2 (Claim-verified)' : 'Legacy scoring'}</strong></p>
         <p style="font-size:10pt;color:#4A5568;margin-bottom:4px;">Date: <strong>${escapeHtml(formattedDate)}</strong></p>
         <p style="font-size:10pt;color:#4A5568;margin-bottom:4px;">Document: <strong>${escapeHtml(documentName)}</strong></p>
+        <p style="font-size:10pt;color:#4A5568;margin-bottom:4px;">Jurisdiction: <strong>${data.jurisdictionCode ? escapeHtml(data.jurisdictionCode) : 'Not recorded (legacy)'}</strong></p>
         <p style="font-size:10pt;color:#4A5568;margin-bottom:0;">Report ID: <code>${escapeHtml(analysisId)}</code></p>
       </div>
     </div>
@@ -394,6 +475,12 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
     <strong>Warning: Limited regulatory grounding.</strong> This analysis was generated without
     access to the SheriaBot regulatory document database. Results are based on AI training
     knowledge only and may not reflect the latest Kenyan regulations or recent amendments.
+  </div>` : ''}
+
+  ${docCoverage && docCoverage.failedChunks > 0 ? `
+  <div class="rag-warn">
+    <strong>Warning: Incomplete Document Extraction.</strong> ${docCoverage.failedChunks} document chunk(s)
+    could not be processed. Findings represent partial coverage and do not certify complete compliance.
   </div>` : ''}
 
   ${renderParagraphs(executiveSummary)}
@@ -458,9 +545,15 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
   <table class="method-table">
     <tbody>
       <tr><td>Document Analysed</td><td>${escapeHtml(documentName)}</td></tr>
+      <tr><td>Jurisdiction</td><td>${data.jurisdictionCode ? escapeHtml(data.jurisdictionCode) : 'Not recorded (legacy analysis)'}</td></tr>
       <tr><td>Analysis Date</td><td>${escapeHtml(formattedDate)}</td></tr>
       <tr><td>Analysis Depth</td><td>${escapeHtml(formatDepth(analysisDepth))}</td></tr>
-      <tr><td>Chunks Processed</td><td>${escapeHtml(String(chunksProcessed))} ${chunksProcessed > 1 ? '(Full document multi-pass analysis)' : '(Single-pass analysis)'}</td></tr>
+      <tr><td>Execution Profile</td><td>${escapeHtml(metadata.executionProfileVersion ?? 'Legacy execution profile')}</td></tr>
+      <tr><td>Scoring Methodology</td><td><strong>${isV2 ? 'Evidence-backed v2 (Claim-verified & deterministic)' : 'Legacy v1.0 (Heuristic)'}</strong></td></tr>
+      <tr><td>Compliance Alignment</td><td>${alignmentScore}% (Assessed requirements)</td></tr>
+      <tr><td>Assessment Coverage</td><td>${coverageStatus === 'COMPLETE' ? `${coverageScore}% (Complete)` : `Partial - ${allGaps.length} evidence-backed obligations evaluated. This is not a complete framework inventory.`}</td></tr>
+      <tr><td>Chunks Processed</td><td>${escapeHtml(String(chunksProcessed))} of ${escapeHtml(String(docCoverage?.totalChunks ?? chunksProcessed))}${docCoverage && (docCoverage.failedChunks > 0 || docCoverage.skippedChunks > 0) ? ` <span style="color:#DC2626;">(${docCoverage.failedChunks} failed, ${docCoverage.skippedChunks} skipped - Partial)</span>` : ''}</td></tr>
+      <tr><td>Known Limitations</td><td>${metadata.executionLimitations?.length ? metadata.executionLimitations.map(escapeHtml).join('; ') : 'No execution-stage limitation recorded'}</td></tr>
       <tr><td>Frameworks Assessed</td><td>${frameworks.map((f) => escapeHtml(f.name)).join(', ')}</td></tr>
       <tr><td>Benchmark Documents</td><td>${selectedBenchmarkDocuments.length > 0
         ? selectedBenchmarkDocuments.map((doc) => escapeHtml(`${doc.title}${doc.regulatoryBody ? ` (${doc.regulatoryBody})` : ''}`)).join(', ')
@@ -477,9 +570,8 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
   <div class="disclaimer">
     <p><strong>Important Disclaimer:</strong> This report is generated by AI-assisted analysis
     and should be reviewed by qualified compliance professionals before being used for regulatory
-    submissions. SheriaBot does not provide legal advice. The findings represent an automated
-    assessment and may not capture all applicable regulatory obligations specific to your business
-    model.</p>
+    submissions. SheriaBot does not provide legal advice. Alignment reflects the requirements assessed
+    in this review and is not an official certification of legal compliance.</p>
   </div>
 </div>`;
 
@@ -493,11 +585,11 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
       <thead>
         <tr>
           <th style="width:28px;">#</th>
-          <th style="width:140px;">Gap Title</th>
+          <th style="width:140px;">Gap / Requirement</th>
           <th style="width:72px;">Severity</th>
           <th style="width:120px;">Regulatory Reference</th>
           <th style="width:70px;">Verification</th>
-          <th style="width:115px;">Current State</th>
+          <th style="width:115px;">Policy State</th>
           <th style="width:125px;">Recommendation</th>
           <th style="width:110px;">Evidence Required</th>
           <th style="width:70px;">Owner</th>
@@ -513,16 +605,32 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
           const evidenceHtml = gap.evidenceRequired && gap.evidenceRequired.length > 0
             ? `<ul style="margin:0;padding-left:14px;">${gap.evidenceRequired.map((ev) => `<li>${escapeHtml(ev)}</li>`).join('')}</ul>`
             : '<span style="color:#9CA3AF;">&#8212;</span>';
+
+          const regRefHtml = gap.regulatoryEvidence && gap.regulatoryEvidence.length > 0
+            ? gap.regulatoryEvidence.map((r) => `<div><strong>${escapeHtml(r.documentTitle)}</strong>${r.sourceAuthority ? ` - ${escapeHtml(r.sourceAuthority)}` : ''}${r.section ? ` - ${escapeHtml(r.section)}` : ''}${r.excerpt ? `<br/><span style="font-size:7.5pt;">${escapeHtml(r.excerpt)}</span>` : ''}</div>`).join('')
+            : gap.regulatoryBasis
+              ? `<div>${escapeHtml(gap.regulatoryBasis)}<br/><span style="font-size:7.5pt;color:#DC2626;font-style:italic;">No verified regulatory evidence attached</span></div>`
+              : '<span style="color:#DC2626;font-style:italic;">No verified regulatory evidence attached</span>';
+
+          const policyStateHtml = gap.policyEvidence && gap.policyEvidence.length > 0
+            ? gap.policyEvidence.map((p) => `<div>${escapeHtml(p.excerpt)}${p.sectionHeading ? ` <span style="font-size:7.5pt;color:#718096;">(${escapeHtml(p.sectionHeading)})</span>` : p.page ? ` <span style="font-size:7.5pt;color:#718096;">(Page ${escapeHtml(p.page)})</span>` : ''}</div>`).join('')
+            : gap.policyCurrentState
+              ? `<div>${escapeHtml(gap.policyCurrentState)}<br/><span style="font-size:7.5pt;color:#718096;font-style:italic;">No policy excerpt cited (absence assessed)</span></div>`
+              : '<span style="color:#718096;font-style:italic;">No matching policy clause identified</span>';
+
           return `<tr style="background:${rowBg};">
             <td style="text-align:center;font-size:8.5pt;color:#718096;">${gi + 1}</td>
-            <td style="font-weight:bold;font-size:9pt;">${escapeHtml(gap.title)}</td>
+            <td style="font-weight:bold;font-size:9pt;">
+              ${escapeHtml(gap.title)}
+              ${gap.requirement && gap.requirement !== gap.title ? `<br/><span style="font-weight:normal;font-size:8pt;color:#718096;">Req: ${escapeHtml(gap.requirement)}</span>` : ''}
+            </td>
             <td style="background:${bg};">
               <span class="sev-badge" style="background:${bg};color:${col};">${escapeHtml(gap.severity)}</span>
               ${gap.regulatoryDeadline ? `<br/><span style="font-size:7.5pt;color:#4A5568;">Due: ${escapeHtml(gap.regulatoryDeadline)}</span>` : ''}
             </td>
-            <td style="font-size:8.5pt;">${escapeHtml(gap.regulatoryBasis)}</td>
-            <td style="font-size:8.5pt;color:${verificationColor(gap.verificationStatus)};font-weight:bold;">${escapeHtml(verificationLabel(gap.verificationStatus))}</td>
-            <td style="font-size:8.5pt;">${escapeHtml(gap.policyCurrentState)}</td>
+            <td style="font-size:8.5pt;">${regRefHtml}</td>
+            <td style="font-size:8.5pt;color:${verificationColor(gap.verificationStatus, gap.verification?.verdict)};font-weight:bold;">${escapeHtml(verificationLabel(gap.verificationStatus, gap.verification?.verdict))}</td>
+            <td style="font-size:8.5pt;">${policyStateHtml}</td>
             <td style="font-size:8.5pt;">${escapeHtml(gap.recommendation)}</td>
             <td style="font-size:8.5pt;">${evidenceHtml}</td>
             <td style="font-size:8.5pt;">${escapeHtml(gap.responsibleRole ?? '&#8212;')}</td>

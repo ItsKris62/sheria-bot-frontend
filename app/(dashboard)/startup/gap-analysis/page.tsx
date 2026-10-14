@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useCallback, useEffect, useMemo } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
@@ -10,7 +10,18 @@ import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import { MultiSelect, type Option } from "@/components/ui/multi-select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 import { trpc } from "@/lib/trpc"
 import { cn } from "@/lib/utils"
@@ -42,10 +53,31 @@ import {
   Shield,
   BarChart3,
   Lock,
+  Globe,
+  Search,
 } from "lucide-react"
 import { useAuthStore } from "@/lib/auth-store"
+import { usePlan } from "@/lib/plan-context"
+import { jurisdictionLabel, type JurisdictionCode } from "@/lib/jurisdictions"
 import { trackEvent, trackFeatureUsage, recordAccountActivation } from "@/lib/analytics"
 import { buildGapAnalysisInput, type GapAnalysisDepth } from "@/lib/gap-analysis-input"
+import {
+  gapAnalysisAcceptValue,
+  gapAnalysisFileHelperText,
+  selectGapAnalysisDepth,
+  validateGapAnalysisFile,
+  type GapAnalysisUploadContract,
+} from "@/lib/gap-analysis-contract"
+import {
+  filterGapAnalysisFrameworks,
+  formatGapAnalysisDepth,
+  getGapAnalysisRunRequirements,
+  getPilotJurisdictionNotice,
+  groupGapAnalysisFrameworks,
+  isPilotJurisdictionValidated,
+  safeGapAnalysisFailureMessage,
+  GAP_ANALYSIS_STATUS_LABELS,
+} from "@/lib/gap-analysis-presentation"
 
 const LoadingScreen = dynamic(
   () => import("@/components/loading-screen").then((module) => module.LoadingScreen),
@@ -68,6 +100,9 @@ type FrameworkOption = {
   description: string | null
   tier: string
   locked: boolean
+  scope?: string
+  jurisdictions?: string[]
+  applicable?: boolean
 }
 
 // Constants
@@ -83,41 +118,23 @@ const FOCUS_AREAS = [
   "AML/CFT controls",
 ]
 
-const ANALYSIS_DEPTHS = [
-  { value: "quick", label: "Quick Scan", description: "Critical gaps only, ~30 seconds" },
-  { value: "standard", label: "Standard Analysis", description: "All severity levels, ~60 seconds" },
-  { value: "deep", label: "Deep Analysis", description: "Comprehensive, ~90 seconds" },
-]
-
 const SEVERITY_CONFIG = {
-  CRITICAL: { label: "Critical", bg: "bg-destructive/5", border: "border-l-destructive", badge: "bg-destructive/10 text-destructive border-destructive/20" },
-  HIGH: { label: "High", bg: "bg-orange-50/50 dark:bg-orange-900/10", border: "border-l-orange-500", badge: "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400" },
-  MEDIUM: { label: "Medium", bg: "bg-yellow-50/50 dark:bg-yellow-900/10", border: "border-l-yellow-500", badge: "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400" },
-  LOW: { label: "Low", bg: "bg-primary/5", border: "border-l-primary", badge: "bg-primary/10 text-primary border-primary/20" },
+  CRITICAL: { label: "Critical", bg: "bg-red-50", border: "border-l-red-700", badge: "bg-red-50 text-red-800 border-red-300" },
+  HIGH: { label: "High", bg: "bg-orange-50", border: "border-l-orange-700", badge: "bg-orange-50 text-orange-900 border-orange-300" },
+  MEDIUM: { label: "Medium", bg: "bg-yellow-50", border: "border-l-yellow-700", badge: "bg-yellow-50 text-yellow-900 border-yellow-300" },
+  LOW: { label: "Low", bg: "bg-emerald-50", border: "border-l-emerald-700", badge: "bg-emerald-50 text-emerald-900 border-emerald-300" },
 }
 
-const ALLOWED_TYPES = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword", "text/plain"]
-const ALLOWED_EXTENSIONS = [".pdf", ".docx", ".doc", ".txt"]
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-
-const STATUS_LABELS: Record<string, { label: string; description: string }> = {
-  UPLOADING:  { label: "Uploading document",              description: "Transferring your file to secure storage..." },
-  QUEUED:     { label: "Queued for analysis",             description: "Your analysis is queued and will start shortly..." },
-  EXTRACTING: { label: "Extracting text",                 description: "Reading and parsing your policy document..." },
-  ANALYZING:  { label: "Analysing against frameworks",    description: "Comparing your policies against applicable regulatory requirements..." },
-  COMPLETING: { label: "Finalising results",              description: "Compiling your gap analysis report..." },
-  COMPLETED:  { label: "Analysis complete",               description: "Your gap analysis is ready to view." },
-  FAILED:     { label: "Analysis failed",                 description: "An error occurred during analysis." },
-}
+const STATUS_LABELS = GAP_ANALYSIS_STATUS_LABELS
 
 const VERIFIED_HELPER_TEXT =
   "Verified sources were matched to SheriaBot's legal corpus and accepted by the verification flow. This does not replace independent legal advice."
 
 function getScoreColor(score: number) {
   if (score >= 91) return { ring: "border-secondary", text: "text-secondary", bg: "bg-secondary/10" }
-  if (score >= 71) return { ring: "border-yellow-500", text: "text-yellow-600", bg: "bg-yellow-50 dark:bg-yellow-900/20" }
-  if (score >= 41) return { ring: "border-orange-500", text: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-900/20" }
-  return { ring: "border-destructive", text: "text-destructive", bg: "bg-destructive/10" }
+  if (score >= 71) return { ring: "border-amber-700", text: "text-amber-900", bg: "bg-amber-50" }
+  if (score >= 41) return { ring: "border-orange-700", text: "text-orange-900", bg: "bg-orange-50" }
+  return { ring: "border-red-700", text: "text-red-800", bg: "bg-red-50" }
 }
 
 function getScoreLabel(score: number) {
@@ -133,39 +150,35 @@ function FileUploadSection({
   file,
   onFile,
   onRemove,
-  maxFileSizeBytes,
+  uploadContract,
 }: {
   file: File | null
   onFile: (file: File) => void
   onRemove: () => void
-  maxFileSizeBytes: number
+  uploadContract: GapAnalysisUploadContract | null
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragActive, setDragActive] = useState(false)
-  const maxMB = Math.round(maxFileSizeBytes / 1024 / 1024)
 
   const validateAndSetFile = (f: File) => {
-    if (!ALLOWED_TYPES.includes(f.type) && !ALLOWED_EXTENSIONS.some((ext) => f.name.toLowerCase().endsWith(ext))) {
-      toast.error("Unsupported file type", { description: "Upload a PDF, DOCX, DOC, or TXT file." })
+    if (!uploadContract) {
+      toast.error("Upload settings unavailable", { description: "Wait for your plan limits to load and try again." })
       return
     }
-    if (f.size > maxFileSizeBytes) {
-      toast.error("File too large", { description: `Maximum file size is ${maxMB}MB.` })
+    const validationError = validateGapAnalysisFile(f, uploadContract)
+    if (validationError) {
+      toast.error("Document not supported", { description: validationError })
       return
     }
     onFile(f)
   }
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      setDragActive(false)
-      const f = e.dataTransfer.files[0]
-      if (f) validateAndSetFile(f)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  )
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setDragActive(false)
+    const f = e.dataTransfer.files[0]
+    if (f) validateAndSetFile(f)
+  }
 
   if (file) {
     return (
@@ -177,7 +190,7 @@ function FileUploadSection({
             <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB - {file.type.split("/").pop()?.toUpperCase()}</p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={onRemove} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+        <Button aria-label={`Remove ${file.name}`} variant="ghost" size="sm" onClick={onRemove} className="text-destructive hover:text-destructive hover:bg-destructive/10">
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
@@ -185,30 +198,46 @@ function FileUploadSection({
   }
 
   return (
-    <div
-      className={`rounded-lg border-2 border-dashed transition-colors ${
-        dragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/30"
-      } cursor-pointer`}
-      onDragEnter={(e) => { e.preventDefault(); setDragActive(true) }}
-      onDragLeave={() => setDragActive(false)}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={handleDrop}
-      onClick={() => inputRef.current?.click()}
-    >
-      <div className="py-10 text-center">
-        <Upload className={`h-8 w-8 mx-auto mb-3 ${dragActive ? "text-primary" : "text-muted-foreground"}`} />
-        <p className="text-sm font-medium text-foreground">Drop your policy document here</p>
-        <p className="text-xs text-muted-foreground mt-1">or <span className="text-primary underline">browse files</span></p>
-        <p className="text-xs text-muted-foreground mt-3">PDF, DOCX, DOC, TXT - Max {maxMB}MB</p>
+    <>
+      <div
+        role="button"
+        tabIndex={uploadContract ? 0 : -1}
+        aria-disabled={!uploadContract}
+        aria-describedby="gap-analysis-upload-help"
+        className={`rounded-lg border-2 border-dashed transition-colors ${
+          dragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/30"
+        } cursor-pointer`}
+        onDragEnter={(e) => { e.preventDefault(); setDragActive(true) }}
+        onDragLeave={() => setDragActive(false)}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+        onClick={() => inputRef.current?.click()}
+        onKeyDown={(event) => {
+          if ((event.key === "Enter" || event.key === " ") && uploadContract) {
+            event.preventDefault()
+            inputRef.current?.click()
+          }
+        }}
+      >
+        <div className="py-10 text-center">
+          <Upload className={`h-8 w-8 mx-auto mb-3 ${dragActive ? "text-primary" : "text-muted-foreground"}`} />
+          <p className="text-sm font-medium text-foreground">Drop your policy document here</p>
+          <p className="text-xs text-muted-foreground mt-1">or <span className="text-[#0A5C36] underline">browse files</span></p>
+          <p id="gap-analysis-upload-help" className="text-xs text-muted-foreground mt-3">
+            {uploadContract ? gapAnalysisFileHelperText(uploadContract) : "Loading upload limits..."}
+          </p>
+        </div>
       </div>
       <input
         ref={inputRef}
         type="file"
         className="sr-only"
-        accept={ALLOWED_EXTENSIONS.join(",")}
+        accept={uploadContract ? gapAnalysisAcceptValue(uploadContract.allowedFileTypes) : undefined}
+        disabled={!uploadContract}
+        aria-label="Upload policy document"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) validateAndSetFile(f) }}
       />
-    </div>
+    </>
   )
 }
 
@@ -218,13 +247,44 @@ function ScoreGauge({ score }: { score: number }) {
   const { ring, text, bg } = getScoreColor(score)
   return (
     <div className={`h-28 w-28 rounded-full border-8 ${ring} flex flex-col items-center justify-center ${bg}`}>
-      <p className={`text-2xl font-bold ${text}`}>{score}</p>
-      <p className={`text-xs font-medium ${text}`}>{getScoreLabel(score)}</p>
+      <p className={`text-2xl font-bold ${text}`}>{score}%</p>
+      <p className={`text-[10px] font-medium ${text} text-center px-1 leading-tight mt-0.5`}>Compliance Alignment</p>
     </div>
   )
 }
 
 // Analysis Results View
+
+type RegulatoryEvidenceItem = {
+  evidenceId: string
+  vectorId: string
+  documentTitle: string
+  section?: string
+  excerpt: string
+  jurisdiction: string
+  frameworkSlug: string
+  sourceAuthority?: string
+}
+
+type PolicyEvidenceItem = {
+  policyEvidenceId: string
+  chunkIndex?: number
+  excerpt: string
+  page?: number
+  sectionHeading?: string
+}
+
+type FindingVerification = {
+  verdict: "SUPPORTED" | "PARTIALLY_SUPPORTED" | "UNSUPPORTED" | "NOT_VERIFIABLE"
+  confidence?: number
+  unsupportedClaims?: string[]
+}
+
+type FindingCoverage = {
+  regulatoryEvidenceAvailable: boolean
+  policySectionAssessed: boolean
+  extractionComplete: boolean
+}
 
 type GapResult = {
   id: string
@@ -233,6 +293,15 @@ type GapResult = {
   regulatoryBasis: string
   citationVerified?: boolean
   verificationStatus?: "verified" | "unverified" | "not_checked"
+  requirement?: string
+  status?: string
+  severityRationale?: string
+  evidenceIds?: string[]
+  policyEvidenceIds?: string[]
+  regulatoryEvidence?: RegulatoryEvidenceItem[]
+  policyEvidence?: PolicyEvidenceItem[]
+  verification?: FindingVerification
+  coverage?: FindingCoverage
   sourceDocumentTitle?: string
   sourceSection?: string
   sourceSnippet?: string
@@ -265,6 +334,24 @@ type ActionPlanItem = {
 
 type AnalysisResultData = {
   overallScore: number
+  complianceAlignmentScore?: number
+  assessmentCoverageScore?: number
+  assessmentCoverage?: number
+  coverageStatus?: string
+  scoringVersion?: string
+  documentCoverage?: {
+    totalChunks: number
+    processedChunks: number
+    failedChunks: number
+    skippedChunks: number
+    extractionComplete: boolean
+  }
+  frameworkCoverage?: Record<string, {
+    frameworkSlug: string
+    evidenceStatus: string
+    assessedRequirementCount: number
+    unassessedRequirementCount?: number
+  }>
   executiveSummary: string
   frameworks: FrameworkResult[]
   crossCuttingStrengths: string[]
@@ -277,13 +364,137 @@ type AnalysisResultData = {
     criticalGaps: number
     highGaps: number
     analysisDate: string
+    scoringVersion?: string
+    complianceAlignmentScore?: number
+    assessmentCoverageScore?: number
+    coverageStatus?: "COMPLETE" | "PARTIAL" | "INSUFFICIENT"
+    documentCoverage?: {
+      totalChunks: number
+      processedChunks: number
+      failedChunks: number
+      skippedChunks: number
+      extractionComplete: boolean
+    }
     selectedBenchmarkDocuments?: Array<{
       id: string
       title: string
       documentType?: string | null
       regulatoryBody?: string | null
     }>
+    executionProfileVersion?: string
+    executionLimitations?: string[]
   }
+}
+
+function PilotFeedbackWidget({ analysisId }: { analysisId: string }) {
+  const [feedbackSent, setFeedbackSent] = useState(false)
+  const [rating, setRating] = useState<"helpful" | "unhelpful" | null>(null)
+  const [selectedChips, setSelectedChips] = useState<string[]>([])
+  const [comment, setComment] = useState("")
+
+  const chips = [
+    "Accurate findings",
+    "Clear recommendations",
+    "Evidence quality",
+    "Missed issue",
+    "False positive",
+    "Report quality",
+  ]
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    trackEvent("gap_analysis_pilot_feedback", {
+      analysis_id: analysisId,
+      rating: rating ?? "unspecified",
+      tags: selectedChips.join(","),
+      has_comment: comment.trim().length > 0,
+    })
+    setFeedbackSent(true)
+    toast.success("Feedback submitted", { description: "Thank you for helping improve the pilot!" })
+  }
+
+  if (feedbackSent) {
+    return (
+      <div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-center text-xs text-muted-foreground">
+        <CheckCircle2 className="h-4 w-4 text-primary mx-auto mb-1" />
+        Thank you for your pilot feedback. Your input directly guides regulatory corpus and model improvements.
+      </div>
+    )
+  }
+
+  return (
+    <Card className="border-border/60 bg-muted/10">
+      <CardContent className="pt-4 pb-4 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <p className="text-xs font-semibold text-foreground">Pilot Feedback</p>
+            <p className="text-[11px] text-muted-foreground">Help us calibrate SheriaBot for your organization.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant={rating === "helpful" ? "default" : "outline"}
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => setRating("helpful")}
+            >
+              Useful
+            </Button>
+            <Button
+              type="button"
+              variant={rating === "unhelpful" ? "default" : "outline"}
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => setRating("unhelpful")}
+            >
+              Needs work
+            </Button>
+          </div>
+        </div>
+
+        {rating && (
+          <form onSubmit={handleSubmit} className="space-y-2 pt-1 border-t border-border/40">
+            <div className="flex flex-wrap gap-1.5">
+              {chips.map((chip) => {
+                const active = selectedChips.includes(chip)
+                return (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() =>
+                      setSelectedChips((prev) =>
+                        prev.includes(chip) ? prev.filter((c) => c !== chip) : [...prev, chip]
+                      )
+                    }
+                    className={cn(
+                      "rounded-full border px-2 py-0.5 text-[10px] transition-colors",
+                      active
+                        ? "border-primary bg-primary/10 text-primary font-medium"
+                        : "border-border bg-background text-muted-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    {chip}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Optional notes or missed regulatory clauses..."
+                className="h-8 text-xs bg-background"
+                maxLength={300}
+              />
+              <Button type="submit" size="sm" className="h-8 text-xs shrink-0">
+                Submit Feedback
+              </Button>
+            </div>
+          </form>
+        )}
+      </CardContent>
+    </Card>
+  )
 }
 
 function AnalysisResultsView({
@@ -301,6 +512,9 @@ function AnalysisResultsView({
     { enabled: !!user }
   )
   const [expandedGaps, setExpandedGaps] = useState<Record<string, boolean>>({})
+  const [findingSeverity, setFindingSeverity] = useState("ALL")
+  const [findingFramework, setFindingFramework] = useState("ALL")
+  const [findingVerification, setFindingVerification] = useState("ALL")
 
   const logExportMutation = trpc.compliance.logExport.useMutation()
   const exportDocxMutation = trpc.compliance.exportDocx.useMutation({
@@ -385,22 +599,77 @@ function AnalysisResultsView({
   }
   const regulatoryFrameworks = analysisData.regulatoryFrameworks as unknown
   const { overallScore, executiveSummary, frameworks, crossCuttingStrengths, actionPlan, metadata } = results
-  const scoreConfig = getScoreColor(overallScore)
+  const isV2 = metadata.scoringVersion === "v2.0-evidence-backed" || metadata.complianceAlignmentScore !== undefined || results.complianceAlignmentScore !== undefined
+  const alignmentScore = metadata.complianceAlignmentScore ?? results.complianceAlignmentScore ?? overallScore
+  const coverageScore = metadata.assessmentCoverageScore ?? results.assessmentCoverageScore ?? results.assessmentCoverage ?? 0
+  const coverageStatus = metadata.coverageStatus ?? results.coverageStatus ?? "INSUFFICIENT"
+  const documentCoverage = metadata.documentCoverage ?? results.documentCoverage
+  const scoreConfig = getScoreColor(alignmentScore)
   const selectedBenchmarkDocuments = metadata.selectedBenchmarkDocuments ?? []
   const allGaps = frameworks.flatMap((f) => f.gaps.map((g) => ({ ...g, frameworkName: f.name })))
-  const verifiedGapCount = allGaps.filter((gap) => gap.verificationStatus === "verified").length
-  const unverifiedGapCount = allGaps.filter((gap) => gap.verificationStatus === "unverified").length
-  const notCheckedGapCount = allGaps.length - verifiedGapCount - unverifiedGapCount
-  const sortedGaps = [...allGaps].sort((a, b) => {
+
+  const verifiedGapCount = allGaps.filter((gap) => gap.verification?.verdict === "SUPPORTED" || gap.verificationStatus === "verified").length
+  const partialGapCount = allGaps.filter((gap) => gap.verification?.verdict === "PARTIALLY_SUPPORTED").length
+  const unsupportedGapCount = allGaps.filter((gap) => gap.verification?.verdict === "UNSUPPORTED" || gap.verificationStatus === "unverified").length
+  const limitationGapCount = allGaps.filter((gap) => gap.verification?.verdict === "NOT_VERIFIABLE").length
+  const notCheckedGapCount = allGaps.length - verifiedGapCount - partialGapCount - unsupportedGapCount - limitationGapCount
+  const sortedGaps = [...allGaps].filter((gap) => {
+    const verification = gap.verification?.verdict ?? gap.verificationStatus ?? "NOT_CHECKED"
+    return (findingSeverity === "ALL" || gap.severity === findingSeverity)
+      && (findingFramework === "ALL" || gap.frameworkName === findingFramework)
+      && (findingVerification === "ALL" || verification === findingVerification)
+  }).sort((a, b) => {
     const order = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 }
     return (order[a.severity] ?? 3) - (order[b.severity] ?? 3)
   })
 
-  function gapVerificationLabel(gap: GapResult): "Verified" | "Unverified" | "Not checked" {
-    if (gap.verificationStatus === "verified") return "Verified"
-    if (gap.verificationStatus === "unverified") return "Unverified"
-    if (gap.verificationStatus === "not_checked") return "Not checked"
-    return "Not checked"
+  function gapVerificationBadge(gap: GapResult) {
+    if (gap.verification?.verdict === "SUPPORTED" || gap.verificationStatus === "verified") {
+      return (
+        <span className="inline-flex items-center gap-0.5 rounded-full bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-900 border border-green-300">
+          <CheckCircle2 className="h-3 w-3" />
+          Verified
+        </span>
+      )
+    }
+    if (gap.verification?.verdict === "PARTIALLY_SUPPORTED") {
+      return (
+        <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-950 border border-amber-300">
+          <AlertTriangle className="h-3 w-3" />
+          Partially Verified
+        </span>
+      )
+    }
+    if (gap.verification?.verdict === "UNSUPPORTED") {
+      return (
+        <span className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-800 border border-red-300">
+          <XCircle className="h-3 w-3" />
+          Unsupported — excluded from score
+        </span>
+      )
+    }
+    if (gap.verification?.verdict === "NOT_VERIFIABLE") {
+      return (
+        <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border">
+          <AlertCircle className="h-3 w-3" />
+          Could not verify
+        </span>
+      )
+    }
+    if (gap.verificationStatus === "unverified") {
+      return (
+        <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-950 border border-amber-300">
+          <AlertTriangle className="h-3 w-3" />
+          Unverified
+        </span>
+      )
+    }
+    return (
+      <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border">
+        <AlertCircle className="h-3 w-3" />
+        Not checked
+      </span>
+    )
   }
 
   function handleExportPdf() {
@@ -416,6 +685,7 @@ function AnalysisResultsView({
       regulatoryFrameworks: Array.isArray(regulatoryFrameworks)
         ? regulatoryFrameworks.filter((item): item is string => typeof item === "string")
         : [],
+      jurisdictionCode: (data as any)?.jurisdictionCode,
       result: results as unknown as GapAnalysisReportResult,
     })
     const printWindow = window.open("", "_blank")
@@ -441,7 +711,11 @@ function AnalysisResultsView({
             Back to Gap Analysis
           </Button>
           <h2 className="text-xl font-bold text-foreground">Gap Analysis Results</h2>
-          <p className="text-sm text-muted-foreground mt-1">{data.documentName} - {new Date(data.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {data.documentName} - {new Date(data.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
+            {" • "}
+            {(data as any)?.jurisdictionCode ? `${jurisdictionLabel((data as any).jurisdictionCode)} (${(data as any).jurisdictionCode})` : "Jurisdiction not recorded for this legacy analysis"}
+          </p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -474,7 +748,7 @@ function AnalysisResultsView({
       {/* Legal / AI Disclaimer Banner */}
       <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:border-amber-700/50 dark:bg-amber-900/20">
         <Shield className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
-        <p className="text-amber-900 dark:text-amber-200">
+        <p className="text-amber-950">
           <span className="font-bold">DISCLAIMER:</span> This Gap Analysis Report was generated by SheriaBot AI for informational and internal auditing purposes only. It does not constitute formal legal advice. Organisations should consult with qualified legal counsel before making compliance decisions based on this report.
         </p>
       </div>
@@ -486,6 +760,39 @@ function AnalysisResultsView({
           <p className="text-yellow-800 dark:text-yellow-300">
               <span className="font-semibold">Limited regulatory grounding.</span> This saved analysis does not contain verified SheriaBot regulatory evidence and may not reflect the latest applicable regulations or amendments. Consider re-running the analysis when the service is available.
           </p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+        <Badge variant="outline">Depth: {analysisData.analysisDepth ?? "standard"}</Badge>
+        <Badge variant="outline">
+          Engine: {metadata.executionProfileVersion ?? "legacy execution profile"}
+        </Badge>
+      </div>
+
+      {(metadata.executionLimitations?.length ?? 0) > 0 && (
+        <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm dark:border-amber-800/50 dark:bg-amber-900/20">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div>
+            <p className="font-semibold text-amber-950">Execution limitations</p>
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-amber-950">
+              {metadata.executionLimitations?.map((limitation) => <li key={limitation}>{limitation}</li>)}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Incomplete Document Extraction Warning */}
+      {documentCoverage && (documentCoverage.failedChunks > 0 || documentCoverage.skippedChunks > 0) && (
+        <div className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm">
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+          <div>
+            <p className="font-semibold text-red-800">Incomplete Document Extraction</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {documentCoverage.failedChunks} document chunk(s) failed and {documentCoverage.skippedChunks} were skipped during traversal.
+              Findings reflect partial document coverage and do not certify complete compliance.
+            </p>
+          </div>
         </div>
       )}
 
@@ -512,33 +819,77 @@ function AnalysisResultsView({
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+        <Badge variant="outline" className="bg-green-50 text-green-900 border-green-300">
           <CheckCircle2 className="mr-1 h-3 w-3" />
           {verifiedGapCount} verified
         </Badge>
-        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
-          <AlertTriangle className="mr-1 h-3 w-3" />
-          {unverifiedGapCount} unverified
+        {partialGapCount > 0 && (
+          <Badge variant="outline" className="bg-amber-50 text-amber-950 border-amber-300">
+            <AlertTriangle className="mr-1 h-3 w-3" />
+            {partialGapCount} partially verified
+          </Badge>
+        )}
+        <Badge variant="outline" className="bg-red-50 text-red-800 border-red-300">
+          <XCircle className="mr-1 h-3 w-3" />
+          {unsupportedGapCount} unsupported
         </Badge>
-        <Badge variant="outline" className="bg-muted text-muted-foreground">
-          <AlertCircle className="mr-1 h-3 w-3" />
-          {notCheckedGapCount} not checked
-        </Badge>
+        {limitationGapCount > 0 && (
+          <Badge variant="outline" className="bg-muted text-muted-foreground border-border">
+            <AlertCircle className="mr-1 h-3 w-3" />
+            {limitationGapCount} limitation
+          </Badge>
+        )}
+        {notCheckedGapCount > 0 && (
+          <Badge variant="outline" className="bg-muted text-muted-foreground">
+            <AlertCircle className="mr-1 h-3 w-3" />
+            {notCheckedGapCount} not checked
+          </Badge>
+        )}
       </div>
 
       {/* Executive Summary Card */}
       <Card className={`border-2 ${scoreConfig.ring}`}>
         <CardContent className="pt-6">
-          <div className="flex items-start gap-6">
-            <ScoreGauge score={overallScore} />
+          <div className="flex flex-col gap-6 md:flex-row md:items-start">
+            <ScoreGauge score={alignmentScore} />
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-semibold text-foreground text-lg">Regulatory Readiness Score</h3>
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <h3 className="font-semibold text-foreground text-lg">
+                  {isV2 ? "Compliance Alignment" : "Compliance Alignment (Legacy)"}
+                </h3>
                 <Badge variant="outline" className={scoreConfig.bg + " " + scoreConfig.text + " border-current"}>
-                  {getScoreLabel(overallScore)}
+                  {getScoreLabel(alignmentScore)}
+                </Badge>
+                <Badge variant="outline" className="text-xs bg-muted">
+                  {isV2 ? "Evidence-based v2" : "Legacy scoring"}
                 </Badge>
               </div>
+
+              {/* Document Processing */}
+              <div className="mb-2 rounded-md border border-border/70 bg-muted/20 px-3 py-2">
+                <p className="text-xs font-semibold text-foreground">Document Processing</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Document processed · {documentCoverage
+                    ? `${documentCoverage.processedChunks} of ${documentCoverage.totalChunks} chunk${documentCoverage.totalChunks === 1 ? "" : "s"} successfully analyzed`
+                    : `${(metadata as any)?.chunksProcessed ?? 1} of ${(metadata as any)?.chunksProcessed ?? 1} chunk(s) successfully analyzed`}
+                </p>
+              </div>
+
+              {/* Assessment Coverage */}
+              <div className="mb-3 rounded-md border border-border bg-muted/30 p-3">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-foreground">Assessment Coverage · Partial</p>
+                  <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-950 border-amber-300">Partial</Badge>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {allGaps.length} evidence-backed obligation{allGaps.length === 1 ? "" : "s"} evaluated.
+                  Coverage does not represent every possible requirement in the selected frameworks.
+                </p>
+              </div>
               <p className="text-sm text-muted-foreground leading-relaxed">{executiveSummary}</p>
+              <p className="text-xs text-muted-foreground mt-2 italic">
+                Alignment reflects the requirements assessed in this review. It is not an official legal certification of compliance.
+              </p>
               <div className="flex gap-4 mt-4 text-sm">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-destructive">{metadata.criticalGaps}</p>
@@ -583,9 +934,12 @@ function AnalysisResultsView({
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-sm font-semibold">{fw.name}</CardTitle>
-                      <Badge variant="outline" className={`${fwConfig.bg} ${fwConfig.text} border-current text-xs`}>
-                        {fw.score}/100
-                      </Badge>
+                      <div className="text-right">
+                        <Badge variant="outline" className={`${fwConfig.bg} ${fwConfig.text} border-current text-xs`}>
+                          {fw.score}/100 alignment
+                        </Badge>
+                        {coverageStatus !== "COMPLETE" ? <p className="mt-1 text-[10px] text-muted-foreground">Partial coverage</p> : null}
+                      </div>
                     </div>
                     <CardDescription className="text-xs">{fw.summary}</CardDescription>
                   </CardHeader>
@@ -604,18 +958,41 @@ function AnalysisResultsView({
 
         {/* Gaps Detail */}
         <TabsContent value="gaps" className="space-y-3 mt-4">
-          {sortedGaps.length === 0 ? (
+          <div className="grid gap-2 rounded-lg border border-border bg-muted/20 p-3 sm:grid-cols-3" aria-label="Filter findings">
+            <Label className="sr-only" htmlFor="finding-severity">Severity</Label>
+            <select id="finding-severity" value={findingSeverity} onChange={(event) => setFindingSeverity(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+              <option value="ALL">All severities</option><option value="CRITICAL">Critical</option><option value="HIGH">High</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option>
+            </select>
+            <Label className="sr-only" htmlFor="finding-framework">Framework</Label>
+            <select id="finding-framework" value={findingFramework} onChange={(event) => setFindingFramework(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+              <option value="ALL">All frameworks</option>{frameworks.map((framework) => <option key={framework.id} value={framework.name}>{framework.name}</option>)}
+            </select>
+            <Label className="sr-only" htmlFor="finding-verification">Verification</Label>
+            <select id="finding-verification" value={findingVerification} onChange={(event) => setFindingVerification(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+              <option value="ALL">All verification states</option><option value="SUPPORTED">Verified</option><option value="PARTIALLY_SUPPORTED">Partially verified</option><option value="UNSUPPORTED">Unsupported</option><option value="NOT_VERIFIABLE">Could not verify</option>
+            </select>
+          </div>
+          {allGaps.length === 0 ? (
+            <Card className="border border-border/60">
+              <CardContent className="pt-6 pb-6 text-center">
+                <CheckCircle2 className="h-8 w-8 text-secondary mx-auto mb-2" />
+                <p className="text-secondary font-medium">No Findings Identified</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+                  No reliable findings were produced from the authoritative evidence currently available.
+                </p>
+              </CardContent>
+            </Card>
+          ) : sortedGaps.length === 0 ? (
             <Card>
               <CardContent className="pt-6 text-center">
                 <CheckCircle2 className="h-8 w-8 text-secondary mx-auto mb-2" />
-                <p className="text-secondary font-medium">No gaps identified!</p>
+                <p className="text-secondary font-medium">No findings match these filters.</p>
               </CardContent>
             </Card>
           ) : (
             sortedGaps.map((gap) => {
               const sc = SEVERITY_CONFIG[gap.severity] ?? SEVERITY_CONFIG.LOW
               const isExpanded = expandedGaps[gap.id]
-              const verification = gapVerificationLabel(gap)
               return (
                 <div key={gap.id} className={`rounded-lg border border-l-4 p-4 ${sc.bg} ${sc.border}`}>
                   <div className="flex items-start justify-between gap-3">
@@ -624,25 +1001,21 @@ function AnalysisResultsView({
                         <p className="font-medium text-foreground text-sm">{gap.title}</p>
                         <Badge variant="outline" className={`text-xs shrink-0 ${sc.badge}`}>{sc.label}</Badge>
                         <Badge variant="outline" className="text-xs shrink-0 bg-muted">{gap.frameworkName}</Badge>
-                      </div>
-                      <p className="text-xs text-primary font-medium mt-1 flex items-center gap-1.5 flex-wrap">
-                        <span>{gap.regulatoryBasis}</span>
-                        {verification === "Verified" ? (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Verified
-                          </span>
-                        ) : verification === "Not checked" ? (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border">
-                            <AlertCircle className="h-3 w-3" />
-                            Not checked
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
-                            <AlertTriangle className="h-3 w-3" />
-                            Unverified
-                          </span>
+                        {gap.status && (
+                          <Badge variant="outline" className="text-[10px] shrink-0 bg-background">
+                            {gap.status}
+                          </Badge>
                         )}
+                      </div>
+                      {gap.requirement && gap.requirement !== gap.title && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          <span className="font-medium text-foreground">Requirement: </span>
+                          {gap.requirement}
+                        </p>
+                      )}
+                      <p className="text-xs text-emerald-800 font-medium mt-1 flex items-center gap-1.5 flex-wrap">
+                        <span>{gap.regulatoryBasis}</span>
+                        {gapVerificationBadge(gap)}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{gap.description}</p>
                     </div>
@@ -650,6 +1023,8 @@ function AnalysisResultsView({
                       type="button"
                       onClick={() => setExpandedGaps((prev) => ({ ...prev, [gap.id]: !prev[gap.id] }))}
                       className="text-muted-foreground shrink-0"
+                      aria-expanded={Boolean(isExpanded)}
+                      aria-label={`${isExpanded ? "Collapse" : "Expand"} finding ${gap.title}`}
                     >
                       {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                     </button>
@@ -657,16 +1032,67 @@ function AnalysisResultsView({
 
                   {isExpanded && (
                     <div className="mt-4 space-y-3 border-t border-border/30 pt-3 text-sm">
+                      {/* Customer Policy Evidence */}
                       <div>
-                        <p className="font-medium text-foreground text-xs mb-1">Current State in Policy</p>
-                        <p className="text-xs text-muted-foreground leading-relaxed italic">&ldquo;{gap.policyCurrentState}&rdquo;</p>
+                        <p className="font-medium text-foreground text-xs mb-1">Customer Policy Evidence</p>
+                        {gap.policyEvidence && gap.policyEvidence.length > 0 ? (
+                          <div className="space-y-1.5">
+                            {gap.policyEvidence.map((pe, idx) => (
+                              <div key={idx} className="rounded border border-border/40 bg-background/60 p-2 text-xs">
+                                <p className="text-[10px] font-medium text-muted-foreground">{pe.sectionHeading ?? (pe.page ? `Page ${pe.page}` : "Policy excerpt")}</p>
+                                <p className="italic text-foreground mt-0.5">&ldquo;{pe.excerpt}&rdquo;</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : gap.policyCurrentState ? (
+                          <div className="space-y-0.5">
+                            <p className="text-xs text-muted-foreground leading-relaxed italic">&ldquo;{gap.policyCurrentState}&rdquo;</p>
+                            <p className="text-[11px] text-muted-foreground/80 italic">No customer policy excerpt cited (absence assessed)</p>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-destructive italic">No matching clause identified in uploaded policy (Requirement absent from policy).</p>
+                        )}
                       </div>
+
+                      {/* Severity Rationale */}
+                      {gap.severityRationale && (
+                        <div className="rounded border border-border/30 bg-muted/20 p-2.5 text-xs">
+                          <span className="font-semibold text-foreground text-xs">Severity Rationale: </span>
+                          <span className="text-muted-foreground">{gap.severityRationale}</span>
+                        </div>
+                      )}
+
+                      {/* Recommendation */}
                       <div>
                         <p className="font-medium text-foreground text-xs mb-1">Recommendation</p>
                         <p className="text-xs text-muted-foreground leading-relaxed">{gap.recommendation}</p>
                       </div>
 
-                      {(gap.sourceDocumentTitle || gap.sourceSection || gap.sourceSnippet) ? (
+                      {/* Regulatory Evidence Lineage */}
+                      {gap.regulatoryEvidence && gap.regulatoryEvidence.length > 0 ? (
+                        <div className="rounded-md border border-border/40 bg-background/60 p-3">
+                          <p className="font-medium text-foreground text-xs mb-1">Regulatory Evidence (Corpus Lineage)</p>
+                          <div className="space-y-2 mt-2">
+                            {gap.regulatoryEvidence.map((re, idx) => (
+                              <div key={idx} className="rounded border border-border/30 bg-muted/10 p-2.5 text-xs">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <span className="font-semibold text-foreground">{re.documentTitle}</span>
+                                  <div className="flex gap-1">
+                                    {re.section && <Badge variant="outline" className="text-[10px]">§{re.section}</Badge>}
+                                    <Badge variant="outline" className="text-[10px]">{re.jurisdiction}</Badge>
+                                    <Badge variant="outline" className="text-[10px]">{re.frameworkSlug}</Badge>
+                                  </div>
+                                </div>
+                                <p className="mt-1 text-muted-foreground leading-relaxed italic">&ldquo;{re.excerpt}&rdquo;</p>
+                                <details className="mt-2 text-[10px] text-muted-foreground">
+                                  <summary className="cursor-pointer font-medium">Advanced evidence details</summary>
+                                  <p className="mt-1 font-mono break-all">Evidence ID: {re.evidenceId || re.vectorId}</p>
+                                </details>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (gap.sourceDocumentTitle || gap.sourceSection || gap.sourceSnippet) ? (
                         <div className="rounded-md border border-border/40 bg-background/60 p-3">
                           <p className="font-medium text-foreground text-xs mb-1">Source Context</p>
                           <p className="mb-2 text-xs leading-relaxed text-muted-foreground">
@@ -692,7 +1118,12 @@ function AnalysisResultsView({
                             <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">{gap.sourceSnippet}</p>
                           ) : null}
                         </div>
-                      ) : null}
+                      ) : (
+                        <div className="rounded-md border border-border/40 bg-background/60 p-3">
+                          <p className="font-medium text-foreground text-xs mb-1">Regulatory Evidence (Corpus Lineage)</p>
+                          <p className="text-xs text-muted-foreground italic">No verified regulatory evidence attached</p>
+                        </div>
+                      )}
 
                       {/* Evidence Required Checklist */}
                       {(() => {
@@ -847,6 +1278,17 @@ function AnalysisResultsView({
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Pilot Limitations & Feedback */}
+      <div className="space-y-4 pt-2">
+        <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 px-4 py-3 text-xs text-muted-foreground">
+          <Shield className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <p>
+            <strong className="text-foreground">Pilot Notice:</strong> This analysis is AI-assisted compliance guidance grounded in SheriaBot&apos;s authoritative regulatory corpus. It does not constitute formal legal certification. Assessment Coverage reflects only the retrieved regulatory evidence. OCR is not currently supported for scanned documents.
+          </p>
+        </div>
+        <PilotFeedbackWidget analysisId={analysisId} />
+      </div>
     </div>
   )
 }
@@ -856,34 +1298,50 @@ function AnalysisResultsView({
 function AnalysisProgressView({
   documentName,
   frameworks,
-  progress,
   status,
   errorMessage,
+  failureClass,
+  jurisdictionCode,
   startedAt,
+  analysisDepth,
   onBack,
   onRetry,
 }: {
   documentName: string
   frameworks: string[]
-  progress: number
   status: string
   errorMessage?: string | null
+  failureClass?: string | null
+  jurisdictionCode?: string | null
   startedAt: number | null
+  analysisDepth: GapAnalysisDepth
   onBack: () => void
   onRetry: () => void
 }) {
   const [elapsed, setElapsed] = useState(0)
-  const isFailed = status === "FAILED"
-  const statusInfo = STATUS_LABELS[status] ?? { label: status, description: "" }
+  const isFailed = status === "FAILED" || status === "DEAD_LETTERED"
+  const isCancelled = status === "CANCELLED"
+  const statusInfo = STATUS_LABELS[status] ?? {
+    label: status,
+    description: "Processing policy analysis...",
+  }
+  const stages = [
+    "Uploading document",
+    "Preparing analysis",
+    "Retrieving regulatory evidence",
+    "Reviewing policy",
+    "Verifying findings",
+    "Finalizing results",
+  ]
 
   useEffect(() => {
-    if (isFailed || status === "COMPLETED") return
+    if (isFailed || isCancelled || status === "COMPLETED") return
     const start = startedAt ?? Date.now()
     const interval = setInterval(() => {
       setElapsed(Math.floor((Date.now() - start) / 1000))
     }, 1000)
     return () => clearInterval(interval)
-  }, [isFailed, status, startedAt])
+  }, [isFailed, isCancelled, status, startedAt])
 
   const formatElapsed = (s: number) => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`
 
@@ -896,41 +1354,62 @@ function AnalysisProgressView({
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Policy Gap Analysis</h1>
-            <p className="text-muted-foreground mt-1 text-sm truncate max-w-sm">{documentName}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-muted-foreground text-sm truncate max-w-sm">{documentName}</p>
+              {jurisdictionCode && (
+                <Badge variant="outline" className="text-[10px]">
+                  {jurisdictionLabel(jurisdictionCode as JurisdictionCode)} ({jurisdictionCode})
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 
         <Card className="border-border/50">
-          <CardContent className="pt-10 pb-10">
+          <CardContent className="pt-10 pb-10" aria-live="polite" aria-busy={!isFailed && !isCancelled && status !== "COMPLETED"}>
             <div className="max-w-md mx-auto text-center space-y-6">
               {isFailed ? (
                 <XCircle className="h-12 w-12 text-destructive mx-auto" />
+              ) : isCancelled ? (
+                <AlertTriangle className="h-12 w-12 text-warning mx-auto" />
               ) : (
                 <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
               )}
 
               <div>
-                <h2 className={`text-xl font-semibold ${isFailed ? "text-destructive" : "text-foreground"}`}>
-                  {statusInfo.label}
+                <h2 className={`text-xl font-semibold ${isFailed ? "text-destructive" : isCancelled ? "text-warning" : "text-foreground"}`}>
+                  {isCancelled ? "Analysis Cancelled" : statusInfo.label}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {isFailed ? (errorMessage ?? statusInfo.description) : statusInfo.description}
+                  {isFailed
+                    ? safeGapAnalysisFailureMessage(errorMessage, failureClass)
+                    : isCancelled
+                      ? "The analysis was cancelled before completion."
+                      : statusInfo.description}
                 </p>
               </div>
 
-              {!isFailed && (
+              {!isFailed && !isCancelled && (
                 <>
-                  <div className="space-y-2">
+                  <div className="space-y-3 text-left">
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{progress}%</span>
+                      <span>Current stage</span>
                       {startedAt && <span>Elapsed: {formatElapsed(elapsed)}</span>}
                     </div>
-                    <div className="h-2 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
+                    <ol className="grid gap-2 sm:grid-cols-2" aria-label="Analysis stages">
+                      {stages.map((stage) => {
+                        const isCurrent = stage === statusInfo.label
+                        return (
+                          <li key={stage} className={cn(
+                            "flex items-center gap-2 rounded-md border px-3 py-2 text-xs",
+                            isCurrent ? "border-primary bg-primary/5 font-medium text-foreground" : "border-border text-muted-foreground",
+                          )} aria-current={isCurrent ? "step" : undefined}>
+                            {isCurrent ? <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /> : <span className="h-2 w-2 rounded-full bg-border" />}
+                            {stage}
+                          </li>
+                        )
+                      })}
+                    </ol>
                   </div>
 
                   {frameworks.length > 0 && (
@@ -946,18 +1425,16 @@ function AnalysisProgressView({
                     </div>
                   )}
 
-                  <p className="text-xs text-muted-foreground">
-                    Deep analyses can take up to 3 minutes. Please keep this page open.
-                  </p>
+                  <p className="text-xs text-muted-foreground">Stage changes reflect worker signals; no precise completion percentage is implied. You may leave this page while analysis continues.</p>
                 </>
               )}
 
-              {isFailed && (
+              {(isFailed || isCancelled) && (
                 <div className="flex gap-3 justify-center">
-                  <Button variant="outline" onClick={onBack}>Back</Button>
+                  <Button variant="outline" onClick={onBack}>Back to Form</Button>
                   <Button onClick={onRetry} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    Try Again
+                    Run New Analysis
                   </Button>
                 </div>
               )}
@@ -985,12 +1462,26 @@ function AnalysisHistoryItem({
     analysisDepth: string
     createdAt: Date | string
     progress?: number
+    jurisdictionCode?: string | null
+    results?: any
+    regulatoryFrameworks?: unknown
+    errorMessage?: string | null
   }
   onView: (id: string, name: string) => void
   onDelete: (id: string) => void
 }) {
-  const scoreConfig = analysis.overallScore != null ? getScoreColor(analysis.overallScore) : null
-  const isInProgress = analysis.status !== "COMPLETED" && analysis.status !== "FAILED"
+  const isV2 = analysis.results?.scoringVersion === "v2.0-evidence-backed" || analysis.results?.complianceAlignmentScore !== undefined
+  const displayScore = (isV2 && analysis.results?.complianceAlignmentScore !== undefined)
+    ? analysis.results.complianceAlignmentScore
+    : analysis.overallScore
+  const scoreConfig = displayScore != null ? getScoreColor(displayScore) : null
+  const isInProgress = !["COMPLETED", "FAILED", "CANCELLED"].includes(analysis.status)
+  const frameworkCount = Array.isArray(analysis.regulatoryFrameworks) ? analysis.regulatoryFrameworks.length : 0
+  const coverageStatus = analysis.results?.metadata?.coverageStatus ?? analysis.results?.coverageStatus
+  const coverageCount = analysis.results?.metadata?.frameworkCoverage
+    ? Object.values(analysis.results.metadata.frameworkCoverage as Record<string, { assessedRequirementCount?: number }>)
+      .reduce((total, item) => total + (item.assessedRequirementCount ?? 0), 0)
+    : null
 
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-border/50 bg-card p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
@@ -1003,18 +1494,32 @@ function AnalysisHistoryItem({
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-foreground">{analysis.documentName}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {analysis.analysisDepth} - {new Date(analysis.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
+            {formatGapAnalysisDepth(analysis.analysisDepth)} · {frameworkCount || "Unknown"} framework{frameworkCount === 1 ? "" : "s"} · {new Date(analysis.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium" })}
+            {" • "}
+            {analysis.jurisdictionCode ? `${jurisdictionLabel(analysis.jurisdictionCode)} (${analysis.jurisdictionCode})` : "Jurisdiction not recorded for this legacy analysis"}
           </p>
-          <Badge
-            variant="outline"
-            className={`text-xs mt-1 ${
-              analysis.status === "COMPLETED" ? "border-secondary text-secondary" :
-              analysis.status === "FAILED" ? "border-destructive text-destructive" :
-              "border-primary text-primary"
-            }`}
-          >
-            {STATUS_LABELS[analysis.status]?.label ?? analysis.status}
-          </Badge>
+          <div className="flex items-center gap-1.5 flex-wrap mt-1">
+            <Badge
+              variant="outline"
+              className={`text-xs ${
+                analysis.status === "COMPLETED" ? "border-[#0A5C36] text-[#0A5C36]" :
+                analysis.status === "FAILED" ? "border-[#B91C1C] text-[#B91C1C]" :
+                "border-primary text-primary"
+              }`}
+            >
+              {STATUS_LABELS[analysis.status]?.label ?? analysis.status}
+            </Badge>
+            {analysis.status === "COMPLETED" && (
+              <Badge variant="outline" className="text-[10px] bg-muted/40">
+                {isV2 ? "Evidence-based v2" : "Legacy scoring"}
+              </Badge>
+            )}
+            {coverageStatus ? (
+              <Badge variant="outline" className="text-[10px] bg-muted/40">
+                Assessment Coverage: partial{coverageCount !== null ? ` · ${coverageCount} evaluated` : ""}
+              </Badge>
+            ) : null}
+          </div>
           {isInProgress && typeof analysis.progress === "number" && (
             <div className="mt-1.5 flex items-center gap-2">
               <div className="h-1 w-24 rounded-full bg-muted overflow-hidden">
@@ -1026,12 +1531,18 @@ function AnalysisHistoryItem({
               <span className="text-xs text-muted-foreground">{analysis.progress}%</span>
             </div>
           )}
+          {analysis.status === "FAILED" ? <p className="mt-1 text-xs text-[#B91C1C]">{safeGapAnalysisFailureMessage(analysis.errorMessage)}</p> : null}
         </div>
       </div>
       <div className="flex items-center justify-between gap-3 sm:justify-end">
-        {analysis.overallScore != null && scoreConfig && (
-          <div className={`h-12 w-12 rounded-full border-4 ${scoreConfig.ring} flex items-center justify-center ${scoreConfig.bg}`}>
-            <span className={`text-xs font-bold ${scoreConfig.text}`}>{analysis.overallScore}</span>
+        {displayScore != null && scoreConfig && (
+          <div className="flex flex-col items-center">
+            <div className={`h-12 w-12 rounded-full border-4 ${scoreConfig.ring} flex items-center justify-center ${scoreConfig.bg}`}>
+              <span className={`text-xs font-bold ${scoreConfig.text}`}>{displayScore}</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground mt-0.5 text-center">
+              {isV2 ? "Compliance Alignment" : "Legacy scoring"}
+            </span>
           </div>
         )}
         <div className="flex gap-2">
@@ -1041,6 +1552,7 @@ function AnalysisHistoryItem({
             className="bg-transparent"
             onClick={() => onView(analysis.id, analysis.documentName)}
             disabled={analysis.status !== "COMPLETED"}
+            aria-label={`View ${analysis.documentName}`}
           >
             View
           </Button>
@@ -1049,6 +1561,7 @@ function AnalysisHistoryItem({
             size="sm"
             className="text-destructive hover:text-destructive hover:bg-destructive/10"
             onClick={() => onDelete(analysis.id)}
+            aria-label={`Delete ${analysis.documentName}`}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -1062,14 +1575,43 @@ function AnalysisHistoryItem({
 
 export default function GapAnalysisPage() {
   const user = useAuthStore((state) => state.user)
+  const currentOrgId = useAuthStore((state) => state.organization?.id ?? state.user?.organizationId)
+  const prevOrgIdRef = useRef(currentOrgId)
+  const { homeJurisdictionCode, enabledJurisdictions, hasFeature, isPilotAccess } = usePlan()
+
+  const entitledJurisdictions = useMemo(() => {
+    const list = Array.from(
+      new Set(
+        [homeJurisdictionCode ?? "KE", ...(enabledJurisdictions ?? [])].filter(
+          (code): code is JurisdictionCode => typeof code === "string" && ["KE", "RW", "MW", "NG"].includes(code)
+        )
+      )
+    )
+    return list.length > 0 ? list : (["KE"] as JurisdictionCode[])
+  }, [homeJurisdictionCode, enabledJurisdictions])
+
+  const [selectedJurisdiction, setSelectedJurisdiction] = useState<JurisdictionCode>(
+    entitledJurisdictions[0] ?? "KE"
+  )
+  const activeJurisdiction = entitledJurisdictions.includes(selectedJurisdiction)
+    ? selectedJurisdiction
+    : (entitledJurisdictions[0] ?? "KE")
+
+  const isJurisdictionPilotValidated = isPilotJurisdictionValidated(activeJurisdiction)
+  const pilotJurisdictionNotice = getPilotJurisdictionNotice(activeJurisdiction)
+
   const [activeView, setActiveView] = useState<{ id: string; name: string } | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([])
   const [selectedBenchmarkDocumentIds, setSelectedBenchmarkDocumentIds] = useState<string[]>([])
-  const [analysisDepth, setAnalysisDepth] = useState<GapAnalysisDepth>("standard")
+  const [requestedAnalysisDepth, setRequestedAnalysisDepth] = useState<GapAnalysisDepth | null>(null)
   const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>([])
   const [focusAreasOpen, setFocusAreasOpen] = useState(false)
   const [consentChecked, setConsentChecked] = useState(false)
+  const [frameworkSearch, setFrameworkSearch] = useState("")
+  const [historyStatus, setHistoryStatus] = useState("ALL")
+  const [historyDepth, setHistoryDepth] = useState("ALL")
+  const [deleteCandidate, setDeleteCandidate] = useState<{ id: string; documentName: string } | null>(null)
 
   // Async polling state
   const [activeAnalysisId, setActiveAnalysisId] = useState<string | null>(null)
@@ -1077,6 +1619,7 @@ export default function GapAnalysisPage() {
   const [analysisStartedAt, setAnalysisStartedAt] = useState<number | null>(null)
   const [pendingDocName, setPendingDocName] = useState<string>("")
   const [pendingFrameworks, setPendingFrameworks] = useState<string[]>([])
+  const [pendingAnalysisDepth, setPendingAnalysisDepth] = useState<GapAnalysisDepth>("quick")
   const hasCheckedResumption = useRef(false)
   const trackOpenedRef = useRef(false)
 
@@ -1091,42 +1634,86 @@ export default function GapAnalysisPage() {
     void utils.gapAnalysis.getGapAnalyses.invalidate()
   }, [utils])
 
+  const resetForm = useCallback(() => {
+    setSelectedFile(null)
+    setSelectedFrameworks([])
+    setSelectedBenchmarkDocumentIds([])
+    setRequestedAnalysisDepth(null)
+    setSelectedFocusAreas([])
+    setFocusAreasOpen(false)
+    setConsentChecked(false)
+  }, [])
+
+  // Organization switch isolation: purge active view and reload caches immediately
+  useEffect(() => {
+    if (prevOrgIdRef.current !== currentOrgId) {
+      prevOrgIdRef.current = currentOrgId
+      setActiveView(null)
+      setActiveAnalysisId(null)
+      setIsAwaitingResult(false)
+      resetForm()
+      invalidateGapAnalyses()
+      void utils.gapAnalysis.getFrameworks.invalidate()
+      void utils.gapAnalysis.getGapAnalysisLimits.invalidate()
+    }
+  }, [currentOrgId, invalidateGapAnalyses, resetForm, utils])
+
   const { data: analyses, isLoading: listLoading, error: listError } = trpc.gapAnalysis.getGapAnalyses.useQuery(
     undefined,
     { enabled: !!user }
   )
   const { data: frameworksData, isLoading: frameworksLoading } = trpc.gapAnalysis.getFrameworks.useQuery(
-    undefined,
+    { jurisdiction: activeJurisdiction } as any,
     { enabled: !!user }
   )
+
+  const applicableFrameworks = ((frameworksData ?? []) as FrameworkOption[]).filter((fw) => fw.applicable !== false)
+  const applicableFrameworkSlugs = new Set(applicableFrameworks.map((framework) => framework.slug))
+  const selectedFrameworksForRun = selectedFrameworks.filter((slug) => applicableFrameworkSlugs.has(slug))
   const { data: gapLimits } = trpc.gapAnalysis.getGapAnalysisLimits.useQuery(
     undefined,
     { enabled: !!user }
   )
   const { data: benchmarkDocumentsData, isLoading: benchmarkDocumentsLoading } = trpc.document.listBenchmarkDocuments.useQuery(
     undefined,
-    { enabled: !!user }
+    { enabled: !!user && gapLimits?.benchmarkDocuments === true }
   )
-  const maxFileSizeBytes = (gapLimits?.maxFileSizeMB ?? 10) * 1024 * 1024
+  const allowedAnalysisDepths = useMemo(
+    () => (gapLimits?.allowedDepths ?? []) as GapAnalysisDepth[],
+    [gapLimits?.allowedDepths],
+  )
+  const analysisDepthOptions = useMemo(
+    () => (gapLimits?.depthOptions ?? []) as Array<{
+      depth: GapAnalysisDepth
+      units: number
+      label: string
+      description: string
+      breadth: string
+    }>,
+    [gapLimits?.depthOptions],
+  )
+  const uploadContract: GapAnalysisUploadContract | null = gapLimits
+    ? {
+        maxFileSizeBytes: gapLimits.maxFileSizeBytes,
+        allowedFileTypes: gapLimits.allowedFileTypes,
+      }
+    : null
+  const analysisDepth = gapLimits
+    ? selectGapAnalysisDepth(requestedAnalysisDepth, allowedAnalysisDepths)
+    : null
+  const authorizedBenchmarkDocumentIds = gapLimits?.benchmarkDocuments
+    ? selectedBenchmarkDocumentIds
+    : []
 
-  const resetForm = useCallback(() => {
-    setSelectedFile(null)
-    setSelectedFrameworks([])
-    setSelectedBenchmarkDocumentIds([])
-    setAnalysisDepth("standard")
-    setSelectedFocusAreas([])
-    setFocusAreasOpen(false)
-    setConsentChecked(false)
-  }, [])
-
-  // Polling query   active only while isAwaitingResult
+  // Polling query — active only while isAwaitingResult
   const pollingQuery = trpc.gapAnalysis.getGapAnalysisResult.useQuery(
     { id: activeAnalysisId! },
     {
       enabled: !!user && isAwaitingResult && activeAnalysisId !== null,
-      refetchInterval: (query: { state: { data?: { status?: string } } }) => {
+      refetchInterval: (query: { state: { data?: { status?: string }; error?: unknown } }) => {
+        if (query.state.error) return false
         const status = query.state.data?.status
-        if (status === "COMPLETED" || status === "FAILED") return false
+        if (status === "COMPLETED" || status === "FAILED" || status === "CANCELLED" || status === "DEAD_LETTERED") return false
         return 3000
       },
     }
@@ -1158,14 +1745,22 @@ export default function GapAnalysisPage() {
       recordAccountActivation({
         first_feature: "gap_analysis",
       })
-      toast.success("Analysis complete", { description: `Overall score: ${pollingOverallScore ?? "N/A"}/100` })
+      toast.success("Analysis complete", { description: `Compliance Alignment: ${pollingOverallScore ?? "N/A"}/100` })
     }
-    if (pollingStatus === "FAILED") {
+    if (pollingStatus === "FAILED" || pollingStatus === "DEAD_LETTERED") {
       trackEvent("gap_analysis_failed", { reason: pollingErrorMessage || "unknown_polling_error" })
       trackFeatureUsage({
         feature_name: "gap_analysis",
         status: "failed",
       })
+    }
+    if (pollingStatus === "CANCELLED") {
+      queueMicrotask(() => {
+        setIsAwaitingResult(false)
+        setActiveAnalysisId(null)
+        invalidateGapAnalyses()
+      })
+      toast.info("Analysis cancelled")
     }
   }, [
     invalidateGapAnalyses,
@@ -1183,7 +1778,9 @@ export default function GapAnalysisPage() {
   useEffect(() => {
     if (hasCheckedResumption.current || isAwaitingResult || activeView || !analyses) return
     hasCheckedResumption.current = true
-    const inProgress = analyses.find((a: { id: string; documentName: string; status: string }) => a.status !== "COMPLETED" && a.status !== "FAILED")
+    const inProgress = analyses.find(
+      (a: { id: string; documentName: string; status: string }) => !["COMPLETED", "FAILED", "CANCELLED", "DEAD_LETTERED"].includes(a.status)
+    )
     if (inProgress) {
       queueMicrotask(() => {
         setActiveAnalysisId(inProgress.id)
@@ -1196,13 +1793,39 @@ export default function GapAnalysisPage() {
 
   const runMutation = trpc.gapAnalysis.runGapAnalysis.useMutation({
     onSuccess: (data) => {
+      // Correctly handle reused executions per contract
+      if (data.reused) {
+        if (data.status === "COMPLETED") {
+          setActiveView({ id: data.id, name: data.documentName })
+          setIsAwaitingResult(false)
+          invalidateGapAnalyses()
+          resetForm()
+          toast.info("Existing identical analysis found", {
+            description: "Viewing previously completed analysis result.",
+          })
+          return
+        } else {
+          setActiveAnalysisId(data.id)
+          setIsAwaitingResult(true)
+          setPendingDocName(data.documentName)
+          setPendingFrameworks([...selectedFrameworksForRun])
+          setPendingAnalysisDepth(analysisDepth ?? "quick")
+          invalidateGapAnalyses()
+          toast.info("Existing identical analysis in progress", {
+            description: "Connected to active background execution.",
+          })
+          return
+        }
+      }
+
       setActiveAnalysisId(data.id)
       setIsAwaitingResult(true)
-      setAnalysisStartedAt(Date.now())
-      setPendingDocName(selectedFile?.name ?? "")
-      setPendingFrameworks([...selectedFrameworks])
+      setAnalysisStartedAt(new Date(data.createdAt).getTime())
+      setPendingDocName(selectedFile?.name ?? data.documentName)
+      setPendingFrameworks([...selectedFrameworksForRun])
+      setPendingAnalysisDepth(analysisDepth ?? "quick")
       utils.gapAnalysis.getGapAnalyses.invalidate()
-      toast.success("Analysis queued", { description: "Your document is being processed. This may take 1-3 minutes." })
+      toast.success("Analysis queued", { description: "Your document is being processed in the background." })
     },
     onError: (err) => {
       trackEvent("gap_analysis_failed", { reason: err.message || "mutation_error" })
@@ -1210,8 +1833,9 @@ export default function GapAnalysisPage() {
         feature_name: "gap_analysis",
         status: "failed",
       })
+      const userMessage = safeGapAnalysisFailureMessage(err.message)
       toast.error("Analysis failed", {
-        description: err.message || "Failed to run gap analysis. Please try again.",
+        description: userMessage,
       })
     },
   })
@@ -1227,7 +1851,17 @@ export default function GapAnalysisPage() {
   })
 
   const handleRunAnalysis = async () => {
-    if (!selectedFile || selectedFrameworks.length === 0) return
+    if (!selectedFile || selectedFrameworksForRun.length === 0 || !analysisDepth) return
+    if (selectedFile.size === 0) {
+      toast.error("Document is empty", { description: "Please upload a valid, non-empty policy document." })
+      return
+    }
+    if (!isJurisdictionPilotValidated) {
+      toast.error("Jurisdiction not pilot-enabled", {
+        description: `Gap Analysis is currently enabled for Kenya during the pilot phase.`,
+      })
+      return
+    }
 
     // Convert file to base64
     const reader = new FileReader()
@@ -1237,7 +1871,7 @@ export default function GapAnalysisPage() {
 
       trackEvent("gap_analysis_started", { 
         depth: analysisDepth,
-        framework_count: selectedFrameworks.length,
+        framework_count: selectedFrameworksForRun.length,
         file_type: ext
       })
       trackFeatureUsage({
@@ -1247,12 +1881,15 @@ export default function GapAnalysisPage() {
 
       runMutation.mutate(buildGapAnalysisInput({
         fileName: selectedFile.name,
-        fileType: ext as "pdf" | "docx" | "doc" | "txt",
+        fileType: ext as "pdf" | "docx" | "txt",
         fileContent: base64,
-        regulatoryFrameworks: selectedFrameworks,
-        benchmarkDocumentIds: selectedBenchmarkDocumentIds,
+        regulatoryFrameworks: selectedFrameworksForRun,
+        benchmarkDocumentIds: authorizedBenchmarkDocumentIds,
         analysisDepth,
         focusAreas: selectedFocusAreas,
+        jurisdiction: activeJurisdiction,
+        processingConsentAcknowledged: consentChecked,
+        consentVersion: gapLimits?.processingAcknowledgement.version,
       }))
     }
     reader.onerror = () => {
@@ -1261,7 +1898,65 @@ export default function GapAnalysisPage() {
     reader.readAsDataURL(selectedFile)
   }
 
-  const canRun = selectedFile !== null && selectedFrameworks.length > 0 && consentChecked && !runMutation.isPending && !isAwaitingResult
+  const isRegulator = user?.role === "REGULATOR"
+  const isFeatureAllowed = hasFeature("gapAnalysis") || isPilotAccess
+  const isLimitsDisabled = gapLimits !== undefined && gapLimits.enabled === false
+
+  // Pilot Gate for unentitled users or regulators
+  if (user && isRegulator) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-[28px] font-semibold tracking-tight text-[var(--portal-text-primary)]">Policy Gap Analysis</h1>
+          <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Regulatory Assessment Portal</p>
+        </div>
+        <Card className="border border-border/60 bg-card p-8 max-w-xl mx-auto text-center space-y-4">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Shield className="h-6 w-6" />
+          </div>
+          <CardTitle className="text-lg">Regulator Access Restriction</CardTitle>
+          <CardDescription className="text-sm">
+            Regulatory supervisory accounts cannot run gap analyses on client documents. Gap Analysis is designed for fintech and financial institution compliance teams.
+          </CardDescription>
+        </Card>
+      </div>
+    )
+  }
+
+  if (user && (isLimitsDisabled || !isFeatureAllowed)) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-[28px] font-semibold tracking-tight text-[var(--portal-text-primary)]">Policy Gap Analysis</h1>
+          <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Pilot-Restricted Feature</p>
+        </div>
+        <Card className="border border-border/60 bg-card p-8 max-w-xl mx-auto text-center space-y-4">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Lock className="h-6 w-6" />
+          </div>
+          <CardTitle className="text-lg">Pilot Feature Access Required</CardTitle>
+          <CardDescription className="text-sm max-w-md mx-auto">
+            Policy Gap Analysis is currently enabled for authorized pilot organizations. If your organization is part of the pilot cohort, please contact your administrator or support to verify entitlement.
+          </CardDescription>
+          <div className="pt-2">
+            <Button variant="outline" asChild>
+              <a href="mailto:support@sheriabot.com?subject=Gap%20Analysis%20Pilot%20Access">Contact Pilot Support</a>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  const canRun = selectedFile !== null
+    && selectedFile.size > 0
+    && isJurisdictionPilotValidated
+    && selectedFrameworksForRun.length > 0
+    && analysisDepth !== null
+    && allowedAnalysisDepths.includes(analysisDepth)
+    && consentChecked
+    && !runMutation.isPending
+    && !isAwaitingResult
 
   // Show async progress view
   if (isAwaitingResult && activeAnalysisId) {
@@ -1270,10 +1965,12 @@ export default function GapAnalysisPage() {
       <AnalysisProgressView
         documentName={pd?.documentName ?? pendingDocName}
         frameworks={pendingFrameworks}
-        progress={pd?.progress ?? 5}
         status={pd?.status ?? "QUEUED"}
         errorMessage={pd?.errorMessage}
+        failureClass={(pd as any)?.failureClass}
+        jurisdictionCode={activeJurisdiction}
         startedAt={analysisStartedAt}
+        analysisDepth={pendingAnalysisDepth}
         onBack={() => {
           setIsAwaitingResult(false)
           setActiveAnalysisId(null)
@@ -1281,6 +1978,7 @@ export default function GapAnalysisPage() {
         onRetry={() => {
           setIsAwaitingResult(false)
           setActiveAnalysisId(null)
+          resetForm()
         }}
       />
     )
@@ -1299,7 +1997,7 @@ export default function GapAnalysisPage() {
     )
   }
 
-  const analysisHistory = (analyses ?? []) as Array<{
+  const analysisHistory = ((analyses ?? []) as unknown) as Array<{
     id: string
     documentName: string
     documentType: string
@@ -1308,17 +2006,26 @@ export default function GapAnalysisPage() {
     analysisDepth: string
     createdAt: string
     progress: number
+    jurisdictionCode: string | null
+    results?: unknown
+    regulatoryFrameworks?: unknown
+    errorMessage?: string | null
   }>
-  const groupedFrameworks = frameworksData && frameworksData.length > 0
-    ? Object.entries(
-        (frameworksData as FrameworkOption[]).reduce<Record<string, FrameworkOption[]>>((acc, fw) => {
-          if (!acc[fw.category]) acc[fw.category] = []
-          acc[fw.category].push(fw)
-          return acc
-        }, {})
-      )
-    : []
-  const selectedDepthLabel = ANALYSIS_DEPTHS.find((d) => d.value === analysisDepth)?.label ?? "Standard Analysis"
+  const filteredFrameworks = filterGapAnalysisFrameworks(applicableFrameworks, frameworkSearch)
+  const groupedFrameworks = groupGapAnalysisFrameworks(filteredFrameworks)
+  const selectedDepthLabel = analysisDepthOptions.find((d) => d.depth === analysisDepth)?.label ?? "Unavailable"
+  const selectedDepthUnits = analysisDepthOptions.find((d) => d.depth === analysisDepth)?.units ?? 0
+  const missingRunRequirements = getGapAnalysisRunRequirements({
+    hasDocument: selectedFile !== null,
+    frameworkCount: selectedFrameworksForRun.length,
+    hasAllowedDepth: analysisDepth !== null && allowedAnalysisDepths.includes(analysisDepth),
+    acknowledgementAccepted: consentChecked,
+    jurisdictionValidated: isJurisdictionPilotValidated,
+  })
+  const filteredHistory = analysisHistory.filter((analysis) =>
+    (historyStatus === "ALL" || analysis.status === historyStatus)
+      && (historyDepth === "ALL" || analysis.analysisDepth === historyDepth),
+  )
   const legalDocumentOptions: Option[] = (benchmarkDocumentsData?.documents ?? []).map((doc: {
     id: string
     title: string
@@ -1339,17 +2046,17 @@ export default function GapAnalysisPage() {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h1 className="text-[28px] font-semibold tracking-tight text-[var(--portal-text-primary)]">Policy Gap Analysis</h1>
-          <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">
-              Upload your policy documents and compare them against applicable regulatory requirements using AI.
+          <p className="mt-1 max-w-2xl text-sm text-[var(--portal-text-secondary)]">
+            Review internal policies against applicable regulatory requirements using evidence-backed analysis.
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => utils.gapAnalysis.getGapAnalyses.invalidate()} className="shrink-0">
+        <Button aria-label="Refresh gap analyses" variant="ghost" size="sm" onClick={() => utils.gapAnalysis.getGapAnalyses.invalidate()} className="shrink-0">
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Configuration Panel — single-column unified layout */}
-      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
 
         {/* ─── Left Column: Document Context + Target ─── */}
         <div className="flex flex-col gap-6">
@@ -1358,7 +2065,7 @@ export default function GapAnalysisPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Upload className="h-5 w-5 text-primary" />
-                Document Context
+                1. Policy Document
               </CardTitle>
               <CardDescription className="text-sm text-[var(--portal-text-secondary)]">
                 Upload your internal compliance policy, procedure, or framework document.
@@ -1372,7 +2079,7 @@ export default function GapAnalysisPage() {
                   trackEvent("gap_analysis_file_uploaded", { file_type: file.name.split('.').pop()?.toLowerCase() || "unknown" })
                 }}
                 onRemove={() => setSelectedFile(null)}
-                maxFileSizeBytes={maxFileSizeBytes}
+                uploadContract={uploadContract}
               />
             </CardContent>
           </Card>
@@ -1382,15 +2089,102 @@ export default function GapAnalysisPage() {
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Shield className="h-5 w-5 text-primary" />
-                Target Framework
+                2. Jurisdiction &amp; Regulatory Scope
               </CardTitle>
               <CardDescription className="text-sm text-[var(--portal-text-secondary)]">
-                Select the regulatory framework(s) to compare against.
+                Choose one authorized jurisdiction and the applicable frameworks for this review.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
+              {/* Jurisdiction Selection or Read-only Display */}
+              {entitledJurisdictions.length > 1 ? (
+                <div className="space-y-1.5 rounded-lg border border-[var(--portal-border)] bg-[var(--portal-canvas-subtle)] p-3">
+                  <Label htmlFor="jurisdiction-select" className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                    <Globe className="h-4 w-4 text-primary" />
+                    Jurisdiction
+                  </Label>
+                  <select
+                    id="jurisdiction-select"
+                    value={activeJurisdiction}
+                    onChange={(e) => {
+                      setSelectedJurisdiction(e.target.value as JurisdictionCode)
+                      setSelectedFrameworks([])
+                    }}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    {entitledJurisdictions.map((code) => (
+                      <option key={code} value={code}>
+                        {jurisdictionLabel(code)} ({code})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-[var(--portal-text-muted)]">
+                    Your analysis uses regulatory material applicable to this jurisdiction. Run separate analyses for other countries.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between rounded-lg border border-[var(--portal-border)] bg-[var(--portal-canvas-subtle)] px-3 py-2.5">
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-medium text-[var(--portal-text-muted)]">Jurisdiction</p>
+                    <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                      <Globe className="h-4 w-4 text-primary" />
+                      {jurisdictionLabel(activeJurisdiction)} ({activeJurisdiction})
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] text-[var(--portal-text-muted)]">
+                    Read only
+                  </Badge>
+                </div>
+              )}
+
+              {pilotJurisdictionNotice && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950 flex items-start gap-2.5">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-amber-950">Pilot Corpus Validation In Progress</p>
+                    <p className="mt-0.5 text-amber-900 leading-relaxed">{pilotJurisdictionNotice}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                  <div>
+                    <Label htmlFor="framework-search">Regulatory frameworks</Label>
+                    <p className="mt-1 text-xs text-[var(--portal-text-muted)]">
+                      {applicableFrameworks.length} applicable · {selectedFrameworksForRun.length} selected
+                    </p>
+                  </div>
+                  <div className="relative w-full sm:w-64">
+                    <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                    <Input
+                      id="framework-search"
+                      value={frameworkSearch}
+                      onChange={(event) => setFrameworkSearch(event.target.value)}
+                      placeholder="Search name, regulator, category"
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+                {selectedFrameworksForRun.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5" aria-label={`Selected frameworks (${selectedFrameworksForRun.length})`}>
+                    {selectedFrameworksForRun.map((slug) => {
+                      const framework = applicableFrameworks.find((item) => item.slug === slug)
+                      return <Badge key={slug} variant="secondary">{framework?.name ?? slug}</Badge>
+                    })}
+                  </div>
+                ) : null}
+              </div>
+
               {/* Frameworks list */}
-              {frameworksLoading ? (
+              {!isJurisdictionPilotValidated ? (
+                <div className="rounded-lg border border-dashed border-border bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground">Frameworks Pending Validation</p>
+                  <p className="text-xs mt-1 max-w-md mx-auto">
+                    Regulatory frameworks for {jurisdictionLabel(activeJurisdiction)} are currently undergoing pilot validation. Please select Kenya (KE) to assess against currently approved pilot frameworks.
+                  </p>
+                </div>
+              ) : frameworksLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-12 w-full" />
@@ -1399,11 +2193,13 @@ export default function GapAnalysisPage() {
               ) : groupedFrameworks.length > 0 ? (
                 <div className="space-y-5">
                   {groupedFrameworks.map(([category, fws]) => (
-                    <div key={category} className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-wide text-[var(--portal-text-muted)]">{category}</p>
+                    <details key={category} className="group space-y-2" open>
+                      <summary className="cursor-pointer rounded-md py-1 text-xs font-medium uppercase tracking-wide text-[var(--portal-text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        {category} ({fws.length})
+                      </summary>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {fws.map((fw: FrameworkOption) => {
-                          const isSelected = selectedFrameworks.includes(fw.slug)
+                          const isSelected = selectedFrameworksForRun.includes(fw.slug)
                           if (fw.locked) {
                             return (
                               <div
@@ -1425,6 +2221,8 @@ export default function GapAnalysisPage() {
                                   prev.includes(fw.slug) ? prev.filter((s) => s !== fw.slug) : [...prev, fw.slug]
                                 )
                               }
+                              aria-pressed={isSelected}
+                              aria-describedby={fw.description ? `framework-${fw.slug}-description` : undefined}
                               className={cn(
                                 "flex min-h-12 w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition-all duration-150",
                                 isSelected
@@ -1432,19 +2230,31 @@ export default function GapAnalysisPage() {
                                   : "bg-muted/30 text-foreground hover:bg-muted/60"
                               )}
                             >
-                              <span className="leading-snug">{fw.name}</span>
-                              {isSelected && <CheckCircle2 className="h-4 w-4 shrink-0" />}
+                              <span className="leading-snug">
+                                {fw.name}
+                                {fw.description ? <span id={`framework-${fw.slug}-description`} className="mt-0.5 block text-[11px] font-normal opacity-80">{fw.description}</span> : null}
+                              </span>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {fw.scope === "INTERNATIONAL" && (
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-blue-500/30 text-blue-600 bg-blue-50/50">
+                                    International
+                                  </Badge>
+                                )}
+                                {isSelected && <CheckCircle2 className="h-4 w-4 shrink-0" />}
+                              </div>
                             </button>
                           )
                         })}
                       </div>
-                    </div>
+                    </details>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-[var(--portal-text-secondary)]">No frameworks available.</p>
+                <p className="text-sm text-[var(--portal-text-secondary)]">
+                  {frameworkSearch ? "No frameworks match your search." : "No frameworks are applicable to this jurisdiction."}
+                </p>
               )}
-              {selectedFrameworks.length === 0 && !frameworksLoading && (
+              {selectedFrameworksForRun.length === 0 && !frameworksLoading && (
                 <p className="text-xs text-[var(--portal-text-muted)]">
                   Select at least one framework to analyse against.
                 </p>
@@ -1453,22 +2263,33 @@ export default function GapAnalysisPage() {
               {/* Subtle divider */}
               <div className="border-b border-[var(--portal-divider)]" />
 
-              {/* Regional Focus — Focus Areas */}
+              {/* Optional focus areas */}
               <div className="space-y-2">
                 <div>
                   <Label className="text-sm font-medium text-foreground">Benchmark Documents <span className="text-xs font-normal text-[var(--portal-text-muted)]">(optional)</span></Label>
                   <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Select the legal or regulatory documents SheriaBot should use as benchmarks for this analysis.</p>
                 </div>
-                <MultiSelect
-                  options={legalDocumentOptions}
-                  selected={selectedBenchmarkDocumentIds}
-                  onChange={(next) => setSelectedBenchmarkDocumentIds(next.slice(0, 10))}
-                  placeholder={benchmarkDocumentsLoading ? "Loading benchmark documents..." : "Select benchmark documents"}
-                  emptyText="No benchmark documents available."
-                  disabled={benchmarkDocumentsLoading || legalDocumentOptions.length === 0}
-                  className="border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-left text-[var(--portal-text-primary)] hover:bg-[var(--portal-surface-hover)] hover:text-[var(--portal-text-primary)] disabled:bg-[var(--portal-surface-solid)]"
-                />
-                {selectedBenchmarkDocumentIds.length > 0 ? (
+                {!gapLimits ? (
+                  <div className="rounded-lg border border-[var(--portal-border)] bg-[var(--portal-canvas-subtle)] px-3 py-2 text-sm text-[var(--portal-text-secondary)]">
+                    Loading benchmark access...
+                  </div>
+                ) : gapLimits.benchmarkDocuments ? (
+                  <MultiSelect
+                    options={legalDocumentOptions}
+                    selected={selectedBenchmarkDocumentIds}
+                    onChange={(next) => setSelectedBenchmarkDocumentIds(next.slice(0, 10))}
+                    placeholder={benchmarkDocumentsLoading ? "Loading benchmark documents..." : "Select benchmark documents"}
+                    emptyText="No benchmark documents available."
+                    disabled={benchmarkDocumentsLoading || legalDocumentOptions.length === 0}
+                    className="border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-left text-[var(--portal-text-primary)] hover:bg-[var(--portal-surface-hover)] hover:text-[var(--portal-text-primary)] disabled:bg-[var(--portal-surface-solid)]"
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 rounded-lg border border-[var(--portal-border)] bg-[var(--portal-canvas-subtle)] px-3 py-2 text-sm text-[var(--portal-text-secondary)]">
+                    <Lock className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    Benchmark documents require the Business plan or higher.
+                  </div>
+                )}
+                {gapLimits?.benchmarkDocuments && selectedBenchmarkDocumentIds.length > 0 ? (
                   <p className="text-xs text-[var(--portal-text-muted)]">
                     {selectedBenchmarkDocumentIds.length} benchmark document{selectedBenchmarkDocumentIds.length > 1 ? "s" : ""} selected.
                   </p>
@@ -1484,8 +2305,8 @@ export default function GapAnalysisPage() {
                   className="flex w-full items-center justify-between gap-3"
                 >
                   <div>
-                    <Label className="cursor-pointer text-sm font-medium text-foreground">Regional Focus <span className="text-xs font-normal text-[var(--portal-text-muted)]">(optional)</span></Label>
-                    <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Narrow the review to specific regulatory areas.</p>
+                    <Label className="cursor-pointer text-sm font-medium text-foreground">Focus Areas <span className="text-xs font-normal text-[var(--portal-text-muted)]">(optional)</span></Label>
+                    <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Narrow the review to selected compliance topics. The default is all applicable areas.</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {selectedFocusAreas.length > 0 && (
@@ -1529,44 +2350,60 @@ export default function GapAnalysisPage() {
         </div>
 
         {/* ─── Right Column: Parameters + CTA ─── */}
-        <Card className="portal-surface-raised flex flex-col">
+        <Card className="portal-surface-raised flex flex-col xl:sticky xl:top-6">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <BarChart3 className="h-5 w-5 text-primary" />
-              Analysis Parameters
+              Analysis Summary
             </CardTitle>
             <CardDescription className="text-sm text-[var(--portal-text-secondary)]">
-              Configure the depth, scope, and output preferences.
+              Review what will run and the usage required before you submit.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col space-y-6">
             {/* Analysis Depth — Segmented Control */}
             <div className="space-y-3">
               <div>
-                <Label className="text-sm font-medium text-foreground">Analysis Depth</Label>
-                <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Choose how detailed the AI review should be.</p>
+                <Label className="text-sm font-medium text-foreground">3. Analysis Method</Label>
+                <p className="mt-1 text-sm text-[var(--portal-text-secondary)]">Choose the review procedure before spending usage units.</p>
               </div>
-              <div className="grid grid-cols-3 gap-1 rounded-lg border border-[var(--portal-border)] bg-[var(--portal-surface-solid)] p-1" role="group" aria-label="Analysis depth">
-                {ANALYSIS_DEPTHS.map((d) => (
-                  <button
-                    key={d.value}
-                    type="button"
-                    onClick={() => setAnalysisDepth(d.value as GapAnalysisDepth)}
-                    aria-pressed={analysisDepth === d.value}
-                    className={cn(
-                      "rounded-md border px-2 py-2.5 text-center text-sm font-medium transition-colors sm:px-3",
-                      analysisDepth === d.value
-                        ? "border-[var(--portal-accent-border)] bg-[var(--portal-surface)] text-[#0A5C36] shadow-[var(--portal-shadow-sm)]"
-                        : "border-transparent text-[var(--portal-text-secondary)] hover:bg-[var(--portal-surface-hover)] hover:text-[var(--portal-text-primary)]"
-                    )}
-                  >
-                    {d.label}
-                  </button>
-                ))}
+              <div className="grid gap-2" role="radiogroup" aria-label="Analysis method">
+                {analysisDepthOptions.map((d) => {
+                  const isAllowed = allowedAnalysisDepths.includes(d.depth)
+                  return (
+                    <button
+                      key={d.depth}
+                      type="button"
+                      onClick={() => setRequestedAnalysisDepth(d.depth)}
+                      role="radio"
+                      aria-checked={analysisDepth === d.depth}
+                      aria-disabled={!isAllowed}
+                      disabled={!isAllowed}
+                      title={isAllowed ? undefined : "Not available on the current plan"}
+                      className={cn(
+                        "rounded-md border px-3 py-3 text-left text-sm font-medium transition-colors",
+                        analysisDepth === d.depth
+                          ? "border-[var(--portal-accent-border)] bg-[var(--portal-surface)] text-[#0A5C36] shadow-[var(--portal-shadow-sm)]"
+                          : isAllowed
+                            ? "border-transparent text-[var(--portal-text-secondary)] hover:bg-[var(--portal-surface-hover)] hover:text-[var(--portal-text-primary)]"
+                            : "cursor-not-allowed border-transparent text-[var(--portal-text-muted)] opacity-60"
+                      )}
+                    >
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="inline-flex items-center gap-1">
+                          {!isAllowed ? <Lock className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                          {d.label}
+                        </span>
+                        {d.depth === "standard" ? <Badge variant="secondary">Recommended</Badge> : null}
+                      </span>
+                      <span className="mt-1 block text-xs font-normal text-[var(--portal-text-secondary)]">{d.description}</span>
+                      <span className="mt-1 block text-[10px] font-normal text-[var(--portal-text-muted)]">{d.units} unit{d.units === 1 ? "" : "s"} · {d.breadth}</span>
+                      {!isAllowed ? <span className="sr-only"> Not available on the current plan.</span> : null}
+                    </button>
+                  )
+                })}
               </div>
-              <p className="text-sm text-[var(--portal-text-secondary)]">
-                {ANALYSIS_DEPTHS.find((d) => d.value === analysisDepth)?.description}
-              </p>
+              {analysisDepth === null ? <p className="text-sm text-destructive">No analysis method is available on the current plan.</p> : null}
             </div>
 
             {/* Subtle divider */}
@@ -1574,12 +2411,22 @@ export default function GapAnalysisPage() {
 
             {/* Scope Summary */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium text-foreground">Scope</Label>
+              <Label className="text-sm font-medium text-foreground">4. Review &amp; Run</Label>
               <div className="overflow-hidden rounded-lg border border-[var(--portal-border)] bg-[var(--portal-canvas-subtle)] px-4">
+                <div className="flex items-center justify-between gap-4 border-b border-[var(--portal-divider)] py-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Document</span>
+                  <span className="max-w-[12rem] truncate text-sm font-medium text-foreground">{selectedFile?.name ?? "Not uploaded"}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4 border-b border-[var(--portal-divider)] py-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Jurisdiction</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {jurisdictionLabel(activeJurisdiction)} ({activeJurisdiction})
+                  </span>
+                </div>
                 <div className="flex items-center justify-between gap-4 border-b border-[var(--portal-divider)] py-3">
                   <span className="text-sm text-[var(--portal-text-secondary)]">Frameworks</span>
                   <span className="text-sm font-medium text-foreground">
-                    {selectedFrameworks.length > 0 ? `${selectedFrameworks.length} selected` : "None"}
+                    {selectedFrameworksForRun.length > 0 ? `${selectedFrameworksForRun.length} selected` : "None"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4 border-b border-[var(--portal-divider)] py-3">
@@ -1595,8 +2442,20 @@ export default function GapAnalysisPage() {
                 <div className="flex items-center justify-between gap-4 py-3">
                   <span className="text-sm text-[var(--portal-text-secondary)]">Benchmark Documents</span>
                   <span className="text-sm font-medium text-foreground">
-                    {selectedBenchmarkDocumentIds.length > 0 ? `${selectedBenchmarkDocumentIds.length} selected` : "All corpus"}
+                    {!gapLimits?.benchmarkDocuments
+                      ? "Not available"
+                      : selectedBenchmarkDocumentIds.length > 0
+                        ? `${selectedBenchmarkDocumentIds.length} selected`
+                        : "None"}
                   </span>
+                </div>
+                <div className="flex items-center justify-between gap-4 border-b border-[var(--portal-divider)] py-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Usage</span>
+                  <span className="text-sm font-semibold text-foreground">{selectedDepthUnits} unit{selectedDepthUnits === 1 ? "" : "s"}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4 py-3">
+                  <span className="text-sm text-[var(--portal-text-secondary)]">Assessment approach</span>
+                  <span className="text-right text-sm font-medium text-foreground">Evidence-backed v2</span>
                 </div>
               </div>
             </div>
@@ -1616,27 +2475,24 @@ export default function GapAnalysisPage() {
                 className="mt-0.5 h-4 w-4 shrink-0 rounded border-input accent-primary cursor-pointer"
               />
               <span className="text-sm leading-relaxed text-[var(--portal-text-secondary)]">
-                I understand that my document may be processed using AI services hosted outside my home jurisdiction,
-                in accordance with SheriaBot&apos;s Privacy Policy and applicable data-protection law.
+                {gapLimits?.processingAcknowledgement.text ?? "Loading the current processing acknowledgement..."}
               </span>
             </label>
 
             {/* Status messaging */}
-            {!canRun && (
-              <div className="flex items-center gap-2 text-sm text-[var(--portal-text-secondary)]">
-                <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
-                {!selectedFile
-                  ? "Upload a document to continue"
-                  : selectedFrameworks.length === 0
-                  ? "Select at least one regulatory framework"
-                  : "Confirm the data processing consent above to continue"}
+            {!canRun && missingRunRequirements.length > 0 && (
+              <div id="gap-analysis-run-requirements" className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                <p className="flex items-center gap-2 font-medium"><AlertTriangle className="h-4 w-4 shrink-0" />Before you run</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
+                  {missingRunRequirements.map((requirement) => <li key={requirement}>{requirement}</li>)}
+                </ul>
               </div>
             )}
             {canRun && (
               <div className="flex min-w-0 items-center gap-2 text-sm text-secondary">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
                 <span className="truncate">
-                  Ready: {selectedFile?.name} against {selectedFrameworks.length} framework{selectedFrameworks.length > 1 ? "s" : ""}
+                  Ready: {selectedFile?.name} against {selectedFrameworksForRun.length} framework{selectedFrameworksForRun.length > 1 ? "s" : ""}
                 </span>
               </div>
             )}
@@ -1651,6 +2507,7 @@ export default function GapAnalysisPage() {
               <LoadingButton
                 onClick={handleRunAnalysis}
                 disabled={!canRun}
+                aria-describedby={!canRun ? "gap-analysis-run-requirements" : undefined}
                 loading={runMutation.isPending}
                 loadingText="Uploading..."
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-base font-semibold"
@@ -1665,7 +2522,29 @@ export default function GapAnalysisPage() {
 
       {/* Analysis History */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-4">Analysis History</h2>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Analysis History</h2>
+            <p className="text-sm text-muted-foreground">A record of active, completed, failed, and cancelled assessments.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Label className="sr-only" htmlFor="history-status">Filter history by status</Label>
+            <select id="history-status" value={historyStatus} onChange={(event) => setHistoryStatus(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+              <option value="ALL">All statuses</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="FAILED">Failed</option>
+              <option value="CANCELLED">Cancelled</option>
+              <option value="ANALYZING">Active</option>
+            </select>
+            <Label className="sr-only" htmlFor="history-depth">Filter history by depth</Label>
+            <select id="history-depth" value={historyDepth} onChange={(event) => setHistoryDepth(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+              <option value="ALL">All methods</option>
+              <option value="quick">Quick Scan</option>
+              <option value="standard">Standard Analysis</option>
+              <option value="deep">Deep Analysis</option>
+            </select>
+          </div>
+        </div>
 
         {listLoading && (
           <div className="space-y-3">
@@ -1694,9 +2573,13 @@ export default function GapAnalysisPage() {
           </Card>
         )}
 
-        {!listLoading && !listError && analysisHistory.length > 0 && (
+        {!listLoading && !listError && analysisHistory.length > 0 && filteredHistory.length === 0 && (
+          <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No analyses match these filters.</CardContent></Card>
+        )}
+
+        {!listLoading && !listError && filteredHistory.length > 0 && (
           <div className="space-y-3">
-            {analysisHistory.map((analysis: {
+            {filteredHistory.map((analysis: {
               id: string
               documentName: string
               documentType: string
@@ -1705,21 +2588,44 @@ export default function GapAnalysisPage() {
               analysisDepth: string
               createdAt: string
               progress: number
+              jurisdictionCode?: string | null
+              results?: unknown
+              regulatoryFrameworks?: unknown
+              errorMessage?: string | null
             }) => (
               <AnalysisHistoryItem
                 key={analysis.id}
                 analysis={analysis}
                 onView={(id, name) => setActiveView({ id, name })}
-                onDelete={(id) => {
-                  if (confirm("Delete this analysis? This cannot be undone.")) {
-                    deleteMutation.mutate({ id })
-                  }
-                }}
+                onDelete={(id) => setDeleteCandidate({ id, documentName: analysis.documentName })}
               />
             ))}
           </div>
         )}
       </div>
+
+      <AlertDialog open={deleteCandidate !== null} onOpenChange={(open) => { if (!open) setDeleteCandidate(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete analysis?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete {deleteCandidate?.documentName ?? "this analysis"} and its stored source/report artifacts? Content-free security and audit records may be retained where required.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep analysis</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteCandidate) deleteMutation.mutate({ id: deleteCandidate.id })
+                setDeleteCandidate(null)
+              }}
+            >
+              Delete analysis
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Disclaimer */}
       <Card className="border-border/50 bg-muted/30">
