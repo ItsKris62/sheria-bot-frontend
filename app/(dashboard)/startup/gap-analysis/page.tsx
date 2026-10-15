@@ -64,9 +64,11 @@ import { buildGapAnalysisInput, type GapAnalysisDepth } from "@/lib/gap-analysis
 import {
   gapAnalysisAcceptValue,
   gapAnalysisFileHelperText,
+  getAvailableGapAnalysisDepths,
   selectGapAnalysisDepth,
   validateGapAnalysisFile,
   type GapAnalysisUploadContract,
+  type GapAnalysisDepthAvailabilityContract,
 } from "@/lib/gap-analysis-contract"
 import {
   filterGapAnalysisFrameworks,
@@ -1680,9 +1682,15 @@ export default function GapAnalysisPage() {
     undefined,
     { enabled: !!user && gapLimits?.benchmarkDocuments === true }
   )
-  const allowedAnalysisDepths = useMemo(
+  const planAllowedAnalysisDepths = useMemo(
     () => (gapLimits?.allowedDepths ?? []) as GapAnalysisDepth[],
     [gapLimits?.allowedDepths],
+  )
+  const allowedAnalysisDepths = getAvailableGapAnalysisDepths(
+    planAllowedAnalysisDepths,
+    (gapLimits as { depthAvailability?: GapAnalysisDepthAvailabilityContract } | undefined)?.depthAvailability,
+    activeJurisdiction,
+    selectedFrameworksForRun,
   )
   const analysisDepthOptions = useMemo(
     () => (gapLimits?.depthOptions ?? []) as Array<{
@@ -1708,7 +1716,12 @@ export default function GapAnalysisPage() {
     : []
 
   // Polling query — active only while isAwaitingResult
-  const pollingQuery = trpc.gapAnalysis.getGapAnalysisResult.useQuery(
+  // The backend source owns this projection. Keep this compatibility cast
+  // until the generated @sheriabot/api-types package is refreshed by CI.
+  const gapAnalysisStatusProcedure = (trpc.gapAnalysis as unknown as {
+    getGapAnalysisStatus: typeof trpc.gapAnalysis.getGapAnalysisResult
+  }).getGapAnalysisStatus
+  const pollingQuery = gapAnalysisStatusProcedure.useQuery(
     { id: activeAnalysisId! },
     {
       enabled: !!user && isAwaitingResult && activeAnalysisId !== null,
@@ -2405,7 +2418,7 @@ export default function GapAnalysisPage() {
                       aria-checked={analysisDepth === d.depth}
                       aria-disabled={!isAllowed}
                       disabled={!isAllowed}
-                      title={isAllowed ? undefined : "Not available on the current plan"}
+                      title={isAllowed ? undefined : d.depth === "deep" ? "Deep Analysis remains gated until this framework passes quality and runtime validation" : "Not available for the selected plan and frameworks"}
                       className={cn(
                         "rounded-md border px-3 py-3 text-left text-sm font-medium transition-colors",
                         analysisDepth === d.depth
@@ -2424,7 +2437,7 @@ export default function GapAnalysisPage() {
                       </span>
                       <span className="mt-1 block text-xs font-normal text-[var(--portal-text-secondary)]">{d.description}</span>
                       <span className="mt-1 block text-[10px] font-normal text-[var(--portal-text-muted)]">{d.units} unit{d.units === 1 ? "" : "s"} · {d.breadth}</span>
-                      {!isAllowed ? <span className="sr-only"> Not available on the current plan.</span> : null}
+                      {!isAllowed ? <span className="sr-only"> Not available for the selected plan and frameworks.</span> : null}
                     </button>
                   )
                 })}

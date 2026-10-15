@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
+  getAvailableGapAnalysisDepths,
   gapAnalysisAcceptValue,
   gapAnalysisFileHelperText,
   selectGapAnalysisDepth,
@@ -29,6 +30,22 @@ describe("Gap Analysis frontend contract", () => {
 
   it("preserves a currently selected depth while it remains authorized", () => {
     expect(selectGapAnalysisDepth("quick", ["quick", "standard"])).toBe("quick")
+  })
+
+  it("intersects plan entitlement with authoritative framework depth readiness", () => {
+    const availability = {
+      default: { quick: true, standard: true, deep: false },
+      frameworks: {
+        "KE/dpa-2019": { quick: true, standard: true, deep: false },
+      },
+    } as const
+
+    expect(getAvailableGapAnalysisDepths(
+      ["quick", "standard", "deep"],
+      availability,
+      "KE",
+      ["dpa-2019"],
+    )).toEqual(["quick", "standard"])
   })
 
   it.each([

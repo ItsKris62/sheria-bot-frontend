@@ -11,6 +11,29 @@ export type GapAnalysisUploadContract = {
   allowedFileTypes: readonly GapAnalysisFileContract[]
 }
 
+export type GapAnalysisDepthAvailability = Readonly<Record<GapAnalysisDepth, boolean>>
+
+export type GapAnalysisDepthAvailabilityContract = {
+  default: GapAnalysisDepthAvailability
+  frameworks: Readonly<Record<string, GapAnalysisDepthAvailability>>
+}
+
+export function getAvailableGapAnalysisDepths(
+  planDepths: readonly GapAnalysisDepth[],
+  availability: GapAnalysisDepthAvailabilityContract | undefined,
+  jurisdiction: string,
+  frameworkSlugs: readonly string[],
+): GapAnalysisDepth[] {
+  if (!availability) return [...planDepths]
+  return planDepths.filter((depth) => {
+    if (frameworkSlugs.length === 0) return availability.default[depth]
+    return frameworkSlugs.every((slug) =>
+      (availability.frameworks[`${jurisdiction.toUpperCase()}/${slug.toLowerCase().replaceAll("_", "-")}`]
+        ?? availability.default)[depth],
+    )
+  })
+}
+
 export function selectGapAnalysisDepth(
   current: GapAnalysisDepth | null,
   allowedDepths: readonly GapAnalysisDepth[],
