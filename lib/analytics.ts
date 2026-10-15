@@ -79,6 +79,9 @@ export type SafeEventProperties = {
   current_plan?: string;
   required_plan?: string;
   document_type?: string;
+  analysis_id?: string;
+  analysisId?: string;
+  rating?: string | number;
 
   // Blog & KB specific
   blog_category?: string;
@@ -160,6 +163,7 @@ export type AnalyticsEvent =
   | "gap_analysis_completed"
   | "gap_analysis_failed"
   | "gap_analysis_export_generated"
+  | "gap_analysis_pilot_feedback"
   // Corpus Gap Reports
   | "corpus_gap_report_opened"
   | "corpus_gap_report_submitted"

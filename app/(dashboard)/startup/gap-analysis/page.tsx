@@ -409,7 +409,7 @@ function PilotFeedbackWidget({ analysisId }: { analysisId: string }) {
     trackEvent("gap_analysis_pilot_feedback", {
       analysis_id: analysisId,
       rating: rating ?? "unspecified",
-      tags: selectedChips.join(","),
+      tags: selectedChips,
     })
     setFeedbackSent(true)
     toast.success("Feedback submitted", { description: "Thank you for helping calibrate the pilot!" })
@@ -1571,7 +1571,7 @@ function AnalysisHistoryItem({
 
 export default function GapAnalysisPage() {
   const user = useAuthStore((state) => state.user)
-  const currentOrgId = useAuthStore((state) => state.organization?.id ?? state.user?.organizationId)
+  const currentOrgId = useAuthStore((state) => state.user?.organizationId)
   const prevOrgIdRef = useRef(currentOrgId)
   const { homeJurisdictionCode, enabledJurisdictions, hasFeature, isPilotAccess } = usePlan()
 
