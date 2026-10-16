@@ -379,6 +379,12 @@ type AnalysisResultData = {
     complianceAlignmentScore?: number
     assessmentCoverageScore?: number
     coverageStatus?: "COMPLETE" | "PARTIAL" | "INSUFFICIENT"
+    frameworkCoverage?: Record<string, {
+      frameworkSlug: string
+      evidenceStatus: string
+      assessedRequirementCount: number
+      unassessedRequirementCount?: number
+    }>
     documentCoverage?: {
       totalChunks: number
       processedChunks: number
