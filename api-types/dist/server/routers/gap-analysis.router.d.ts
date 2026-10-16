@@ -14,15 +14,10 @@ export declare const gapAnalysisRouter: import("@trpc/server").TRPCBuiltRouter<{
     };
     transformer: false;
 }, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
-    /**
-     * Return the list of regulatory frameworks available to the current user.
-     * Each framework carries a `locked` flag when the framework's tier exceeds
-     * the user's current subscription plan.
-     *
-     * @protected
-     */
     getFrameworks: import("@trpc/server").TRPCQueryProcedure<{
-        input: void;
+        input: {
+            jurisdiction?: "KE" | "MW" | "RW" | "NG" | undefined;
+        } | undefined;
         output: {
             slug: string;
             name: string;
@@ -30,38 +25,30 @@ export declare const gapAnalysisRouter: import("@trpc/server").TRPCBuiltRouter<{
             description: string | null;
             tier: string;
             locked: boolean;
+            scope: import("../../config/framework-metadata.config.js").FrameworkScope;
+            jurisdictions: ("KE" | "MW" | "RW" | "NG")[];
+            applicable: boolean;
+            pilotEnabled: boolean;
+            readiness: import("../../config/gap-analysis.config.js").PilotCorpusReadiness;
         }[];
         meta: object;
     }>;
-    /**
-     * Run a full AI+RAG gap analysis on an uploaded policy document.
-     *
-     * Security: organizationId is derived exclusively from ctx.orgMembership
-     * (set by requireOrgMembership via orgMemberProcedure) and never from the
-     * request body, closing the IDOR that allowed cross-tenant org attribution.
-     * Dedup key uses v2 namespace keyed on userId to prevent cross-tenant cache
-     * poisoning with the same file hash.
-     *
-     * @protected @org-member @rate-limited
-     */
     runGapAnalysis: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             fileName: string;
-            fileType: "pdf" | "docx" | "doc" | "txt";
+            fileType: "pdf" | "docx" | "txt";
             fileContent: string;
             regulatoryFrameworks: string[];
+            processingConsentAcknowledged?: boolean | undefined;
+            consentVersion?: string | undefined;
+            jurisdiction?: "KE" | "MW" | "RW" | "NG" | undefined;
             benchmarkDocumentIds?: string[] | undefined;
-            analysisDepth?: "standard" | "quick" | "deep" | undefined;
+            analysisDepth?: "quick" | "standard" | "deep" | undefined;
             focusAreas?: string[] | undefined;
         };
         output: any;
         meta: object;
     }>;
-    /**
-     * List all gap analyses for the current user.
-     *
-     * @protected
-     */
     getGapAnalyses: import("@trpc/server").TRPCQueryProcedure<{
         input: void;
         output: {
@@ -74,16 +61,20 @@ export declare const gapAnalysisRouter: import("@trpc/server").TRPCBuiltRouter<{
             status: string;
             progress: number;
             errorMessage: string | null;
+            jurisdictionCode: string | null;
+            results?: import("@prisma/client/runtime/client").JsonValue | null;
             createdAt: Date;
             updatedAt: Date;
         }[];
         meta: object;
     }>;
-    /**
-     * Get a specific gap analysis result by ID.
-     *
-     * @protected
-     */
+    getGapAnalysisStatus: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            id: string;
+        };
+        output: any;
+        meta: object;
+    }>;
     getGapAnalysisResult: import("@trpc/server").TRPCQueryProcedure<{
         input: {
             id: string;
@@ -111,21 +102,60 @@ export declare const gapAnalysisRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         meta: object;
     }>;
-    /**
-     * Returns the caller's per-tier gap analysis file size limit.
-     */
     getGapAnalysisLimits: import("@trpc/server").TRPCQueryProcedure<{
         input: void;
         output: {
-            maxFileSizeMB: number;
+            readonly enabled: boolean;
+            readonly usageLimit: number;
+            readonly usagePeriod: "lifetime" | "month";
+            readonly benchmarkDocuments: boolean;
+            readonly countryLimit: number;
+            readonly allowedDepths: readonly ("quick" | "standard" | "deep")[];
+            readonly depthOptions: ({
+                label: "Quick Scan";
+                description: "Fast screening for significant evidence-backed risks.";
+                breadth: "Limited breadth";
+                depth: "quick" | "standard" | "deep";
+                units: number;
+            } | {
+                label: "Standard Analysis";
+                description: "Balanced policy and regulatory review with broader retrieval and document traversal.";
+                breadth: "Recommended";
+                depth: "quick" | "standard" | "deep";
+                units: number;
+            } | {
+                label: "Deep Analysis";
+                description: "Expanded retrieval, cross-section review and enhanced verification.";
+                breadth: "Most thorough";
+                depth: "quick" | "standard" | "deep";
+                units: number;
+            })[];
+            readonly maxFileSizeBytes: number;
+            readonly allowedFileTypes: readonly [{
+                readonly extension: "pdf";
+                readonly label: "PDF";
+                readonly mimeTypes: readonly ["application/pdf"];
+            }, {
+                readonly extension: "docx";
+                readonly label: "DOCX";
+                readonly mimeTypes: readonly ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+            }, {
+                readonly extension: "txt";
+                readonly label: "TXT";
+                readonly mimeTypes: readonly ["text/plain"];
+            }];
+            readonly processingAcknowledgement: {
+                readonly version: "2026-10-01";
+                readonly text: "I understand that my document may be processed using AI services hosted outside my home jurisdiction, in accordance with SheriaBot's Privacy Policy and applicable data-protection law.";
+            };
+            readonly pilotAvailability: import("../../config/gap-analysis.config.js").GapAnalysisPilotAvailability;
+            readonly depthAvailability: {
+                readonly default: Readonly<Record<"quick" | "standard" | "deep", boolean>>;
+                readonly frameworks: Readonly<Record<string, Readonly<Record<"quick" | "standard" | "deep", boolean>>>>;
+            };
         };
         meta: object;
     }>;
-    /**
-     * Delete a gap analysis record and its R2 file.
-     *
-     * @protected
-     */
     deleteGapAnalysis: import("@trpc/server").TRPCMutationProcedure<{
         input: {
             id: string;
@@ -136,4 +166,3 @@ export declare const gapAnalysisRouter: import("@trpc/server").TRPCBuiltRouter<{
         meta: object;
     }>;
 }>>;
-//# sourceMappingURL=gap-analysis.router.d.ts.map
