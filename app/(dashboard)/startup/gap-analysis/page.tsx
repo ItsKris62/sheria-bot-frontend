@@ -73,6 +73,7 @@ import {
 import {
   filterGapAnalysisFrameworks,
   formatGapAnalysisDepth,
+  getComplianceAlignmentPresentation,
   getGapAnalysisRunRequirements,
   getPilotJurisdictionNotice,
   groupGapAnalysisFrameworks,
@@ -141,13 +142,6 @@ function getScoreColor(score: number) {
   if (score >= 71) return { ring: "border-amber-700", text: "text-amber-900", bg: "bg-amber-50" }
   if (score >= 41) return { ring: "border-orange-700", text: "text-orange-900", bg: "bg-orange-50" }
   return { ring: "border-red-700", text: "text-red-800", bg: "bg-red-50" }
-}
-
-function getScoreLabel(score: number) {
-  if (score >= 91) return "Excellent"
-  if (score >= 71) return "Good"
-  if (score >= 41) return "Needs Work"
-  return "Critical Risk"
 }
 
 // File Upload Section
@@ -249,7 +243,18 @@ function FileUploadSection({
 
 // Score Gauge
 
-function ScoreGauge({ score }: { score: number }) {
+function ScoreGauge({ score, available = true }: { score: number; available?: boolean }) {
+  if (!available) {
+    return (
+      <div
+        className="h-28 w-28 rounded-full border-8 border-border flex flex-col items-center justify-center bg-muted/40"
+        aria-label="Compliance Alignment not assessed"
+      >
+        <p className="text-2xl font-bold text-muted-foreground">—</p>
+        <p className="text-[10px] font-medium text-muted-foreground text-center px-1 leading-tight mt-0.5">Compliance Alignment</p>
+      </div>
+    )
+  }
   const { ring, text, bg } = getScoreColor(score)
   return (
     <div className={`h-28 w-28 rounded-full border-8 ${ring} flex flex-col items-center justify-center ${bg}`}>
@@ -602,9 +607,21 @@ function AnalysisResultsView({
   const coverageScore = metadata.assessmentCoverageScore ?? results.assessmentCoverageScore ?? results.assessmentCoverage ?? 0
   const coverageStatus = metadata.coverageStatus ?? results.coverageStatus ?? "INSUFFICIENT"
   const documentCoverage = metadata.documentCoverage ?? results.documentCoverage
-  const scoreConfig = getScoreColor(alignmentScore)
   const selectedBenchmarkDocuments = metadata.selectedBenchmarkDocuments ?? []
   const allGaps = frameworks.flatMap((f) => f.gaps.map((g) => ({ ...g, frameworkName: f.name })))
+  const frameworkCoverage = metadata.frameworkCoverage ?? results.frameworkCoverage
+  const assessedRequirementCount = frameworkCoverage
+    ? Object.values(frameworkCoverage).reduce((total, item) => total + item.assessedRequirementCount, 0)
+    : allGaps.length
+  const alignmentPresentation = getComplianceAlignmentPresentation({
+    score: alignmentScore,
+    evidenceBacked: isV2,
+    coverageStatus,
+    assessedRequirementCount,
+  })
+  const scoreConfig = alignmentPresentation.available
+    ? getScoreColor(alignmentScore)
+    : { ring: "border-border", text: "text-muted-foreground", bg: "bg-muted/40" }
 
   const verifiedGapCount = allGaps.filter((gap) => gap.verification?.verdict === "SUPPORTED" || gap.verificationStatus === "verified").length
   const partialGapCount = allGaps.filter((gap) => gap.verification?.verdict === "PARTIALLY_SUPPORTED").length
@@ -849,14 +866,14 @@ function AnalysisResultsView({
       <Card className={`border-2 ${scoreConfig.ring}`}>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
-            <ScoreGauge score={alignmentScore} />
+            <ScoreGauge score={alignmentScore} available={alignmentPresentation.available} />
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <h3 className="font-semibold text-foreground text-lg">
                   {isV2 ? "Compliance Alignment" : "Compliance Alignment (Legacy)"}
                 </h3>
                 <Badge variant="outline" className={scoreConfig.bg + " " + scoreConfig.text + " border-current"}>
-                  {getScoreLabel(alignmentScore)}
+                  {alignmentPresentation.label}
                 </Badge>
                 <Badge variant="outline" className="text-xs bg-muted">
                   {isV2 ? "Evidence-based v2" : "Legacy scoring"}
@@ -1480,6 +1497,12 @@ function AnalysisHistoryItem({
     ? Object.values(analysis.results.metadata.frameworkCoverage as Record<string, { assessedRequirementCount?: number }>)
       .reduce((total, item) => total + (item.assessedRequirementCount ?? 0), 0)
     : null
+  const alignmentPresentation = displayScore != null ? getComplianceAlignmentPresentation({
+    score: displayScore,
+    evidenceBacked: isV2,
+    coverageStatus,
+    assessedRequirementCount: coverageCount,
+  }) : null
 
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-border/50 bg-card p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
@@ -1533,13 +1556,15 @@ function AnalysisHistoryItem({
         </div>
       </div>
       <div className="flex items-center justify-between gap-3 sm:justify-end">
-        {displayScore != null && scoreConfig && (
+        {displayScore != null && scoreConfig && alignmentPresentation && (
           <div className="flex flex-col items-center">
-            <div className={`h-12 w-12 rounded-full border-4 ${scoreConfig.ring} flex items-center justify-center ${scoreConfig.bg}`}>
-              <span className={`text-xs font-bold ${scoreConfig.text}`}>{displayScore}</span>
+            <div className={`h-12 w-12 rounded-full border-4 ${alignmentPresentation.available ? scoreConfig.ring : "border-border"} flex items-center justify-center ${alignmentPresentation.available ? scoreConfig.bg : "bg-muted/40"}`}>
+              <span className={`text-xs font-bold ${alignmentPresentation.available ? scoreConfig.text : "text-muted-foreground"}`}>
+                {alignmentPresentation.available ? displayScore : "—"}
+              </span>
             </div>
             <span className="text-[10px] text-muted-foreground mt-0.5 text-center">
-              {isV2 ? "Compliance Alignment" : "Legacy scoring"}
+              {alignmentPresentation.available ? (isV2 ? "Compliance Alignment" : "Legacy scoring") : "Not assessed"}
             </span>
           </div>
         )}

@@ -120,6 +120,23 @@ export function formatGapAnalysisDepth(depth: string | null | undefined): string
   return "Legacy execution profile"
 }
 
+export function getComplianceAlignmentPresentation(input: {
+  score: number
+  evidenceBacked: boolean
+  coverageStatus?: string | null
+  assessedRequirementCount?: number | null
+}): { available: boolean; label: string } {
+  const unavailable = input.evidenceBacked && (
+    input.coverageStatus === "INSUFFICIENT" || input.assessedRequirementCount === 0
+  )
+
+  if (unavailable) return { available: false, label: "Not assessed" }
+  if (input.score >= 91) return { available: true, label: "Excellent" }
+  if (input.score >= 71) return { available: true, label: "Good" }
+  if (input.score >= 41) return { available: true, label: "Needs Work" }
+  return { available: true, label: "Critical Risk" }
+}
+
 export type GapAnalysisFailureClass =
   | "VALIDATION"
   | "ENTITLEMENT"

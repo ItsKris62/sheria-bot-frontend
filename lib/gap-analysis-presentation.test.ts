@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   filterGapAnalysisFrameworks,
   formatGapAnalysisDepth,
+  getComplianceAlignmentPresentation,
   getGapAnalysisRunRequirements,
   getPilotJurisdictionNotice,
   groupGapAnalysisFrameworks,
@@ -85,6 +86,29 @@ describe("Gap Analysis presentation contract", () => {
     // TIMEOUT
     const timeoutMsg = safeGapAnalysisFailureMessage(null, "TIMEOUT")
     expect(timeoutMsg).toContain("timed out before completion")
+  })
+
+  it("does not classify an unassessed v2 result as critical risk", () => {
+    expect(getComplianceAlignmentPresentation({
+      score: 0,
+      evidenceBacked: true,
+      coverageStatus: "PARTIAL",
+      assessedRequirementCount: 0,
+    })).toEqual({ available: false, label: "Not assessed" })
+
+    expect(getComplianceAlignmentPresentation({
+      score: 0,
+      evidenceBacked: true,
+      coverageStatus: "INSUFFICIENT",
+      assessedRequirementCount: 3,
+    })).toEqual({ available: false, label: "Not assessed" })
+
+    expect(getComplianceAlignmentPresentation({
+      score: 0,
+      evidenceBacked: true,
+      coverageStatus: "PARTIAL",
+      assessedRequirementCount: 2,
+    })).toEqual({ available: true, label: "Critical Risk" })
   })
 
   it("defines user-friendly labels for all 10 canonical backend statuses", () => {
