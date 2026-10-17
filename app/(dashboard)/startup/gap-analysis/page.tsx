@@ -126,10 +126,10 @@ const FOCUS_AREAS = [
 ]
 
 const SEVERITY_CONFIG = {
-  CRITICAL: { label: "Critical", bg: "bg-red-50", border: "border-l-red-700", badge: "bg-red-50 text-red-800 border-red-300" },
-  HIGH: { label: "High", bg: "bg-orange-50", border: "border-l-orange-700", badge: "bg-orange-50 text-orange-900 border-orange-300" },
-  MEDIUM: { label: "Medium", bg: "bg-yellow-50", border: "border-l-yellow-700", badge: "bg-yellow-50 text-yellow-900 border-yellow-300" },
-  LOW: { label: "Low", bg: "bg-emerald-50", border: "border-l-emerald-700", badge: "bg-emerald-50 text-emerald-900 border-emerald-300" },
+  CRITICAL: { label: "Critical", bg: "bg-red-950/30", border: "border-l-red-500", badge: "bg-red-50 text-red-800 border-red-300" },
+  HIGH: { label: "High", bg: "bg-orange-950/30", border: "border-l-orange-500", badge: "bg-orange-50 text-orange-900 border-orange-300" },
+  MEDIUM: { label: "Medium", bg: "bg-yellow-950/30", border: "border-l-yellow-500", badge: "bg-yellow-50 text-yellow-900 border-yellow-300" },
+  LOW: { label: "Low", bg: "bg-emerald-950/30", border: "border-l-emerald-500", badge: "bg-emerald-50 text-emerald-900 border-emerald-300" },
 }
 
 const STATUS_LABELS = GAP_ANALYSIS_STATUS_LABELS
@@ -146,7 +146,7 @@ function getScoreColor(score: number) {
 
 // File Upload Section
 
-function FileUploadSection({
+export function FileUploadSection({
   file,
   onFile,
   onRemove,
@@ -243,7 +243,7 @@ function FileUploadSection({
 
 // Score Gauge
 
-function ScoreGauge({ score, available = true }: { score: number; available?: boolean }) {
+export function ScoreGauge({ score, available = true }: { score: number; available?: boolean }) {
   if (!available) {
     return (
       <div
@@ -506,7 +506,7 @@ function PilotFeedbackWidget({ analysisId }: { analysisId: string }) {
   )
 }
 
-function AnalysisResultsView({
+export function AnalysisResultsView({
   analysisId,
   documentName,
   onBack,
@@ -936,7 +936,7 @@ function AnalysisResultsView({
 
       {/* Tabs for detailed results */}
       <Tabs defaultValue="overview">
-        <TabsList className="bg-muted/50">
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/50 sm:inline-flex sm:h-10 sm:w-auto">
           <TabsTrigger value="overview">Framework Overview</TabsTrigger>
           <TabsTrigger value="gaps">
             Gaps ({metadata.totalGaps})
@@ -981,15 +981,15 @@ function AnalysisResultsView({
         <TabsContent value="gaps" className="space-y-3 mt-4">
           <div className="grid gap-2 rounded-lg border border-border bg-muted/20 p-3 sm:grid-cols-3" aria-label="Filter findings">
             <Label className="sr-only" htmlFor="finding-severity">Severity</Label>
-            <select id="finding-severity" value={findingSeverity} onChange={(event) => setFindingSeverity(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+            <select id="finding-severity" value={findingSeverity} onChange={(event) => setFindingSeverity(event.target.value)} className="h-9 min-w-0 w-full max-w-full rounded-md border border-input bg-background px-3 text-sm">
               <option value="ALL">All severities</option><option value="CRITICAL">Critical</option><option value="HIGH">High</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option>
             </select>
             <Label className="sr-only" htmlFor="finding-framework">Framework</Label>
-            <select id="finding-framework" value={findingFramework} onChange={(event) => setFindingFramework(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+            <select id="finding-framework" value={findingFramework} onChange={(event) => setFindingFramework(event.target.value)} className="h-9 min-w-0 w-full max-w-full rounded-md border border-input bg-background px-3 text-sm">
               <option value="ALL">All frameworks</option>{frameworks.map((framework) => <option key={framework.id} value={framework.name}>{framework.name}</option>)}
             </select>
             <Label className="sr-only" htmlFor="finding-verification">Verification</Label>
-            <select id="finding-verification" value={findingVerification} onChange={(event) => setFindingVerification(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+            <select id="finding-verification" value={findingVerification} onChange={(event) => setFindingVerification(event.target.value)} className="h-9 min-w-0 w-full max-w-full rounded-md border border-input bg-background px-3 text-sm">
               <option value="ALL">All verification states</option><option value="SUPPORTED">Verified</option><option value="PARTIALLY_SUPPORTED">Partially verified</option><option value="UNSUPPORTED">Unsupported</option><option value="NOT_VERIFIABLE">Could not verify</option>
             </select>
           </div>
@@ -1021,7 +1021,7 @@ function AnalysisResultsView({
                       <div className="flex items-start gap-2 flex-wrap">
                         <p className="font-medium text-foreground text-sm">{gap.title}</p>
                         <Badge variant="outline" className={`text-xs shrink-0 ${sc.badge}`}>{sc.label}</Badge>
-                        <Badge variant="outline" className="text-xs shrink-0 bg-muted">{gap.frameworkName}</Badge>
+                        <Badge variant="outline" className="max-w-full whitespace-normal break-words bg-muted text-left text-xs">{gap.frameworkName}</Badge>
                         {gap.status && (
                           <Badge variant="outline" className="text-[10px] shrink-0 bg-background">
                             {gap.status}
@@ -1034,7 +1034,7 @@ function AnalysisResultsView({
                           {gap.requirement}
                         </p>
                       )}
-                      <p className="text-xs text-emerald-800 font-medium mt-1 flex items-center gap-1.5 flex-wrap">
+                      <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-medium text-emerald-300">
                         <span>{gap.regulatoryBasis}</span>
                         {gapVerificationBadge(gap)}
                       </p>
@@ -1316,7 +1316,7 @@ function AnalysisResultsView({
 
 // Analysis Progress View
 
-function AnalysisProgressView({
+export function AnalysisProgressView({
   documentName,
   frameworks,
   status,
@@ -1369,16 +1369,16 @@ function AnalysisProgressView({
   return (
     <FeatureGate feature="gapAnalysis">
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground">
+        <div className="flex min-w-0 items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={onBack} className="shrink-0 text-muted-foreground">
             {'\u2190'} Back
           </Button>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold text-foreground">Policy Gap Analysis</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-muted-foreground text-sm truncate max-w-sm">{documentName}</p>
+            <div className="mt-1 flex min-w-0 items-center gap-2">
+              <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{documentName}</p>
               {jurisdictionCode && (
-                <Badge variant="outline" className="text-[10px]">
+                <Badge variant="outline" className="shrink-0 text-[10px]">
                   {jurisdictionLabel(jurisdictionCode as JurisdictionCode)} ({jurisdictionCode})
                 </Badge>
               )}
@@ -1469,7 +1469,7 @@ function AnalysisProgressView({
 
 // Analysis History Item
 
-function AnalysisHistoryItem({
+export function AnalysisHistoryItem({
   analysis,
   onView,
   onDelete,
@@ -2110,10 +2110,10 @@ export default function GapAnalysisPage() {
       </div>
 
       {/* Configuration Panel — single-column unified layout */}
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
 
         {/* ─── Left Column: Document Context + Target ─── */}
-        <div className="flex flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-6">
           {/* Section 1: Source Material — Document Context */}
           <Card className="portal-surface-raised">
             <CardHeader>
@@ -2213,6 +2213,7 @@ export default function GapAnalysisPage() {
                     <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     <Input
                       id="framework-search"
+                      aria-label="Search regulatory frameworks"
                       value={frameworkSearch}
                       onChange={(event) => setFrameworkSearch(event.target.value)}
                       placeholder="Search name, regulator, category"
@@ -2224,7 +2225,7 @@ export default function GapAnalysisPage() {
                   <div className="flex flex-wrap gap-1.5" aria-label={`Selected frameworks (${selectedFrameworksForRun.length})`}>
                     {selectedFrameworksForRun.map((slug) => {
                       const framework = applicableFrameworks.find((item) => item.slug === slug)
-                      return <Badge key={slug} variant="secondary">{framework?.name ?? slug}</Badge>
+                      return <Badge key={slug} variant="secondary" className="max-w-full whitespace-normal break-words text-left">{framework?.name ?? slug}</Badge>
                     })}
                   </div>
                 ) : null}
@@ -2540,6 +2541,7 @@ export default function GapAnalysisPage() {
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
+                aria-label="Acknowledge Gap Analysis document processing"
                 checked={consentChecked}
                 onChange={(e) => setConsentChecked(e.target.checked)}
                 className="mt-0.5 h-4 w-4 shrink-0 rounded border-input accent-primary cursor-pointer"
