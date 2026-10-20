@@ -86,6 +86,9 @@ describe("Gap Analysis presentation contract", () => {
     // TIMEOUT
     const timeoutMsg = safeGapAnalysisFailureMessage(null, "TIMEOUT")
     expect(timeoutMsg).toContain("timed out before completion")
+
+    expect(safeGapAnalysisFailureMessage("credit balance is too low", "BILLING")).toContain("contact support")
+    expect(safeGapAnalysisFailureMessage("invalid key: secret", "AUTHENTICATION")).not.toContain("secret")
   })
 
   it("does not classify an unassessed v2 result as critical risk", () => {

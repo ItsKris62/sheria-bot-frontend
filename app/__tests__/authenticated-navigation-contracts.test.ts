@@ -6,6 +6,13 @@ function readSource(path: string) {
   return readFileSync(resolve(process.cwd(), path), "utf8")
 }
 
+function readBackendSource(path: string) {
+  const backendRoot = process.env.SHERIABOT_BACKEND_ROOT
+    ? resolve(process.env.SHERIABOT_BACKEND_ROOT)
+    : resolve(process.cwd(), "../fintech-regulatory-backend")
+  return readFileSync(resolve(backendRoot, path), "utf8")
+}
+
 describe("authenticated navigation contracts", () => {
   it("keeps blog source-item navigation inside the App Router", () => {
     const source = readSource("app/(dashboard)/admin/content/blog/sources/page.tsx")
@@ -17,7 +24,7 @@ describe("authenticated navigation contracts", () => {
 
   it("uses App Router navigation for backend-generated problem-account routes", () => {
     const frontend = readSource("app/(dashboard)/admin/billing/page.tsx")
-    const backend = readSource("../fintech-regulatory-backend/src/server/routers/admin.router.ts")
+    const backend = readBackendSource("src/server/routers/admin.router.ts")
 
     expect(frontend).toContain("<Link href={account.actionHref}>View</Link>")
     expect(backend).toMatch(/actionHref:\s*`\/admin\/organizations\/\$\{/)

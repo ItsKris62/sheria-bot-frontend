@@ -144,6 +144,13 @@ export type GapAnalysisFailureClass =
   | "SOURCE_INSUFFICIENCY"
   | "RAG_SERVICE"
   | "AI_PROVIDER"
+  | "BILLING"
+  | "AUTHENTICATION"
+  | "RATE_LIMIT"
+  | "UNAVAILABLE"
+  | "NETWORK"
+  | "CONTEXT_LIMIT"
+  | "INVALID_OUTPUT"
   | "TIMEOUT"
   | "CANCELLED"
   | "STORAGE"
@@ -160,6 +167,16 @@ export function safeGapAnalysisFailureMessage(
   }
   const normalized = (message ?? "").toLocaleLowerCase()
   const normalizedClass = (failureClass ?? "").toUpperCase()
+
+  if (normalizedClass === "BILLING" || normalizedClass === "AUTHENTICATION") {
+    return "AI analysis is temporarily unavailable. Please contact support before retrying."
+  }
+  if (["RATE_LIMIT", "UNAVAILABLE", "NETWORK", "INVALID_OUTPUT", "AI_PROVIDER"].includes(normalizedClass)) {
+    return "AI analysis is temporarily unavailable. Please try again later."
+  }
+  if (normalizedClass === "CONTEXT_LIMIT") {
+    return "The document exceeds the AI analysis context limit. Try a smaller document."
+  }
 
   // OCR / Scanned image detection
   if (

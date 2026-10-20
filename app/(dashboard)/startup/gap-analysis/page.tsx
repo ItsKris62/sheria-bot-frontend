@@ -580,8 +580,8 @@ export function AnalysisResultsView({
         <CardContent className="pt-6 text-center">
           <XCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
           <p className="text-destructive font-medium">Analysis failed</p>
-          <p className="text-sm text-muted-foreground mt-1">{data.errorMessage ?? "An unexpected error occurred"}</p>
-          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>Run New Analysis</Button>
+          <p className="text-sm text-muted-foreground mt-1">{safeGapAnalysisFailureMessage(data.errorMessage, (data as { failureClass?: string | null }).failureClass)}</p>
+          <Button variant="outline" className="mt-4 bg-transparent" onClick={onBack}>Back to analyses</Button>
         </CardContent>
       </Card>
     )
@@ -904,7 +904,9 @@ export function AnalysisResultsView({
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {allGaps.length} evidence-backed obligation{allGaps.length === 1 ? "" : "s"} evaluated.
-                  Coverage does not represent every possible requirement in the selected frameworks.
+                  {coverageStatus === "UNKNOWN"
+                    ? "Inventory completeness is unknown, so assessment coverage is not expressed as a percentage."
+                    : "Coverage does not represent every possible requirement in the selected frameworks."}
                 </p>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">{executiveSummary}</p>

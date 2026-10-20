@@ -446,7 +446,7 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
       </div>
         <p style="font-size:11pt;color:#4A5568;margin-bottom:4px;">${isV2 ? 'Compliance Alignment' : 'Compliance Alignment (Legacy scoring)'}</p>
         <p style="font-size:10pt;color:#4A5568;margin-bottom:4px;">Document Processing: <strong>${docCoverage ? `${docCoverage.processedChunks} of ${docCoverage.totalChunks} chunks analyzed` : `${chunksProcessed ?? 1} chunks analyzed`}</strong></p>
-        ${isV2 ? `<p style="font-size:10pt;color:#4A5568;margin-bottom:4px;">Assessment Coverage: <strong>Partial — ${frameworks.reduce((acc, f) => acc + f.gaps.length, 0)} evidence-backed obligations evaluated</strong></p>` : ''}
+        ${isV2 ? `<p style="font-size:10pt;color:#4A5568;margin-bottom:4px;">Assessment Coverage: <strong>${coverageStatus === 'UNKNOWN' ? 'Unavailable — reviewed requirement inventory scope is not established' : `Partial — ${frameworks.reduce((acc, f) => acc + f.gaps.length, 0)} evidence-backed obligations evaluated`}</strong></p>` : ''}
         <p style="font-size:9pt;color:#718096;margin-bottom:4px;">Scoring Methodology: <strong>${isV2 ? 'Evidence-backed v2 (Claim-verified)' : 'Legacy scoring'}</strong></p>
         <p style="font-size:10pt;color:#4A5568;margin-bottom:4px;">Date: <strong>${escapeHtml(formattedDate)}</strong></p>
         <p style="font-size:10pt;color:#4A5568;margin-bottom:4px;">Document: <strong>${escapeHtml(documentName)}</strong></p>
@@ -551,7 +551,7 @@ export function buildGapAnalysisReportHtml(data: GapAnalysisReportData): string 
       <tr><td>Execution Profile</td><td>${escapeHtml(metadata.executionProfileVersion ?? 'Legacy execution profile')}</td></tr>
       <tr><td>Scoring Methodology</td><td><strong>${isV2 ? 'Evidence-backed v2 (Claim-verified & deterministic)' : 'Legacy v1.0 (Heuristic)'}</strong></td></tr>
       <tr><td>Compliance Alignment</td><td>${alignmentScore}% (Assessed requirements)</td></tr>
-      <tr><td>Assessment Coverage</td><td>${coverageStatus === 'COMPLETE' ? `${coverageScore}% (Complete)` : `Partial - ${allGaps.length} evidence-backed obligations evaluated. This is not a complete framework inventory.`}</td></tr>
+      <tr><td>Assessment Coverage</td><td>${coverageStatus === 'UNKNOWN' ? 'Unavailable - reviewed requirement inventory scope is not established.' : coverageStatus === 'COMPLETE' ? `${coverageScore}% (Complete)` : `Partial - ${allGaps.length} evidence-backed obligations evaluated. This is not a complete framework inventory.`}</td></tr>
       <tr><td>Chunks Processed</td><td>${escapeHtml(String(chunksProcessed))} of ${escapeHtml(String(docCoverage?.totalChunks ?? chunksProcessed))}${docCoverage && (docCoverage.failedChunks > 0 || docCoverage.skippedChunks > 0) ? ` <span style="color:#DC2626;">(${docCoverage.failedChunks} failed, ${docCoverage.skippedChunks} skipped - Partial)</span>` : ''}</td></tr>
       <tr><td>Known Limitations</td><td>${metadata.executionLimitations?.length ? metadata.executionLimitations.map(escapeHtml).join('; ') : 'No execution-stage limitation recorded'}</td></tr>
       <tr><td>Frameworks Assessed</td><td>${frameworks.map((f) => escapeHtml(f.name)).join(', ')}</td></tr>
