@@ -16,6 +16,13 @@ export interface GapAnalysisParams {
     focusAreas?: string[];
     ragContext?: string;
     jurisdictionContext?: JurisdictionContext;
+    signal?: AbortSignal;
+    beforeAiOperation?: (plan?: GapAnalysisModelCallPlan) => Promise<void>;
+}
+export interface GapAnalysisModelCallPlan {
+    stage: 'analysis' | 'merge' | 'enhanced_review' | 'verification';
+    estimatedInputTokens: number;
+    maxOutputTokens: number;
 }
 export interface BenchmarkDocumentSummary {
     id: string;
@@ -23,15 +30,98 @@ export interface BenchmarkDocumentSummary {
     documentType?: string | null;
     regulatoryBody?: string | null;
 }
+export declare const RegulatoryEvidenceRefSchema: z.ZodObject<{
+    evidenceId: z.ZodString;
+    vectorId: z.ZodString;
+    documentId: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+    documentTitle: z.ZodString;
+    jurisdiction: z.ZodUnion<readonly [z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>, z.ZodLiteral<"GLOBAL">, z.ZodLiteral<"INTERNATIONAL">]>;
+    frameworkSlug: z.ZodString;
+    sourceAuthority: z.ZodOptional<z.ZodString>;
+    section: z.ZodOptional<z.ZodString>;
+    page: z.ZodOptional<z.ZodNumber>;
+    effectiveDate: z.ZodOptional<z.ZodString>;
+    sourceStatus: z.ZodOptional<z.ZodString>;
+    excerpt: z.ZodString;
+    similarityScore: z.ZodOptional<z.ZodNumber>;
+    rerankScore: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const PolicyEvidenceRefSchema: z.ZodObject<{
+    policyEvidenceId: z.ZodString;
+    chunkIndex: z.ZodOptional<z.ZodNumber>;
+    page: z.ZodOptional<z.ZodNumber>;
+    sectionHeading: z.ZodOptional<z.ZodString>;
+    excerpt: z.ZodString;
+    startOffset: z.ZodOptional<z.ZodNumber>;
+    endOffset: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>;
+export declare const FindingVerificationSchema: z.ZodObject<{
+    verdict: z.ZodEnum<{
+        PARTIALLY_SUPPORTED: "PARTIALLY_SUPPORTED";
+        UNSUPPORTED: "UNSUPPORTED";
+        SUPPORTED: "SUPPORTED";
+        NOT_VERIFIABLE: "NOT_VERIFIABLE";
+    }>;
+    confidence: z.ZodOptional<z.ZodNumber>;
+    unsupportedClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    reason: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>;
+export declare const FindingCoverageSchema: z.ZodObject<{
+    regulatoryEvidenceAvailable: z.ZodDefault<z.ZodBoolean>;
+    policySectionAssessed: z.ZodDefault<z.ZodBoolean>;
+    extractionComplete: z.ZodDefault<z.ZodBoolean>;
+}, z.core.$strip>;
+export declare const DocumentCoverageSchema: z.ZodObject<{
+    totalChunks: z.ZodNumber;
+    processedChunks: z.ZodNumber;
+    failedChunks: z.ZodNumber;
+    skippedChunks: z.ZodNumber;
+    extractionComplete: z.ZodBoolean;
+}, z.core.$strip>;
+export declare const FrameworkCoverageSchema: z.ZodObject<{
+    frameworkSlug: z.ZodString;
+    evidenceStatus: z.ZodEnum<{
+        COMPLETE: "COMPLETE";
+        PARTIAL: "PARTIAL";
+        INSUFFICIENT: "INSUFFICIENT";
+        UNAVAILABLE: "UNAVAILABLE";
+    }>;
+    assessedRequirementCount: z.ZodNumber;
+    totalKnownRequirementCount: z.ZodOptional<z.ZodNumber>;
+    unassessedRequirementCount: z.ZodOptional<z.ZodNumber>;
+    notes: z.ZodOptional<z.ZodArray<z.ZodString>>;
+}, z.core.$strip>;
 export declare const GapItemSchema: z.ZodObject<{
     id: z.ZodString;
     title: z.ZodString;
+    requirement: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    frameworkSlug: z.ZodOptional<z.ZodString>;
+    jurisdiction: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>;
+    status: z.ZodDefault<z.ZodEnum<{
+        PARTIAL: "PARTIAL";
+        COMPLIANT: "COMPLIANT";
+        GAP: "GAP";
+        NOT_ASSESSED: "NOT_ASSESSED";
+        INSUFFICIENT_EVIDENCE: "INSUFFICIENT_EVIDENCE";
+    }>>;
     severity: z.ZodEnum<{
         LOW: "LOW";
         MEDIUM: "MEDIUM";
         HIGH: "HIGH";
         CRITICAL: "CRITICAL";
+        INFO: "INFO";
     }>;
+    severityRationale: z.ZodDefault<z.ZodOptional<z.ZodString>>;
     regulatoryBasis: z.ZodString;
     description: z.ZodString;
     policyCurrentState: z.ZodString;
@@ -42,6 +132,60 @@ export declare const GapItemSchema: z.ZodObject<{
         HIGH: "HIGH";
     }>;
     priority: z.ZodNumber;
+    evidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    requestedEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    resolvedEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    invalidEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    policyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    requestedPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    resolvedPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    invalidPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    regulatoryEvidence: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        evidenceId: z.ZodString;
+        vectorId: z.ZodString;
+        documentId: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        documentTitle: z.ZodString;
+        jurisdiction: z.ZodUnion<readonly [z.ZodEnum<{
+            KE: "KE";
+            MW: "MW";
+            RW: "RW";
+            NG: "NG";
+        }>, z.ZodLiteral<"GLOBAL">, z.ZodLiteral<"INTERNATIONAL">]>;
+        frameworkSlug: z.ZodString;
+        sourceAuthority: z.ZodOptional<z.ZodString>;
+        section: z.ZodOptional<z.ZodString>;
+        page: z.ZodOptional<z.ZodNumber>;
+        effectiveDate: z.ZodOptional<z.ZodString>;
+        sourceStatus: z.ZodOptional<z.ZodString>;
+        excerpt: z.ZodString;
+        similarityScore: z.ZodOptional<z.ZodNumber>;
+        rerankScore: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strip>>>;
+    policyEvidence: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        policyEvidenceId: z.ZodString;
+        chunkIndex: z.ZodOptional<z.ZodNumber>;
+        page: z.ZodOptional<z.ZodNumber>;
+        sectionHeading: z.ZodOptional<z.ZodString>;
+        excerpt: z.ZodString;
+        startOffset: z.ZodOptional<z.ZodNumber>;
+        endOffset: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strip>>>;
+    verification: z.ZodDefault<z.ZodObject<{
+        verdict: z.ZodEnum<{
+            PARTIALLY_SUPPORTED: "PARTIALLY_SUPPORTED";
+            UNSUPPORTED: "UNSUPPORTED";
+            SUPPORTED: "SUPPORTED";
+            NOT_VERIFIABLE: "NOT_VERIFIABLE";
+        }>;
+        confidence: z.ZodOptional<z.ZodNumber>;
+        unsupportedClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        reason: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>>;
+    coverage: z.ZodDefault<z.ZodObject<{
+        regulatoryEvidenceAvailable: z.ZodDefault<z.ZodBoolean>;
+        policySectionAssessed: z.ZodDefault<z.ZodBoolean>;
+        extractionComplete: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strip>>;
     evidenceRequired: z.ZodDefault<z.ZodArray<z.ZodString>>;
     responsibleRole: z.ZodOptional<z.ZodString>;
     regulatoryDeadline: z.ZodOptional<z.ZodString>;
@@ -64,12 +208,29 @@ export declare const FrameworkResultSchema: z.ZodObject<{
     gaps: z.ZodArray<z.ZodObject<{
         id: z.ZodString;
         title: z.ZodString;
+        requirement: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+        frameworkSlug: z.ZodOptional<z.ZodString>;
+        jurisdiction: z.ZodOptional<z.ZodEnum<{
+            KE: "KE";
+            MW: "MW";
+            RW: "RW";
+            NG: "NG";
+        }>>;
+        status: z.ZodDefault<z.ZodEnum<{
+            PARTIAL: "PARTIAL";
+            COMPLIANT: "COMPLIANT";
+            GAP: "GAP";
+            NOT_ASSESSED: "NOT_ASSESSED";
+            INSUFFICIENT_EVIDENCE: "INSUFFICIENT_EVIDENCE";
+        }>>;
         severity: z.ZodEnum<{
             LOW: "LOW";
             MEDIUM: "MEDIUM";
             HIGH: "HIGH";
             CRITICAL: "CRITICAL";
+            INFO: "INFO";
         }>;
+        severityRationale: z.ZodDefault<z.ZodOptional<z.ZodString>>;
         regulatoryBasis: z.ZodString;
         description: z.ZodString;
         policyCurrentState: z.ZodString;
@@ -80,6 +241,60 @@ export declare const FrameworkResultSchema: z.ZodObject<{
             HIGH: "HIGH";
         }>;
         priority: z.ZodNumber;
+        evidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+        requestedEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+        resolvedEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+        invalidEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+        policyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+        requestedPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+        resolvedPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+        invalidPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+        regulatoryEvidence: z.ZodDefault<z.ZodArray<z.ZodObject<{
+            evidenceId: z.ZodString;
+            vectorId: z.ZodString;
+            documentId: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+            documentTitle: z.ZodString;
+            jurisdiction: z.ZodUnion<readonly [z.ZodEnum<{
+                KE: "KE";
+                MW: "MW";
+                RW: "RW";
+                NG: "NG";
+            }>, z.ZodLiteral<"GLOBAL">, z.ZodLiteral<"INTERNATIONAL">]>;
+            frameworkSlug: z.ZodString;
+            sourceAuthority: z.ZodOptional<z.ZodString>;
+            section: z.ZodOptional<z.ZodString>;
+            page: z.ZodOptional<z.ZodNumber>;
+            effectiveDate: z.ZodOptional<z.ZodString>;
+            sourceStatus: z.ZodOptional<z.ZodString>;
+            excerpt: z.ZodString;
+            similarityScore: z.ZodOptional<z.ZodNumber>;
+            rerankScore: z.ZodOptional<z.ZodNumber>;
+        }, z.core.$strip>>>;
+        policyEvidence: z.ZodDefault<z.ZodArray<z.ZodObject<{
+            policyEvidenceId: z.ZodString;
+            chunkIndex: z.ZodOptional<z.ZodNumber>;
+            page: z.ZodOptional<z.ZodNumber>;
+            sectionHeading: z.ZodOptional<z.ZodString>;
+            excerpt: z.ZodString;
+            startOffset: z.ZodOptional<z.ZodNumber>;
+            endOffset: z.ZodOptional<z.ZodNumber>;
+        }, z.core.$strip>>>;
+        verification: z.ZodDefault<z.ZodObject<{
+            verdict: z.ZodEnum<{
+                PARTIALLY_SUPPORTED: "PARTIALLY_SUPPORTED";
+                UNSUPPORTED: "UNSUPPORTED";
+                SUPPORTED: "SUPPORTED";
+                NOT_VERIFIABLE: "NOT_VERIFIABLE";
+            }>;
+            confidence: z.ZodOptional<z.ZodNumber>;
+            unsupportedClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
+            reason: z.ZodOptional<z.ZodString>;
+        }, z.core.$strip>>;
+        coverage: z.ZodDefault<z.ZodObject<{
+            regulatoryEvidenceAvailable: z.ZodDefault<z.ZodBoolean>;
+            policySectionAssessed: z.ZodDefault<z.ZodBoolean>;
+            extractionComplete: z.ZodDefault<z.ZodBoolean>;
+        }, z.core.$strip>>;
         evidenceRequired: z.ZodDefault<z.ZodArray<z.ZodString>>;
         responsibleRole: z.ZodOptional<z.ZodString>;
         regulatoryDeadline: z.ZodOptional<z.ZodString>;
@@ -114,6 +329,7 @@ export declare const ActionPlanItemSchema: z.ZodObject<{
 }, z.core.$strip>;
 export declare const GapAnalysisResultSchema: z.ZodObject<{
     overallScore: z.ZodNumber;
+    assessmentCoverage: z.ZodDefault<z.ZodNumber>;
     executiveSummary: z.ZodString;
     frameworks: z.ZodArray<z.ZodObject<{
         id: z.ZodString;
@@ -122,12 +338,29 @@ export declare const GapAnalysisResultSchema: z.ZodObject<{
         gaps: z.ZodArray<z.ZodObject<{
             id: z.ZodString;
             title: z.ZodString;
+            requirement: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+            frameworkSlug: z.ZodOptional<z.ZodString>;
+            jurisdiction: z.ZodOptional<z.ZodEnum<{
+                KE: "KE";
+                MW: "MW";
+                RW: "RW";
+                NG: "NG";
+            }>>;
+            status: z.ZodDefault<z.ZodEnum<{
+                PARTIAL: "PARTIAL";
+                COMPLIANT: "COMPLIANT";
+                GAP: "GAP";
+                NOT_ASSESSED: "NOT_ASSESSED";
+                INSUFFICIENT_EVIDENCE: "INSUFFICIENT_EVIDENCE";
+            }>>;
             severity: z.ZodEnum<{
                 LOW: "LOW";
                 MEDIUM: "MEDIUM";
                 HIGH: "HIGH";
                 CRITICAL: "CRITICAL";
+                INFO: "INFO";
             }>;
+            severityRationale: z.ZodDefault<z.ZodOptional<z.ZodString>>;
             regulatoryBasis: z.ZodString;
             description: z.ZodString;
             policyCurrentState: z.ZodString;
@@ -138,6 +371,60 @@ export declare const GapAnalysisResultSchema: z.ZodObject<{
                 HIGH: "HIGH";
             }>;
             priority: z.ZodNumber;
+            evidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+            requestedEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+            resolvedEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+            invalidEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+            policyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+            requestedPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+            resolvedPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+            invalidPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+            regulatoryEvidence: z.ZodDefault<z.ZodArray<z.ZodObject<{
+                evidenceId: z.ZodString;
+                vectorId: z.ZodString;
+                documentId: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+                documentTitle: z.ZodString;
+                jurisdiction: z.ZodUnion<readonly [z.ZodEnum<{
+                    KE: "KE";
+                    MW: "MW";
+                    RW: "RW";
+                    NG: "NG";
+                }>, z.ZodLiteral<"GLOBAL">, z.ZodLiteral<"INTERNATIONAL">]>;
+                frameworkSlug: z.ZodString;
+                sourceAuthority: z.ZodOptional<z.ZodString>;
+                section: z.ZodOptional<z.ZodString>;
+                page: z.ZodOptional<z.ZodNumber>;
+                effectiveDate: z.ZodOptional<z.ZodString>;
+                sourceStatus: z.ZodOptional<z.ZodString>;
+                excerpt: z.ZodString;
+                similarityScore: z.ZodOptional<z.ZodNumber>;
+                rerankScore: z.ZodOptional<z.ZodNumber>;
+            }, z.core.$strip>>>;
+            policyEvidence: z.ZodDefault<z.ZodArray<z.ZodObject<{
+                policyEvidenceId: z.ZodString;
+                chunkIndex: z.ZodOptional<z.ZodNumber>;
+                page: z.ZodOptional<z.ZodNumber>;
+                sectionHeading: z.ZodOptional<z.ZodString>;
+                excerpt: z.ZodString;
+                startOffset: z.ZodOptional<z.ZodNumber>;
+                endOffset: z.ZodOptional<z.ZodNumber>;
+            }, z.core.$strip>>>;
+            verification: z.ZodDefault<z.ZodObject<{
+                verdict: z.ZodEnum<{
+                    PARTIALLY_SUPPORTED: "PARTIALLY_SUPPORTED";
+                    UNSUPPORTED: "UNSUPPORTED";
+                    SUPPORTED: "SUPPORTED";
+                    NOT_VERIFIABLE: "NOT_VERIFIABLE";
+                }>;
+                confidence: z.ZodOptional<z.ZodNumber>;
+                unsupportedClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
+                reason: z.ZodOptional<z.ZodString>;
+            }, z.core.$strip>>;
+            coverage: z.ZodDefault<z.ZodObject<{
+                regulatoryEvidenceAvailable: z.ZodDefault<z.ZodBoolean>;
+                policySectionAssessed: z.ZodDefault<z.ZodBoolean>;
+                extractionComplete: z.ZodDefault<z.ZodBoolean>;
+            }, z.core.$strip>>;
             evidenceRequired: z.ZodDefault<z.ZodArray<z.ZodString>>;
             responsibleRole: z.ZodOptional<z.ZodString>;
             regulatoryDeadline: z.ZodOptional<z.ZodString>;
@@ -182,8 +469,35 @@ export declare const GapAnalysisResultSchema: z.ZodObject<{
         lowGaps: z.ZodOptional<z.ZodNumber>;
         analysisDate: z.ZodString;
         calculatedScore: z.ZodOptional<z.ZodNumber>;
+        complianceAlignmentScore: z.ZodOptional<z.ZodNumber>;
+        assessmentCoverageScore: z.ZodOptional<z.ZodNumber>;
+        coverageStatus: z.ZodDefault<z.ZodEnum<{
+            COMPLETE: "COMPLETE";
+            PARTIAL: "PARTIAL";
+            INSUFFICIENT: "INSUFFICIENT";
+        }>>;
         scoringVersion: z.ZodOptional<z.ZodString>;
         modelSuggestedScore: z.ZodOptional<z.ZodNumber>;
+        documentCoverage: z.ZodOptional<z.ZodObject<{
+            totalChunks: z.ZodNumber;
+            processedChunks: z.ZodNumber;
+            failedChunks: z.ZodNumber;
+            skippedChunks: z.ZodNumber;
+            extractionComplete: z.ZodBoolean;
+        }, z.core.$strip>>;
+        frameworkCoverage: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+            frameworkSlug: z.ZodString;
+            evidenceStatus: z.ZodEnum<{
+                COMPLETE: "COMPLETE";
+                PARTIAL: "PARTIAL";
+                INSUFFICIENT: "INSUFFICIENT";
+                UNAVAILABLE: "UNAVAILABLE";
+            }>;
+            assessedRequirementCount: z.ZodNumber;
+            totalKnownRequirementCount: z.ZodOptional<z.ZodNumber>;
+            unassessedRequirementCount: z.ZodOptional<z.ZodNumber>;
+            notes: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        }, z.core.$strip>>>;
         selectedBenchmarkDocuments: z.ZodDefault<z.ZodArray<z.ZodUnion<readonly [z.ZodPipe<z.ZodString, z.ZodTransform<{
             id: string;
             title: string;
@@ -214,6 +528,27 @@ export declare const GapAnalysisResultSchema: z.ZodObject<{
         }>>;
         unsupportedClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
         retrievalVersion: z.ZodOptional<z.ZodString>;
+        executionProfileVersion: z.ZodOptional<z.ZodString>;
+        executionStages: z.ZodOptional<z.ZodObject<{
+            retrieval: z.ZodString;
+            documentTraversal: z.ZodString;
+            enhancedReview: z.ZodString;
+            verification: z.ZodString;
+        }, z.core.$strip>>;
+        executionMetrics: z.ZodOptional<z.ZodObject<{
+            retrievalQueryCount: z.ZodNumber;
+            retrievalCandidateCount: z.ZodNumber;
+            acceptedEvidenceCount: z.ZodNumber;
+            weakEvidenceRetryCount: z.ZodNumber;
+            documentChunks: z.ZodNumber;
+            processedChunks: z.ZodNumber;
+            analysisCallCount: z.ZodNumber;
+            verificationCallCount: z.ZodNumber;
+            inputTokens: z.ZodNumber;
+            outputTokens: z.ZodNumber;
+            durationMs: z.ZodNumber;
+        }, z.core.$strip>>;
+        executionLimitations: z.ZodOptional<z.ZodArray<z.ZodString>>;
     }, z.core.$strip>;
 }, z.core.$strip>;
 /**
@@ -224,12 +559,29 @@ export declare const GapAnalysisResultSchema: z.ZodObject<{
 export declare const RawChunkGapItemSchema: z.ZodObject<{
     id: z.ZodString;
     title: z.ZodString;
+    requirement: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    frameworkSlug: z.ZodOptional<z.ZodString>;
+    jurisdiction: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>;
+    status: z.ZodDefault<z.ZodEnum<{
+        PARTIAL: "PARTIAL";
+        COMPLIANT: "COMPLIANT";
+        GAP: "GAP";
+        NOT_ASSESSED: "NOT_ASSESSED";
+        INSUFFICIENT_EVIDENCE: "INSUFFICIENT_EVIDENCE";
+    }>>;
     severity: z.ZodEnum<{
         LOW: "LOW";
         MEDIUM: "MEDIUM";
         HIGH: "HIGH";
         CRITICAL: "CRITICAL";
+        INFO: "INFO";
     }>;
+    severityRationale: z.ZodDefault<z.ZodOptional<z.ZodString>>;
     regulatoryBasis: z.ZodString;
     description: z.ZodString;
     policyCurrentState: z.ZodString;
@@ -240,6 +592,60 @@ export declare const RawChunkGapItemSchema: z.ZodObject<{
         HIGH: "HIGH";
     }>;
     priority: z.ZodNumber;
+    evidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    requestedEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    resolvedEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    invalidEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    policyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    requestedPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    resolvedPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    invalidPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    regulatoryEvidence: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        evidenceId: z.ZodString;
+        vectorId: z.ZodString;
+        documentId: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        documentTitle: z.ZodString;
+        jurisdiction: z.ZodUnion<readonly [z.ZodEnum<{
+            KE: "KE";
+            MW: "MW";
+            RW: "RW";
+            NG: "NG";
+        }>, z.ZodLiteral<"GLOBAL">, z.ZodLiteral<"INTERNATIONAL">]>;
+        frameworkSlug: z.ZodString;
+        sourceAuthority: z.ZodOptional<z.ZodString>;
+        section: z.ZodOptional<z.ZodString>;
+        page: z.ZodOptional<z.ZodNumber>;
+        effectiveDate: z.ZodOptional<z.ZodString>;
+        sourceStatus: z.ZodOptional<z.ZodString>;
+        excerpt: z.ZodString;
+        similarityScore: z.ZodOptional<z.ZodNumber>;
+        rerankScore: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strip>>>;
+    policyEvidence: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        policyEvidenceId: z.ZodString;
+        chunkIndex: z.ZodOptional<z.ZodNumber>;
+        page: z.ZodOptional<z.ZodNumber>;
+        sectionHeading: z.ZodOptional<z.ZodString>;
+        excerpt: z.ZodString;
+        startOffset: z.ZodOptional<z.ZodNumber>;
+        endOffset: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strip>>>;
+    verification: z.ZodDefault<z.ZodObject<{
+        verdict: z.ZodEnum<{
+            PARTIALLY_SUPPORTED: "PARTIALLY_SUPPORTED";
+            UNSUPPORTED: "UNSUPPORTED";
+            SUPPORTED: "SUPPORTED";
+            NOT_VERIFIABLE: "NOT_VERIFIABLE";
+        }>;
+        confidence: z.ZodOptional<z.ZodNumber>;
+        unsupportedClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        reason: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>>;
+    coverage: z.ZodDefault<z.ZodObject<{
+        regulatoryEvidenceAvailable: z.ZodDefault<z.ZodBoolean>;
+        policySectionAssessed: z.ZodDefault<z.ZodBoolean>;
+        extractionComplete: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strip>>;
     evidenceRequired: z.ZodDefault<z.ZodArray<z.ZodString>>;
     responsibleRole: z.ZodOptional<z.ZodString>;
     regulatoryDeadline: z.ZodOptional<z.ZodString>;
@@ -260,12 +666,29 @@ export declare const RawChunkGapItemSchema: z.ZodObject<{
 export declare const ChunkOutputSchema: z.ZodArray<z.ZodObject<{
     id: z.ZodString;
     title: z.ZodString;
+    requirement: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    frameworkSlug: z.ZodOptional<z.ZodString>;
+    jurisdiction: z.ZodOptional<z.ZodEnum<{
+        KE: "KE";
+        MW: "MW";
+        RW: "RW";
+        NG: "NG";
+    }>>;
+    status: z.ZodDefault<z.ZodEnum<{
+        PARTIAL: "PARTIAL";
+        COMPLIANT: "COMPLIANT";
+        GAP: "GAP";
+        NOT_ASSESSED: "NOT_ASSESSED";
+        INSUFFICIENT_EVIDENCE: "INSUFFICIENT_EVIDENCE";
+    }>>;
     severity: z.ZodEnum<{
         LOW: "LOW";
         MEDIUM: "MEDIUM";
         HIGH: "HIGH";
         CRITICAL: "CRITICAL";
+        INFO: "INFO";
     }>;
+    severityRationale: z.ZodDefault<z.ZodOptional<z.ZodString>>;
     regulatoryBasis: z.ZodString;
     description: z.ZodString;
     policyCurrentState: z.ZodString;
@@ -276,6 +699,60 @@ export declare const ChunkOutputSchema: z.ZodArray<z.ZodObject<{
         HIGH: "HIGH";
     }>;
     priority: z.ZodNumber;
+    evidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    requestedEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    resolvedEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    invalidEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    policyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    requestedPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    resolvedPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    invalidPolicyEvidenceIds: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    regulatoryEvidence: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        evidenceId: z.ZodString;
+        vectorId: z.ZodString;
+        documentId: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        documentTitle: z.ZodString;
+        jurisdiction: z.ZodUnion<readonly [z.ZodEnum<{
+            KE: "KE";
+            MW: "MW";
+            RW: "RW";
+            NG: "NG";
+        }>, z.ZodLiteral<"GLOBAL">, z.ZodLiteral<"INTERNATIONAL">]>;
+        frameworkSlug: z.ZodString;
+        sourceAuthority: z.ZodOptional<z.ZodString>;
+        section: z.ZodOptional<z.ZodString>;
+        page: z.ZodOptional<z.ZodNumber>;
+        effectiveDate: z.ZodOptional<z.ZodString>;
+        sourceStatus: z.ZodOptional<z.ZodString>;
+        excerpt: z.ZodString;
+        similarityScore: z.ZodOptional<z.ZodNumber>;
+        rerankScore: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strip>>>;
+    policyEvidence: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        policyEvidenceId: z.ZodString;
+        chunkIndex: z.ZodOptional<z.ZodNumber>;
+        page: z.ZodOptional<z.ZodNumber>;
+        sectionHeading: z.ZodOptional<z.ZodString>;
+        excerpt: z.ZodString;
+        startOffset: z.ZodOptional<z.ZodNumber>;
+        endOffset: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strip>>>;
+    verification: z.ZodDefault<z.ZodObject<{
+        verdict: z.ZodEnum<{
+            PARTIALLY_SUPPORTED: "PARTIALLY_SUPPORTED";
+            UNSUPPORTED: "UNSUPPORTED";
+            SUPPORTED: "SUPPORTED";
+            NOT_VERIFIABLE: "NOT_VERIFIABLE";
+        }>;
+        confidence: z.ZodOptional<z.ZodNumber>;
+        unsupportedClaims: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        reason: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>>;
+    coverage: z.ZodDefault<z.ZodObject<{
+        regulatoryEvidenceAvailable: z.ZodDefault<z.ZodBoolean>;
+        policySectionAssessed: z.ZodDefault<z.ZodBoolean>;
+        extractionComplete: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strip>>;
     evidenceRequired: z.ZodDefault<z.ZodArray<z.ZodString>>;
     responsibleRole: z.ZodOptional<z.ZodString>;
     regulatoryDeadline: z.ZodOptional<z.ZodString>;
@@ -292,6 +769,10 @@ export declare const ChunkOutputSchema: z.ZodArray<z.ZodObject<{
     isBinding: z.ZodOptional<z.ZodBoolean>;
     framework: z.ZodString;
 }, z.core.$strip>>;
+export type RegulatoryEvidenceRef = z.infer<typeof RegulatoryEvidenceRefSchema>;
+export type PolicyEvidenceRef = z.infer<typeof PolicyEvidenceRefSchema>;
+export type FindingVerification = z.infer<typeof FindingVerificationSchema>;
+export type FindingCoverage = z.infer<typeof FindingCoverageSchema>;
 export type GapItem = z.infer<typeof GapItemSchema>;
 export type FrameworkResult = z.infer<typeof FrameworkResultSchema>;
 export type ActionPlanItem = z.infer<typeof ActionPlanItemSchema>;
@@ -305,52 +786,20 @@ export interface PolicyChunk {
     charStart: number;
     charEnd: number;
 }
-/**
- * Chunk size and overlap constants.
- * A chunk of ~6,000 characters fits comfortably within Claude's context
- * alongside the system prompt, RAG context, and JSON response buffer.
- */
 export declare const CHUNK_SIZE = 6000;
 export declare const CHUNK_OVERLAP = 800;
-/**
- * Split policy text into overlapping chunks that respect paragraph boundaries.
- * If the text fits within CHUNK_SIZE the result is a single-element array  -
- * callers should check length === 1 to skip the multi-pass path.
- */
 export declare function chunkPolicyText(text: string, chunkSize?: number, overlap?: number): PolicyChunk[];
-/**
- * Patterns that are characteristic of prompt injection attacks embedded inside
- * a policy document.  Each pattern is replaced with '[REDACTED]' so the
- * surrounding text remains readable but the instruction cannot be executed.
- *
- * Returns the sanitized text and a flag indicating whether any substitution
- * was made (so callers can log the event).
- */
 export declare function sanitizePolicyText(text: string): {
     sanitized: string;
     wasModified: boolean;
 };
-/**
- * System prompt for gap analysis (T4: expanded regulation list).
- */
 export declare function generateGapAnalysisSystemPrompt(jurisdictionContext?: JurisdictionContext): string;
-/**
- * User prompt for the first-pass per-chunk phase.
- * Only identifies gaps in the given chunk  -  no scoring or consolidation.
- */
 export declare function generateChunkAnalysisUserPrompt(params: Omit<GapAnalysisParams, 'policyText'> & {
     chunkText: string;
 }, chunkIndex: number, totalChunks: number): string;
-/**
- * User prompt for the second-pass consolidation merge.
- * Receives all raw per-chunk gaps and produces the full GapAnalysisResult.
- */
 export declare function generateMergeUserPrompt(rawGaps: unknown[], params: Omit<GapAnalysisParams, 'policyText'> & {
     chunkCount: number;
 }): string;
-/**
- * User prompt for gap analysis  -  used for single-pass (document <= CHUNK_SIZE).
- */
 export declare function generateGapAnalysisUserPrompt(params: GapAnalysisParams): string;
 export declare const GAP_SCORING_VERSION = "v1.0-deterministic";
 export interface DeterministicScoreBreakdown {
@@ -372,23 +821,9 @@ export interface DeterministicScoreBreakdown {
         total: number;
     };
 }
-/**
- * Authoritative deterministic score calculation for policy gap analysis.
- * Formula: 100 - (25 * CRITICAL) - (15 * HIGH) - (8 * MEDIUM) - (3 * LOW), clamped to [0, 100].
- */
 export declare function calculateDeterministicGapScore(gaps: Array<{
     severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
 }>, modelSuggestedScore?: number): DeterministicScoreBreakdown;
-/**
- * Parse and validate AI gap analysis output using Zod (T3).
- * Falls back to regex JSON extraction if the response contains surrounding text.
- */
 export declare function parseGapAnalysisOutput(rawContent: string): GapAnalysisResult;
-/**
- * Parse and validate the JSON array output from a single chunk analysis.
- * Each chunk prompt returns `[]` or an array of raw gap objects with an extra
- * `framework` field. Returns an empty array on an empty/null AI response rather
- * than throwing, so a single bad chunk does not abort the whole analysis.
- */
 export declare function parseChunkAnalysisOutput(rawContent: string, chunkIndex: number): RawChunkGapItem[];
 //# sourceMappingURL=gap-analysis.d.ts.map

@@ -12,7 +12,7 @@ export declare function runBlogPostVerification({ prisma, blogPostId, requestedB
         id: string;
         title: string;
         description: string;
-        severity: import(".prisma/client").$Enums.BlogVerificationIssueSeverity;
+        severity: import("@prisma/client").$Enums.BlogVerificationIssueSeverity;
         createdAt: Date;
         confidence: number | null;
         excerpt: string | null;
@@ -20,18 +20,18 @@ export declare function runBlogPostVerification({ prisma, blogPostId, requestedB
         sourceId: string | null;
         sourceUrl: string | null;
         runId: string;
-        issueType: import(".prisma/client").$Enums.BlogVerificationIssueType;
+        issueType: import("@prisma/client").$Enums.BlogVerificationIssueType;
         recommendation: string | null;
         paragraphIndex: number | null;
         sentenceIndex: number | null;
-        claimCategory: import(".prisma/client").$Enums.BlogClaimCategory | null;
-        claimVerificationStatus: import(".prisma/client").$Enums.BlogClaimVerificationStatus | null;
+        claimCategory: import("@prisma/client").$Enums.BlogClaimCategory | null;
+        claimVerificationStatus: import("@prisma/client").$Enums.BlogClaimVerificationStatus | null;
         claimHash: string | null;
         reviewProvenance: import("@prisma/client/runtime/client").JsonValue | null;
     }[];
 } & {
     id: string;
-    status: import(".prisma/client").$Enums.BlogVerificationStatus;
+    status: import("@prisma/client").$Enums.BlogVerificationStatus;
     createdAt: Date;
     updatedAt: Date;
     summary: string | null;
@@ -41,7 +41,7 @@ export declare function runBlogPostVerification({ prisma, blogPostId, requestedB
     startedAt: Date;
     blogPostId: string;
     draftGenerationRunId: string | null;
-    runType: import(".prisma/client").$Enums.BlogVerificationRunType;
+    runType: import("@prisma/client").$Enums.BlogVerificationRunType;
     qualityScore: number;
     sourceScore: number;
     claimRiskScore: number;

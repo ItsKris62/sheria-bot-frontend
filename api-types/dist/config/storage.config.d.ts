@@ -33,6 +33,7 @@ export declare const storageConfig: {
     readonly limits: {
         readonly maxFileSize: {
             readonly documents: number;
+            readonly gapAnalysis: number;
             readonly images: number;
             readonly exports: number;
             readonly vault: number;
@@ -50,6 +51,11 @@ export declare const storageConfig: {
             readonly mimeTypes: readonly ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
             readonly extensions: readonly [".pdf", ".doc", ".docx"];
             readonly description: "PDF, Word documents";
+        };
+        readonly gapAnalysis: {
+            readonly mimeTypes: readonly ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"];
+            readonly extensions: readonly [".pdf", ".docx", ".txt"];
+            readonly description: "PDF, DOCX, plain text";
         };
         readonly images: {
             readonly mimeTypes: readonly ["image/jpeg", "image/png", "image/webp"];
@@ -79,6 +85,7 @@ export declare const storageConfig: {
         readonly system: "system/";
         readonly temp: "temp/";
         readonly vault: "vault/";
+        readonly gapAnalysis: "gap-analysis/";
     };
     /**
      * Presigned URL configuration

@@ -18,6 +18,7 @@ export declare const complianceDashboardRouter: import("@trpc/server").TRPCBuilt
      * Get full compliance dashboard data for the user's organization.
      * Auto-seeds default checklist items on first access.
      * Requires: authenticated + active OrganizationMember (any role).
+     * @deprecated Maintained for backward compatibility. Use getComplianceDashboardV2.
      */
     getComplianceDashboard: import("@trpc/server").TRPCQueryProcedure<{
         input: void;
@@ -41,10 +42,45 @@ export declare const complianceDashboardRouter: import("@trpc/server").TRPCBuilt
         meta: object;
     }>;
     /**
-     * Mark a compliance dashboard item as completed or incomplete.
+     * V2 Jurisdiction-First Compliance Dashboard
+     * Returns discriminated union: READY | BASELINE_UNAVAILABLE | JURISDICTION_NOT_ENTITLED | JURISDICTION_NOT_CONFIGURED | JURISDICTION_UNSUPPORTED.
+     */
+    getComplianceDashboardV2: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            jurisdictionCode?: string | undefined;
+        } | undefined;
+        output: import("@/modules/compliance/compliance-dashboard-v2.service").ComplianceDashboardV2Response;
+        meta: object;
+    }>;
+    /**
+     * Assess a specific compliance requirement item under V2.
+     * Replaces legacy binary toggle with 3-state review: NOT_REVIEWED | MEETS_REQUIREMENT | DOES_NOT_MEET_REQUIREMENT.
+     * Requires: authenticated + active OrganizationMember with at least MEMBER role.
+     */
+    assessDashboardItem: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
+            itemId: string;
+            status: "NOT_REVIEWED" | "MEETS_REQUIREMENT" | "DOES_NOT_MEET_REQUIREMENT";
+        };
+        output: import("@/modules/compliance/compliance-dashboard-v2.service").RequirementItemDTO;
+        meta: object;
+    }>;
+    /**
+     * Query the V2 rollout gate status for the authenticated user's organization.
+     */
+    getV2RolloutStatus: import("@trpc/server").TRPCQueryProcedure<{
+        input: void;
+        output: {
+            isEnabled: boolean;
+        };
+        meta: object;
+    }>;
+    /**
+     * Mark a compliance dashboard item as completed or incomplete (Legacy).
      * Operates on the ComplianceItem model (the seeded startup dashboard checklist).
      * Requires: authenticated + active OrganizationMember with at least MEMBER role
      * (VIEWER cannot mutate).
+     * @deprecated Maintained for backward compatibility. Use assessDashboardItem.
      */
     updateDashboardItem: import("@trpc/server").TRPCMutationProcedure<{
         input: {

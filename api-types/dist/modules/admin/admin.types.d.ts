@@ -307,6 +307,7 @@ export interface PaginatedAuditLog {
     total: number;
     page: number;
     limit: number;
+    totalPages: number;
 }
 export interface RegulatoryFramework {
     id: string;

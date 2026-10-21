@@ -20,7 +20,7 @@ export declare const passkeyRouter: import("@trpc/server").TRPCBuiltRouter<{
      */
     generateRegistrationOptions: import("@trpc/server").TRPCMutationProcedure<{
         input: void;
-        output: import("@simplewebauthn/types").PublicKeyCredentialCreationOptionsJSON;
+        output: import("@simplewebauthn/server/script/deps").PublicKeyCredentialCreationOptionsJSON;
         meta: object;
     }>;
     /**
@@ -58,7 +58,7 @@ export declare const passkeyRouter: import("@trpc/server").TRPCBuiltRouter<{
             userHandle?: string | undefined;
         };
         output: {
-            options: import("@simplewebauthn/types").PublicKeyCredentialRequestOptionsJSON;
+            options: import("@simplewebauthn/server/script/deps").PublicKeyCredentialRequestOptionsJSON;
             challengeId: string;
         };
         meta: object;

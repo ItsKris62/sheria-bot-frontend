@@ -17,6 +17,7 @@ export interface DocumentIngestionInput {
     effectiveEndDate?: Date;
     sourceRegistryId?: string;
     sourceDocumentVersionId?: string;
+    frameworkSlug?: string;
     forceReprocessExisting?: boolean;
 }
 export interface IngestionResult {

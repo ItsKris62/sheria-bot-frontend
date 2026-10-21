@@ -53,6 +53,7 @@ export declare const CandidateEntrySchema: z.ZodObject<{
         other: "other";
         guidance: "guidance";
         payments: "payments";
+        "consumer-protection": "consumer-protection";
         microfinance: "microfinance";
         insurance: "insurance";
         banking: "banking";
@@ -63,7 +64,6 @@ export declare const CandidateEntrySchema: z.ZodObject<{
         ict: "ict";
         "aml-cft": "aml-cft";
         core: "core";
-        "consumer-protection": "consumer-protection";
         "open-banking": "open-banking";
         tax: "tax";
         "ai-governance": "ai-governance";
@@ -151,6 +151,7 @@ export declare const CandidateManifestSchema: z.ZodObject<{
             other: "other";
             guidance: "guidance";
             payments: "payments";
+            "consumer-protection": "consumer-protection";
             microfinance: "microfinance";
             insurance: "insurance";
             banking: "banking";
@@ -161,7 +162,6 @@ export declare const CandidateManifestSchema: z.ZodObject<{
             ict: "ict";
             "aml-cft": "aml-cft";
             core: "core";
-            "consumer-protection": "consumer-protection";
             "open-banking": "open-banking";
             tax: "tax";
             "ai-governance": "ai-governance";

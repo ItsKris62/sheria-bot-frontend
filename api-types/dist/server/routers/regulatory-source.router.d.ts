@@ -36,9 +36,9 @@ export declare const regulatorySourceRouter: import("@trpc/server").TRPCBuiltRou
             regulatoryBody: string;
             jurisdictionCode: string;
             isActive: boolean;
-            authorityType: import(".prisma/client").$Enums.RegulatoryAuthorityType;
+            authorityType: import("@prisma/client").$Enums.RegulatoryAuthorityType;
             baseUrl: string;
-            sourceType: import(".prisma/client").$Enums.RegulatorySourceType;
+            sourceType: import("@prisma/client").$Enums.RegulatorySourceType;
             sourceKey: string;
             fetchUrl: string | null;
             lastCheckedAt: Date | null;
@@ -72,9 +72,9 @@ export declare const regulatorySourceRouter: import("@trpc/server").TRPCBuiltRou
             regulatoryBody: string;
             jurisdictionCode: string;
             isActive: boolean;
-            authorityType: import(".prisma/client").$Enums.RegulatoryAuthorityType;
+            authorityType: import("@prisma/client").$Enums.RegulatoryAuthorityType;
             baseUrl: string;
-            sourceType: import(".prisma/client").$Enums.RegulatorySourceType;
+            sourceType: import("@prisma/client").$Enums.RegulatorySourceType;
             sourceKey: string;
             fetchUrl: string | null;
             lastCheckedAt: Date | null;
@@ -98,9 +98,9 @@ export declare const regulatorySourceRouter: import("@trpc/server").TRPCBuiltRou
             regulatoryBody: string;
             jurisdictionCode: string;
             isActive: boolean;
-            authorityType: import(".prisma/client").$Enums.RegulatoryAuthorityType;
+            authorityType: import("@prisma/client").$Enums.RegulatoryAuthorityType;
             baseUrl: string;
-            sourceType: import(".prisma/client").$Enums.RegulatorySourceType;
+            sourceType: import("@prisma/client").$Enums.RegulatorySourceType;
             sourceKey: string;
             fetchUrl: string | null;
             lastCheckedAt: Date | null;
@@ -124,9 +124,9 @@ export declare const regulatorySourceRouter: import("@trpc/server").TRPCBuiltRou
             regulatoryBody: string;
             jurisdictionCode: string;
             isActive: boolean;
-            authorityType: import(".prisma/client").$Enums.RegulatoryAuthorityType;
+            authorityType: import("@prisma/client").$Enums.RegulatoryAuthorityType;
             baseUrl: string;
-            sourceType: import(".prisma/client").$Enums.RegulatorySourceType;
+            sourceType: import("@prisma/client").$Enums.RegulatorySourceType;
             sourceKey: string;
             fetchUrl: string | null;
             lastCheckedAt: Date | null;
@@ -147,7 +147,7 @@ export declare const regulatorySourceRouter: import("@trpc/server").TRPCBuiltRou
             offset?: number | undefined;
         };
         output: {
-            sources: import(".prisma/client").RegulatorySource[];
+            sources: import("@prisma/client").RegulatorySource[];
             total: number;
         };
         meta: object;

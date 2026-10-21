@@ -88,7 +88,7 @@ export declare function createContact(params: CreateContactParams, userId: strin
     tags: string[];
     notes: string | null;
     createdById: string;
-    salesStage: import(".prisma/client").$Enums.SalesStage;
+    salesStage: import("@prisma/client").$Enums.SalesStage;
     companyId: string | null;
     firstName: string | null;
     lastName: string | null;
@@ -96,11 +96,11 @@ export declare function createContact(params: CreateContactParams, userId: strin
     linkedinUrl: string | null;
     lastContactedAt: Date | null;
     nextFollowUpAt: Date | null;
-    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
     consentSource: string | null;
     consentTimestamp: Date | null;
     suppressedAt: Date | null;
-    suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
+    suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
     lastEmailedAt: Date | null;
     lastEmailOpenedAt: Date | null;
 }>;
@@ -115,7 +115,7 @@ export declare function updateContact(id: string, params: UpdateContactParams, u
     tags: string[];
     notes: string | null;
     createdById: string;
-    salesStage: import(".prisma/client").$Enums.SalesStage;
+    salesStage: import("@prisma/client").$Enums.SalesStage;
     companyId: string | null;
     firstName: string | null;
     lastName: string | null;
@@ -123,11 +123,11 @@ export declare function updateContact(id: string, params: UpdateContactParams, u
     linkedinUrl: string | null;
     lastContactedAt: Date | null;
     nextFollowUpAt: Date | null;
-    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
     consentSource: string | null;
     consentTimestamp: Date | null;
     suppressedAt: Date | null;
-    suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
+    suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
     lastEmailedAt: Date | null;
     lastEmailOpenedAt: Date | null;
 }>;
@@ -143,7 +143,7 @@ export declare function getContact(id: string): Promise<{
     tags: string[];
     notes: string | null;
     createdById: string;
-    salesStage: import(".prisma/client").$Enums.SalesStage;
+    salesStage: import("@prisma/client").$Enums.SalesStage;
     companyId: string | null;
     firstName: string | null;
     lastName: string | null;
@@ -151,11 +151,11 @@ export declare function getContact(id: string): Promise<{
     linkedinUrl: string | null;
     lastContactedAt: Date | null;
     nextFollowUpAt: Date | null;
-    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
     consentSource: string | null;
     consentTimestamp: Date | null;
     suppressedAt: Date | null;
-    suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
+    suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
     lastEmailedAt: Date | null;
     lastEmailOpenedAt: Date | null;
 }>;
@@ -173,7 +173,7 @@ export declare function listContacts(params?: ListContactsParams): Promise<{
     companyId: string | null;
     firstName: string | null;
     lastName: string | null;
-    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
     suppressedAt: Date | null;
 }[]>;
 /**

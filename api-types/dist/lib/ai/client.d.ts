@@ -16,6 +16,8 @@ export interface AICompletionOptions {
      * Use this for tier-specific timeouts in the three-tier checklist generation pipeline.
      */
     overrideTimeoutMs?: number;
+    /** Optional caller cancellation propagated to the selected provider. */
+    signal?: AbortSignal;
 }
 /**
  * AI completion result

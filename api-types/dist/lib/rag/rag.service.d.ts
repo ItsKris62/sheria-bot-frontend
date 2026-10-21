@@ -108,8 +108,10 @@ export interface RegulatoryEvidenceSearchOptions {
     namespace?: string;
     preferActiveSources?: boolean;
     sourceIndexMode?: SearchOptions['sourceIndexMode'];
+    frameworkScope?: 'DOMESTIC' | 'INTERNATIONAL' | 'CROSS_BORDER';
 }
 export declare function buildRegulatoryEvidenceFilter(jurisdictionCode: JurisdictionCode, sourceIndexMode?: SearchOptions['sourceIndexMode']): Record<string, unknown>;
+export declare function buildInternationalEvidenceFilter(jurisdictionCode: JurisdictionCode, sourceIndexMode?: SearchOptions['sourceIndexMode']): Record<string, unknown>;
 /**
  * RAG Service
  * Handles document indexing and semantic search

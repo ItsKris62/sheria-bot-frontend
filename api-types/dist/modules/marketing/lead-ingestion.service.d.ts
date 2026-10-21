@@ -75,7 +75,7 @@ export declare const leadIngestionService: {
     initDiscoveryRun(params: InitDiscoveryRunParams): Promise<{
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         id: string;
-        status: import(".prisma/client").$Enums.DiscoveryRunStatus;
+        status: import("@prisma/client").$Enums.DiscoveryRunStatus;
         errorMessage: string | null;
         completedAt: Date | null;
         startedAt: Date;
@@ -100,7 +100,7 @@ export declare const leadIngestionService: {
     completeDiscoveryRun(params: CompleteDiscoveryRunParams): Promise<{
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         id: string;
-        status: import(".prisma/client").$Enums.DiscoveryRunStatus;
+        status: import("@prisma/client").$Enums.DiscoveryRunStatus;
         errorMessage: string | null;
         completedAt: Date | null;
         startedAt: Date;

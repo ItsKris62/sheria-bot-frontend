@@ -49,7 +49,7 @@ export interface MergeCompaniesParams {
     userId: string;
 }
 export declare function mergeCompanies(params: MergeCompaniesParams): Promise<{
-    origin: import(".prisma/client").$Enums.CompanyOrigin;
+    origin: import("@prisma/client").$Enums.CompanyOrigin;
     id: string;
     createdAt: Date;
     updatedAt: Date;
@@ -63,11 +63,11 @@ export declare function mergeCompanies(params: MergeCompaniesParams): Promise<{
     reviewedAt: Date | null;
     createdById: string;
     regulatorMix: string[];
-    leadStatus: import(".prisma/client").$Enums.LeadStatus;
-    salesStage: import(".prisma/client").$Enums.SalesStage;
-    icpTier: import(".prisma/client").$Enums.IcpTier;
+    leadStatus: import("@prisma/client").$Enums.LeadStatus;
+    salesStage: import("@prisma/client").$Enums.SalesStage;
+    icpTier: import("@prisma/client").$Enums.IcpTier;
     leadScore: number | null;
-    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+    sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
     country: string;
     licenceType: string | null;
     licenceNumber: string | null;

@@ -57,9 +57,9 @@ export declare class RegulatoryAutomationService {
         jurisdictionCode: string;
         regulator: string;
         title: string;
-        informationType: import(".prisma/client").$Enums.RegulatoryInformationType;
-        regulatoryStage: import(".prisma/client").$Enums.RegulatoryStage;
-        materiality: import(".prisma/client").$Enums.RegulatoryMateriality;
+        informationType: import("@prisma/client").$Enums.RegulatoryInformationType;
+        regulatoryStage: import("@prisma/client").$Enums.RegulatoryStage;
+        materiality: import("@prisma/client").$Enums.RegulatoryMateriality;
         createdAt: string;
     }>;
     /**
@@ -83,10 +83,10 @@ export declare class RegulatoryAutomationService {
         dedupeKey: string;
         primarySnapshotId: string | null;
         officialTitle: string | null;
-        informationType: import(".prisma/client").$Enums.RegulatoryInformationType;
-        regulatoryStage: import(".prisma/client").$Enums.RegulatoryStage;
-        verificationState: import(".prisma/client").$Enums.RegulatoryVerificationState;
-        materiality: import(".prisma/client").$Enums.RegulatoryMateriality;
+        informationType: import("@prisma/client").$Enums.RegulatoryInformationType;
+        regulatoryStage: import("@prisma/client").$Enums.RegulatoryStage;
+        verificationState: import("@prisma/client").$Enums.RegulatoryVerificationState;
+        materiality: import("@prisma/client").$Enums.RegulatoryMateriality;
         relevanceScore: number | null;
         consultationDeadline: Date | null;
         complianceDeadline: Date | null;
@@ -100,7 +100,7 @@ export declare class RegulatoryAutomationService {
      * Machine procedure to query recent normalized regulatory items.
      */
     listSourceItems(input: ListRegulatorySourceItemsInput): Promise<{
-        items: import(".prisma/client").RegulatorySourceItem[];
+        items: import("@prisma/client").RegulatorySourceItem[];
         total: number;
     }>;
     /**

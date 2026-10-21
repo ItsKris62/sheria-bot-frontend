@@ -27,6 +27,7 @@ export interface DocxExportParams {
     createdAt: Date;
     organizationName?: string;
     userName?: string;
+    jurisdictionCode?: string | null;
     selectedBenchmarkDocuments?: Array<{
         id: string;
         title: string;

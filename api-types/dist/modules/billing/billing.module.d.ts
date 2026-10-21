@@ -50,12 +50,12 @@ declare class BillingModule {
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
-        metric: import(".prisma/client").$Enums.BillingMetric;
+        metric: import("@prisma/client").$Enums.BillingMetric;
         periodStart: Date;
         periodEnd: Date;
-        costUsd: import("@prisma/client-runtime-utils").Decimal | null;
-        costKes: import("@prisma/client-runtime-utils").Decimal | null;
-        fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+        costUsd: import("@prisma/client/runtime/client").Decimal | null;
+        costKes: import("@prisma/client/runtime/client").Decimal | null;
+        fxRateUsdToKes: import("@prisma/client/runtime/client").Decimal | null;
         fxRateCapturedAt: Date | null;
         pricingVersion: string | null;
     } | null>;
