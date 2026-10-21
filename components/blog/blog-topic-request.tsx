@@ -24,8 +24,12 @@ function toStableIdPart(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "default"
 }
 
+function getBlogTopicFormId({ sourcePage, category, compact }: Pick<BlogTopicRequestProps, "sourcePage" | "category" | "compact">) {
+  return `blog-topic-${toStableIdPart(sourcePage)}-${toStableIdPart(category ?? "all")}-${compact ? "compact" : "full"}`
+}
+
 export function BlogTopicRequest({ sourcePage, category, jurisdiction = "Kenya", compact = false }: BlogTopicRequestProps) {
-  const formId = `blog-topic-${toStableIdPart(sourcePage)}-${toStableIdPart(category ?? "all")}-${compact ? "compact" : "full"}`
+  const formId = getBlogTopicFormId({ sourcePage, category, compact })
   const [topic, setTopic] = useState("")
   const [contactEmail, setContactEmail] = useState("")
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle")
