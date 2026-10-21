@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest"
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
 import {
   getAvailableGapAnalysisDepths,
   gapAnalysisAcceptValue,
@@ -22,6 +24,21 @@ const contract: GapAnalysisUploadContract = {
 }
 
 describe("Gap Analysis frontend contract", () => {
+  it("uses the generated status-polling procedure without an unsafe compatibility cast", () => {
+    const pageSource = readFileSync(
+      resolve(process.cwd(), "app/(dashboard)/startup/gap-analysis/page.tsx"),
+      "utf8",
+    )
+    const apiSource = readFileSync(
+      resolve(process.cwd(), "api-types/dist/server/routers/gap-analysis.router.d.ts"),
+      "utf8",
+    )
+
+    expect(apiSource).toContain("getGapAnalysisStatus:")
+    expect(pageSource).toContain("trpc.gapAnalysis.getGapAnalysisStatus.useQuery(")
+    expect(pageSource).not.toContain("getGapAnalysisStatus: typeof trpc.gapAnalysis.getGapAnalysisResult")
+  })
+
   it("selects Standard when permitted, otherwise Quick, otherwise no runnable depth", () => {
     expect(selectGapAnalysisDepth(null, ["quick", "standard"])).toBe("standard")
     expect(selectGapAnalysisDepth("standard", ["quick"])).toBe("quick")

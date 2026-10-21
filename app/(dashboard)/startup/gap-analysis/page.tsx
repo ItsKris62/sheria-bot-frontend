@@ -1749,12 +1749,9 @@ export default function GapAnalysisPage() {
     : []
 
   // Polling query — active only while isAwaitingResult
-  // The backend source owns this projection. Keep this compatibility cast
-  // until the generated @sheriabot/api-types package is refreshed by CI.
-  const gapAnalysisStatusProcedure = (trpc.gapAnalysis as unknown as {
-    getGapAnalysisStatus: typeof trpc.gapAnalysis.getGapAnalysisResult
-  }).getGapAnalysisStatus
-  const pollingQuery = gapAnalysisStatusProcedure.useQuery(
+  // The coordinated backend release exposes this minimal projection before
+  // the frontend ships, so the generated contract remains authoritative.
+  const pollingQuery = trpc.gapAnalysis.getGapAnalysisStatus.useQuery(
     { id: activeAnalysisId! },
     {
       enabled: !!user && isAwaitingResult && activeAnalysisId !== null,
