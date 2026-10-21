@@ -1,6 +1,6 @@
 "use client"
 
-import { useId, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { Lightbulb, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,8 +20,12 @@ interface BlogTopicRequestProps {
   compact?: boolean
 }
 
+function toStableIdPart(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "default"
+}
+
 export function BlogTopicRequest({ sourcePage, category, jurisdiction = "Kenya", compact = false }: BlogTopicRequestProps) {
-  const formId = useId()
+  const formId = `blog-topic-${toStableIdPart(sourcePage)}-${toStableIdPart(category ?? "all")}-${compact ? "compact" : "full"}`
   const [topic, setTopic] = useState("")
   const [contactEmail, setContactEmail] = useState("")
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle")
