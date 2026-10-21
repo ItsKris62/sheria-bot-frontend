@@ -1,0 +1,42 @@
+"use client"
+
+import Link from "next/link"
+import { useState } from "react"
+import { ArrowRight, BookOpen, Check, ChevronRight, CircleAlert, FileCheck2, GitBranch, ShieldCheck, Sparkles } from "lucide-react"
+
+const stages = [
+  { label: "Ask", icon: Sparkles, title: "Ask a precise compliance question", text: "What controls do we need before launching a digital credit product in Kenya?" },
+  { label: "Evidence", icon: BookOpen, title: "Inspect the source-backed answer", text: "Trace every recommendation to the applicable act, regulation, or circular." },
+  { label: "Action", icon: FileCheck2, title: "Turn evidence into a workplan", text: "Move from interpretation to owners, controls, and accountable next steps." },
+]
+
+function QueryStage() {
+  const [active, setActive] = useState(0)
+  const stage = stages[active]
+  const Icon = stage.icon
+  return (
+    <div className="mx-auto mt-12 max-w-6xl overflow-hidden border border-white/15 bg-[#0b0d0c] shadow-[0_30px_100px_rgba(0,0,0,.45)] lg:mt-20">
+      <div className="flex flex-col border-b border-white/10 bg-white/[.03] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div className="flex items-center gap-3"><span className="grid size-8 place-items-center border border-[#22c55e]/40 bg-[#22c55e]/10 text-[#22c55e]"><Icon size={15} /></span><span className="font-mono text-[11px] uppercase tracking-[.2em] text-white/50">Illustrative product flow</span></div>
+        <div className="mt-4 flex gap-1 sm:mt-0" role="tablist" aria-label="Product flow stages">{stages.map((item, index) => <button key={item.label} type="button" role="tab" aria-selected={active === index} onClick={() => setActive(index)} className={`px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest transition ${active === index ? "bg-[#22c55e] text-black" : "text-white/45 hover:text-white"}`}>{String(index + 1).padStart(2, "0")} / {item.label}</button>)}</div>
+      </div>
+      <div className="grid lg:grid-cols-[1.05fr_.95fr]">
+        <div className="border-b border-white/10 p-6 sm:p-10 lg:border-b-0 lg:border-r"><span className="font-mono text-xs text-[#22c55e]">COMPLIANCE QUERY / KE</span><p className="mt-6 max-w-xl font-heading text-2xl leading-tight text-white sm:text-4xl">{stage.text}</p><div className="mt-10 flex items-center gap-3 border-t border-white/10 pt-5 text-sm text-white/45"><span className="size-2 rounded-full bg-[#22c55e]" /> Grounded in approved regulatory sources</div></div>
+        <div className="bg-[#f4f5ef] p-6 text-[#111] sm:p-10"><div className="flex items-center justify-between border-b border-black/10 pb-4"><span className="font-mono text-[10px] uppercase tracking-[.18em] text-black/45">{stage.label} layer</span><span className="font-mono text-[10px] text-[#15803d]">VERIFIED PATH</span></div><h3 className="mt-7 font-heading text-2xl leading-tight sm:text-3xl">{stage.title}</h3><p className="mt-4 max-w-md text-base leading-7 text-black/60">{active === 0 ? "Start with the question your team is actually trying to answer." : active === 1 ? "See why the answer is relevant, where it came from, and what it means for your organization." : "Create a shared, auditable path from regulation to operational readiness."}</p><div className="mt-8 flex items-center gap-3 border-t border-black/10 pt-5 text-sm font-medium"><Check size={16} className="text-[#15803d]" /> {stage.text}</div></div>
+      </div>
+    </div>
+  )
+}
+
+export function HomeExperience() {
+  return <div data-marketing className="marketing-page bg-[#050706] text-white">
+    <section className="relative overflow-hidden border-b border-white/10 px-5 pb-20 pt-16 sm:px-8 sm:pb-28 sm:pt-24 lg:px-12 lg:pt-32">
+      <div className="marketing-grid" aria-hidden="true" /><div className="marketing-glow" aria-hidden="true" />
+      <div className="relative mx-auto max-w-7xl"><div className="max-w-4xl"><div className="mb-8 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[.22em] text-[#22c55e]"><span className="size-2 bg-[#22c55e]" /> Regulatory intelligence / Africa</div><h1 className="max-w-4xl font-heading text-[clamp(3rem,8vw,7.5rem)] font-medium leading-[.93] tracking-[-.055em]">Know what the regulation says.<span className="block text-white/40">Know what your business needs to do.</span></h1><p className="mt-8 max-w-2xl text-lg leading-8 text-white/60 sm:text-xl">Evidence-backed answers for fintech and regulated teams navigating African regulatory frameworks.</p><div className="mt-9 flex flex-col gap-3 sm:flex-row"><Link className="marketing-button" href="/register">Ask SheriaBot <ArrowRight size={16} /></Link><Link className="marketing-link" href="#product">Explore the platform <ChevronRight size={16} /></Link></div></div><QueryStage /></div>
+    </section>
+    <section className="border-b border-white/10 bg-[#f4f5ef] px-5 py-20 text-[#111] sm:px-8 sm:py-28 lg:px-12"><div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.8fr_1.2fr]"><div><span className="eyebrow">01 / The problem</span><h2 className="mt-5 max-w-lg font-heading text-4xl leading-[1.02] tracking-tight sm:text-6xl">Regulation is connected. Your sources are not.</h2></div><div className="grid gap-4 sm:grid-cols-3"><div className="network-card"><GitBranch /><strong>Fragmented</strong><p>Acts, circulars and guidance live across disconnected sources.</p></div><div className="network-card"><CircleAlert /><strong>Ambiguous</strong><p>Teams spend time translating legal language into operational work.</p></div><div className="network-card"><ShieldCheck /><strong>Accountable</strong><p>Every decision needs a trail your reviewers can follow.</p></div></div></div></section>
+    <section id="product" className="border-b border-white/10 px-5 py-20 sm:px-8 sm:py-28 lg:px-12"><div className="mx-auto max-w-7xl"><div className="max-w-2xl"><span className="eyebrow">02 / From law to action</span><h2 className="mt-5 font-heading text-4xl leading-tight sm:text-6xl">A clearer path through compliance work.</h2><p className="mt-6 text-lg leading-8 text-white/55">Ask, inspect, and organize the work without losing the evidence that makes the answer trustworthy.</p></div><div className="mt-14 grid gap-px border border-white/10 bg-white/10 md:grid-cols-3">{stages.map((item, i) => <div key={item.label} className="bg-[#080b09] p-7 sm:p-9"><span className="font-mono text-xs text-[#22c55e]">0{i + 1}</span><h3 className="mt-16 font-heading text-2xl">{item.label}</h3><p className="mt-3 leading-7 text-white/55">{item.title}. {item.text}</p></div>)}</div></div></section>
+    <section className="border-b border-white/10 bg-[#0c100d] px-5 py-20 sm:px-8 sm:py-28 lg:px-12"><div className="mx-auto grid max-w-7xl items-end gap-12 lg:grid-cols-[1fr_.8fr]"><div><span className="eyebrow">03 / Built for the people doing the work</span><h2 className="mt-5 max-w-2xl font-heading text-4xl leading-tight sm:text-6xl">One intelligence layer. Different responsibilities.</h2></div><div className="border-l border-[#22c55e]/50 pl-6 text-lg leading-8 text-white/60">For startups preparing to launch, enterprises coordinating across teams, and regulators building clearer institutional workflows.</div></div><div className="mx-auto mt-14 grid max-w-7xl gap-4 md:grid-cols-3">{[{title:"Startups",href:"/solutions/startups",text:"Understand what applies and organize the next obligation."},{title:"Enterprise",href:"/solutions/enterprise",text:"Create a traceable operating rhythm for compliance teams."},{title:"Regulators",href:"/solutions/regulators",text:"Work with structured regulatory knowledge and policy context."}].map(item=><Link key={item.title} href={item.href} className="audience-card"><span className="font-mono text-xs text-[#22c55e]">EXPLORE</span><h3>{item.title}</h3><p>{item.text}</p><ArrowRight size={18}/></Link>)}</div></section>
+    <section className="bg-[#22c55e] px-5 py-20 text-black sm:px-8 sm:py-28 lg:px-12"><div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-end md:justify-between"><div><span className="eyebrow text-black/60">04 / Start with clarity</span><h2 className="mt-5 max-w-3xl font-heading text-4xl leading-none tracking-tight sm:text-6xl">Make the next compliance decision easier to defend.</h2></div><Link href="/register" className="inline-flex shrink-0 items-center gap-3 border border-black/40 px-6 py-4 font-semibold transition hover:bg-black hover:text-[#22c55e]">Create your account <ArrowRight size={17}/></Link></div></section>
+  </div>
+}
