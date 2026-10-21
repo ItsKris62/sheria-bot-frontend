@@ -28,9 +28,9 @@ export declare const blogSourceSchema: z.ZodObject<{
     notes: z.ZodNullable<z.ZodOptional<z.ZodString>>;
 }, z.core.$strip>;
 export declare const publicListBlogPostsSchema: z.ZodObject<{
-    category: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
-    search: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
-    tag: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    category: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
+    search: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
+    tag: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
     featured: z.ZodOptional<z.ZodBoolean>;
@@ -47,19 +47,19 @@ export declare const submitBlogFeedbackSchema: z.ZodObject<{
         HELPFUL: "HELPFUL";
         NOT_HELPFUL: "NOT_HELPFUL";
     }>;
-    reasonCode: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
-    readerSessionId: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    reasonCode: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
+    readerSessionId: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
 }, z.core.$strip>;
 export declare const publicFeedbackSummarySchema: z.ZodObject<{
     postId: z.ZodString;
 }, z.core.$strip>;
 export declare const submitBlogTopicRequestSchema: z.ZodObject<{
     topic: z.ZodString;
-    category: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
-    jurisdiction: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
-    sourcePage: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
-    contactEmail: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
-    readerSessionId: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    category: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
+    jurisdiction: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
+    sourcePage: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
+    contactEmail: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
+    readerSessionId: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
     spamTrap: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export declare const adminListBlogPostsSchema: z.ZodObject<{

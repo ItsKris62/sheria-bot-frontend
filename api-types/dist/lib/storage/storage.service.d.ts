@@ -41,7 +41,7 @@ export declare class StorageService {
      * @param userId User ID
      * @param metadata Additional metadata
      */
-    uploadDocument(fileBuffer: Buffer, filename: string, userId: string, metadata?: Record<string, string>): Promise<FileUploadResult>;
+    uploadDocument(fileBuffer: Buffer, filename: string, userId: string, metadata?: Record<string, string>, validationCategory?: 'documents' | 'gapAnalysis', explicitKey?: string): Promise<FileUploadResult>;
     /**
      * Upload image (JPEG, PNG, WebP)
      * @param fileBuffer File buffer

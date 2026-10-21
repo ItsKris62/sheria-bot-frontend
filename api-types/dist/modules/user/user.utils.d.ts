@@ -67,9 +67,9 @@ export declare const activityLogFiltersSchema: z.ZodObject<{
     }>>;
     resourceType: z.ZodOptional<z.ZodEnum<{
         POLICY: "POLICY";
+        QUERY: "QUERY";
         USER: "USER";
         DOCUMENT: "DOCUMENT";
-        QUERY: "QUERY";
         ORGANIZATION: "ORGANIZATION";
         SETTINGS: "SETTINGS";
     }>>;

@@ -195,7 +195,7 @@ export declare const alertRouter: import("@trpc/server").TRPCBuiltRouter<{
             limit?: number | undefined;
         };
         output: {
-            alerts: import(".prisma/client").RegulatoryAlert[];
+            alerts: import("@/modules/alert").RegulatoryAlert[];
             total: number;
         };
         meta: object;

@@ -122,6 +122,8 @@ export declare class AIService {
         result: GapAnalysisResult;
         inputTokens: number;
         outputTokens: number;
+        totalCost: number;
+        truncated?: boolean;
     }>;
     /**
      * Perform multi-chunk gap analysis for large policy documents.
@@ -143,12 +145,23 @@ export declare class AIService {
         focusAreas?: string[];
         ragContext?: string;
         jurisdictionContext?: JurisdictionContext;
+        signal?: AbortSignal;
+        beforeAiOperation?: GapAnalysisParams['beforeAiOperation'];
     }): Promise<{
         result: GapAnalysisResult;
         chunksProcessed: number;
+        totalChunks: number;
+        failedChunks: number;
+        skippedChunks: number;
+        chunkFailures: Array<{
+            chunkIndex: number;
+            error: string;
+        }>;
+        extractionComplete: boolean;
         totalInputTokens: number;
         totalOutputTokens: number;
         totalCost: number;
+        executionLimitations: string[];
     }>;
     /**
      * Lean stream executor for the three-tier checklist generation pipeline.

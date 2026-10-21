@@ -106,5 +106,20 @@ export declare const calendarRouter: import("@trpc/server").TRPCBuiltRouter<{
         output: import("@/modules/calendar").CalendarEventRecord[];
         meta: object;
     }>;
+    /**
+     * Authoritative summary of upcoming deadlines (total, urgent count, window days).
+     * Used by high-level dashboard KPIs without array truncation.
+     */
+    upcomingSummary: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
+            daysAhead?: number | undefined;
+        };
+        output: {
+            total: number;
+            urgentCount: number;
+            windowDays: number;
+        };
+        meta: object;
+    }>;
 }>>;
 //# sourceMappingURL=calendar.router.d.ts.map

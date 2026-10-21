@@ -32,5 +32,13 @@ declare class AiJobRunner {
     private requeueStaleLocks;
 }
 export declare const aiJobRunner: AiJobRunner;
+/**
+ * Scrubs raw document bytes and base64 from an AiJob payload once it reaches a terminal state.
+ */
+export declare function scrubAiJobPayload(jobId: string): Promise<void>;
+/**
+ * Scrubs all AiJob payloads associated with a specific entity (e.g. upon GapAnalysis deletion).
+ */
+export declare function scrubAiJobPayloadForEntity(entityType: string, entityId: string): Promise<void>;
 export {};
 //# sourceMappingURL=ai-job-runner.d.ts.map

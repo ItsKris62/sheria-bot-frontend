@@ -95,8 +95,8 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                     name: string;
                 } | null;
                 fullName: string;
-                role: import(".prisma/client").$Enums.UserRole;
-                status: import(".prisma/client").$Enums.UserStatus;
+                role: import("@prisma/client").$Enums.UserRole;
+                status: import("@prisma/client").$Enums.UserStatus;
                 emailVerified: boolean;
                 lastLoginAt: Date | null;
                 createdAt: Date;
@@ -125,7 +125,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
             id: string;
             email: string;
             fullName: string;
-            role: import(".prisma/client").$Enums.UserRole;
+            role: import("@prisma/client").$Enums.UserRole;
             emailVerified: boolean;
         };
         meta: object;
@@ -251,7 +251,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
      */
     listAIJobs: import("@trpc/server").TRPCQueryProcedure<{
         input: {
-            status?: "COMPLETED" | "RUNNING" | "QUEUED" | "DEAD_LETTERED" | "RETRYING" | undefined;
+            status?: "COMPLETED" | "RUNNING" | "QUEUED" | "RETRYING" | "DEAD_LETTERED" | undefined;
             type?: string | undefined;
             page?: number | undefined;
             limit?: number | undefined;
@@ -550,9 +550,11 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
             generatedAt: string;
             overallStatus: "healthy" | "degraded" | "down";
             malwareScanning: {
-                status: "healthy" | "degraded" | "not_configured";
+                status: import("@/lib/security/gap-analysis-malware").MalwareScannerReadiness;
                 enabled: boolean;
                 configured: boolean;
+                reachable: boolean;
+                latencyMs: number | undefined;
                 message: string;
                 skippedScanCountLast7d: null;
                 failedScanCountLast7d: null;
@@ -679,7 +681,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                 expiresAt: Date;
                 usedAt: Date | null;
                 revokedAt: Date | null;
-                organizationRole: import(".prisma/client").$Enums.MemberRole | null;
+                organizationRole: import("@prisma/client").$Enums.MemberRole | null;
                 used: boolean;
                 revokedBy: string | null;
                 invitedBy: string;
@@ -709,7 +711,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                     name: string;
                 } | null;
                 fullName: string;
-                role: import(".prisma/client").$Enums.UserRole;
+                role: import("@prisma/client").$Enums.UserRole;
                 accountStatus: string;
                 emailVerified: boolean;
                 createdAt: Date;
@@ -773,7 +775,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                     id: string;
                     email: string;
                     fullName: string;
-                    role: import(".prisma/client").$Enums.UserRole;
+                    role: import("@prisma/client").$Enums.UserRole;
                 }[];
             }[];
             total: number;
@@ -1067,8 +1069,8 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
                 invoiceNumber: string | null;
                 providerTransactionId: string | null;
                 maskedPhone: string | null;
-                status: import(".prisma/client").$Enums.PaymentStatus;
-                provider: import(".prisma/client").$Enums.PaymentProvider;
+                status: import("@prisma/client").$Enums.PaymentStatus;
+                provider: import("@prisma/client").$Enums.PaymentProvider;
                 amount: number;
                 currency: string;
                 ageMinutes: number;
@@ -1373,7 +1375,7 @@ export declare const adminRouter: import("@trpc/server").TRPCBuiltRouter<{
             tenants: {
                 organizationId: string;
                 organizationName: string;
-                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                plan: import("@prisma/client").$Enums.SubscriptionPlan;
                 totalRequests: number;
                 totalCostUsd: number;
                 totalCostKes: number;

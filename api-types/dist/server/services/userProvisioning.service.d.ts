@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { type AuditedJurisdiction } from '@/config/jurisdictions.config';
 export declare function isValidOrganizationId(value: string): boolean;
-export declare const optionalOrganizationIdSchema: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+export declare const optionalOrganizationIdSchema: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
 export declare const createUserWithOrganizationInputSchema: z.ZodObject<{
     email: z.ZodString;
     fullName: z.ZodString;
@@ -19,8 +19,8 @@ export declare const createUserWithOrganizationInputSchema: z.ZodObject<{
         STARTUP: "STARTUP";
     }>>;
     isPilot: z.ZodDefault<z.ZodBoolean>;
-    organizationId: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
-    organizationName: z.ZodPreprocess<z.ZodOptional<z.ZodString>>;
+    organizationId: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
+    organizationName: z.ZodPreprocess<z.ZodOptional<z.ZodString>, unknown>;
     homeJurisdictionCode: z.ZodOptional<z.ZodEnum<{
         KE: "KE";
         MW: "MW";

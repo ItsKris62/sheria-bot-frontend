@@ -106,7 +106,7 @@ export declare const fileUploadSchema: z.ZodObject<{
     filename: z.ZodString;
     mimeType: z.ZodString;
     size: z.ZodNumber;
-    data: z.ZodOptional<z.ZodCustom<Buffer<ArrayBufferLike>, Buffer<ArrayBufferLike>>>;
+    data: z.ZodOptional<z.ZodInstanceOf<Buffer<ArrayBufferLike>>>;
 }, z.core.$strip>;
 /**
  * Coordinate validation (for location data)

@@ -19,6 +19,7 @@ export interface RegulatoryIntelligenceRequest {
         minScore?: number;
         filter?: Record<string, unknown>;
         sourceIndexMode?: 'v1' | 'v2' | 'prefer-v2';
+        frameworkScope?: 'DOMESTIC' | 'INTERNATIONAL' | 'CROSS_BORDER';
     };
     generationProfile?: string;
     runId?: string;
@@ -41,6 +42,10 @@ export interface RegulatoryIntelligenceResult {
     corpusVersionSnapshot: Record<string, string | undefined>;
     retrievalVersion: string;
     acceptedContext: string;
+    graderTokens: {
+        input: number;
+        output: number;
+    };
     diagnostics?: Record<string, unknown>;
 }
 export declare class RegulatoryIntelligenceService {

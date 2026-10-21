@@ -78,6 +78,7 @@ export interface QueryResult {
  * Initialize Pinecone client
  */
 declare const pinecone: Pinecone;
+export declare function resolvePineconeNamespace(namespace?: string): string;
 export declare function getPineconeDiagnostics(namespace?: string): {
     indexName: string;
     namespace: string;

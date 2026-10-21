@@ -87,7 +87,7 @@ export interface IngestEvidenceParams {
     extractorVersion?: string | null;
 }
 export declare function createCompany(params: CreateCompanyParams, userId: string): Promise<{
-    origin: import(".prisma/client").$Enums.CompanyOrigin;
+    origin: import("@prisma/client").$Enums.CompanyOrigin;
     id: string;
     createdAt: Date;
     updatedAt: Date;
@@ -101,11 +101,11 @@ export declare function createCompany(params: CreateCompanyParams, userId: strin
     reviewedAt: Date | null;
     createdById: string;
     regulatorMix: string[];
-    leadStatus: import(".prisma/client").$Enums.LeadStatus;
-    salesStage: import(".prisma/client").$Enums.SalesStage;
-    icpTier: import(".prisma/client").$Enums.IcpTier;
+    leadStatus: import("@prisma/client").$Enums.LeadStatus;
+    salesStage: import("@prisma/client").$Enums.SalesStage;
+    icpTier: import("@prisma/client").$Enums.IcpTier;
     leadScore: number | null;
-    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+    sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
     country: string;
     licenceType: string | null;
     licenceNumber: string | null;
@@ -120,7 +120,7 @@ export declare function createCompany(params: CreateCompanyParams, userId: strin
     reviewedById: string | null;
 }>;
 export declare function updateCompany(id: string, params: UpdateCompanyParams, userId: string): Promise<{
-    origin: import(".prisma/client").$Enums.CompanyOrigin;
+    origin: import("@prisma/client").$Enums.CompanyOrigin;
     id: string;
     createdAt: Date;
     updatedAt: Date;
@@ -134,11 +134,11 @@ export declare function updateCompany(id: string, params: UpdateCompanyParams, u
     reviewedAt: Date | null;
     createdById: string;
     regulatorMix: string[];
-    leadStatus: import(".prisma/client").$Enums.LeadStatus;
-    salesStage: import(".prisma/client").$Enums.SalesStage;
-    icpTier: import(".prisma/client").$Enums.IcpTier;
+    leadStatus: import("@prisma/client").$Enums.LeadStatus;
+    salesStage: import("@prisma/client").$Enums.SalesStage;
+    icpTier: import("@prisma/client").$Enums.IcpTier;
     leadScore: number | null;
-    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+    sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
     country: string;
     licenceType: string | null;
     licenceNumber: string | null;
@@ -175,7 +175,7 @@ export declare function getCompany(id: string): Promise<{
         confidence: number;
         retrievedAt: Date;
         sourceUrl: string;
-        verificationState: import(".prisma/client").$Enums.EvidenceVerificationState;
+        verificationState: import("@prisma/client").$Enums.EvidenceVerificationState;
         companyId: string;
         discoveryRunId: string | null;
         field: string;
@@ -196,11 +196,11 @@ export declare function getCompany(id: string): Promise<{
         phone: string | null;
         role: string | null;
         createdAt: Date;
-        salesStage: import(".prisma/client").$Enums.SalesStage;
+        salesStage: import("@prisma/client").$Enums.SalesStage;
         firstName: string | null;
         lastName: string | null;
         linkedinUrl: string | null;
-        consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+        consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
     }[];
     discoveryRuns: ({
         discoveryRun: {
@@ -217,11 +217,11 @@ export declare function getCompany(id: string): Promise<{
         companyId: string;
         discoveryRunId: string;
         scoreAtRun: number | null;
-        icpTierAtRun: import(".prisma/client").$Enums.IcpTier | null;
-        leadStatusAtRun: import(".prisma/client").$Enums.LeadStatus | null;
+        icpTierAtRun: import("@prisma/client").$Enums.IcpTier | null;
+        leadStatusAtRun: import("@prisma/client").$Enums.LeadStatus | null;
     })[];
 } & {
-    origin: import(".prisma/client").$Enums.CompanyOrigin;
+    origin: import("@prisma/client").$Enums.CompanyOrigin;
     id: string;
     createdAt: Date;
     updatedAt: Date;
@@ -235,11 +235,11 @@ export declare function getCompany(id: string): Promise<{
     reviewedAt: Date | null;
     createdById: string;
     regulatorMix: string[];
-    leadStatus: import(".prisma/client").$Enums.LeadStatus;
-    salesStage: import(".prisma/client").$Enums.SalesStage;
-    icpTier: import(".prisma/client").$Enums.IcpTier;
+    leadStatus: import("@prisma/client").$Enums.LeadStatus;
+    salesStage: import("@prisma/client").$Enums.SalesStage;
+    icpTier: import("@prisma/client").$Enums.IcpTier;
     leadScore: number | null;
-    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+    sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
     country: string;
     licenceType: string | null;
     licenceNumber: string | null;
@@ -270,7 +270,7 @@ export declare function listCompanies(params?: ListCompaniesParams): Promise<{
             fullName: string;
         } | null;
     } & {
-        origin: import(".prisma/client").$Enums.CompanyOrigin;
+        origin: import("@prisma/client").$Enums.CompanyOrigin;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -284,11 +284,11 @@ export declare function listCompanies(params?: ListCompaniesParams): Promise<{
         reviewedAt: Date | null;
         createdById: string;
         regulatorMix: string[];
-        leadStatus: import(".prisma/client").$Enums.LeadStatus;
-        salesStage: import(".prisma/client").$Enums.SalesStage;
-        icpTier: import(".prisma/client").$Enums.IcpTier;
+        leadStatus: import("@prisma/client").$Enums.LeadStatus;
+        salesStage: import("@prisma/client").$Enums.SalesStage;
+        icpTier: import("@prisma/client").$Enums.IcpTier;
         leadScore: number | null;
-        sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+        sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
         country: string;
         licenceType: string | null;
         licenceNumber: string | null;
@@ -314,7 +314,7 @@ export declare function ingestDiscoveryEvidence(params: IngestEvidenceParams): P
     confidence: number;
     retrievedAt: Date;
     sourceUrl: string;
-    verificationState: import(".prisma/client").$Enums.EvidenceVerificationState;
+    verificationState: import("@prisma/client").$Enums.EvidenceVerificationState;
     companyId: string;
     discoveryRunId: string | null;
     field: string;

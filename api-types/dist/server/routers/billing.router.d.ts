@@ -57,12 +57,12 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
                 planStartDate: string | null;
                 planEndDate: string | null;
                 stripeCustomerId: string | null;
-                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus | null;
+                subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus | null;
                 trialEndsAt: string | null;
                 gracePeriodEndsAt: string | null;
                 cancelledAt: string | null;
                 subscriptionEndsAt: string | null;
-                preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+                preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
                 mpesaNextPaymentDueDate: string | null;
                 subscriptionCycleEnd: string | null;
                 mpesaPhoneNumber: string | null;
@@ -173,7 +173,7 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
             mpesaPhoneNumber?: string | undefined;
         };
         output: {
-            preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+            preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
             mpesaPhoneNumber: string | null;
         };
         meta: object;
@@ -293,7 +293,7 @@ export declare const billingRouter: import("@trpc/server").TRPCBuiltRouter<{
         };
         output: {
             paymentId: string;
-            status: import(".prisma/client").$Enums.PaymentStatus;
+            status: import("@prisma/client").$Enums.PaymentStatus;
             updatedAt: string;
         };
         meta: object;

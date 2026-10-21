@@ -9,6 +9,11 @@ declare class CalendarModule {
         id: string;
     }>;
     getUpcomingDeadlines(params: UpcomingEventsParams): Promise<CalendarEventRecord[]>;
+    getUpcomingDeadlinesSummary(params: UpcomingEventsParams): Promise<{
+        total: number;
+        urgentCount: number;
+        windowDays: number;
+    }>;
     evaluateAndGenerateReminders(organizationId: string): Promise<void>;
 }
 export declare const calendarModule: CalendarModule;

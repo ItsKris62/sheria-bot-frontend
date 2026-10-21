@@ -13,16 +13,19 @@
 import { Prisma } from '@prisma/client';
 import type { GeneratedChecklist } from '@/lib/ai/prompts/checklist-generation';
 import type { BenchmarkDocumentSummary, GapAnalysisResult } from '@/lib/ai/prompts/gap-analysis';
+import { type GapAnalysisFileType } from '@/config/gap-analysis.config';
 import { type JurisdictionContext } from '@/types/jurisdiction';
 import { type ComplianceQueryParams, type ComplianceQueryResult, type QuickCheckResult, type QueryFilters, type PaginatedQueries, type ComplianceScore, type ScoreHistory, type ComplianceGap, type ComplianceRoadmap, type Requirement, type RequirementParams, type RequirementStatus, type RequirementFilters, type Evidence, type UpcomingDeadline, type RiskScenario, type RiskAssessment, type RiskReport, type RegulatoryUpdate, type UpdateSubscription, type RegulatoryArea } from './compliance.types';
-interface GapAnalysisPipelineParams {
+export interface GapAnalysisPipelineParams {
     analysisId: string;
     userId: string;
     organizationId?: string;
     trialUserId?: string;
     fileName: string;
-    fileContent: string;
-    fileType: string;
+    fileContent?: string;
+    storageKey?: string;
+    fileSize?: number;
+    fileType: GapAnalysisFileType;
     regulatoryFrameworks: string[];
     regulatoryFrameworkSlugs?: string[];
     benchmarkDocumentIds?: string[];
@@ -32,13 +35,16 @@ interface GapAnalysisPipelineParams {
     focusAreas?: string[];
     ipAddress?: string;
     userAgent?: string;
+    consentVersion?: string;
 }
 /**
  * Background gap analysis pipeline.
  * Runs after the HTTP response is sent. Manages its own lifecycle via DB status
  * updates. The top-level try/catch guarantees FAILED is set on any unhandled error.
  */
-export declare function executeGapAnalysisPipeline(params: GapAnalysisPipelineParams): Promise<void>;
+export declare function executeGapAnalysisPipeline(params: GapAnalysisPipelineParams, execution?: {
+    jobId?: string;
+}): Promise<void>;
 /**
  * Compliance Module Class
  * Central orchestrator for all compliance-related business logic
@@ -320,6 +326,7 @@ declare class ComplianceModule {
         userAgent?: string;
         trialUserId?: string;
         jurisdictionContext: JurisdictionContext;
+        consentVersion?: string;
     }): Promise<{
         id: string;
         status: string;
@@ -339,6 +346,8 @@ declare class ComplianceModule {
         status: string;
         progress: number;
         errorMessage: string | null;
+        jurisdictionCode: string | null;
+        results?: Prisma.JsonValue | null;
         createdAt: Date;
         updatedAt: Date;
     }[]>;

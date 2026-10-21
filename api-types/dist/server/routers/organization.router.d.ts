@@ -51,7 +51,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 industry: string | null;
                 size: string | null;
                 subscriptionTier: string;
-                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+                subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
                 trialEndsAt: Date | null;
                 gracePeriodEndsAt: Date | null;
                 cancelledAt: Date | null;
@@ -59,7 +59,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 verificationStatus: string;
                 verifiedAt: Date | null;
                 verifiedBy: string | null;
-                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                plan: import("@prisma/client").$Enums.SubscriptionPlan;
                 planStartDate: Date | null;
                 planEndDate: Date | null;
                 maxSeats: number;
@@ -69,7 +69,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 stripeCustomerId: string | null;
                 stripeSubId: string | null;
                 customLimits: import("@prisma/client/runtime/client").JsonValue | null;
-                preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+                preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
                 mpesaNextPaymentDueDate: Date | null;
                 subscriptionCycleEnd: Date | null;
                 mpesaFailedRenewalAttempts: number;
@@ -114,7 +114,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 id: string;
                 email: string;
                 fullName: string;
-                role: import(".prisma/client").$Enums.UserRole;
+                role: import("@prisma/client").$Enums.UserRole;
             }[];
         } & {
             type: string;
@@ -130,7 +130,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             industry: string | null;
             size: string | null;
             subscriptionTier: string;
-            subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+            subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
             trialEndsAt: Date | null;
             gracePeriodEndsAt: Date | null;
             cancelledAt: Date | null;
@@ -138,7 +138,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             verificationStatus: string;
             verifiedAt: Date | null;
             verifiedBy: string | null;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            plan: import("@prisma/client").$Enums.SubscriptionPlan;
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
@@ -148,7 +148,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
-            preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+            preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
             mpesaNextPaymentDueDate: Date | null;
             subscriptionCycleEnd: Date | null;
             mpesaFailedRenewalAttempts: number;
@@ -201,7 +201,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             industry: string | null;
             size: string | null;
             subscriptionTier: string;
-            subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+            subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
             trialEndsAt: Date | null;
             gracePeriodEndsAt: Date | null;
             cancelledAt: Date | null;
@@ -209,7 +209,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             verificationStatus: string;
             verifiedAt: Date | null;
             verifiedBy: string | null;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            plan: import("@prisma/client").$Enums.SubscriptionPlan;
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
@@ -219,7 +219,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
-            preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+            preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
             mpesaNextPaymentDueDate: Date | null;
             subscriptionCycleEnd: Date | null;
             mpesaFailedRenewalAttempts: number;
@@ -275,7 +275,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             industry: string | null;
             size: string | null;
             subscriptionTier: string;
-            subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+            subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
             trialEndsAt: Date | null;
             gracePeriodEndsAt: Date | null;
             cancelledAt: Date | null;
@@ -283,7 +283,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             verificationStatus: string;
             verifiedAt: Date | null;
             verifiedBy: string | null;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            plan: import("@prisma/client").$Enums.SubscriptionPlan;
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
@@ -293,7 +293,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
-            preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+            preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
             mpesaNextPaymentDueDate: Date | null;
             subscriptionCycleEnd: Date | null;
             mpesaFailedRenewalAttempts: number;
@@ -437,8 +437,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     email: string;
                     fullName: string;
                 };
-                role: import(".prisma/client").$Enums.MemberRole;
-                status: import(".prisma/client").$Enums.MemberStatus;
+                role: import("@prisma/client").$Enums.MemberRole;
+                status: import("@prisma/client").$Enums.MemberStatus;
                 organizationId: string;
                 joinedAt: Date;
             };
@@ -461,7 +461,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             registrationNumber: string | null;
             website: string | null;
             industry: string | null;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            plan: import("@prisma/client").$Enums.SubscriptionPlan;
             homeJurisdictionCode: string | null;
             enabledJurisdictions: string[];
             needsCountryConfirmation: boolean;
@@ -494,15 +494,15 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 registrationNumber: string | null;
                 website: string | null;
                 industry: string | null;
-                subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
-                plan: import(".prisma/client").$Enums.SubscriptionPlan;
+                subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
+                plan: import("@prisma/client").$Enums.SubscriptionPlan;
                 maxSeats: number;
                 address: string | null;
                 contactPerson: string | null;
                 contactEmail: string | null;
                 contactPhone: string | null;
             };
-            callerOrgRole: import(".prisma/client").$Enums.MemberRole;
+            callerOrgRole: import("@prisma/client").$Enums.MemberRole;
             canManageMembers: boolean;
             seatUsage: import("../services/organization-seat.service").OrganizationSeatUsage;
             memberCounts: {
@@ -578,8 +578,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     periodStart: Date;
                     periodEnd: Date;
-                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
-                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    costUsd: import("@prisma/client/runtime/client").Decimal | null;
+                    costKes: import("@prisma/client/runtime/client").Decimal | null;
                     checklistGenerations: number;
                     apiCalls: number;
                     documentStorageMb: number;
@@ -598,12 +598,12 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    metric: import(".prisma/client").$Enums.BillingMetric;
+                    metric: import("@prisma/client").$Enums.BillingMetric;
                     periodStart: Date;
                     periodEnd: Date;
-                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
-                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
-                    fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    costUsd: import("@prisma/client/runtime/client").Decimal | null;
+                    costKes: import("@prisma/client/runtime/client").Decimal | null;
+                    fxRateUsdToKes: import("@prisma/client/runtime/client").Decimal | null;
                     fxRateCapturedAt: Date | null;
                     pricingVersion: string | null;
                 }[] | ({
@@ -612,12 +612,12 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    metric: import(".prisma/client").$Enums.BillingMetric;
+                    metric: import("@prisma/client").$Enums.BillingMetric;
                     periodStart: Date;
                     periodEnd: Date;
-                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
-                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
-                    fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    costUsd: import("@prisma/client/runtime/client").Decimal | null;
+                    costKes: import("@prisma/client/runtime/client").Decimal | null;
+                    fxRateUsdToKes: import("@prisma/client/runtime/client").Decimal | null;
                     fxRateCapturedAt: Date | null;
                     pricingVersion: string | null;
                 } | {
@@ -626,12 +626,12 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    metric: import(".prisma/client").$Enums.BillingMetric;
+                    metric: import("@prisma/client").$Enums.BillingMetric;
                     periodStart: Date;
                     periodEnd: Date;
-                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
-                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
-                    fxRateUsdToKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    costUsd: import("@prisma/client/runtime/client").Decimal | null;
+                    costKes: import("@prisma/client/runtime/client").Decimal | null;
+                    fxRateUsdToKes: import("@prisma/client/runtime/client").Decimal | null;
                     fxRateCapturedAt: Date | null;
                     pricingVersion: string | null;
                 })[] | ({
@@ -642,8 +642,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     supabaseAuthId: string | null;
                     fullName: string;
                     avatar: string | null;
-                    role: import(".prisma/client").$Enums.UserRole;
-                    status: import(".prisma/client").$Enums.UserStatus;
+                    role: import("@prisma/client").$Enums.UserRole;
+                    status: import("@prisma/client").$Enums.UserStatus;
                     accountStatus: string;
                     emailVerified: boolean;
                     emailVerifiedAt: Date | null;
@@ -693,8 +693,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     supabaseAuthId: string | null;
                     fullName: string;
                     avatar: string | null;
-                    role: import(".prisma/client").$Enums.UserRole;
-                    status: import(".prisma/client").$Enums.UserStatus;
+                    role: import("@prisma/client").$Enums.UserRole;
+                    status: import("@prisma/client").$Enums.UserStatus;
                     accountStatus: string;
                     emailVerified: boolean;
                     emailVerifiedAt: Date | null;
@@ -740,7 +740,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     id: string;
                     title: string | null;
                     userId: string;
-                    status: import(".prisma/client").$Enums.PolicyStatus;
+                    status: import("@prisma/client").$Enums.PolicyStatus;
                     organizationId: string | null;
                     createdAt: Date;
                     updatedAt: Date;
@@ -770,7 +770,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     id: string;
                     title: string | null;
                     userId: string;
-                    status: import(".prisma/client").$Enums.PolicyStatus;
+                    status: import("@prisma/client").$Enums.PolicyStatus;
                     organizationId: string | null;
                     createdAt: Date;
                     updatedAt: Date;
@@ -857,7 +857,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 })[] | ({
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
+                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -867,7 +867,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     verifiedBy: string | null;
                     version: number;
                     fileSize: number;
-                    category: import(".prisma/client").$Enums.DocumentCategory;
+                    category: import("@prisma/client").$Enums.DocumentCategory;
                     tags: string[];
                     notes: string | null;
                     fileName: string;
@@ -880,12 +880,12 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     isArchived: boolean;
                     r2Bucket: string | null;
                     encryptionKeyId: string | null;
-                    uploadStatus: import(".prisma/client").$Enums.VaultDocumentUploadStatus | null;
+                    uploadStatus: import("@prisma/client").$Enums.VaultDocumentUploadStatus | null;
                     retentionExpiresAt: Date | null;
                 } | {
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
+                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -895,7 +895,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     verifiedBy: string | null;
                     version: number;
                     fileSize: number;
-                    category: import(".prisma/client").$Enums.DocumentCategory;
+                    category: import("@prisma/client").$Enums.DocumentCategory;
                     tags: string[];
                     notes: string | null;
                     fileName: string;
@@ -908,7 +908,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     isArchived: boolean;
                     r2Bucket: string | null;
                     encryptionKeyId: string | null;
-                    uploadStatus: import(".prisma/client").$Enums.VaultDocumentUploadStatus | null;
+                    uploadStatus: import("@prisma/client").$Enums.VaultDocumentUploadStatus | null;
                     retentionExpiresAt: Date | null;
                 })[] | ({
                     id: string;
@@ -937,13 +937,13 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 })[] | ({
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.CorpusGapReportStatus;
+                    status: import("@prisma/client").$Enums.CorpusGapReportStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    documentType: import(".prisma/client").$Enums.CorpusGapDocumentType;
+                    documentType: import("@prisma/client").$Enums.CorpusGapDocumentType;
                     documentName: string;
-                    jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
+                    jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
                     sourceUrl: string | null;
                     reportedByUserId: string;
                     issuingAuthority: string;
@@ -952,13 +952,13 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 } | {
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.CorpusGapReportStatus;
+                    status: import("@prisma/client").$Enums.CorpusGapReportStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    documentType: import(".prisma/client").$Enums.CorpusGapDocumentType;
+                    documentType: import("@prisma/client").$Enums.CorpusGapDocumentType;
                     documentName: string;
-                    jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
+                    jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
                     sourceUrl: string | null;
                     reportedByUserId: string;
                     issuingAuthority: string;
@@ -1002,7 +1002,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     decidedAt: Date | null;
                 })[] | ({
                     id: string;
-                    status: import(".prisma/client").$Enums.LicenseStatus;
+                    status: import("@prisma/client").$Enums.LicenseStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1021,7 +1021,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     assignedOwnerId: string | null;
                 } | {
                     id: string;
-                    status: import(".prisma/client").$Enums.LicenseStatus;
+                    status: import("@prisma/client").$Enums.LicenseStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1098,7 +1098,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     createdAt: Date;
                     updatedAt: Date;
                     dueDate: Date | null;
-                    amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    amount: import("@prisma/client/runtime/client").Decimal | null;
                     currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
@@ -1112,7 +1112,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     createdAt: Date;
                     updatedAt: Date;
                     dueDate: Date | null;
-                    amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    amount: import("@prisma/client/runtime/client").Decimal | null;
                     currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
@@ -1122,7 +1122,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
                     id: string;
                     userId: string;
-                    status: import(".prisma/client").$Enums.PilotAccessStatus;
+                    status: import("@prisma/client").$Enums.PilotAccessStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1140,7 +1140,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
                     id: string;
                     userId: string;
-                    status: import(".prisma/client").$Enums.PilotAccessStatus;
+                    status: import("@prisma/client").$Enums.PilotAccessStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1179,7 +1179,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     title: string;
                     description: string | null;
                     userId: string;
-                    status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
+                    status: import("@prisma/client").$Enums.GeneratedPolicyStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1210,7 +1210,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     title: string;
                     description: string | null;
                     userId: string;
-                    status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
+                    status: import("@prisma/client").$Enums.GeneratedPolicyStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1287,8 +1287,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 })[] | ({
                     id: string;
                     userId: string;
-                    role: import(".prisma/client").$Enums.MemberRole;
-                    status: import(".prisma/client").$Enums.MemberStatus;
+                    role: import("@prisma/client").$Enums.MemberRole;
+                    status: import("@prisma/client").$Enums.MemberStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1298,8 +1298,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 } | {
                     id: string;
                     userId: string;
-                    role: import(".prisma/client").$Enums.MemberRole;
-                    status: import(".prisma/client").$Enums.MemberStatus;
+                    role: import("@prisma/client").$Enums.MemberRole;
+                    status: import("@prisma/client").$Enums.MemberStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1313,9 +1313,12 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    category: import(".prisma/client").$Enums.ComplianceCategory;
+                    category: import("@prisma/client").$Enums.ComplianceCategory;
+                    jurisdictionCode: string | null;
                     completedAt: Date | null;
+                    requirementKey: string | null;
                     isCompleted: boolean;
+                    assessedAt: Date | null;
                 } | {
                     id: string;
                     title: string;
@@ -1323,12 +1326,16 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    category: import(".prisma/client").$Enums.ComplianceCategory;
+                    category: import("@prisma/client").$Enums.ComplianceCategory;
+                    jurisdictionCode: string | null;
                     completedAt: Date | null;
+                    requirementKey: string | null;
                     isCompleted: boolean;
+                    assessedAt: Date | null;
                 })[] | ({
                     id: string;
                     organizationId: string;
+                    jurisdictionCode: string | null;
                     overallScore: number;
                     dataProtectionScore: number;
                     amlKycScore: number;
@@ -1339,6 +1346,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 } | {
                     id: string;
                     organizationId: string;
+                    jurisdictionCode: string | null;
                     overallScore: number;
                     dataProtectionScore: number;
                     amlKycScore: number;
@@ -1391,8 +1399,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     periodStart: Date;
                     periodEnd: Date;
-                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
-                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    costUsd: import("@prisma/client/runtime/client").Decimal | null;
+                    costKes: import("@prisma/client/runtime/client").Decimal | null;
                     checklistGenerations: number;
                     apiCalls: number;
                     documentStorageMb: number;
@@ -1414,8 +1422,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedAt: Date;
                     periodStart: Date;
                     periodEnd: Date;
-                    costUsd: import("@prisma/client-runtime-utils").Decimal | null;
-                    costKes: import("@prisma/client-runtime-utils").Decimal | null;
+                    costUsd: import("@prisma/client/runtime/client").Decimal | null;
+                    costKes: import("@prisma/client/runtime/client").Decimal | null;
                     checklistGenerations: number;
                     apiCalls: number;
                     documentStorageMb: number;
@@ -1432,7 +1440,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.PaymentStatus;
+                    status: import("@prisma/client").$Enums.PaymentStatus;
                     createdAt: Date;
                     updatedAt: Date;
                     amount: number;
@@ -1440,9 +1448,9 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     paidAt: Date | null;
                     orgId: string;
                     subscriptionId: string | null;
-                    provider: import(".prisma/client").$Enums.PaymentProvider;
+                    provider: import("@prisma/client").$Enums.PaymentProvider;
                     providerTransactionId: string | null;
-                    paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
+                    paymentPurpose: import("@prisma/client").$Enums.PaymentPurpose | null;
                     invoiceNumber: string | null;
                     subscriptionPlan: string | null;
                     billingPeriodStart: Date | null;
@@ -1451,7 +1459,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.PaymentStatus;
+                    status: import("@prisma/client").$Enums.PaymentStatus;
                     createdAt: Date;
                     updatedAt: Date;
                     amount: number;
@@ -1459,9 +1467,9 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     paidAt: Date | null;
                     orgId: string;
                     subscriptionId: string | null;
-                    provider: import(".prisma/client").$Enums.PaymentProvider;
+                    provider: import("@prisma/client").$Enums.PaymentProvider;
                     providerTransactionId: string | null;
-                    paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
+                    paymentPurpose: import("@prisma/client").$Enums.PaymentPurpose | null;
                     invoiceNumber: string | null;
                     subscriptionPlan: string | null;
                     billingPeriodStart: Date | null;
@@ -1469,7 +1477,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 })[] | ({
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.CustomFrameworkStatus;
+                    status: import("@prisma/client").$Enums.CustomFrameworkStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1490,7 +1498,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 } | {
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.CustomFrameworkStatus;
+                    status: import("@prisma/client").$Enums.CustomFrameworkStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1510,7 +1518,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedByUserId: string | null;
                 })[] | ({
                     id: string;
-                    status: import(".prisma/client").$Enums.EnterpriseContractStatus;
+                    status: import("@prisma/client").$Enums.EnterpriseContractStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1525,12 +1533,12 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     endsAt: Date | null;
                     renewalDate: Date | null;
                     billingCycle: string | null;
-                    monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
-                    annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
+                    monthlyAmount: import("@prisma/client/runtime/client").Decimal | null;
+                    annualAmount: import("@prisma/client/runtime/client").Decimal | null;
                     approvedByUserId: string | null;
                 } | {
                     id: string;
-                    status: import(".prisma/client").$Enums.EnterpriseContractStatus;
+                    status: import("@prisma/client").$Enums.EnterpriseContractStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1545,8 +1553,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     endsAt: Date | null;
                     renewalDate: Date | null;
                     billingCycle: string | null;
-                    monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
-                    annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
+                    monthlyAmount: import("@prisma/client/runtime/client").Decimal | null;
+                    annualAmount: import("@prisma/client/runtime/client").Decimal | null;
                     approvedByUserId: string | null;
                 })[] | ({
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -1590,8 +1598,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     supabaseAuthId: string | null;
                     fullName: string;
                     avatar: string | null;
-                    role: import(".prisma/client").$Enums.UserRole;
-                    status: import(".prisma/client").$Enums.UserStatus;
+                    role: import("@prisma/client").$Enums.UserRole;
+                    status: import("@prisma/client").$Enums.UserStatus;
                     accountStatus: string;
                     emailVerified: boolean;
                     emailVerifiedAt: Date | null;
@@ -1637,7 +1645,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     id: string;
                     title: string | null;
                     userId: string;
-                    status: import(".prisma/client").$Enums.PolicyStatus;
+                    status: import("@prisma/client").$Enums.PolicyStatus;
                     organizationId: string | null;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1695,7 +1703,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 }[] | {
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.VaultDocumentStatus;
+                    status: import("@prisma/client").$Enums.VaultDocumentStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1705,7 +1713,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     verifiedBy: string | null;
                     version: number;
                     fileSize: number;
-                    category: import(".prisma/client").$Enums.DocumentCategory;
+                    category: import("@prisma/client").$Enums.DocumentCategory;
                     tags: string[];
                     notes: string | null;
                     fileName: string;
@@ -1718,7 +1726,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     isArchived: boolean;
                     r2Bucket: string | null;
                     encryptionKeyId: string | null;
-                    uploadStatus: import(".prisma/client").$Enums.VaultDocumentUploadStatus | null;
+                    uploadStatus: import("@prisma/client").$Enums.VaultDocumentUploadStatus | null;
                     retentionExpiresAt: Date | null;
                 }[] | {
                     id: string;
@@ -1735,13 +1743,13 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 }[] | {
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.CorpusGapReportStatus;
+                    status: import("@prisma/client").$Enums.CorpusGapReportStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    documentType: import(".prisma/client").$Enums.CorpusGapDocumentType;
+                    documentType: import("@prisma/client").$Enums.CorpusGapDocumentType;
                     documentName: string;
-                    jurisdiction: import(".prisma/client").$Enums.CorpusGapJurisdiction;
+                    jurisdiction: import("@prisma/client").$Enums.CorpusGapJurisdiction;
                     sourceUrl: string | null;
                     reportedByUserId: string;
                     issuingAuthority: string;
@@ -1767,7 +1775,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     decidedAt: Date | null;
                 }[] | {
                     id: string;
-                    status: import(".prisma/client").$Enums.LicenseStatus;
+                    status: import("@prisma/client").$Enums.LicenseStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1818,7 +1826,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     createdAt: Date;
                     updatedAt: Date;
                     dueDate: Date | null;
-                    amount: import("@prisma/client-runtime-utils").Decimal | null;
+                    amount: import("@prisma/client/runtime/client").Decimal | null;
                     currency: string;
                     paidAt: Date | null;
                     createdByUserId: string;
@@ -1828,7 +1836,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
                     id: string;
                     userId: string;
-                    status: import(".prisma/client").$Enums.PilotAccessStatus;
+                    status: import("@prisma/client").$Enums.PilotAccessStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1857,7 +1865,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     title: string;
                     description: string | null;
                     userId: string;
-                    status: import(".prisma/client").$Enums.GeneratedPolicyStatus;
+                    status: import("@prisma/client").$Enums.GeneratedPolicyStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1910,8 +1918,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 }[] | {
                     id: string;
                     userId: string;
-                    role: import(".prisma/client").$Enums.MemberRole;
-                    status: import(".prisma/client").$Enums.MemberStatus;
+                    role: import("@prisma/client").$Enums.MemberRole;
+                    status: import("@prisma/client").$Enums.MemberStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1925,12 +1933,16 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    category: import(".prisma/client").$Enums.ComplianceCategory;
+                    category: import("@prisma/client").$Enums.ComplianceCategory;
+                    jurisdictionCode: string | null;
                     completedAt: Date | null;
+                    requirementKey: string | null;
                     isCompleted: boolean;
+                    assessedAt: Date | null;
                 }[] | {
                     id: string;
                     organizationId: string;
+                    jurisdictionCode: string | null;
                     overallScore: number;
                     dataProtectionScore: number;
                     amlKycScore: number;
@@ -1960,7 +1972,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.PaymentStatus;
+                    status: import("@prisma/client").$Enums.PaymentStatus;
                     createdAt: Date;
                     updatedAt: Date;
                     amount: number;
@@ -1968,9 +1980,9 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     paidAt: Date | null;
                     orgId: string;
                     subscriptionId: string | null;
-                    provider: import(".prisma/client").$Enums.PaymentProvider;
+                    provider: import("@prisma/client").$Enums.PaymentProvider;
                     providerTransactionId: string | null;
-                    paymentPurpose: import(".prisma/client").$Enums.PaymentPurpose | null;
+                    paymentPurpose: import("@prisma/client").$Enums.PaymentPurpose | null;
                     invoiceNumber: string | null;
                     subscriptionPlan: string | null;
                     billingPeriodStart: Date | null;
@@ -1978,7 +1990,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 }[] | {
                     id: string;
                     description: string | null;
-                    status: import(".prisma/client").$Enums.CustomFrameworkStatus;
+                    status: import("@prisma/client").$Enums.CustomFrameworkStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1998,7 +2010,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     updatedByUserId: string | null;
                 }[] | {
                     id: string;
-                    status: import(".prisma/client").$Enums.EnterpriseContractStatus;
+                    status: import("@prisma/client").$Enums.EnterpriseContractStatus;
                     organizationId: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -2013,8 +2025,8 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                     endsAt: Date | null;
                     renewalDate: Date | null;
                     billingCycle: string | null;
-                    monthlyAmount: import("@prisma/client-runtime-utils").Decimal | null;
-                    annualAmount: import("@prisma/client-runtime-utils").Decimal | null;
+                    monthlyAmount: import("@prisma/client/runtime/client").Decimal | null;
+                    annualAmount: import("@prisma/client/runtime/client").Decimal | null;
                     approvedByUserId: string | null;
                 }[] | {
                     metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -2131,7 +2143,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
                 id: string;
                 email: string;
                 expiresAt: Date;
-                organizationRole: import(".prisma/client").$Enums.MemberRole | null;
+                organizationRole: import("@prisma/client").$Enums.MemberRole | null;
             };
         };
         meta: object;
@@ -2162,7 +2174,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             registrationNumber: string | null;
             website: string | null;
             industry: string | null;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            plan: import("@prisma/client").$Enums.SubscriptionPlan;
             homeJurisdictionCode: string | null;
             enabledJurisdictions: string[];
             needsCountryConfirmation: boolean;
@@ -2199,7 +2211,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             industry: string | null;
             size: string | null;
             subscriptionTier: string;
-            subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+            subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
             trialEndsAt: Date | null;
             gracePeriodEndsAt: Date | null;
             cancelledAt: Date | null;
@@ -2207,7 +2219,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             verificationStatus: string;
             verifiedAt: Date | null;
             verifiedBy: string | null;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            plan: import("@prisma/client").$Enums.SubscriptionPlan;
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
@@ -2217,7 +2229,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
-            preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+            preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
             mpesaNextPaymentDueDate: Date | null;
             subscriptionCycleEnd: Date | null;
             mpesaFailedRenewalAttempts: number;
@@ -2261,7 +2273,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             industry: string | null;
             size: string | null;
             subscriptionTier: string;
-            subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+            subscriptionStatus: import("@prisma/client").$Enums.SubscriptionStatus;
             trialEndsAt: Date | null;
             gracePeriodEndsAt: Date | null;
             cancelledAt: Date | null;
@@ -2269,7 +2281,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             verificationStatus: string;
             verifiedAt: Date | null;
             verifiedBy: string | null;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            plan: import("@prisma/client").$Enums.SubscriptionPlan;
             planStartDate: Date | null;
             planEndDate: Date | null;
             maxSeats: number;
@@ -2279,7 +2291,7 @@ export declare const organizationRouter: import("@trpc/server").TRPCBuiltRouter<
             stripeCustomerId: string | null;
             stripeSubId: string | null;
             customLimits: import("@prisma/client/runtime/client").JsonValue | null;
-            preferredPaymentMethod: import(".prisma/client").$Enums.PaymentProvider | null;
+            preferredPaymentMethod: import("@prisma/client").$Enums.PaymentProvider | null;
             mpesaNextPaymentDueDate: Date | null;
             subscriptionCycleEnd: Date | null;
             mpesaFailedRenewalAttempts: number;

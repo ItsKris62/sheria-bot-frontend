@@ -60,7 +60,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 skip?: number | undefined;
             };
             output: {
-                items: import(".prisma/client").MarketingCampaign[];
+                items: import("@prisma/client").MarketingCampaign[];
                 total: number;
             };
             meta: object;
@@ -71,7 +71,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 id: string;
-                status: import(".prisma/client").$Enums.MarketingCampaignStatus;
+                status: import("@prisma/client").$Enums.MarketingCampaignStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
@@ -80,7 +80,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 createdById: string;
                 sentAt: Date | null;
                 listId: string | null;
-                templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
+                templateKey: import("@prisma/client").$Enums.MarketingTemplateKey;
                 templateVariables: Prisma.JsonValue;
                 scheduledFor: Date | null;
                 segmentFilter: Prisma.JsonValue | null;
@@ -108,7 +108,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 id: string;
-                status: import(".prisma/client").$Enums.MarketingCampaignStatus;
+                status: import("@prisma/client").$Enums.MarketingCampaignStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
@@ -117,7 +117,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 createdById: string;
                 sentAt: Date | null;
                 listId: string | null;
-                templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
+                templateKey: import("@prisma/client").$Enums.MarketingTemplateKey;
                 templateVariables: Prisma.JsonValue;
                 scheduledFor: Date | null;
                 segmentFilter: Prisma.JsonValue | null;
@@ -146,7 +146,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 id: string;
-                status: import(".prisma/client").$Enums.MarketingCampaignStatus;
+                status: import("@prisma/client").$Enums.MarketingCampaignStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
@@ -155,7 +155,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 createdById: string;
                 sentAt: Date | null;
                 listId: string | null;
-                templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
+                templateKey: import("@prisma/client").$Enums.MarketingTemplateKey;
                 templateVariables: Prisma.JsonValue;
                 scheduledFor: Date | null;
                 segmentFilter: Prisma.JsonValue | null;
@@ -238,12 +238,12 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     firstName: string | null;
                     lastName: string | null;
                 };
-                status: import(".prisma/client").$Enums.CampaignSendStatus;
+                status: import("@prisma/client").$Enums.CampaignSendStatus;
                 errorMessage: string | null;
                 sentAt: Date | null;
                 contactId: string;
                 messageId: string | null;
-                suppressionReason: import(".prisma/client").$Enums.SuppressionReason | null;
+                suppressionReason: import("@prisma/client").$Enums.SuppressionReason | null;
             }[];
             meta: object;
         }>;
@@ -256,7 +256,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 remaining: number;
                 id: string;
                 failed: number;
-                status: import(".prisma/client").$Enums.CampaignSendJobStatus;
+                status: import("@prisma/client").$Enums.CampaignSendJobStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 errorMessage: string | null;
@@ -277,7 +277,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 id: string;
-                status: import(".prisma/client").$Enums.MarketingCampaignStatus;
+                status: import("@prisma/client").$Enums.MarketingCampaignStatus;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
@@ -286,7 +286,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 createdById: string;
                 sentAt: Date | null;
                 listId: string | null;
-                templateKey: import(".prisma/client").$Enums.MarketingTemplateKey;
+                templateKey: import("@prisma/client").$Enums.MarketingTemplateKey;
                 templateVariables: Prisma.JsonValue;
                 scheduledFor: Date | null;
                 segmentFilter: Prisma.JsonValue | null;
@@ -347,7 +347,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     tags: string[];
                     notes: string | null;
                     createdById: string;
-                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    salesStage: import("@prisma/client").$Enums.SalesStage;
                     companyId: string | null;
                     firstName: string | null;
                     lastName: string | null;
@@ -355,11 +355,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     linkedinUrl: string | null;
                     lastContactedAt: Date | null;
                     nextFollowUpAt: Date | null;
-                    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+                    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
                     consentSource: string | null;
                     consentTimestamp: Date | null;
                     suppressedAt: Date | null;
-                    suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
+                    suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
                     lastEmailedAt: Date | null;
                     lastEmailOpenedAt: Date | null;
                 })[];
@@ -381,7 +381,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     id: string;
                     ipAddress: string | null;
                     userAgent: string | null;
-                    action: import(".prisma/client").$Enums.ConsentAction;
+                    action: import("@prisma/client").$Enums.ConsentAction;
                     source: string;
                     contactId: string;
                     occurredAt: Date;
@@ -397,7 +397,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 tags: string[];
                 notes: string | null;
                 createdById: string;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
                 companyId: string | null;
                 firstName: string | null;
                 lastName: string | null;
@@ -405,11 +405,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 linkedinUrl: string | null;
                 lastContactedAt: Date | null;
                 nextFollowUpAt: Date | null;
-                consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+                consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
                 consentSource: string | null;
                 consentTimestamp: Date | null;
                 suppressedAt: Date | null;
-                suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
+                suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
                 lastEmailedAt: Date | null;
                 lastEmailOpenedAt: Date | null;
             };
@@ -436,7 +436,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 tags: string[];
                 notes: string | null;
                 createdById: string;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
                 companyId: string | null;
                 firstName: string | null;
                 lastName: string | null;
@@ -444,11 +444,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 linkedinUrl: string | null;
                 lastContactedAt: Date | null;
                 nextFollowUpAt: Date | null;
-                consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+                consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
                 consentSource: string | null;
                 consentTimestamp: Date | null;
                 suppressedAt: Date | null;
-                suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
+                suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
                 lastEmailedAt: Date | null;
                 lastEmailOpenedAt: Date | null;
             };
@@ -474,7 +474,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 tags: string[];
                 notes: string | null;
                 createdById: string;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
                 companyId: string | null;
                 firstName: string | null;
                 lastName: string | null;
@@ -482,11 +482,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 linkedinUrl: string | null;
                 lastContactedAt: Date | null;
                 nextFollowUpAt: Date | null;
-                consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+                consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
                 consentSource: string | null;
                 consentTimestamp: Date | null;
                 suppressedAt: Date | null;
-                suppressedReason: import(".prisma/client").$Enums.SuppressionReason | null;
+                suppressedReason: import("@prisma/client").$Enums.SuppressionReason | null;
                 lastEmailedAt: Date | null;
                 lastEmailOpenedAt: Date | null;
             };
@@ -544,13 +544,13 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             output: {
                 items: ({
                     send: {
-                        status: import(".prisma/client").$Enums.CampaignSendStatus;
+                        status: import("@prisma/client").$Enums.CampaignSendStatus;
                         sentAt: Date | null;
                         campaignId: string;
                     } | null;
                 } & {
                     id: string;
-                    eventType: import(".prisma/client").$Enums.EmailEventType;
+                    eventType: import("@prisma/client").$Enums.EmailEventType;
                     messageId: string | null;
                     sendId: string | null;
                     eventData: Prisma.JsonValue;
@@ -739,7 +739,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                         email: string;
                         firstName: string | null;
                         lastName: string | null;
-                        consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+                        consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
                         suppressedAt: Date | null;
                     };
                 } & {
@@ -780,7 +780,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     metadata: Prisma.JsonValue | null;
                     id: string;
                     email: string;
-                    reason: import(".prisma/client").$Enums.SuppressionReason;
+                    reason: import("@prisma/client").$Enums.SuppressionReason;
                     addedAt: Date;
                     addedById: string | null;
                 }[];
@@ -814,7 +814,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
             };
             output: {
                 isSuppressed: boolean;
-                reason: import(".prisma/client").$Enums.SuppressionReason | null;
+                reason: import("@prisma/client").$Enums.SuppressionReason | null;
                 addedAt: Date | null;
             };
             meta: object;
@@ -868,7 +868,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                         fullName: string;
                     } | null;
                 } & {
-                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    origin: import("@prisma/client").$Enums.CompanyOrigin;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -882,11 +882,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     reviewedAt: Date | null;
                     createdById: string;
                     regulatorMix: string[];
-                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                    salesStage: import(".prisma/client").$Enums.SalesStage;
-                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                    salesStage: import("@prisma/client").$Enums.SalesStage;
+                    icpTier: import("@prisma/client").$Enums.IcpTier;
                     leadScore: number | null;
-                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                     country: string;
                     licenceType: string | null;
                     licenceNumber: string | null;
@@ -930,7 +930,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     confidence: number;
                     retrievedAt: Date;
                     sourceUrl: string;
-                    verificationState: import(".prisma/client").$Enums.EvidenceVerificationState;
+                    verificationState: import("@prisma/client").$Enums.EvidenceVerificationState;
                     companyId: string;
                     discoveryRunId: string | null;
                     field: string;
@@ -951,11 +951,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     phone: string | null;
                     role: string | null;
                     createdAt: Date;
-                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    salesStage: import("@prisma/client").$Enums.SalesStage;
                     firstName: string | null;
                     lastName: string | null;
                     linkedinUrl: string | null;
-                    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+                    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
                 }[];
                 discoveryRuns: ({
                     discoveryRun: {
@@ -972,11 +972,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     companyId: string;
                     discoveryRunId: string;
                     scoreAtRun: number | null;
-                    icpTierAtRun: import(".prisma/client").$Enums.IcpTier | null;
-                    leadStatusAtRun: import(".prisma/client").$Enums.LeadStatus | null;
+                    icpTierAtRun: import("@prisma/client").$Enums.IcpTier | null;
+                    leadStatusAtRun: import("@prisma/client").$Enums.LeadStatus | null;
                 })[];
             } & {
-                origin: import(".prisma/client").$Enums.CompanyOrigin;
+                origin: import("@prisma/client").$Enums.CompanyOrigin;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -990,11 +990,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reviewedAt: Date | null;
                 createdById: string;
                 regulatorMix: string[];
-                leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
-                icpTier: import(".prisma/client").$Enums.IcpTier;
+                leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
+                icpTier: import("@prisma/client").$Enums.IcpTier;
                 leadScore: number | null;
-                sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                 country: string;
                 licenceType: string | null;
                 licenceNumber: string | null;
@@ -1025,7 +1025,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 ownerId?: string | null | undefined;
             };
             output: {
-                origin: import(".prisma/client").$Enums.CompanyOrigin;
+                origin: import("@prisma/client").$Enums.CompanyOrigin;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -1039,11 +1039,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reviewedAt: Date | null;
                 createdById: string;
                 regulatorMix: string[];
-                leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
-                icpTier: import(".prisma/client").$Enums.IcpTier;
+                leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
+                icpTier: import("@prisma/client").$Enums.IcpTier;
                 leadScore: number | null;
-                sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                 country: string;
                 licenceType: string | null;
                 licenceNumber: string | null;
@@ -1080,7 +1080,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 ownerId?: string | null | undefined;
             };
             output: {
-                origin: import(".prisma/client").$Enums.CompanyOrigin;
+                origin: import("@prisma/client").$Enums.CompanyOrigin;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -1094,11 +1094,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reviewedAt: Date | null;
                 createdById: string;
                 regulatorMix: string[];
-                leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
-                icpTier: import(".prisma/client").$Enums.IcpTier;
+                leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
+                icpTier: import("@prisma/client").$Enums.IcpTier;
                 leadScore: number | null;
-                sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                 country: string;
                 licenceType: string | null;
                 licenceNumber: string | null;
@@ -1129,7 +1129,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 secondaryCompanyId: string;
             };
             output: {
-                origin: import(".prisma/client").$Enums.CompanyOrigin;
+                origin: import("@prisma/client").$Enums.CompanyOrigin;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -1143,11 +1143,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reviewedAt: Date | null;
                 createdById: string;
                 regulatorMix: string[];
-                leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
-                icpTier: import(".prisma/client").$Enums.IcpTier;
+                leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
+                icpTier: import("@prisma/client").$Enums.IcpTier;
                 leadScore: number | null;
-                sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                 country: string;
                 licenceType: string | null;
                 licenceNumber: string | null;
@@ -1205,7 +1205,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                         fullName: string;
                     } | null;
                 } & {
-                    origin: import(".prisma/client").$Enums.CompanyOrigin;
+                    origin: import("@prisma/client").$Enums.CompanyOrigin;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
@@ -1219,11 +1219,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     reviewedAt: Date | null;
                     createdById: string;
                     regulatorMix: string[];
-                    leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                    salesStage: import(".prisma/client").$Enums.SalesStage;
-                    icpTier: import(".prisma/client").$Enums.IcpTier;
+                    leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                    salesStage: import("@prisma/client").$Enums.SalesStage;
+                    icpTier: import("@prisma/client").$Enums.IcpTier;
                     leadScore: number | null;
-                    sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                    sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                     country: string;
                     licenceType: string | null;
                     licenceNumber: string | null;
@@ -1267,7 +1267,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     confidence: number;
                     retrievedAt: Date;
                     sourceUrl: string;
-                    verificationState: import(".prisma/client").$Enums.EvidenceVerificationState;
+                    verificationState: import("@prisma/client").$Enums.EvidenceVerificationState;
                     companyId: string;
                     discoveryRunId: string | null;
                     field: string;
@@ -1288,11 +1288,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     phone: string | null;
                     role: string | null;
                     createdAt: Date;
-                    salesStage: import(".prisma/client").$Enums.SalesStage;
+                    salesStage: import("@prisma/client").$Enums.SalesStage;
                     firstName: string | null;
                     lastName: string | null;
                     linkedinUrl: string | null;
-                    consentStatus: import(".prisma/client").$Enums.ContactConsentStatus;
+                    consentStatus: import("@prisma/client").$Enums.ContactConsentStatus;
                 }[];
                 discoveryRuns: ({
                     discoveryRun: {
@@ -1309,11 +1309,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                     companyId: string;
                     discoveryRunId: string;
                     scoreAtRun: number | null;
-                    icpTierAtRun: import(".prisma/client").$Enums.IcpTier | null;
-                    leadStatusAtRun: import(".prisma/client").$Enums.LeadStatus | null;
+                    icpTierAtRun: import("@prisma/client").$Enums.IcpTier | null;
+                    leadStatusAtRun: import("@prisma/client").$Enums.LeadStatus | null;
                 })[];
             } & {
-                origin: import(".prisma/client").$Enums.CompanyOrigin;
+                origin: import("@prisma/client").$Enums.CompanyOrigin;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -1327,11 +1327,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reviewedAt: Date | null;
                 createdById: string;
                 regulatorMix: string[];
-                leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
-                icpTier: import(".prisma/client").$Enums.IcpTier;
+                leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
+                icpTier: import("@prisma/client").$Enums.IcpTier;
                 leadScore: number | null;
-                sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                 country: string;
                 licenceType: string | null;
                 licenceNumber: string | null;
@@ -1354,7 +1354,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 addToListId?: string | undefined;
             };
             output: {
-                origin: import(".prisma/client").$Enums.CompanyOrigin;
+                origin: import("@prisma/client").$Enums.CompanyOrigin;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -1368,11 +1368,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reviewedAt: Date | null;
                 createdById: string;
                 regulatorMix: string[];
-                leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
-                icpTier: import(".prisma/client").$Enums.IcpTier;
+                leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
+                icpTier: import("@prisma/client").$Enums.IcpTier;
                 leadScore: number | null;
-                sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                 country: string;
                 licenceType: string | null;
                 licenceNumber: string | null;
@@ -1394,7 +1394,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 rejectionReason: string;
             };
             output: {
-                origin: import(".prisma/client").$Enums.CompanyOrigin;
+                origin: import("@prisma/client").$Enums.CompanyOrigin;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -1408,11 +1408,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reviewedAt: Date | null;
                 createdById: string;
                 regulatorMix: string[];
-                leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
-                icpTier: import(".prisma/client").$Enums.IcpTier;
+                leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
+                icpTier: import("@prisma/client").$Enums.IcpTier;
                 leadScore: number | null;
-                sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                 country: string;
                 licenceType: string | null;
                 licenceNumber: string | null;
@@ -1434,7 +1434,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reason?: string | undefined;
             };
             output: {
-                origin: import(".prisma/client").$Enums.CompanyOrigin;
+                origin: import("@prisma/client").$Enums.CompanyOrigin;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -1448,11 +1448,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reviewedAt: Date | null;
                 createdById: string;
                 regulatorMix: string[];
-                leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
-                icpTier: import(".prisma/client").$Enums.IcpTier;
+                leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
+                icpTier: import("@prisma/client").$Enums.IcpTier;
                 leadScore: number | null;
-                sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                 country: string;
                 licenceType: string | null;
                 licenceNumber: string | null;
@@ -1474,7 +1474,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 researchNotes: string;
             };
             output: {
-                origin: import(".prisma/client").$Enums.CompanyOrigin;
+                origin: import("@prisma/client").$Enums.CompanyOrigin;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -1488,11 +1488,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reviewedAt: Date | null;
                 createdById: string;
                 regulatorMix: string[];
-                leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
-                icpTier: import(".prisma/client").$Enums.IcpTier;
+                leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
+                icpTier: import("@prisma/client").$Enums.IcpTier;
                 leadScore: number | null;
-                sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                 country: string;
                 licenceType: string | null;
                 licenceNumber: string | null;
@@ -1514,7 +1514,7 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reason?: string | undefined;
             };
             output: {
-                origin: import(".prisma/client").$Enums.CompanyOrigin;
+                origin: import("@prisma/client").$Enums.CompanyOrigin;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -1528,11 +1528,11 @@ export declare const adminMarketingRouter: import("@trpc/server").TRPCBuiltRoute
                 reviewedAt: Date | null;
                 createdById: string;
                 regulatorMix: string[];
-                leadStatus: import(".prisma/client").$Enums.LeadStatus;
-                salesStage: import(".prisma/client").$Enums.SalesStage;
-                icpTier: import(".prisma/client").$Enums.IcpTier;
+                leadStatus: import("@prisma/client").$Enums.LeadStatus;
+                salesStage: import("@prisma/client").$Enums.SalesStage;
+                icpTier: import("@prisma/client").$Enums.IcpTier;
                 leadScore: number | null;
-                sizeClass: import(".prisma/client").$Enums.CompanySizeClass;
+                sizeClass: import("@prisma/client").$Enums.CompanySizeClass;
                 country: string;
                 licenceType: string | null;
                 licenceNumber: string | null;

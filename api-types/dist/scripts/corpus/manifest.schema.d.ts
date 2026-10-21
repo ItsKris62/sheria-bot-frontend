@@ -28,14 +28,15 @@ export declare const JurisdictionCodeEnum: z.ZodEnum<{
 export type JurisdictionCode = z.infer<typeof JurisdictionCodeEnum>;
 export declare const ScopeEnum: z.ZodEnum<{
     REGIONAL: "REGIONAL";
-    COUNTRY: "COUNTRY";
     INTERNATIONAL: "INTERNATIONAL";
+    COUNTRY: "COUNTRY";
 }>;
 export type Scope = z.infer<typeof ScopeEnum>;
 export declare const CategoryEnum: z.ZodEnum<{
     other: "other";
     guidance: "guidance";
     payments: "payments";
+    "consumer-protection": "consumer-protection";
     microfinance: "microfinance";
     insurance: "insurance";
     banking: "banking";
@@ -46,7 +47,6 @@ export declare const CategoryEnum: z.ZodEnum<{
     ict: "ict";
     "aml-cft": "aml-cft";
     core: "core";
-    "consumer-protection": "consumer-protection";
     "open-banking": "open-banking";
     tax: "tax";
     "ai-governance": "ai-governance";
@@ -115,13 +115,14 @@ export declare const CorpusManifestEntrySchema: z.ZodObject<{
     }>;
     scope: z.ZodEnum<{
         REGIONAL: "REGIONAL";
-        COUNTRY: "COUNTRY";
         INTERNATIONAL: "INTERNATIONAL";
+        COUNTRY: "COUNTRY";
     }>;
     category: z.ZodEnum<{
         other: "other";
         guidance: "guidance";
         payments: "payments";
+        "consumer-protection": "consumer-protection";
         microfinance: "microfinance";
         insurance: "insurance";
         banking: "banking";
@@ -132,7 +133,6 @@ export declare const CorpusManifestEntrySchema: z.ZodObject<{
         ict: "ict";
         "aml-cft": "aml-cft";
         core: "core";
-        "consumer-protection": "consumer-protection";
         "open-banking": "open-banking";
         tax: "tax";
         "ai-governance": "ai-governance";
@@ -231,13 +231,14 @@ export declare const CorpusManifestSchema: z.ZodObject<{
         }>;
         scope: z.ZodEnum<{
             REGIONAL: "REGIONAL";
-            COUNTRY: "COUNTRY";
             INTERNATIONAL: "INTERNATIONAL";
+            COUNTRY: "COUNTRY";
         }>;
         category: z.ZodEnum<{
             other: "other";
             guidance: "guidance";
             payments: "payments";
+            "consumer-protection": "consumer-protection";
             microfinance: "microfinance";
             insurance: "insurance";
             banking: "banking";
@@ -248,7 +249,6 @@ export declare const CorpusManifestSchema: z.ZodObject<{
             ict: "ict";
             "aml-cft": "aml-cft";
             core: "core";
-            "consumer-protection": "consumer-protection";
             "open-banking": "open-banking";
             tax: "tax";
             "ai-governance": "ai-governance";
