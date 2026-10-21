@@ -76,7 +76,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
       {consent === null && pathname !== "/" ? (
         <section
           aria-label="Cookie consent"
-          className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-4xl rounded-2xl border border-border bg-card p-4 shadow-2xl sm:p-5"
+          className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-4xl rounded-2xl border border-white/20 bg-white/10 p-4 shadow-[0_20px_70px_rgba(0,0,0,0.28),0_1px_0_rgba(255,255,255,0.18)_inset] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/[0.08] sm:p-5"
         >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
@@ -87,9 +87,9 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
               </p>
             </div>
             <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[430px]">
-              <Button variant="outline" onClick={() => persist(false, false)}>Reject Non-Essential</Button>
-              <Button variant="outline" onClick={openPreferences}>Manage Preferences</Button>
-              <Button onClick={() => persist(true, true)}>Accept All</Button>
+              <Button variant="outline" className="border-white/20 bg-white/10 text-foreground shadow-sm backdrop-blur-md hover:bg-white/20" onClick={() => persist(false, false)}>Reject Non-Essential</Button>
+              <Button variant="outline" className="border-white/20 bg-white/10 text-foreground shadow-sm backdrop-blur-md hover:bg-white/20" onClick={openPreferences}>Manage Preferences</Button>
+              <Button className="bg-primary font-semibold text-primary-foreground shadow-[0_8px_24px_rgba(30,215,96,0.22)] hover:bg-primary/90" onClick={() => persist(true, true)}>Accept All</Button>
             </div>
           </div>
         </section>
