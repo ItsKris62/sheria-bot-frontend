@@ -11,7 +11,7 @@ import type { JurisdictionCode } from "./jurisdictions";
 // frontend tsconfig. Types are kept in sync manually.
 // ============================================================================
 
-export type PlanName = "REGULATOR" | "FREE_TRIAL" | "STARTUP" | "BUSINESS" | "ENTERPRISE";
+export type PlanName = "FREE" | "STARTER" | "GROWTH" | "BUSINESS" | "ENTERPRISE" | "REGULATOR" | "STARTUP" | "FREE_TRIAL";
 export type EffectivePlanSource =
   | "SUBSCRIPTION"
   | "FREE_TRIAL"
@@ -266,6 +266,9 @@ function resolvePlanDisplayName(
 ): string {
   if (effectivePlanSource === "PILOT") return "Pilot Access";
   switch (plan) {
+    case "FREE":       return "Free";
+    case "STARTER":    return "Starter";
+    case "GROWTH":     return "Growth";
     case "REGULATOR":  return "Regulator (Free)";
     case "FREE_TRIAL": return "Free Trial (7-day)";
     case "STARTUP":    return "Startup";

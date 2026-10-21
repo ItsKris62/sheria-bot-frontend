@@ -14,9 +14,12 @@ import { trackEvent } from "@/lib/analytics";
 // Shared helpers
 // ============================================================================
 
-const PLAN_ORDER: PlanName[] = ["REGULATOR", "FREE_TRIAL", "STARTUP", "BUSINESS", "ENTERPRISE"];
+const PLAN_ORDER: PlanName[] = ["FREE", "REGULATOR", "FREE_TRIAL", "STARTER", "STARTUP", "GROWTH", "BUSINESS", "ENTERPRISE"];
 
 const PLAN_LABELS: Record<PlanName, string> = {
+  FREE:       "Free",
+  STARTER:    "Starter",
+  GROWTH:     "Growth",
   REGULATOR:  "Regulator (Free)",
   FREE_TRIAL: "Free Trial",
   STARTUP:    "Startup",
@@ -28,6 +31,9 @@ const PLAN_BADGE_VARIANT: Record<
   PlanName,
   "default" | "secondary" | "outline" | "destructive"
 > = {
+  FREE:       "outline",
+  STARTER:    "secondary",
+  GROWTH:     "secondary",
   REGULATOR:  "outline",
   FREE_TRIAL: "secondary",
   STARTUP:    "secondary",

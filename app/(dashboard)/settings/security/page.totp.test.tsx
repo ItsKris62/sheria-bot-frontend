@@ -29,7 +29,9 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
 }))
 
-import { TwoFactorCard } from "./page"
+import SecuritySettingsPage from "./page"
+
+const { TwoFactorCard } = SecuritySettingsPage
 
 function setStatus(enabled: boolean) {
   mocks.state = {

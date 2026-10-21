@@ -77,6 +77,7 @@ export function MultiSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-label={selectedOptions.length === 0 ? placeholder : `${selectedOptions.length} options selected`}
           disabled={disabled}
           className={cn("w-full justify-between h-auto min-h-10 px-3 py-2", className)}
         >

@@ -82,7 +82,7 @@ const primarySources: PrimarySource[] = [
   },
 ]
 
-export type RegulatoryStatus =
+type RegulatoryStatus =
   | 'IN_FORCE'
   | 'GAZETTED'
   | 'PROPOSED'
@@ -93,7 +93,7 @@ export type RegulatoryStatus =
   | 'SUPERSEDED_GUIDANCE'
   | 'WITHDRAWN_GUIDANCE'
 
-export type InstrumentType =
+type InstrumentType =
   | 'ACT'
   | 'REGULATIONS'
   | 'LEGAL_NOTICE'
@@ -101,7 +101,7 @@ export type InstrumentType =
   | 'CIRCULAR'
   | 'GUIDELINE'
 
-export interface RegulatoryChangeRecord {
+interface RegulatoryChangeRecord {
   id: string
   instrument: string
   instrumentType: InstrumentType
@@ -115,7 +115,7 @@ export interface RegulatoryChangeRecord {
   lastVerified: string
 }
 
-export const REGULATORY_CHANGES: RegulatoryChangeRecord[] = [
+const REGULATORY_CHANGES: RegulatoryChangeRecord[] = [
   {
     id: 'REG-FRC-2023-LN153',
     instrument: 'Proceeds of Crime and Anti-Money Laundering Regulations, 2023',

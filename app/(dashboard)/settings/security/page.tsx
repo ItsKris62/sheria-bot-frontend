@@ -309,7 +309,7 @@ function ChangePasswordCard() {
 
 const SHERIABOT_AUTHENTICATOR_ICON = "https://assets.sheriabot.com/branding/sheriabot-2fa-authenticator-icon.png"
 
-export function TwoFactorCard() {
+function TwoFactorCard() {
   const {
     totpEnabled,
     isLoadingStatus,
@@ -1156,7 +1156,7 @@ function OrganizationSecurityCenter() {
   )
 }
 
-export default function SecuritySettingsPage() {
+function SecuritySettingsPage() {
   const searchParams = useSearchParams()
   const isEnforced = searchParams.get("enforce") === "true"
   const { user } = useAuth()
@@ -1245,3 +1245,5 @@ export default function SecuritySettingsPage() {
     </div>
   )
 }
+
+export default Object.assign(SecuritySettingsPage, { TwoFactorCard })

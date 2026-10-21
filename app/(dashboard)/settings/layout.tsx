@@ -22,7 +22,7 @@ type SettingsNavItem = {
   icon: ComponentType<{ className?: string }>
 }
 
-export const settingsNav: SettingsNavItem[] = [
+const settingsNav: SettingsNavItem[] = [
   { title: "Profile", href: "/settings", icon: User },
   { title: "Organization", href: "/settings/organization", icon: Building2 },
   { title: "Team", href: "/settings/team", icon: Users },
@@ -33,7 +33,7 @@ export const settingsNav: SettingsNavItem[] = [
   { title: "API Keys", href: "/settings/api-keys", icon: Key },
 ]
 
-export function isSettingsRouteActive(pathname: string, href: string) {
+function isSettingsRouteActive(pathname: string, href: string) {
   return href === "/settings"
     ? pathname === href
     : pathname === href || pathname.startsWith(`${href}/`)

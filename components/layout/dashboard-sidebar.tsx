@@ -278,7 +278,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                   "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-[background-color,color,transform,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#081C13]",
                   !opts.showCollapsed && "motion-safe:hover:translate-x-0.5",
                   isLocked
-                    ? "opacity-50 cursor-pointer text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)]"
+                    ? "cursor-pointer text-[#86A192] hover:bg-[var(--portal-sidebar-raised)]"
                     : isActive
                     ? "bg-[var(--portal-sidebar-active)] text-[var(--portal-sidebar-text)] font-semibold shadow-sm"
                     : "text-[var(--portal-sidebar-muted)] hover:bg-[var(--portal-sidebar-raised)] hover:text-[var(--portal-sidebar-text)]",

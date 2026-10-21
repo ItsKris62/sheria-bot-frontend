@@ -1,6 +1,17 @@
 import { cleanup, render, screen, within } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import SettingsLayout, { settingsNav } from "./layout"
+import SettingsLayout from "./layout"
+
+const expectedSettingsLinks = [
+  ["Profile", "/settings"],
+  ["Organization", "/settings/organization"],
+  ["Team", "/settings/team"],
+  ["Security", "/settings/security"],
+  ["Billing", "/settings/billing"],
+  ["Notifications", "/settings/notifications"],
+  ["Corpus Reports", "/settings/corpus-reports"],
+  ["API Keys", "/settings/api-keys"],
+] as const
 
 const mocks = vi.hoisted(() => ({
   pathname: "/settings/security",
@@ -31,8 +42,8 @@ describe("SettingsLayout", () => {
     render(<SettingsLayout><p>Settings content</p></SettingsLayout>)
     const navigation = screen.getAllByRole("navigation", { name: "Settings navigation" })[0]
 
-    for (const item of settingsNav) {
-      expect(within(navigation).getByRole("link", { name: item.title })).toHaveAttribute("href", item.href)
+    for (const [title, href] of expectedSettingsLinks) {
+      expect(within(navigation).getByRole("link", { name: title })).toHaveAttribute("href", href)
     }
     expect(within(navigation).getByRole("link", { name: "Security" })).toHaveAttribute("aria-current", "page")
     expect(within(navigation).getByRole("link", { name: "Profile" })).not.toHaveAttribute("aria-current")
