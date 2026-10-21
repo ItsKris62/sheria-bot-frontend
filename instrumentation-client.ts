@@ -20,6 +20,9 @@ if (SENTRY_DSN) {
       Sentry.replayIntegration({
         maskAllText: true,
         blockAllMedia: true,
+        // Keep replay error capture compatible with the production CSP without
+        // allowing blob-backed workers.
+        useCompression: false,
       }),
     ],
 
