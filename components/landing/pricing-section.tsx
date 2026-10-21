@@ -203,7 +203,7 @@ function getPlanPrice(plan: PlanConfig, cycle: BillingCycle) {
 
 function getCardClasses(tone: PlanTone) {
   if (tone === "business") {
-    return "border-[#1ED760]/40 bg-[radial-gradient(circle_at_top,rgba(30,215,96,0.14),transparent_42%),linear-gradient(180deg,#12251B_0%,#07100C_100%)] shadow-[0_24px_90px_rgba(30,215,96,0.10),0_1px_0_rgba(255,255,255,0.06)_inset] lg:-translate-y-5 lg:scale-[1.04]"
+    return "border-[#1ED760]/40 bg-[#0D1411] shadow-[0_24px_70px_rgba(0,0,0,0.22),0_1px_0_rgba(255,255,255,0.06)_inset]"
   }
 
   if (tone === "enterprise") {
@@ -233,10 +233,6 @@ function PricingCard({
       className={`group relative flex h-full w-full max-w-[19rem] flex-col p-5 transition duration-500 ease-out hover:-translate-y-1 hover:border-[#1ED760]/45 hover:shadow-[0_30px_100px_rgba(0,0,0,0.34)] sm:max-w-none sm:p-9 ${getCardClasses(tone)}`}
     >
       <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-      {isBusiness && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_50%_0%,rgba(30,215,96,0.18),transparent_62%)] opacity-90 transition duration-500 group-hover:opacity-100" />
-      )}
-
       <div className="relative z-10 flex min-h-9 items-start justify-end">
         {plan.badge && (
           <span className="rounded-full border border-[#1ED760]/25 bg-[#1ED760]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#1ED760]">
@@ -363,7 +359,7 @@ export function PricingSection({
         className="pointer-events-none absolute inset-0 transition-[background,transform] duration-700 ease-out"
         style={{
           background:
-            "radial-gradient(circle at var(--mouse-x,50%) var(--mouse-y,-12%), rgba(30,215,96,0.12), transparent 34%), linear-gradient(180deg,#080D0B 0%,#050706 42%,#050706 100%)",
+            "linear-gradient(180deg,#080D0B 0%,#050706 42%,#050706 100%)",
           transform:
             "translate3d(var(--drift-x-px,0px), calc(var(--parallax-y,0px) + var(--drift-y-px,0px)), 0)",
         }}
